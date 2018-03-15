@@ -22,7 +22,8 @@ from .utils import (
     CSV_HEADER_WITH_COMPOUNDS_AND_STUDY,
     CHIP_DATA_PREFETCH,
     UnicodeWriter,
-    REPLACED_DATA_POINT_CODE
+    REPLACED_DATA_POINT_CODE,
+    get_repro_data
 )
 
 import csv
@@ -373,15 +374,50 @@ def get_chip_readout_data_as_csv(chip_ids, chip_data=None, both_assay_names=Fals
     chip_data - Readout raw data, optional, acquired with chip_ids if not provided
     both_assay_names - Indicates that both assay names should be returned (not currently used)
     """
-    related_compounds_map = {}
+    data = get_chip_readout_data_as_list_of_lists(
+        chip_ids,
+        chip_data,
+        both_assay_names,
+        include_header,
+        include_all
+    )
+
+    for index in range(len(data)):
+        current_list = list(data[index])
+        data[index] = [unicode(item) for item in current_list]
+
+    string_io = StringIO()
+    csv_writer = UnicodeWriter(string_io)
+    for one_line_of_data in data:
+        csv_writer.writerow(one_line_of_data)
+
+    return string_io.getvalue()
+
+
+def get_chip_readout_data_as_list_of_lists(chip_ids, chip_data=None, both_assay_names=False, include_header=False, include_all=False):
+    """Returns readout data as a csv in the form of a string
+
+    Params:
+    chip_ids - Readout IDs to use to acquire chip data (if data not provided)
+    chip_data - Readout raw data, optional, acquired with chip_ids if not provided
+    both_assay_names - Indicates that both assay names should be returned (not currently used)
+    """
+    # related_compounds_map = {}
 
     if not chip_data:
         # TODO ORDER SUBJECT TO CHANGE
         chip_data = AssayChipRawData.objects.prefetch_related(
-            *CHIP_DATA_PREFETCH
-        ).prefetch_related(
-            'assay_chip_id__chip_setup__assaycompoundinstance_set',
-            'assay_chip_id__chip_setup__assaychipcells_set'
+            'assay_chip_id__chip_setup__assay_run_id',
+            'assay_instance__target',
+            'assay_instance__method',
+            'assay_instance__unit',
+            'assay_chip_id__chip_setup__device',
+            'assay_chip_id__chip_setup__organ_model',
+            'assay_chip_id__chip_setup__assaycompoundinstance_set__compound_instance__compound',
+            'assay_chip_id__chip_setup__assaycompoundinstance_set__concentration_unit',
+            'assay_chip_id__chip_setup__assaychipcells_set__cell_sample__cell_type__organ',
+            'assay_chip_id__chip_setup__assaychipcells_set__cell_sample__cell_subtype',
+            'sample_location'
         ).filter(
             assay_chip_id__in=chip_ids
         ).order_by(
@@ -392,9 +428,11 @@ def get_chip_readout_data_as_csv(chip_ids, chip_data=None, both_assay_names=Fals
             'sample_location__name',
             'quality',
             'update_number'
+        ).exclude(
+            quality__contains=REPLACED_DATA_POINT_CODE
         )
 
-        related_compounds_map = get_related_compounds_map(readouts=chip_ids)
+        # related_compounds_map = get_related_compounds_map(readouts=chip_ids)
 
     data = []
 
@@ -422,13 +460,13 @@ def get_chip_readout_data_as_csv(chip_ids, chip_data=None, both_assay_names=Fals
         method = data_point.assay_instance.method.name
         sample_location = data_point.sample_location.name
 
-        device = data_point.assay_chip_id.chip_setup.device
+        device = data_point.assay_chip_id.chip_setup.device.device_name
         organ_model = data_point.assay_chip_id.chip_setup.organ_model
 
-        # Naive and more expensive than it needs to be
         cells = data_point.assay_chip_id.chip_setup.stringify_cells()
 
-        compound_treatment = get_list_of_present_compounds(related_compounds_map, data_point, ' | ')
+        # compound_treatment = get_list_of_present_compounds(related_compounds_map, data_point, ' | ')
+        compound_treatment = data_point.assay_chip_id.chip_setup.stringify_compounds()
 
         value = data_point.value
 
@@ -442,41 +480,98 @@ def get_chip_readout_data_as_csv(chip_ids, chip_data=None, both_assay_names=Fals
         # TODO ADD OTHER STUFF
         notes = data_point.notes
 
+        if organ_model:
+            organ_model = organ_model.model_name
+
         if REPLACED_DATA_POINT_CODE not in quality and (include_all or not quality):
-            data.append(
-                [unicode(x) for x in
-                    [
-                        study_id,
-                        chip_id,
-                        cross_reference,
-                        assay_plate_id,
-                        assay_well_id,
-                        times.get('day'),
-                        times.get('hour'),
-                        times.get('minute'),
-                        device,
-                        organ_model,
-                        cells,
-                        compound_treatment,
-                        target,
-                        method,
-                        sample_location,
-                        value,
-                        value_unit,
-                        replicate,
-                        caution_flag,
-                        quality,
-                        notes
-                    ]
-                ]
-            )
+            data.append([
+                study_id,
+                chip_id,
+                cross_reference,
+                assay_plate_id,
+                assay_well_id,
+                times.get('day'),
+                times.get('hour'),
+                times.get('minute'),
+                device,
+                organ_model,
+                cells,
+                compound_treatment,
+                target,
+                method,
+                sample_location,
+                value,
+                value_unit,
+                replicate,
+                caution_flag,
+                quality,
+                notes
+            ])
 
-    string_io = StringIO()
-    csv_writer = UnicodeWriter(string_io)
-    for one_line_of_data in data:
-        csv_writer.writerow(one_line_of_data)
+    return data
 
-    return string_io.getvalue()
+
+def fetch_assay_run_reproducibility(request):
+    study = get_object_or_404(AssayRun, pk=int(request.POST.get('study', '')))
+    data = {}
+
+    # If chip data
+    chip_readouts = AssayChipReadout.objects.filter(
+        chip_setup__assay_run_id_id=study
+    )
+
+    # Boolean
+    # include_all = self.request.GET.get('include_all', False)
+    chip_data = get_chip_readout_data_as_list_of_lists(chip_readouts, include_header=True, include_all=False)
+
+    repro_data = get_repro_data(chip_data)
+
+    gas_list = repro_data['reproducibility_results_table']['data']
+    data['gas_list'] = gas_list
+
+    mad_list = {}
+    cv_list = {}
+    chip_list = {}
+    comp_list = {}
+    for x in range(len(repro_data) - 1):
+        # mad_list
+        mad_list[x + 1] = {'columns': repro_data[x]['mad_score_matrix']['columns']}
+        for y in range(len(repro_data[x]['mad_score_matrix']['index'])):
+            repro_data[x]['mad_score_matrix']['data'][y].insert(0, repro_data[x]['mad_score_matrix']['index'][y])
+        mad_list[x + 1]['data'] = repro_data[x]['mad_score_matrix']['data']
+        # cv_list
+        if repro_data[x].get('comp_ICC_Value'):
+            cv_list[x + 1] = [['Time', 'CV (%)']]
+            for y in range(len(repro_data[x]['CV_array']['index'])):
+                repro_data[x]['CV_array']['data'][y].insert(0, repro_data[x]['CV_array']['index'][y])
+            for entry in repro_data[x]['CV_array']['data']:
+                cv_list[x + 1].append(entry)
+        # chip_list
+        repro_data[x]['cv_chart']['columns'].insert(0, "Time (days)")
+        chip_list[x + 1] = [repro_data[x]['cv_chart']['columns']]
+        for y in range(len(repro_data[x]['cv_chart']['index'])):
+            repro_data[x]['cv_chart']['data'][y].insert(0, repro_data[x]['cv_chart']['index'][y])
+        for z in range(len(repro_data[x]['cv_chart']['data'])):
+            chip_list[x + 1].append(repro_data[x]['cv_chart']['data'][z])
+        # comp_list
+        if repro_data[x].get('comp_ICC_Value'):
+            comp_list[x + 1] = []
+            for y in range(len(repro_data[x]['comp_ICC_Value']['Chip ID'])):
+                comp_list[x + 1].insert(y, [])
+                comp_list[x + 1][y].append(repro_data[x]['comp_ICC_Value']['Chip ID'][y])
+                comp_list[x + 1][y].append(repro_data[x]['comp_ICC_Value']['ICC Absolute Agreement'][y])
+                comp_list[x + 1][y].append(repro_data[x]['comp_ICC_Value']['Missing Data Points'][y])
+
+    data['mad_list'] = mad_list
+
+    data['cv_list'] = cv_list
+
+    data['chip_list'] = chip_list
+
+    data['comp_list'] = comp_list
+
+    return HttpResponse(json.dumps(data),
+                        content_type='application/json')
 
 
 def get_chip_readout_data_as_json(chip_ids, chip_data=None):
@@ -1776,7 +1871,8 @@ switch = {
     'validate_individual_chip_file': validate_individual_chip_file,
     'validate_individual_plate_file': validate_individual_plate_file,
     'fetch_quality_indicators': fetch_quality_indicators,
-    'send_ready_for_sign_off_email': send_ready_for_sign_off_email
+    'send_ready_for_sign_off_email': send_ready_for_sign_off_email,
+    'fetch_assay_run_reproducibility': fetch_assay_run_reproducibility
 }
 
 

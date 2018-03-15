@@ -48,7 +48,8 @@ from mps.settings import TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX
 
 from chardet.universaldetector import UniversalDetector
 
-import collections
+import pandas as pd
+import numpy as np
 
 PLATE_FORMATS = ('Tabular', 'Block')
 CHIP_FORMATS = ('Chip',)
@@ -2708,3 +2709,409 @@ def validate_file(
         )
 
         return preview_data
+
+
+# TODO TODO TODO PLEASE REVISE STYLES WHEN POSSIBLE
+def ICC_A(X):
+    #This function is to calculate the ICC absolute agreement value for the input matrix
+    icc_mat=X.values
+
+    Count_Row=icc_mat.shape[0] #gives number of row count
+    Count_Col=icc_mat.shape[1] #gives number of col count
+
+    #ICC row mean
+    icc_row_mean=icc_mat.mean(axis=1)
+
+    #ICC column mean
+    icc_col_mean=icc_mat.mean(axis=0)
+
+    #ICC total mean
+    icc_total_mean=icc_mat.mean()
+
+    #Sum of squre row and column means
+    SSC=sum((icc_col_mean-icc_total_mean)**2)*Count_Row
+
+    SSR=sum((icc_row_mean-icc_total_mean)**2)*Count_Col
+
+    #sum of squre errors
+    SSE=0
+    for row in range(Count_Row):
+        for col in range(Count_Col):
+            SSE=SSE+(icc_mat[row,col]-icc_row_mean[row]-icc_col_mean[col]+icc_total_mean)**2
+
+    SSW = SSE + SSC
+    MSR = SSR / (Count_Row-1)
+    MSE = SSE / ((Count_Row-1)*(Count_Col-1))
+    MSC = SSC / (Count_Col-1)
+    MSW = SSW / (Count_Row*(Count_Col-1))
+    ICC_A = (MSR - MSE) / (MSR + (Count_Col-1)*MSE + Count_Col*(MSC-MSE)/Count_Row)
+    return ICC_A
+
+
+def Max_CV(X):
+    #This function is to estimate the maximum CV of all chips' measurements through time (row)
+    if X.isnull().sum().sum()>0:
+        Y=Matrix_Fill(X)
+    else:
+        Y=X
+    icc_mat=Y.values
+    a_count=Y.shape[0]
+    CV_Array=pd.DataFrame(index=Y.index,columns=['CV (%)'])
+    for row in range(a_count):
+        if np.std(icc_mat[row,:])>0:
+            CV_Array.iloc[row][0]=np.std(icc_mat[row,:],ddof=1)/np.mean(icc_mat[row,:])*100.0
+        else:
+            CV_Array.iloc[row][0]=0
+    #Calculate Max CV
+    Max_CV = CV_Array.max(axis=0)
+    return Max_CV
+
+
+def CV_Array(X):
+    #This fuction is to calculate the CVs on every time point
+    if X.isnull().sum().sum()>0:
+        Y=Matrix_Fill(X)
+    else:
+        Y=X
+    icc_mat=Y.values
+    #This fuction is to calculate the CVs on every time point
+    a_count=Y.shape[0]
+    CV_Array=pd.DataFrame(index=Y.index,columns=['CV (%)'])
+    for row in range(a_count):
+        if np.std(icc_mat[row,:])>0:
+            CV_Array.iloc[row][0]=np.std(icc_mat[row,:],ddof=1)/np.mean(icc_mat[row,:])*100.0
+        else:
+            CV_Array.iloc[row][0]=0
+    CV_Array=CV_Array.round(2)
+    return CV_Array
+
+
+def MAD_score(X):
+    #Calculate the MAD score matrix for all chips' mesurements
+    if X.isnull().sum().sum()>0:
+        Y=Matrix_Fill(X)
+    else:
+        Y=X
+    #MAD Score matrix
+    icc_mat=Y.values
+    Count_Row=icc_mat.shape[0] #gives number of row count
+    Count_Col=icc_mat.shape[1] #gives number of col count
+    mad_diff = pd.DataFrame(index=Y.index,columns=Y.columns, dtype='float') #define the empty dataframe
+    icc_median=Y.median(axis=1)
+    for row in range(Count_Row):
+        for col in range(Count_Col):
+            mad_diff.iloc[row][col]=abs(Y.iloc[row][col]-icc_median.values[row])
+
+    mad_icc=mad_diff.median(axis=1)
+    mad_score = pd.DataFrame(index=Y.index,columns=Y.columns, dtype='float') #define the empty dataframe
+    for row in range(Count_Row):
+        for col in range(Count_Col):
+            if mad_icc.values[row]>0:
+                mad_score.iloc[row][col]=0.6745*(Y.iloc[row][col]-icc_median.values[row])/mad_icc.values[row]
+            else:
+                mad_score.iloc[row][col]=0
+    mad_score=mad_score.round(2)
+    return mad_score
+
+
+def chip_med_comp_ICC(X):
+    #This fuction calculates the ICC absolute agreement table by comparing each chip mesurements with the median
+    #of all chips' measurements. Also report the missing points for each chip
+    if X.isnull().sum().sum()>0:
+        Y=Matrix_Fill(X)
+    else:
+        Y=X
+    icc_mat=Y.values
+    Count_Col=icc_mat.shape[1] #gives number of column count
+    col_index=Y.columns
+    df_missing=X.isnull().sum(axis=0)
+    #define ICC list dataframe
+    icc_comp_value=pd.DataFrame(index=range(Count_Col),columns=['Chip ID','ICC Absolute Agreement','Missing Data Points'])
+    icc_median=Y.median(axis=1)
+    for col in range(Count_Col):
+        df=pd.DataFrame(Y,columns=[col_index[col]])
+        icc_comp_mat=pd.concat([icc_median, df], join='outer', axis=1)
+        icc_comp_value.iloc[col][0]=col_index[col]
+        icc_comp_value.iloc[col][1]=ICC_A(icc_comp_mat)
+        icc_comp_value.iloc[col][2]=df_missing[col]
+    icc_comp_value['ICC Absolute Agreement']=icc_comp_value['ICC Absolute Agreement'].apply(lambda x: round(x,2))
+    return icc_comp_value
+
+
+def Matrix_Fill(X):
+    #This function fill the missing data points by average data through time (row)
+    missing_stat= X.isnull()
+    row_mean=X.mean(axis=1)
+    icc_mat=X.values
+    Count_Row=icc_mat.shape[0] #gives number of row count
+    Count_Col=icc_mat.shape[1] #gives number of col count
+    fill_mat = pd.DataFrame(index=X.index,columns=X.columns, dtype='float') #define the empty dataframe
+    for row in range(Count_Row):
+        for col in range(Count_Col):
+            if missing_stat.iloc[row][col] == True:
+               fill_mat.iloc[row][col]=row_mean.values[row]
+            else:
+                fill_mat.iloc[row][col]=X.iloc[row][col]
+
+    return fill_mat
+
+
+def Reproducibility_Index(X):
+    #This function is to calculate the Max CV and ICC absolute agreement data table
+    if X.isnull().sum().sum()>0:
+        Y=Matrix_Fill(X)
+    else:
+        Y=X
+    Max_CV_value=Max_CV(Y) #Call Max CV function
+    ICC_Value=ICC_A(Y) #Call ICC function
+    #Create a reproducibility index dataframe
+    rep_index=pd.DataFrame(index=range(1),columns=['Max CV','ICC Absolute Agreement'], dtype='float') #define the empty dataframe
+    rep_index.iloc[0][0]=Max_CV_value
+    rep_index.iloc[0][1]=ICC_Value
+    rep_index=rep_index.round(2)
+    return rep_index
+
+
+def Single_Time_Reproducibility_Index(X):
+    #This function is to calculate the CV, mean, Median and standard deviation for evaluate the reproducibility of single
+    #time measurements
+    rep_mean=X.mean(axis=1)
+    rep_sd=X.std(axis=1,ddof=1)
+    rep_med=X.median(axis=1)
+    rep_index=pd.DataFrame(index=range(1),columns=['CV','Mean','Standard Deviation','Median'], dtype='float')
+    if rep_sd.iloc[0] > 0:
+        rep_index.iloc[0][0]=X.std(axis=1,ddof=1)/X.mean(axis=1)*100
+
+    rep_index.iloc[0][1]=rep_mean
+    rep_index.iloc[0][2]=rep_sd
+    rep_index.iloc[0][3]=rep_med
+    rep_index=rep_index.round(2)
+    return rep_index
+
+def Reproducibility_Report(study_data):
+    #Calculate and report the reproducibility index and status and other parameters
+     #Select unique group rows by study, organ model,sample location, assay and unit
+    #Drop null value rows
+    study_data= study_data.dropna(subset=['Value'])
+    #Define the Chip ID column to string type
+    study_data[['Chip ID']] = study_data[['Chip ID']].astype(str)
+
+    study_group=study_data[["Organ Model","Cells","Compound Treatment(s)","Target/Analyte","Method/Kit","Sample Location","Value Unit"]]
+    study_unique_group=study_group.drop_duplicates()
+    study_unique_group.set_index([range(study_unique_group.shape[0])],drop=True, append=False, inplace=True)
+
+    #create reproducibility report table
+    reproducibility_results_table=study_unique_group
+    header_list=study_unique_group.columns.values.tolist()
+    header_list.append('Max CV')
+    header_list.append('ICC Absolute Agreement')
+    header_list.append('Reproducibility Status')
+    header_list.append('Replicate Set')
+    header_list.append('# of Chips/Wells')
+    header_list.append('# of Time Points')
+    header_list.append('Reproducibility Note')
+
+    #Define all columns of reproducibility report table
+    reproducibility_results_table = reproducibility_results_table.reindex(columns = header_list)
+    #Loop every unique replicate group
+    group_count=len(study_unique_group.index)
+    for row in range(group_count):
+        rep_matrix=study_data[study_data['Organ Model']==study_unique_group['Organ Model'][row]]
+        rep_matrix=rep_matrix[rep_matrix['Cells']==study_unique_group['Cells'][row]]
+        rep_matrix=rep_matrix[rep_matrix['Compound Treatment(s)']==study_unique_group['Compound Treatment(s)'][row]]
+        rep_matrix=rep_matrix[rep_matrix['Target/Analyte']==study_unique_group['Target/Analyte'][row]]
+        rep_matrix=rep_matrix[rep_matrix['Method/Kit']==study_unique_group['Method/Kit'][row]]
+        rep_matrix=rep_matrix[rep_matrix['Sample Location']==study_unique_group['Sample Location'][row]]
+        rep_matrix=rep_matrix[rep_matrix['Value Unit']==study_unique_group['Value Unit'][row]]
+        #create replicate matrix for intra reproducibility analysis
+        icc_pivot = pd.pivot_table(rep_matrix, values='Value', index='Time (day)',columns=['Chip ID'], aggfunc=np.mean)
+        group_id = str(row+1) #Define group ID
+
+        reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Replicate Set')] = group_id
+        reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('# of Chips/Wells')] = icc_pivot.shape[1]
+        reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('# of Time Points')] = icc_pivot.shape[0]
+
+        # Check all coulmns are redundent
+        if icc_pivot.shape[1]>2 and all(icc_pivot.eq(icc_pivot.iloc[:, 0], axis=0).all(1)):
+            reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='NA'
+            reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Note')] ='Duplicate data on chips/wells'
+        elif icc_pivot.shape[0]>1 and all(icc_pivot.eq(icc_pivot.iloc[0, :], axis=1).all(1)):
+            reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='NA'
+            reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Note')] ='Duplicate data on all time points'
+        else:
+            if icc_pivot.shape[0]>1 and icc_pivot.shape[1]>2:
+                #Call a chip time series reproducibility index dataframe
+                rep_index=Reproducibility_Index(icc_pivot)
+                if pd.isnull(rep_index.iloc[0][0]) != True:
+                    reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Max CV')] =rep_index.iloc[0][0]
+                    reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('ICC Absolute Agreement')] =rep_index.iloc[0][1]
+
+                    if rep_index.iloc[0][0] <= 15 and rep_index.iloc[0][0] >0:
+                        if rep_index.iloc[0][0] <= 5:
+                            reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Excellent (CV)'
+                        elif rep_index.iloc[0][1] >= 0.8:
+                            reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Status')] = 'Excellent (ICC)'
+                        else:
+                            reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Acceptable (CV)'
+                    else:
+                        if rep_index.iloc[0][1] >= 0.8:
+                            reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Excellent (ICC)'
+                        elif rep_index.iloc[0][1] >= 0.2:
+                            reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Acceptable (ICC)'
+                        else:
+                            reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Poor (ICC)'
+                else:
+                    reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='NA'
+            elif icc_pivot.shape[0]<2 and icc_pivot.shape[1]>2:
+                 #Call a single time reproducibility index dataframe
+                rep_index=Single_Time_Reproducibility_Index(icc_pivot)
+                reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Max CV')] =rep_index.iloc[0][0]
+                if rep_index.iloc[0][0] <= 5 and rep_index.iloc[0][0] > 0:
+                    reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Excellent (CV)'
+                elif rep_index.iloc[0][0] <= 15 and rep_index.iloc[0][0] > 5:
+                    reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Acceptable (CV)'
+                elif rep_index.iloc[0][0] > 15:
+                    reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Poor (CV)'
+                elif rep_index.iloc[0][0] < 0:
+                    reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='NA'
+                    reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Note')] ='CV cannot be calculated from negative data.'
+                else:
+                    reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='NA'
+            else:
+                reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='NA'
+                reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Reproducibility Note')] ='Insufficient replicate chips/wells to calculate reproducibility. At least 3 replicates are needed.'
+            reproducibility_results_table=reproducibility_results_table.round(2)
+    return reproducibility_results_table
+
+def study_group_setting(study_unique_group,row):
+    group_setting=pd.DataFrame(index=range(study_unique_group.shape[1]),columns=['Replicate Set Parameters','Setting'])
+    for i in range(study_unique_group.shape[1]):
+        group_setting.iloc[i][0]=study_unique_group.columns.tolist()[i]
+
+    for i in range(study_unique_group.shape[1]):
+        group_setting.iloc[i][1]=study_unique_group.iloc[row][i]
+    return group_setting
+
+
+def pivot_data_matrix(study_data,group_index):
+    #Drop null value rows
+    study_data= study_data.dropna(subset=['Value'])
+    #Define the Chip ID column to string type
+    study_data[['Chip ID']] = study_data[['Chip ID']].astype(str)
+    row=group_index
+    study_group=study_data[["Organ Model","Cells","Compound Treatment(s)","Target/Analyte","Method/Kit","Sample Location","Value Unit"]]
+    study_unique_group=study_group.drop_duplicates()
+    study_unique_group.set_index([range(study_unique_group.shape[0])],drop=True, append=False, inplace=True)
+    rep_matrix=study_data[study_data['Organ Model']==study_unique_group['Organ Model'][row]]
+    rep_matrix=rep_matrix[rep_matrix['Cells']==study_unique_group['Cells'][row]]
+    rep_matrix=rep_matrix[rep_matrix['Compound Treatment(s)']==study_unique_group['Compound Treatment(s)'][row]]
+    rep_matrix=rep_matrix[rep_matrix['Target/Analyte']==study_unique_group['Target/Analyte'][row]]
+    rep_matrix=rep_matrix[rep_matrix['Method/Kit']==study_unique_group['Method/Kit'][row]]
+    rep_matrix=rep_matrix[rep_matrix['Sample Location']==study_unique_group['Sample Location'][row]]
+    rep_matrix=rep_matrix[rep_matrix['Value Unit']==study_unique_group['Value Unit'][row]]
+    #create replicate matrix for intra reproducibility analysis
+    icc_pivot = pd.pivot_table(rep_matrix, values='Value', index='Time (day)',columns=['Chip ID'], aggfunc=np.mean)
+    return icc_pivot
+
+
+def scatter_plot_matrix(study_data,group_index):
+    #Drop null value rows
+    study_data= study_data.dropna(subset=['Value'])
+    #Define the Chip ID column to string type
+    study_data[['Chip ID']] = study_data[['Chip ID']].astype(str)
+    row=group_index
+    study_group=study_data[["Organ Model","Cells","Compound Treatment(s)","Target/Analyte","Method/Kit","Sample Location","Value Unit"]]
+    study_unique_group=study_group.drop_duplicates()
+    study_unique_group.set_index([range(study_unique_group.shape[0])],drop=True, append=False, inplace=True)
+    rep_matrix=study_data[study_data['Organ Model']==study_unique_group['Organ Model'][row]]
+    rep_matrix=rep_matrix[rep_matrix['Cells']==study_unique_group['Cells'][row]]
+    rep_matrix=rep_matrix[rep_matrix['Compound Treatment(s)']==study_unique_group['Compound Treatment(s)'][row]]
+    rep_matrix=rep_matrix[rep_matrix['Target/Analyte']==study_unique_group['Target/Analyte'][row]]
+    rep_matrix=rep_matrix[rep_matrix['Method/Kit']==study_unique_group['Method/Kit'][row]]
+    rep_matrix=rep_matrix[rep_matrix['Sample Location']==study_unique_group['Sample Location'][row]]
+    rep_matrix=rep_matrix[rep_matrix['Value Unit']==study_unique_group['Value Unit'][row]]
+    #create replicate matrix for intra reproducibility analysis
+    icc_pivot = pd.pivot_table(rep_matrix, values='Value', index='Time (day)',columns=['Chip ID'], aggfunc=np.mean)
+    if icc_pivot.isnull().sum().sum()>0:
+        Y=Matrix_Fill(icc_pivot)
+    else:
+        Y=icc_pivot
+    d_median = Y.median(axis=1)
+    plot_matrix=icc_pivot
+    plot_header_list=plot_matrix.columns.values.tolist()
+    plot_header_list.insert(0, 'Median')
+    plot_matrix = plot_matrix.reindex(columns = plot_header_list)
+    for i in range(len(d_median)):
+        plot_matrix.iloc[i, plot_matrix.columns.get_loc('Median')] = d_median.iloc[i]
+
+    return plot_matrix
+
+
+def get_repro_data(datafile):
+    #Load the summary data into the dataframe
+    study_data = pd.DataFrame(datafile)
+    study_data.columns = study_data.iloc[0]
+    study_data = study_data.drop(study_data.index[0])
+    #Drop null value rows
+    study_data['Value'].replace('', np.nan, inplace=True)
+    study_data= study_data.dropna(subset=['Value'])
+    study_data['Value'] = study_data['Value'].astype(float)
+    #Define the Chip ID column to string type
+    study_data[['Chip ID']] = study_data['Chip ID'].astype(str)
+
+    #Add Time (day) calculated from three time column
+    study_data["Time (day)"] = study_data["Day"] + study_data["Hour"]/24.0+study_data["Minute"]/24.0/60.0
+    study_data["Time (day)"] = study_data["Time (day)"].apply(lambda x: round(x,2))
+
+    #Select unique group rows by study, organ model,sample location, assay and unit
+    study_group=study_data[["Organ Model","Cells","Compound Treatment(s)","Target/Analyte","Method/Kit","Sample Location","Value Unit"]]
+    study_unique_group=study_group.drop_duplicates()
+    study_unique_group.set_index([range(study_unique_group.shape[0])],drop=True, append=False, inplace=True)
+
+    #create reproducibility report table
+    reproducibility_results_table=Reproducibility_Report(study_data)
+
+    datadict = {}
+
+    #Define all columns of reproducibility report table
+    reproducibility_results_table_nanless = reproducibility_results_table.fillna('')
+    datadict['reproducibility_results_table'] = reproducibility_results_table_nanless.to_dict('split')
+
+    #Loop every unique replicate group
+    group_count=len(study_unique_group.index)
+
+    for row in range(group_count):
+        datadict[row] = {}
+
+        group_id = str(row+1) #Define group ID
+
+        icc_pivot = pivot_data_matrix(study_data,row)
+
+        #Call MAD score function
+        mad_score_matrix=MAD_score(icc_pivot)#.round(2)
+        datadict[row]['mad_score_matrix'] = mad_score_matrix.to_dict('split')
+
+        cv_chart=scatter_plot_matrix(study_data,row).fillna('')
+        datadict[row]['cv_chart'] = cv_chart.to_dict('split')
+
+        if icc_pivot.shape[0]>1 and all(icc_pivot.eq(icc_pivot.iloc[0, :], axis=1).all(1)):
+            CV_array= CV_Array(icc_pivot).round(2).fillna('')
+            datadict[row]['CV_array'] = CV_array.to_dict('split')
+
+        elif icc_pivot.shape[0]>1 and icc_pivot.shape[1]>1:
+            #Call ICC values by Comparing each chip's observations with the Median of the Chip Observations
+            comp_ICC_Value=chip_med_comp_ICC(icc_pivot).fillna('').round(2)
+            datadict[row]['comp_ICC_Value'] = comp_ICC_Value.to_dict('list')
+            #Call calculated CV array for all time points
+            CV_array = CV_Array(icc_pivot).round(2).fillna('')
+            datadict[row]['CV_array'] = CV_array.to_dict('split')
+            #Call a chip time series reproducibility index dataframe
+            rep_index=Reproducibility_Index(icc_pivot).round(2)
+            datadict[row]['rep_index'] = rep_index.to_dict('list')
+        elif icc_pivot.shape[1]>1:
+            #Call a single time reproducibility index dataframe
+            rep_index=Single_Time_Reproducibility_Index(icc_pivot).round(2)
+            datadict[row]['rep_index'] = rep_index.to_dict('list')
+        group_index=study_group_setting(study_unique_group,row)
+
+    return datadict

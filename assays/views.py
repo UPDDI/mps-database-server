@@ -3020,3 +3020,10 @@ class ReturnStudyData(StudyViewershipMixin, DetailView):
         # Return nothing otherwise
         else:
             return HttpResponse('', content_type='text/plain')
+
+
+class AssayRunReproducibility(StudyViewershipMixin, DetailView):
+    """Returns a form and processed statistical information. """
+
+    model = AssayRun
+    template_name = 'assays/reproducibility.html'

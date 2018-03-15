@@ -38,31 +38,23 @@
                     {% if user_is_group_editor and not object.signed_off_by %}
                         <a href="update" class="btn btn-primary" role="button">Edit This Study</a>
                     {% endif %}
+                    <a href="reproducibility" class="btn btn-primary" role="button">View Reproducibility for this Study</a>
                     <a href="summary" class="btn btn-info" role="button">Study Summary</a>
                 </div>
-                {% if not user_is_group_admin and user_is_group_editor and not object.signed_off_by %}
                 <div>
-                    <a id="indicate_study_is_ready_for_sign_off" class="btn btn-success" role="button">Indicate Study is Ready for Sign Off</a>
+                    {% if not user_is_group_admin and user_is_group_editor and not object.signed_off_by %}
+                        <a id="indicate_study_is_ready_for_sign_off" class="btn btn-success" role="button">Indicate Study is Ready for Sign Off</a>
+                    {% endif %}
+                    {% if user_is_stakeholder_admin %}
+                        <a href="sign_off" class="btn btn-success" role="button">View/Edit Approval Status of this Study</a>
+                    {% endif %}
+                    {% if user_is_group_admin %}
+                        <a href="sign_off" class="btn btn-success" role="button">View/Edit Sign Off Status of this Study</a>
+                    {% endif %}
+                    {% if user.is_superuser %}
+                        <a href="/admin/assays/assayrun/{{ object.id }}" class="btn btn-success" role="button">Change Group Access for this Study</a>
+                    {% endif %}
                 </div>
-                {% endif %}
-
-                {% if user_is_group_admin %}
-                <div>
-                    <a href="sign_off" class="btn btn-success" role="button">View/Edit Sign Off Status of this Study</a>
-                </div>
-                {% endif %}
-
-                {% if user_is_stakeholder_admin %}
-                <div>
-                    <a href="sign_off" class="btn btn-success" role="button">View/Edit Approval Status of this Study</a>
-                </div>
-                {% endif %}
-
-                {% if user.is_superuser %}
-                <div>
-                    <a href="/admin/assays/assayrun/{{ object.id }}" class="btn btn-success" role="button">Change Group Access for this Study</a>
-                </div>
-                {% endif %}
             </h1>
         </div>
 
