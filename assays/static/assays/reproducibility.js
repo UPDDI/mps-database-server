@@ -90,13 +90,13 @@ $(document).ready(function () {
         ],
         "order": [[ 1, "asc" ]],
         "createdRow": function( row, data, dataIndex ) {
-            if ( data[9][0] == "E" ) {
+            if ( data[9][0] === "E" ) {
                 $( row ).find('td:eq(10)').css( "background-color", "#74ff5b" ).css( "font-weight", "bold"  );
             }
-            else if ( data[9][0] == "A" ) {
+            else if ( data[9][0] === "A" ) {
                 $( row ).find('td:eq(10)').css( "background-color", "#fcfa8d" ).css( "font-weight", "bold"  );
             }
-            else if ( data[9][0] == "P" ) {
+            else if ( data[9][0] === "P" ) {
                 $( row ).find('td:eq(10)').css( "background-color", "#ff7863" ).css( "font-weight", "bold" );
             }
             else {
@@ -138,10 +138,14 @@ $(document).ready(function () {
             $clone.find('#chart2').attr('id', 'chart2-'+counter);
             $clone.find('#mad-score-label').append(mad_tooltip);
             $clone.find('#med-comp-label').append(comp_tooltip);
-            if (icc_status === 'NA') {
-                $clone.find('#repro-status').html('<em>'+icc_status+'</em><small style="color: black;"><span data-toggle="tooltip" title="'+data[13]+'" class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></small>');
+            if (icc_status[0] === 'E'){
+                $clone.find('#repro-status').html('<em>'+icc_status+'</em>').css("background-color", "#74ff5b");
+            } else if (icc_status[0] === 'A'){
+                $clone.find('#repro-status').html('<em>'+icc_status+'</em>').css("background-color", "#fcfa8d");
+            } else if (icc_status[0] === 'P'){
+                $clone.find('#repro-status').html('<em>'+icc_status+'</em>').css("background-color", "#ff7863");
             } else {
-                $clone.find('#repro-status').html('<em>'+icc_status+'</em>');
+                $clone.find('#repro-status').html('<em>'+icc_status+'</em><small style="color: black;"><span data-toggle="tooltip" title="'+data[13]+'" class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></small>').css("background-color", "Grey");
             }
             $clone.find('#mad-score-matrix').DataTable( {
                 columns: mad_columns(counter),
@@ -282,7 +286,7 @@ $(document).ready(function () {
     }
 
     function buildSelectionParameters(studyId, organModel, targetAnalyte, methodKit, sampleLocation, compoundTreatments, valueUnit){
-        content = '<tr><th>Study ID</th><td>'+studyId+'</td></tr><tr><th>Organ Model</th><td>'+organModel+'</td></tr><tr><th>Target/Analyte</th><td id="target-analyte-value">'+targetAnalyte+'</td></tr><tr><th>Method/Kit</th><td>'+methodKit+'</td></tr><tr><th>Sample Location</th><td>'+sampleLocation+'</td></tr><tr><th>Compound Treatment(s)</th><td>'+compoundTreatments+'</td></tr><tr><th>Value Unit</th><td>'+valueUnit+'</td></tr>'
+        content = '<tr><th>Study ID</th><td>'+studyId+'</td></tr><tr><th>Organ Model</th><td>'+organModel+'</td></tr><tr><th>Target/Analyte</th><td id="target-analyte-value">'+targetAnalyte+'</td></tr><tr><th>Method/Kit</th><td>'+methodKit+'</td></tr><tr><th>Sample Location</th><td>'+sampleLocation+'</td></tr><tr><th>Compound Treatment(s)</th><td>'+compoundTreatments+'</td></tr><tr><th>Value Unit</th><td id="value-unit">'+valueUnit+'</td></tr>'
         return content;
     }
 
@@ -303,13 +307,14 @@ $(document).ready(function () {
             //console.log("Showing Table " + number);
             reproTable.removeClass('hidden');
             var axisLabel = reproTable.find('#target-analyte-value').text();
+            var valueUnit = reproTable.find('#value-unit').text();
             $(document).find(".repro-goto-"+number).removeClass('hidden');
             if (reproTable.find('#mad-score-matrix').width() > 500) {
                 reproTable.find('#mad-score-matrix').parent().parent().removeClass('col-md-6');
                 reproTable.find('#mad-score-matrix').parent().parent().addClass('col-xs-12');
                 reproTable.find('#chip-comp-med').parent().parent().detach().appendTo(reproTable.find('#overflow'));
             }
-            drawChart('chip_list', number, 'Chip Values/Time', 'chart1-', axisLabel, false);
+            drawChart('chip_list', number, 'Chip Values/Time', 'chart1-', axisLabel + "\n" + valueUnit, false);
             drawChart('cv_list', number, 'CV(%)/Time', 'chart2-', 'CV(%)', true);
         } else {
             reproTable.addClass('hidden')
