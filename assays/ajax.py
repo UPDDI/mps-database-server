@@ -413,10 +413,10 @@ def get_chip_readout_data_as_list_of_lists(chip_ids, chip_data=None, both_assay_
             'assay_instance__unit',
             'assay_chip_id__chip_setup__device',
             'assay_chip_id__chip_setup__organ_model',
-            'assay_chip_id__chip_setup__assaycompoundinstance_set__compound_instance__compound',
-            'assay_chip_id__chip_setup__assaycompoundinstance_set__concentration_unit',
-            'assay_chip_id__chip_setup__assaychipcells_set__cell_sample__cell_type__organ',
-            'assay_chip_id__chip_setup__assaychipcells_set__cell_sample__cell_subtype',
+            # 'assay_chip_id__chip_setup__assaycompoundinstance_set__compound_instance__compound',
+            # 'assay_chip_id__chip_setup__assaycompoundinstance_set__concentration_unit',
+            # 'assay_chip_id__chip_setup__assaychipcells_set__cell_sample__cell_type__organ',
+            # 'assay_chip_id__chip_setup__assaychipcells_set__cell_sample__cell_subtype',
             'sample_location'
         ).filter(
             assay_chip_id__in=chip_ids
@@ -433,6 +433,22 @@ def get_chip_readout_data_as_list_of_lists(chip_ids, chip_data=None, both_assay_
         )
 
         # related_compounds_map = get_related_compounds_map(readouts=chip_ids)
+
+    related_maps = {}
+    chip_ids = chip_ids.prefetch_related(
+        'chip_setup__assaycompoundinstance_set__compound_instance__compound',
+        'chip_setup__assaycompoundinstance_set__concentration_unit',
+        'chip_setup__assaychipcells_set__cell_sample__cell_type__organ',
+        'chip_setup__assaychipcells_set__cell_sample__cell_subtype',
+    )
+
+    for chip in chip_ids:
+        related_maps.update({
+            chip.chip_setup_id: {
+                'compounds': chip.chip_setup.stringify_compounds(),
+                'cells': chip.chip_setup.stringify_cells()
+            }
+        })
 
     data = []
 
@@ -463,10 +479,12 @@ def get_chip_readout_data_as_list_of_lists(chip_ids, chip_data=None, both_assay_
         device = data_point.assay_chip_id.chip_setup.device.device_name
         organ_model = data_point.assay_chip_id.chip_setup.organ_model
 
-        cells = data_point.assay_chip_id.chip_setup.stringify_cells()
+        # cells = data_point.assay_chip_id.chip_setup.stringify_cells()
+        cells = related_maps.get(data_point.assay_chip_id.chip_setup_id).get('cells')
 
         # compound_treatment = get_list_of_present_compounds(related_compounds_map, data_point, ' | ')
-        compound_treatment = data_point.assay_chip_id.chip_setup.stringify_compounds()
+        # compound_treatment = data_point.assay_chip_id.chip_setup.stringify_compounds()
+        compound_treatment = related_maps.get(data_point.assay_chip_id.chip_setup_id).get('compounds')
 
         value = data_point.value
 

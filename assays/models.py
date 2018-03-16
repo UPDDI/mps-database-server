@@ -246,13 +246,9 @@ class AssayCompoundInstance(models.Model):
             )
         ]
 
-        # ordering = (
-        #     'compound_instance',
-        #     'concentration',
-        #     'concentration_unit',
-        #     'addition_time',
-        #     'duration'
-        # )
+        ordering = (
+            'addition_time',
+        )
 
     # Stop-gap, subject to change
     chip_setup = models.ForeignKey('assays.AssayChipSetup', null=True, blank=True)
