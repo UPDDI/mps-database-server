@@ -85,7 +85,7 @@ $(document).ready(function () {
             }},
             { title: "# of Chips/Wells", data: '11' },
             { title: "# of Time Points", data: '12' },
-            { title: "Cells", data: '1'},
+            { title: "Cells", data: '1', 'className': 'none'},
             { title: "NA Explanation", data: '13', visible: false, 'name': 'naText' }
         ],
         "order": [[ 1, "asc" ]],
@@ -104,7 +104,7 @@ $(document).ready(function () {
             }
         },
         "responsive": true,
-        dom: 'B<"row">frtip',
+        dom: 'B<"row">lfrtip',
         fixedHeader: {headerOffset: 50},
         deferRender: true,
         initComplete: function () {
