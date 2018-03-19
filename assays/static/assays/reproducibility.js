@@ -59,7 +59,7 @@ $(document).ready(function () {
             },
             "sortable": false
             },
-            { title: "Set#", data: '10', type: "num" },
+            { title: "Set", data: '10', type: "num" },
             { title: "Organ Model", data: '0' },
             { title: "<span style='white-space: nowrap;'>Full Compound<br>Treatment(s)</span>", data: '2', className: 'none',
                 render:function (data, type, row, meta) {
@@ -88,7 +88,7 @@ $(document).ready(function () {
             { title: "Sample Location", data: '5', width: '8%' },
             { title: "Value Unit", data: '6' },
             { title: "<span style='white-space: nowrap;'>Max CV<br>or CV "+cv_tooltip+"</span>", data: '7' },
-            { title: "<span style='white-space: nowrap;'>ICC"+icc_tooltip+"</span>", data: '8' },
+            { title: "<span style='white-space: nowrap;'>ICC "+icc_tooltip+"</span>", data: '8' },
             { title: "Reproducibility<br>Status "+repro_tooltip, data: '9', render: function(data, type, row, meta) {
                 if (data == "Excellent (ICC)" || data == "Excellent (CV)"){
                     return '<td><span class="hidden">3</span>'+data+'</td>';
