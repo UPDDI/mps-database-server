@@ -857,14 +857,14 @@ cell_choice_dict = {
 class AssayChipCells(models.Model):
     """Individual cell parameters for CHIP setup used in inline"""
 
-    # class Meta(object):
-    #     ordering = (
-    #         'cell_sample',
-    #         'cell_biosensor',
-    #         'cellsample_density',
-    #         'cellsample_density_unit',
-    #         'cell_passage'
-    #     )
+    class Meta(object):
+        ordering = (
+            'cell_sample',
+            'cell_biosensor',
+            'cellsample_density',
+            'cellsample_density_unit',
+            'cell_passage'
+        )
 
     assay_chip = models.ForeignKey('AssayChipSetup')
     cell_sample = models.ForeignKey('cellsamples.CellSample')
