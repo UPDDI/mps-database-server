@@ -63,7 +63,7 @@ $(document).ready(function () {
             { title: "Organ Model", data: '0' },
             { title: "<span style='white-space: nowrap;'>Full Compound<br>Treatment(s)</span>", data: '2', className: 'none',
                 render:function (data, type, row, meta) {
-                    return data.replace(/\n/g, '<br>');
+                    return '<br>' + data.replace(/\n/g, '<br>');
                 }
             },
             { title: "<span style='white-space: nowrap;'>Compound<br>Treatment(s)</span>", data: '2',
