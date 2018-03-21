@@ -59,7 +59,7 @@ def modify_templates():
     template_root = MEDIA_ROOT + '/excel_templates/'
 
     version = 1
-    version += len(os.listdir(template_root)) / 3
+    version += len(os.listdir(template_root))
     version = str(version)
 
     chip = xlsxwriter.Workbook(template_root + 'chip_template-' + version + '.xlsx')

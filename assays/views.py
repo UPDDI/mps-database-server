@@ -2941,7 +2941,7 @@ class ReadoutBulkUpload(ObjectGroupRequiredMixin, UpdateView):
         context['chip_has_data'] = chip_has_data
         context['plate_has_data'] = plate_has_data
 
-        context['version'] = len(os.listdir(MEDIA_ROOT + '/excel_templates/')) / 3
+        context['version'] = len(os.listdir(MEDIA_ROOT + '/excel_templates/'))
 
         return context
 

@@ -110,7 +110,7 @@ def custom_search(request):
 def mps_help(request):
     c = RequestContext(request)
     # Add version for templates
-    c['version'] = len(os.listdir(MEDIA_ROOT + '/excel_templates/')) / 3
+    c['version'] = len(os.listdir(MEDIA_ROOT + '/excel_templates/'))
     # Get glossary
     c['glossary'] = Definition.objects.exclude(definition='')
 
