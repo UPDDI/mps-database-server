@@ -105,7 +105,7 @@ $(document).ready(function () {
             { title: "Cells", data: '1', 'className': 'none'},
             { title: "NA Explanation", data: '13', visible: false, 'name': 'naText' }
         ],
-        "order": [[ 1, "asc" ]],
+        "order": [[11, 'desc'], [ 1, "asc" ]],
         "createdRow": function( row, data, dataIndex ) {
             if ( data[9][0] === "E" ) {
                 $( row ).find('td:eq(11)').css( "background-color", "#74ff5b" ).css( "font-weight", "bold"  );
