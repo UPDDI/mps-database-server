@@ -1418,6 +1418,11 @@ class AssayRunFormAdmin(forms.ModelForm):
             raise forms.ValidationError('Error with assay_run_id; please try again')
 
 
+class AssayInstanceInline(admin.TabularInline):
+    model = AssayInstance
+    exclude = []
+
+
 class StudySupportingDataInline(admin.TabularInline):
     """Inline for Studies"""
     model = StudySupportingData
@@ -1513,7 +1518,7 @@ class AssayRunAdmin(LockableAdmin):
         ),
     )
 
-    inlines = [AssayRunStakeholderInline, StudySupportingDataInline]
+    inlines = [AssayInstanceInline, AssayRunStakeholderInline, StudySupportingDataInline]
 
     # TODO ADD EMAILS FOR CHANGING SIGN OFF (of study and stake holders) AND ACCESS GROUPS
     # def save_model(self, request, obj, form, change):
