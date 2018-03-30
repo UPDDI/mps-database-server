@@ -248,6 +248,10 @@ class AssayCompoundInstance(models.Model):
 
         ordering = (
             'addition_time',
+            'compound_instance_id',
+            'concentration_unit_id',
+            'concentration',
+            'duration',
         )
 
     # Stop-gap, subject to change
@@ -859,8 +863,8 @@ class AssayChipCells(models.Model):
 
     class Meta(object):
         ordering = (
-            'cell_sample',
-            'cell_biosensor',
+            'cell_sample_id',
+            'cell_biosensor_id',
             'cellsample_density',
             'cellsample_density_unit',
             'cell_passage'
