@@ -1466,7 +1466,14 @@ class AssayRunAdmin(LockableAdmin):
     list_per_page = 300
     search_fields = ('assay_run_id', 'start_date', 'description')
     date_hierarchy = 'start_date'
-    list_display = ('assay_run_id', 'study_types', 'start_date', 'description',)
+    list_display = (
+        'assay_run_id',
+        # 'study_types',
+        # 'start_date',
+        'stakeholder_display',
+        'access_group_display',
+        'description',
+    )
 
     filter_horizontal = ('access_groups',)
 
@@ -1531,6 +1538,61 @@ class AssayRunAdmin(LockableAdmin):
     #     else:
     #         obj.modified_by = obj.created_by = request.user
     #         obj.save()
+
+    def get_queryset(self, request):
+        qs = super(AssayRunAdmin, self).get_queryset(request)
+        qs = qs.prefetch_related(
+            'access_groups',
+            'assayrunstakeholder_set__group'
+        )
+        return qs
+
+    def stakeholder_display(self, obj):
+        contents = u''
+        trigger = u''
+        queryset = obj.assayrunstakeholder_set.all()
+        count = queryset.count()
+        released = True
+
+        if count:
+            stakes = []
+            for stakeholder in queryset.order_by('group__name'):
+                if not stakeholder.signed_off_by:
+                    released = False
+                stakes.append(u'{0} Approved?: {1}'.format(stakeholder.group.name, stakeholder.signed_off_by))
+
+            contents = u'<br>'.join(stakes)
+
+            if released:
+                released = 'Approved!'
+            else:
+                released = ''
+
+            trigger = u'<a href="javascript:void(0)" onclick=$("#stakes_{0}").toggle()>Show/Hide Stakeholders ({1}) {2}</a>'.format(
+                obj.pk, count, released
+            )
+        return u'{0}<div hidden id="stakes_{1}">{2}</div>'.format(trigger, obj.pk, contents)
+
+    stakeholder_display.allow_tags = True
+
+    def access_group_display(self, obj):
+        contents = u''
+        trigger = u''
+        queryset = obj.access_groups.all()
+        count = queryset.count()
+
+        if count:
+            contents = u'<br>'.join(
+                [
+                    group.name for group in queryset.order_by('name')
+                ]
+            )
+            trigger = u'<a href="javascript:void(0)" onclick=$("#access_{0}").toggle()>Show/Hide Access Groups ({1})</a>'.format(
+                obj.pk, count
+            )
+        return u'{0}<div hidden id="access_{1}">{2}</div>'.format(trigger, obj.pk, contents)
+
+    access_group_display.allow_tags = True
 
     # save_related takes the place of save_model so that the inline can be referred to
     # TODO TODO TODO THIS IS NOT VERY DRY
