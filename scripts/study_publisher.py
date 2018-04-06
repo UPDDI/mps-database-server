@@ -45,12 +45,12 @@ def run():
     # Now check to see if any stakeholders need to be auto-approved!
     for study in signed_off_restricted_studies:
         # NOTE: This uses the study's last update data, NOT the time it was signed off
-        # Check if 30 days since last update
+        # Check if 17 days since last update
         # Really, this should be in the queryset filter
-        thirty_days_since_update = study.modified_on < datetime_now - timedelta(days=30)
+        seventeen_days_since_update = study.modified_on < datetime_now - timedelta(days=17)
 
         # Force approval of all stakeholders
-        if thirty_days_since_update:
+        if seventeen_days_since_update:
             current_stakeholders = AssayRunStakeholder.objects.filter(
                 # signed_off_by=None,
                 study_id=study.id
@@ -64,7 +64,7 @@ def run():
                 current_unapproved_stakeholders.update(
                     signed_off_by=auto_approval_user,
                     signed_off_date=datetime_now_local,
-                    signed_off_notes="Expiration of 30 day period"
+                    signed_off_notes="Expiration of two week period"
                 )
 
                 # Send emails

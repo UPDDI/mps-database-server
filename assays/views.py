@@ -1092,7 +1092,7 @@ class AssayRunSignOff(UpdateView):
             # Local datetime
             tz = pytz.timezone('US/Eastern')
             datetime_now_local = datetime.now(tz)
-            thirty_days_from_date = datetime_now_local + timedelta(days=30)
+            fourteen_days_from_date = datetime_now_local + timedelta(days=14)
 
             send_initial_sign_off_alert = False
             initial_number_of_required_sign_offs = AssayRunStakeholder.objects.filter(
@@ -1150,7 +1150,7 @@ class AssayRunSignOff(UpdateView):
                             {
                                 'user': user_to_be_alerted,
                                 'study': self.object,
-                                'thirty_days_from_date': thirty_days_from_date
+                                'fourteen_days_from_date': fourteen_days_from_date
                             }
                         )
                     except TemplateDoesNotExist:

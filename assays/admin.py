@@ -1601,7 +1601,7 @@ class AssayRunAdmin(LockableAdmin):
         # Local datetime
         tz = pytz.timezone('US/Eastern')
         datetime_now_local = datetime.now(tz)
-        thirty_days_from_date = datetime_now_local + timedelta(days=30)
+        fourteen_days_from_date = datetime_now_local + timedelta(days=14)
 
         initial_study = AssayRun.objects.get(pk=form.instance.id)
         initial_sign_off = initial_study.signed_off_by
@@ -1701,7 +1701,7 @@ class AssayRunAdmin(LockableAdmin):
                         {
                             'user': user_to_be_alerted,
                             'study': obj,
-                            'thirty_days_from_date': thirty_days_from_date
+                            'fourteen_days_from_date': fourteen_days_from_date
                         }
                     )
                 except TemplateDoesNotExist:
@@ -1868,7 +1868,7 @@ class AssayRunAdmin(LockableAdmin):
                         {
                             'user': user_to_be_alerted,
                             'study': obj,
-                            'thirty_days_from_date': thirty_days_from_date
+                            'fourteen_days_from_date': fourteen_days_from_date
                         }
                     )
                 except TemplateDoesNotExist:
