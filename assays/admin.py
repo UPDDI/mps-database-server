@@ -1927,7 +1927,7 @@ class AssayRunAdmin(LockableAdmin):
                 )
 
         # Special alerts for new access groups
-        if not send_viewer_alert and new_access_group_names and obj.signed_off_by:
+        if not send_viewer_alert and new_access_group_names and obj.signed_off_by and current_number_of_required_sign_offs == 0:
             matching_groups = list(set([
                 group.id for group in Group.objects.all() if
                 group.name.replace(ADMIN_SUFFIX, '').replace(VIEWER_SUFFIX, '') in new_access_group_names
