@@ -197,16 +197,6 @@ class OrganModel(LockableModel):
         return '/microdevices/model/'
 
 
-# It is somewhat odd that ValidatedAssays are inlines in lieu of a manytomany field
-# This was done originally so that additional fields could be added to a validated assay
-# If no new fields become apparent, it may be worthwhile to do away with inlines and move to M2M
-class ValidatedAssay(models.Model):
-    """Validated Assays show which assays have been approved for a particular Organ Model"""
-    # Validated assays for an organ model used in inline
-    organ_model = models.ForeignKey(OrganModel, verbose_name='Organ Model')
-    assay = models.ForeignKey('assays.AssayModel', verbose_name='Assay Model')
-
-
 class OrganModelProtocol(models.Model):
     """Organ Model Protocols point to a file detailing the preparation of a model
 

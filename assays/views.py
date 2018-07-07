@@ -89,23 +89,6 @@ import pytz
 # NOTE THAT YOU NEED TO MODIFY INLINES HERE, NOT IN FORMS
 
 
-def add_study_fields_to_form(self, form, add_study=False):
-    """Adds study, group, and restricted to a form
-
-    Params:
-    self -- the object in question
-    form -- the form to be added to
-    add_study -- boolean indicating whether to add the study to the model
-    """
-    study = get_object_or_404(AssayRun, pk=self.kwargs['study_id'])
-
-    if add_study:
-        form.instance.assay_run_id = study
-
-    form.instance.group = study.group
-    form.instance.restricted = study.restricted
-
-
 def get_data_file_uploads(study=None, matrix_item=None):
     """Get data uploads for a study"""
     valid_files = []
@@ -133,7 +116,7 @@ def get_data_file_uploads(study=None, matrix_item=None):
             replaced=True
         )
     else:
-        data_file_uploads = AssayDataUpload.objects.none()
+        data_file_uploads = AssayDataFileUpload.objects.none()
         data_points = AssayDataPoint.objects.none()
 
     # Edge case for old data
@@ -270,7 +253,6 @@ class AssayStudyConfigurationUpdate(OneGroupRequiredMixin, UpdateView):
             return self.render_to_response(self.get_context_data(form=form, formset=formset))
 
 
-# BEGIN NEW
 def get_queryset_with_organ_model_map(queryset):
     """Takes a queryset and returns it with a organ model map"""
     setups = AssayMatrixItem.objects.filter(
@@ -1563,17 +1545,6 @@ class AssayStudyReproducibility(StudyViewerMixin, DetailView):
     """Returns a form and processed statistical information. """
     model = AssayStudy
     template_name = 'assays/assaystudy_reproducibility.html'
-
-
-# TODO Class-based view for direct reproducibility access.
-# class AssayStudyReproducibilityList(AssayStudyList):
-#     """Displays all of the studies linked to groups that the user is part of"""
-#     def get_context_data(self, **kwargs):
-#         context = super(AssayStudyReproducibilityList, self).get_context_data()
-#
-#         context['reproducibility'] = True
-#
-#         return context
 
 
 class AssayStudyImages(StudyViewerMixin, DetailView):

@@ -1,9 +1,8 @@
-from django.views.generic import DetailView, CreateView, UpdateView, ListView, TemplateView
+from django.views.generic import DetailView, CreateView, UpdateView, ListView
 from django.shortcuts import redirect
-from django import forms
 
 from .forms import MicrodeviceForm, OrganModelForm, OrganModelProtocolFormsetFactory, OrganModelLocationFormsetFactory
-from .models import Microdevice, OrganModel, ValidatedAssay, OrganModelProtocol
+from .models import Microdevice, OrganModel, OrganModelProtocol
 from mps.mixins import SpecificGroupRequiredMixin, PermissionDenied, user_is_active
 from mps.base.models import save_forms_with_tracking
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -33,8 +32,7 @@ class OrganModelDetail(DetailView):
     def get_context_data(self, **kwargs):
         context = super(OrganModelDetail, self).get_context_data(**kwargs)
 
-        assays = ValidatedAssay.objects.filter(organ_model=self.object).prefetch_related('assay', 'assay__assay_type')
-
+        # TODO TODO TODO REVISE THIS FILTER
         if self.object.center and any(i in self.object.center.groups.all() for i in self.request.user.groups.all()):
             protocols = OrganModelProtocol.objects.filter(
                 organ_model=self.object
@@ -43,7 +41,6 @@ class OrganModelDetail(DetailView):
             protocols = None
 
         context.update({
-            'assays': assays,
             'protocols': protocols,
         })
 

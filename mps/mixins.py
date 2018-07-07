@@ -5,11 +5,11 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
 from django.template import loader
 from django.http import HttpResponseForbidden
-from assays.models import AssayRun, AssayRunStakeholder, AssayStudy, AssayStudyStakeholder
+from assays.models import AssayStudy, AssayStudyStakeholder
 from mps.templatetags.custom_filters import filter_groups, VIEWER_SUFFIX, ADMIN_SUFFIX
 
 
-# Unsemantic! Breaks PEP!
+# Unsemantic!
 def PermissionDenied(request, message):
     """This function will take a string a render 403.html with that string as context"""
     template = loader.get_template('403.html')
@@ -17,17 +17,6 @@ def PermissionDenied(request, message):
         'message': message
     }
     return HttpResponseForbidden(template.render(context, request))
-
-# def check_if_user_is_active(user):
-#     if not user or not user.is_active:
-#         return PermissionDenied(
-#             self.request,
-#             'Your account is not currently active<br>'
-#             'If you have recently registered, be sure to check your email for the activation link<br>'
-#             'If you suspect this is an error, please contact an administrator'
-#         )
-#     else:
-#         return None
 
 
 def user_is_active(user):
@@ -45,54 +34,6 @@ def user_is_valid_study_viewer(user, study):
 
         # Check if user is a stakeholder
         stakeholders = AssayStudyStakeholder.objects.filter(
-            study=study
-        ).prefetch_related(
-            'study',
-            'group',
-            'signed_off_by'
-        )
-        stakeholder_group_names = {name: True for name in stakeholders.values_list('group__name', flat=True)}
-        for group_name in user_group_names:
-            if group_name.replace(VIEWER_SUFFIX, '').replace(ADMIN_SUFFIX, '') in stakeholder_group_names:
-                valid_viewer = True
-                # Only iterate as many times as is needed
-                return valid_viewer
-
-        # It not, check if all stake holders have signed off
-        all_required_stakeholders_have_signed_off = stakeholders.filter(
-            sign_off_required=True,
-            signed_off_by_id=None
-        ).count() == 0
-
-        # Check if user needs to be checked for access groups
-        if all_required_stakeholders_have_signed_off:
-            access_group_names = {name: True for name in study.access_groups.all().values_list('name', flat=True)}
-
-            for group_name in user_group_names:
-                if group_name.replace(VIEWER_SUFFIX, '').replace(ADMIN_SUFFIX, '') in access_group_names:
-                    valid_viewer = True
-                    # Only iterate as many times as is needed
-                    return valid_viewer
-
-            # FINALLY: Check if the study is unrestricted
-            if not study.restricted:
-                valid_viewer = True
-                return valid_viewer
-
-    return valid_viewer
-
-
-# DEPRECATED
-def check_if_user_is_valid_study_viewer(user, study):
-    # Find whether valid viewer by checking group and iterating over all access_groups
-    valid_viewer = is_group_viewer(user, study.group.name)
-
-    # Only check access groups if the study IS signed off on
-    if not valid_viewer and study.signed_off_by:
-        user_group_names = user.groups.all().values_list('name', flat=True)
-
-        # Check if user is a stakeholder
-        stakeholders = AssayRunStakeholder.objects.filter(
             study=study
         ).prefetch_related(
             'study',
@@ -250,151 +191,6 @@ class StudyGroupMixin(object):
                 return PermissionDenied(self.request, 'You do not have permission to edit this.')
 
         return super(StudyGroupMixin, self).dispatch(*args, **kwargs)
-
-
-# DEPRECATED
-# It is ostensibly possible to jam the user's status here so that it need not be acquired again
-class StudyGroupRequiredMixin(object):
-    """This mixin requires the user to have the group matching the study's group
-
-    Attributes:
-    cloning_permitted - Specifies whether cloning is permitted
-    detail - indicates that a detail page was initially requested
-    update_redirect_url - where to to redirect in the case of detail redirect
-    """
-    # Default value for whether or not cloning is permitted
-    cloning_permitted = False
-    detail = False
-    # Default value for url to redirect to
-    update_redirect_url = 'update/'
-
-    @method_decorator(login_required)
-    @method_decorator(user_passes_test(user_is_active))
-    def dispatch(self, *args, **kwargs):
-        # This is for adding study components
-        if self.kwargs.get('study_id', ''):
-            study = get_object_or_404(AssayRun, pk=self.kwargs['study_id'])
-
-            if not is_group_editor(self.request.user, study.group.name):
-                return PermissionDenied(self.request, 'You must be a member of the group ' + str(study.group))
-
-            if study.signed_off_by:
-                return PermissionDenied(
-                    self.request,
-                    'You cannot add this because the study has been signed off on by {0} {1}.'
-                    ' If something needs to be changed, contact the individual who signed off.'
-                    ' If you are the individual who signed off, please contact a database administrator.'.format(
-                        study.signed_off_by.first_name,
-                        study.signed_off_by.last_name
-                    )
-                )
-
-            if self.cloning_permitted and self.request.GET.get('clone', ''):
-                clone = get_object_or_404(self.model, pk=self.request.GET.get('clone', ''))
-                if not is_group_editor(self.request.user, clone.group.name):
-                    return PermissionDenied(
-                        self.request,
-                        'You must be a member of the group ' + str(clone.group) + ' to clone this'
-                    )
-        else:
-            try:
-                current_object = self.get_object()
-            except:
-                # Evil except here!
-                return PermissionDenied(self.request, 'An error has occurred.')
-
-            current_type = str(type(current_object))
-            if current_type == "<class 'assays.models.AssayChipSetup'>":
-                study = current_object.assay_run_id
-            elif current_type == "<class 'assays.models.AssayPlateSetup'>":
-                study = current_object.assay_run_id
-            elif current_type == "<class 'assays.models.AssayChipReadout'>":
-                study = current_object.chip_setup.assay_run_id
-            elif current_type == "<class 'assays.models.AssayPlateReadout'>":
-                study = current_object.setup.assay_run_id
-            elif current_type == "<class 'assays.models.AssayChipTestResult'>":
-                study = current_object.chip_readout.chip_setup.assay_run_id
-            elif current_type == "<class 'assays.models.AssayPlateTestResult'>":
-                study = current_object.readout.setup.assay_run_id
-
-            # Group editors can always see
-            if is_group_editor(self.request.user, study.group.name) and not study.signed_off_by:
-                # Redirects either to url + update or the specified url + object ID (as an attribute)
-                # This is a little tricky if you don't look for {} in update_redirect_url
-                if self.detail:
-                    return redirect(self.update_redirect_url.format(current_object.id))
-                else:
-                    return super(StudyGroupRequiredMixin, self).dispatch(*args, **kwargs)
-
-            valid_viewer = check_if_user_is_valid_study_viewer(self.request.user, study)
-
-            # If the object is not restricted and the user is NOT a listed viewer
-            # if study.restricted and not valid_viewer:
-            if not valid_viewer:
-                return PermissionDenied(self.request, 'You must be a member of the group ' + str(study.group))
-
-            if study.signed_off_by and not self.detail:
-                return PermissionDenied(
-                    self.request,
-                    'You cannot modify this because the study has been signed off on by {0} {1}.'
-                    ' If something needs to be changed, contact the individual who signed off.'
-                    ' If you are the individual who signed off, please contact a database administrator.'.format(
-                        study.signed_off_by.first_name,
-                        study.signed_off_by.last_name
-                    )
-                )
-
-            # Otherwise return the detail view
-            if self.detail:
-                return super(StudyGroupRequiredMixin, self).dispatch(*args, **kwargs)
-            else:
-                return PermissionDenied(self.request, 'You do not have permission to edit this.')
-
-        return super(StudyGroupRequiredMixin, self).dispatch(*args, **kwargs)
-
-
-# Deprecated
-class ViewershipMixin(object):
-    """This mixin checks if the user has the group neccessary to at least view the entry
-    
-    Attributes:
-    study - specifies what study to look to for permissions
-    """
-    # Default study as None
-    study = None
-
-    @method_decorator(login_required)
-    @method_decorator(user_passes_test(user_is_active))
-    def dispatch(self, *args, **kwargs):
-        self.object = self.get_object()
-        if self.study.access == 'editors' and not has_group(self.request.user, self.study.group.name):
-            return PermissionDenied(
-                self.request,
-                'You do not have editor permissions for the group ' + str(self.study.group)
-            )
-        elif not self.study.access == 'public' and not is_group_viewer(self.request.user, self.study.group.name):
-            return PermissionDenied(
-                self.request,
-                'You do not have viewer permissions for the group ' + str(self.study.group)
-            )
-        # Otherwise return the detail view
-        return super(ViewershipMixin, self).dispatch(*args, **kwargs)
-
-
-class StudyViewershipMixin(object):
-    """This mixin determines whether a user can view the study and its data"""
-    @method_decorator(login_required)
-    @method_decorator(user_passes_test(user_is_active))
-    def dispatch(self, *args, **kwargs):
-        self.object = self.get_object()
-
-        valid_viewer = check_if_user_is_valid_study_viewer(self.request.user, self.object)
-        # If the object is not restricted and the user is NOT a listed viewer, deny permission
-        # if self.object.restricted and not valid_viewer:
-        if not valid_viewer:
-            return PermissionDenied(self.request, 'You must be a member of the group ' + str(self.object.group))
-        # Otherwise return the detail view
-        return super(StudyViewershipMixin, self).dispatch(*args, **kwargs)
 
 
 class StudyViewerMixin(object):

@@ -179,64 +179,6 @@ def fetch_protocol(request):
                         content_type="application/json")
 
 
-def fetch_dropdown(request):
-    """Acquires options for whittling down number of dropdown
-
-    Receives the following from POST:
-    master -- master is what determines the subject's drop down choices
-    subject -- subject is the model of interest as selected from the above dictionary
-    next_model -- the next model to filter (if the subject is two FK away)
-    next_filter -- second filter (if the subject is two FK away)
-    """
-
-    dropdown = '<option value="">---------</option>'
-
-    # the model who's dropdown you want to whittle down
-    all_models = {
-        'AssayChipReadout': AssayChipReadout,
-        'AssayChipSetup': AssayChipSetup,
-        'AssayRun': AssayRun,
-        'AssayChipReadoutAssay': AssayChipReadoutAssay,
-        'AssayPlateReadoutAssay': AssayPlateReadoutAssay
-    }
-
-    # master is what determines the subject's drop down choices
-    # master itself is a string for the filter that comes later
-    master = request.POST.get('master', '')
-    master_id = request.POST.get('master_id', '')
-
-    # subject is the model of interest as selected from the above dictionary
-    subject = all_models.get(request.POST.get('subject', ''))
-
-    # filter is for additional filtering (for instance, if a subject is two FK away
-    next_model = request.POST.get('next_model', '')
-    next_filter = request.POST.get('next_filter', '')
-
-    findings = subject.objects.filter(**{master: master_id})
-
-    if next_model and next_filter:
-        next_model = all_models.get(next_model)
-        original = list(findings)
-        findings = []
-
-        for item in original:
-            findings.extend(next_model.objects.filter(**{next_filter: item}))
-
-    for finding in findings:
-        # match value to the desired subject ID
-        value = str(finding.id)
-        dropdown += '<option value="' + value + '">' + str(finding) + '</option>'
-
-    data = {}
-
-    data.update({
-        'dropdown': dropdown,
-    })
-
-    return HttpResponse(json.dumps(data),
-                        content_type='application/json')
-
-
 def fetch_device_dimensions(request):
     device_id = request.POST.get('device_id', None)
 

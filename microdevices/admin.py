@@ -7,7 +7,6 @@ from .models import (
     Manufacturer,
     Microdevice,
     OrganModel,
-    ValidatedAssay,
     OrganModelProtocol,
     GroupDeferral
 )
@@ -229,19 +228,6 @@ class OrganModelProtocolInline(admin.TabularInline):
         css = {"all": ("css/hide_admin_original.css",)}
 
 
-class ValidatedAssayInline(admin.TabularInline):
-    """Admin Inline for Validated Assays"""
-    # Results calculated from CHIP READOUTS
-    model = ValidatedAssay
-    verbose_name = 'Validated Assay'
-    verbose_name_plural = 'Validated Assays'
-    fields = ('assay',)
-    extra = 0
-
-    class Media(object):
-        css = {"all": ("css/hide_admin_original.css",)}
-
-
 class OrganModelAdmin(LockableAdmin):
     """Admin for Organ Models"""
     class Media(object):
@@ -294,7 +280,7 @@ class OrganModelAdmin(LockableAdmin):
 
     actions = ['update_fields']
     save_on_top = True
-    inlines = [ValidatedAssayInline, OrganModelProtocolInline]
+    inlines = [OrganModelProtocolInline]
 
 admin.site.register(OrganModel, OrganModelAdmin)
 
