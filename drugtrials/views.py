@@ -139,6 +139,13 @@ class AdverseEventDetail(DetailView):
 
         return context
 
+class AutoDrugTrials(TemplateView):
+    """Displays a list auto curated drug trials"""
+    template_name = 'drugtrials/auto_drug_trials.html'
+
+class AutoDrugTrialsForm(TemplateView):
+    """Precursor to Auto Drug Trials, Input Disease"""
+    template_name = 'drugtrials/auto_drug_trials_form.html'
 
 class CompareAdverseEvents(TemplateView):
     template_name = 'drugtrials/compare_adverse_events.html'

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block load_js %}
+    <script src="{% static "drugtrials/auto_drug_trials_list.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li class="active">Auto Drug Trials</li>
+{% endblock %}
+
+{% block content %}
+    <div class="padded-bottom">
+        <legend>
+            <h2 class="text-center">
+                Automated Drug Trial Curation
+            </h2>
+        </legend>
+
+        <div id="improvement list">
+        <ol>To be improved: </ol>
+            <li>Replace input method</li>
+            <li>Look up time</li>
+            <li>Add loading bar of some kind</li>
+            <li>Organization of relevant data into tables</li>
+            <li>Post-pull data processing</li>
+            <br>
+        </div>
+
+        <table id="auto_drug_trial_data" class="display" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Study Name</th>
+                    <th>Conditions</th>
+                    <th>Drugs</th>
+                    <th>Species</th>
+                    <th>Trial Type</th>
+                    <th>Status</th>
+                    <th>Description</th>
+                    <th>Eligibilities</th>
+                    <th>Gender</th>
+                    <th>Minimum Age</th>
+                    <th>Maximum Age</th>
+                    <th>Interventions</th>
+                    <th>Adverse Events (To be Formatted)</th>
+                    <th>Outcomes</th>
+                    <th>Start Date</th>
+                    <th>Complete Date</th>
+                    <th>Phase</th>
+                    <!--Adjust <table>
+                        <caption>Design Groups</caption>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                    </table>-->
+                </tr>
+            </thead>
+        </table>
+    </div>
+{% endblock %}

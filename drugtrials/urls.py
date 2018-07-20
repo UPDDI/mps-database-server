@@ -4,7 +4,9 @@ from .views import (
     DrugTrialDetail,
     AdverseEventsList,
     AdverseEventDetail,
-    CompareAdverseEvents
+    CompareAdverseEvents,
+    AutoDrugTrials,
+    AutoDrugTrialsForm
 )
 import drugtrials.ajax
 
@@ -18,6 +20,8 @@ urlpatterns = [
     url(r'^adverse_events/(?P<pk>[0-9]+)/$', AdverseEventDetail.as_view(), name='adverse_events_details'),
     url(r'^compare_adverse_events/$', CompareAdverseEvents.as_view(), name='compare_adverse_events'),
 
+    url(r'^autodrugtrials/$', AutoDrugTrials.as_view(), name='autodrugtrials'),
+    url(r'^autodrugtrialsform/$', AutoDrugTrialsForm.as_view(), name='autodrugtrialsform'),
     # Revise URL
     url(r'^drugtrials_ajax/$', drugtrials.ajax.ajax)
 ]
