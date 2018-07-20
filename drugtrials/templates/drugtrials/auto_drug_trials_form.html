@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block breadcrumbs %}
+    <li class="active">Auto Drug Trials Input Form</li>
+{% endblock %}
+
+{% block content %}
+
+<form action="../autodrugtrials/?" + disease method="GET">
+    Enter Disease:
+    <input type="text" name="disease" />
+    <input type="submit" value="Submit" />
+</form>
+{% endblock %}
