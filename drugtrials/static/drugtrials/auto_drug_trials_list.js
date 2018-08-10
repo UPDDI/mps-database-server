@@ -22,20 +22,24 @@ $(document).ready(function() {
             {
                 data: 'nct_id',
                 render:function (data, type, row, meta) {
-                    return data;
+                    var methods = [];
+                    methods.push("<a href=https://clinicaltrials.gov/ct2/show/"+data+" target=\"_blank\">"+data+"</a>");
+                    return methods;
                 }
             },
             {
-                data: 'studies',
+                data: 'outcomeAll',
                 render:function (data, type, row, meta) {
-                    var methods = []
+                    var methods = [];
 
-                    if (data) {
-                        if (data.hasOwnProperty("brief_title")){
-                            methods.push(data["brief_title"])
-                            }
-                        }
-                return methods.join(',')
+                    //if (data) {
+                        //$.each(data, function(index, value) {
+                            if(data[0].title){
+                                methods.push(data[0].title); }
+                        //});
+                    //}
+
+                    return methods.join('\n');
                 }
             },
             {
@@ -49,7 +53,7 @@ $(document).ready(function() {
                         });
                     }
 
-                    return methods.join(',');
+                    return methods.join(', \n');
                 }
             },
             {
@@ -59,197 +63,84 @@ $(document).ready(function() {
 
                     if (data) {
                         $.each(data, function(index, value) {
-                            methods.push(value.name);
+                            if(value.name){
+                                if(value.name.toLowerCase().includes("placebo") || value.name.toLowerCase() == "placebo"){
+
+                                }
+                                else{
+                                    drugName = value.name;
+                                    drugName = drugName.charAt(0).toUpperCase() + drugName.substring(1);
+                                    methods.push(drugName);
+                                }
+                            }
                         });
                     }
-
                     return methods.join(', \n');
                 }
             },
             {
-                render:function (data, type, row, meta){
-                    var methods = []
-                    methods.push("Human")
-                    return methods.join(',');
-                }
-            },
-            {
-                data: 'studies',
-                render:function (data, type, row, meta) {
-                    var methods = []
-
-                    if (data) {
-                        if (data.hasOwnProperty("study_type")){
-                            methods.push(data["study_type"])
-                            }
-                        }
-                return methods.join(',')
-                }
-            },
-            {
-                data: 'studies',
-                //className: 'none',
-                render:function (data, type, row, meta) {
-                    var methods = []
-
-                    if (data) {
-                        if (data.hasOwnProperty("overall_status")){
-                            methods.push(data["overall_status"])
-                            }
-                        }
-                return methods.join(',')
-                }
-            },
-            {
-                data: 'brief_summaries',
-                className: 'none',
-                render:function (data, type, row, meta) {
-                    var methods = []
-
-                    if (data) {
-                        if (data.hasOwnProperty("description")){
-                            methods.push(data["description"])
-                            }
-                        }
-                return methods.join(',')
-                }
-            },
-            {
-                data: 'eligibilities',
-                className: 'none',
-                render:function (data, type, row, meta) {
-                    var methods = []
-
-                    if (data) {
-                        if (data.hasOwnProperty("criteria")){
-                            methods.push(data["criteria"])
-                            }
-                        }
-                return methods.join(',')
-                }
-            },
-            {
-                data: 'eligibilities',
-                className: 'none',
-                render:function (data, type, row, meta) {
-                    var methods = []
-
-                    if (data) {
-                        if (data.hasOwnProperty("gender")){
-                            methods.push(data["gender"])
-                            }
-                        }
-                return methods.join(',')
-                }
-            },
-            {
-                data: 'eligibilities',
-                className: 'none',
-                render:function (data, type, row, meta) {
-                    var methods = []
-
-                    if (data) {
-                        if (data.hasOwnProperty("minimum_age")){
-                            methods.push(data["minimum_age"])
-                            }
-                        }
-                return methods.join(',')
-                }
-            },
-            {
-                data: 'eligibilities',
-                className: 'none',
-                render:function (data, type, row, meta) {
-                    var methods = []
-
-                    if (data) {
-                        if (data.hasOwnProperty("maximum_age")){
-                            methods.push(data["maximum_age"])
-                            }
-                        }
-                return methods.join(',')
-                }
-            },
-            {
-                data: 'interventions',
-                className: 'none',
+                data: 'outcomeAll',
                 render:function (data, type, row, meta) {
                     var methods = [];
 
-                    if (data) {
-                        $.each(data, function(index, value) {
-                            methods.push(" " + value.name);
-                        });
-                    }
+                    //if (data) {
+                        //$.each(data, function(index, value) {
+                            if(data[1]){
+                                var count = 1;
+                                $.each(data[1], function(index, value) {
+                                    if (value.outcome_id == data[0].id && value.classification){
+                                        methods.push("<strong>"+data[1][index].classification+"</strong>: "+ value.param_value + " " + value.units + "<br>");
+                                    }
+                                    else if (value.outcome_id == data[0].id){
+                                        methods.push("<strong>Result Group "+ count + "</strong>: "+ value.param_value + " " + value.units + "<br>");
+                                        count = count + 1
+                                    }
+                                });
+                            }
+                        //});
+                    //}
 
-                    return methods.join(',');
-                }
+                    return methods.join('\n');
+                },
             },
+
             {
-                data: 'reported_events',
-                className: 'none',
+                data: 'outcomeAll',
                 render:function (data, type, row, meta) {
                     var methods = [];
 
-                    if (data) {
-                        $.each(data, function(index, value) {
-                            methods.push(" " + value.adverse_event_term);
-                        });
-                    }
+                            if(data[2]){
+                                $.each(data[2], function(index, value) {
+                                    if (value.outcome_id == data[0].id && value.p_value){
+                                        if(value.groups_description){
+                                            methods.push(value.p_value + '<span data-toggle="tooltip" title="'+ value.groups_description +'" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span><br>');
+                                        }
+                                        else{
+                                            methods.push(value.p_value);
+                                        }
 
-                    return methods.join(',');
-                }
-            },
-            {
-                data: 'outcomes',
-                className: 'none',
-                render:function (data, type, row, meta) {
-                    var methods = [];
 
-                    if (data) {
-                        $.each(data, function(index, value) {
-                            if(value.outcome_type == "Primary"){
-                                methods.push(value.title);
+                                    }
+                                });
                             }
-                        });
-                    }
 
-                    return methods.join(',\n');
+                    return methods.join('\n');
                 }
             },
             {
                 data: 'studies',
-                className: 'none',
                 render:function (data, type, row, meta) {
                     var methods = []
                     if (data) {
-                        if (data.hasOwnProperty("start_date")){
-                            var myDate = new Date(data["start_date"]*1000)
-                            methods.push($.datepicker.formatDate('M yy',myDate))
-
-                            }
+                        var startDate = new Date(data["start_date"]*1000)
+                        var endDate = new Date(data["completion_date"]*1000)
+                        methods.push($.datepicker.formatDate('M yy',startDate)+" - "+$.datepicker.formatDate('M yy',endDate))
                         }
-                return methods.join(',')
+                return methods.join(',');
                 }
             },
             {
                 data: 'studies',
-                className: 'none',
-                render:function (data, type, row, meta) {
-                    var methods = []
-                    if (data) {
-                        if (data.hasOwnProperty("completion_date")){
-                            var myDate = new Date(data["completion_date"]*1000)
-                            methods.push($.datepicker.formatDate('M yy',myDate))
-
-                            }
-                        }
-                return methods.join(',')
-                }
-            },
-            {
-                data: 'studies',
-                className: 'none',
                 render:function (data, type, row, meta) {
                     var methods = []
                     if (data) {
@@ -261,6 +152,7 @@ $(document).ready(function() {
                 }
             }
         ],
+        "aoColumnDefs": [ {},{},{},{},{ "width": "30%"},{},{},{} ]
     });
 });
 

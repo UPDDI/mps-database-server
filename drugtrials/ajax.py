@@ -71,12 +71,12 @@ def fetch_auto_drug_trial_data(request):
     cur.execute("SELECT nct_id,intervention_type,name,description FROM interventions WHERE \
                 nct_id = ANY(%s)",(studyIDs,))  # (SELECT nct_id FROM conditions WHERE downcase_name= %s )", [condition])
     interventions = cur.fetchall()
-    drugs = []
-    for i in range(0,len(interventions)):
-        if interventions[i]['intervention_type']=='Drug':
-            drugs.append(interventions[i])
+    drugs = interventions
+    #for i in range(0,len(interventions)):
+        #if interventions[i]['intervention_type']=='Drug':
+            #drugs.append(interventions[i])
     cur.execute("SELECT nct_id,outcome_type,measure,time_frame,population,description \
-                FROM design_outcomes WHERE nct_id = ANY(%s)",(studyIDs,))
+                FROM design_outcomes WHERE (nct_id = ANY(%s))",(studyIDs,))
     design_outcomes = cur.fetchall()
     cur.execute("SELECT nct_id,gender,minimum_age,maximum_age,population,criteria FROM eligibilities WHERE \
                 nct_id = ANY(%s)",(studyIDs,))  # (SELECT nct_id FROM conditions WHERE downcase_name= %s )", [condition])
@@ -100,8 +100,8 @@ def fetch_auto_drug_trial_data(request):
     outcome_analyses = cur.fetchall()
     cur.execute("SELECT id,nct_id,outcome_type,title,description,time_frame,population,units, \
                 units_analyzed FROM outcomes WHERE nct_id = ANY(%s)",(studyIDs,))
+    cur.execute("SELECT * FROM outcomes WHERE nct_id = ANY(%s) AND outcome_type='Primary'",(studyIDs,))
     outcomes = cur.fetchall()
-
     cur.close()
     conn.close()
 
@@ -117,6 +117,7 @@ def fetch_auto_drug_trial_data(request):
 
     studiesWithResults = []
     for i in range(0,len(studies)):
+        #for j in range(0, len(outcomes)):
         #if studies[i]['results_first_posted_date'] is not None:
             #studiesWithResults.append(studies[i]['nct_id'])
             nct_id = studies[i]['nct_id']
@@ -131,7 +132,7 @@ def fetch_auto_drug_trial_data(request):
                      'links': rList(nct_id,links), \
                      'outcome_analyses': rList(nct_id,outcome_analyses), \
                      'outcome_measurements': rList(nct_id,outcome_measurements), \
-                     'outcomes': rList(nct_id,outcomes), \
+                     'outcomes': rList(nct_id, outcomes), \
                      'reported_events': rList(nct_id,reported_events), \
                      'result_groups': rList(nct_id,result_groups), \
                      'sponsors': rList(nct_id,sponsors), \
@@ -141,10 +142,20 @@ def fetch_auto_drug_trial_data(request):
                     }
             studiesWithResults.append(study)
 
-    studyData = { 'data' : studiesWithResults }
+    outcomeData = []
+    for i in range(0, len(studiesWithResults)):
+        for j in range(0, len(studiesWithResults[i]["outcomes"])):
+            outcomeInfo = {'nct_id': studiesWithResults[i]["nct_id"],\
+                            'outcomeAll': [studiesWithResults[i]["outcomes"][j], studiesWithResults[i]["outcome_measurements"], studiesWithResults[i]["outcome_analyses"]],\
+                            'conditions':studiesWithResults[i]["conditions"],\
+                            'drugs':studiesWithResults[i]["drugs"],\
+                            'studies':studiesWithResults[i]["studies"]}
+            outcomeData.append(outcomeInfo)
+    outcomeDataDisplay = {'data': outcomeData}
+    #studyData = { 'data' : studiesWithResults }
 
     return HttpResponse(
-        json.dumps(studyData),
+        json.dumps(outcomeDataDisplay),
         content_type="application/json"
     )
 
