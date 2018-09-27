@@ -7,29 +7,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <head>
-    <style>
-        .sub1-bars {font-style: italic; font-size: 180%; margin-top: 3%; font-weight: 700}
-        .sub2-bars {font-style: normal; font-size: 150%; color: DarkSlateGray; margin-top: 2%}
-
-        .collapsible1:hover { font-weight: bold; font-size: 120%}
-        .collapsible2:hover { font-weight: bold; font-size: 105%; border-color:darkgray; }
-        .collapsible3:hover { font-weight: bold; font-size: 100%; border-color:lightgray; }
-
-        .collapsible1 {background-color: SteelBlue; font-size: 120%; color: white; cursor: pointer; padding: 10px;
-            width: 100%; border: none; text-align: left; outline: none; margin-bottom: 2px; margin-top: 1px; }
-        .collapsible2{background-color: azure; font-size:105%; border-radius:5%; padding-left:10px;  padding-right:10px; display:block;
-            border-color:DarkGray; outline: none;width: 100%; margin-bottom: 3px; text-align: left; padding-top:5px; padding-bottom:5px }
-        .collapsible3{background-color: Gainsboro; font-size:100%; border-radius:5%; padding-left:10px;  padding-right:10px; display:block;
-            border-color:gray; outline: none;width: 100%; margin-bottom: 3px; text-align: left; padding-top:5px; padding-bottom:5px }
-        .content1, .content2, .content3 {display: none; transition: max-height 0.1s ease-out;}
-
-        .background2 {background-color:Azure;}
-        .background3 {background-color:lightgray;}
-
-        .filled-circle {list-style-type: disc;}
-        .open-circle {list-style-type: circle; padding-left: 20px;}
-        .list-group {margin-bottom: 4px;}
-    </style>
     <link rel="icon"
     type="image/png"
     href="/static/img/glyphicons-question-sign.png">
@@ -63,6 +40,30 @@
     <link rel="stylesheet" href="{% static "css/bootstrap-overrides.css" %}">
     <!-- Help JS -->
     <script type="text/javascript" charset="utf-8" src="{% static "js/help.js" %}"></script>
+
+    <style>
+        .sub1-bars {font-style: italic; font-size: 180%; margin-top: 3%; font-weight: 700}
+        .sub2-bars {font-style: normal; font-size: 150%; color: DarkSlateGray; margin-top: 2%}
+
+        .collapsible1:hover { font-weight: bold; font-size: 120%}
+        .collapsible2:hover { font-weight: bold; font-size: 105%; border-color:darkgray; }
+        .collapsible3:hover { font-weight: bold; font-size: 100%; border-color:lightgray; }
+
+        .collapsible1 {background-color: SteelBlue; font-size: 120%; color: white; cursor: pointer; padding: 10px;
+            width: 100%; border: none; text-align: left; outline: none; margin-bottom: 2px; margin-top: 1px; }
+        .collapsible2{background-color: azure; font-size:105%; border-radius:5%; padding-left:10px;  padding-right:10px; display:block;
+            border-color:DarkGray; outline: none;width: 100%; margin-bottom: 3px; text-align: left; padding-top:5px; padding-bottom:5px }
+        .collapsible3{background-color: Gainsboro; font-size:100%; border-radius:5%; padding-left:10px;  padding-right:10px; display:block;
+            border-color:gray; outline: none;width: 100%; margin-bottom: 3px; text-align: left; padding-top:5px; padding-bottom:5px }
+        .content1, .content2, .content3 {display: none; transition: max-height 0.1s ease-out;}
+
+        .background2 {background-color:Azure;}
+        .background3 {background-color:lightgray;}
+
+        .filled-circle {list-style-type: disc;}
+        .open-circle {list-style-type: circle; padding-left: 20px;}
+        .list-group {margin-bottom: 4px;}
+    </style>
 </head>
 
 {# TODO DRAFT VERSION -  NEEDS TO BE REVIEWED  #}
@@ -1284,8 +1285,8 @@
                     <div class="content3">
                         <div id="examplebioactivitiesquick" class="editorsubtainer">
                             <ul class="list-group">
-                                <li class="list-group-item">
-                                    <ul class="list-unstyled background3">
+                                <li class="list-group-item background3">
+                                    <ul class="list-unstyled">
                                         <li>Follow these steps
                                              <ul class="filled-circle">
                                                 <li>Enter Compound = "ASPIRIN"</li>
@@ -1328,8 +1329,8 @@
                     <div class="content3">
                         <div id="examplebioactivitiesadvanced" class="editorsubtainer">
                             <ul class="list-group">
-                                <li class="list-group-item">
-                                    <ul class="list-unstyled background3">
+                                <li class="list-group-item background3">
+                                    <ul class="list-unstyled">
                                         <li>Follow these steps
                                              <ul class="filled-circle">
                                                 <li>Select Target Types - check the box in the top left to include all </li>
@@ -1511,8 +1512,8 @@
                     <div class="content3">
                         <div id="exampleheatmap" class="editorsubtainer">
                             <ul class="list-group">
-                                <li class="list-group-item">
-                                    <ul class="list-unstyled background3">
+                                <li class="list-group-item background3">
+                                    <ul class="list-unstyled">
                                         <li>Follow these steps
                                             <ul class="filled-circle">
                                                 <li>Select Target Types - check the box in the top left to include all </li>
@@ -1588,8 +1589,8 @@
                     <div class="content3">
                         <div id="examplecluster" class="editorsubtainer">
                             <ul class="list-group">
-                                <li class="list-group-item">
-                                    <ul class="list-unstyled background3">
+                                <li class="list-group-item background3">
+                                    <ul class="list-unstyled">
                                         <li>Follow these steps
                                             <ul class="filled-circle">
                                                 <li>Select Target Types - check the box "Single Protein" </li>
@@ -1685,8 +1686,8 @@
                 <div class="content3">
                     <div id="flagsnotes" class="editorsubtainer">
                         <ul class="list-group">
-                            <li class="list-group-item">
-                                <ul class="list-unstyled background3">
+                            <li class="list-group-item background3">
+                                <ul class="list-unstyled">
                                     <li>A <b>Study</b>, each <b>Matrix</b>, and/or each <b>Matrix Item</b> can be flagged and annotated
                                         <ul class="filled-circle">
                                             <li> Clicking <a role='button' class="btn btn-sm" style="color:#337AB7"> <span class="glyphicon glyphicon-flag" aria-hidden="true"></span> </a> places the flag  </li>
@@ -1712,8 +1713,8 @@
                 <div class="content3">
                     <div id="validation" class="editorsubtainer">
                         <ul class="list-group">
-                            <li class="list-group-item">
-                                <ul class="list-unstyled background3">
+                            <li class="list-group-item background3">
+                                <ul class="list-unstyled">
                                     <li>A <b>Study</b>, each <b>Matrix</b>, and/or each <b>Matrix Item</b> can be validated
                                         <ul class="filled-circle">
                                             <li> <b>Study</b> sign off is done by the Data Group Admin by clicking the <b>View/Edit Sigh Off Status of this Study</b> button on the <b>Study Matrices and Items</b> list page </li>
@@ -1731,8 +1732,8 @@
                 <div class="content3">
                     <div id="studyconfigurations" class="editorsubtainer">
                         <ul class="list-group">
-                            <li class="list-group-item">
-                                <ul class="list-unstyled background3">
+                            <li class="list-group-item background3">
+                                <ul class="list-unstyled">
                                     <li>When performing <b>Integrated Studies</b>:
                                         <ul class="filled-circle">
                                             <li>When setting up a <b>Study</b>, <b>Models</b> can be associated </li>
@@ -1905,8 +1906,8 @@
                 <div class="content3">
                     <div id="uploadingdata" class="editorsubtainer">
                         <ul class="list-group">
-                            <li class="list-group-item">
-                                <ul class="list-unstyled background3">
+                            <li class="list-group-item background3">
+                                <ul class="list-unstyled">
                                     <li>To get an example template file, <a href="/media/excel_templates/chip_template-{{ version }}.xlsx">click here</a>
                                         <ul class="filled-circle">
                                             <li>Chip ID must be unique within a <b>Study</b></li>
