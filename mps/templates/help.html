@@ -8,28 +8,27 @@
 
 <head>
     <style>
-        .filled-circle {list-style-type: disc;}
-        .open-circle {list-style-type: circle; padding-left: 20px;}
-        .list-group{margin-bottom: 1px}
-
         .sub1-bars {font-style: italic; font-size: 180%; margin-top: 3%; font-weight: 700}
         .sub2-bars {font-style: normal; font-size: 150%; color: DarkSlateGray; margin-top: 2%}
-        .sub3-bars {font-style: italic; font-size: 140%}
 
-        .showhidebutton{background-color: azure; font-size:105%; border-radius:5%; padding-left:10px;  padding-right:10px; display:block;
-            border-color:DarkGray; outline: none;width: 100%; margin-bottom: 3px; text-align: left; padding-top:5px; padding-bottom:5px }
-        .showhide2button{background-color: Gainsboro; font-size:100%; border-radius:5%; padding-left:10px;  padding-right:10px; display:block;
-            border-color:gray; outline: none;width: 100%; margin-bottom: 3px; text-align: left; padding-top:5px; padding-bottom:5px }
+        .collapsible1:hover { font-weight: bold; font-size: 120%}
+        .collapsible2:hover { font-weight: bold; font-size: 105%; border-color:darkgray; }
+        .collapsible3:hover { font-weight: bold; font-size: 100%; border-color:lightgray; }
 
-        .showhidebutton:hover { font-weight: bold; font-size: 104%; border-color:darkgray; }
-        .showhide2button:hover { font-weight: bold; font-size: 100%; border-color:lightgray; }
-
-        .collapsible {background-color: SteelBlue; font-size: 120%; color: white; cursor: pointer; padding: 10px;
+        .collapsible1 {background-color: SteelBlue; font-size: 120%; color: white; cursor: pointer; padding: 10px;
             width: 100%; border: none; text-align: left; outline: none; margin-bottom: 2px; margin-top: 1px; }
-        .collapsible:hover {font-weight: bold; font-size: 120%}
+        .collapsible2{background-color: azure; font-size:105%; border-radius:5%; padding-left:10px;  padding-right:10px; display:block;
+            border-color:DarkGray; outline: none;width: 100%; margin-bottom: 3px; text-align: left; padding-top:5px; padding-bottom:5px }
+        .collapsible3{background-color: Gainsboro; font-size:100%; border-radius:5%; padding-left:10px;  padding-right:10px; display:block;
+            border-color:gray; outline: none;width: 100%; margin-bottom: 3px; text-align: left; padding-top:5px; padding-bottom:5px }
+        .content1, .content2, .content3 {display: none; transition: max-height 0.1s ease-out;}
 
-        .content, .editorsubtainer, .editor2subtainer {display: none; transition: max-height 0.1s ease-out; }
+        .background2 {background-color:Azure;}
+        .background3 {background-color:lightgray;}
 
+        .filled-circle {list-style-type: disc;}
+        .open-circle {list-style-type: circle; padding-left: 20px;}
+        .list-group {margin-bottom: 4px;}
     </style>
     <link rel="icon"
     type="image/png"
@@ -199,8 +198,8 @@
         <h1 class="sub1-bars"> What's New in the MPS Database </h1>
 
         <div id="recentupgrades">
-            <button class="collapsible">Summary of Recent Updates</button>
-            <div class="content">
+            <button class="collapsible1">Summary of Recent Updates</button>
+            <div class="content1">
                 <div id="recentupgradesviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item"> <b><em>Integrated Reproducibility Analysis</em></b> - An intra- and inter-study reproducibility analysis tool is now available in the <b>MPS database</b>. The inter-study tool can be accessed through the <b>Data Analysis</b> icon or tab. This tool offers the user a wide range of options for grouping and filtering data prior to performing graphing and/or reproducibility analysis. The intra-study tool can be accessed through the <b>Study Summary</b> page of the MPS-GUI.
@@ -233,8 +232,8 @@
         <h1 class="sub1-bars"> Overview of the MPS Database </h1>
 
         <div id="overview0">
-            <button class="collapsible">Database Background</button>
-            <div class="content">
+            <button class="collapsible1">Database Background</button>
+            <div class="content1">
                 <div id="overview0viewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -250,8 +249,8 @@
         </div>
 
         <div id="overview1">
-            <button class="collapsible">Study Components List (Controlled Vocabulary)</button>
-            <div class="content">
+            <button class="collapsible1">Study Components List (Controlled Vocabulary)</button>
+            <div class="content1">
                 <div id="overview1viewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -317,8 +316,8 @@
         </div>
 
         <div id="overview2">
-            <button class="collapsible">Study Data Organization</button>
-            <div class="content">
+            <button class="collapsible1">Study Data Organization</button>
+            <div class="content1">
                 <div id="overview2viewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -359,8 +358,8 @@
         </div>
 
         <div id="overview3">
-            <button class="collapsible">Database Features</button>
-            <div class="content">
+            <button class="collapsible1">Database Features</button>
+            <div class="content1">
                 <div id="overview3viewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -437,8 +436,8 @@
         </div>
 
         <div id="overview4">
-            <button class="collapsible">Data Sources </button>
-            <div class="content">
+            <button class="collapsible1">Data Sources </button>
+            <div class="content1">
                 <div id="overview4viewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -530,8 +529,8 @@
         </div>
 
         <div id="overview5">
-            <button class="collapsible">Permission Structure </button>
-            <div class="content">
+            <button class="collapsible1">Permission Structure </button>
+            <div class="content1">
                 <div id="overview5viewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -578,8 +577,8 @@
         <h1 class="sub1-bars"> Searching the MPS Database </h1>
 
         <div id="search">
-            <button class="collapsible">Global Search</button>
-            <div class="content">
+            <button class="collapsible1">Global Search</button>
+            <div class="content1">
                 <div id="searchviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -602,8 +601,8 @@
         </div>
 
         <div id="searchbars">
-            <button class="collapsible">Search And Sort Lists/Tables</button>
-            <div class="content">
+            <button class="collapsible1">Search And Sort Lists/Tables</button>
+            <div class="content1">
                 <div id="searchbarviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -637,8 +636,8 @@
         <h1 class="sub1-bars"> Components Used in MPS Studies (Pick List Options) </h1>
 
         <div id="methods">
-            <button class="collapsible">Assay Methods/Kits</button>
-            <div class="content">
+            <button class="collapsible1">Assay Methods/Kits</button>
+            <div class="content1">
                 <div id="methodsviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -665,8 +664,8 @@
         </div>
 
         <div id="targets">
-            <button class="collapsible">Assay Targets/Analytes</button>
-            <div class="content">
+            <button class="collapsible1">Assay Targets/Analytes</button>
+            <div class="content1">
                 <div id="targetsviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -693,8 +692,8 @@
         </div>
 
         <div id="cellsamples">
-            <button class="collapsible">Cell Samples Used in MPS Models</button>
-            <div class="content">
+            <button class="collapsible1">Cell Samples Used in MPS Models</button>
+            <div class="content1">
                 <div id="cellsamplesviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -720,8 +719,8 @@
         </div>
 
         <div id="chemicallist">
-            <button class="collapsible">Compounds Used</button>
-            <div class="content">
+            <button class="collapsible1">Compounds Used</button>
+            <div class="content1">
                 <div id="chemicallistviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -746,8 +745,8 @@
         </div>
 
         <div id="devices">
-            <button class="collapsible">Devices Used in MPS Models</button>
-            <div class="content">
+            <button class="collapsible1">Devices Used in MPS Models</button>
+            <div class="content1">
                 <div id="devicesviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -771,8 +770,8 @@
         </div>
 
         <div id="diseaselist">
-            <button class="collapsible">Diseases in the <b>MPS Database</b> </button>
-            <div class="content">
+            <button class="collapsible1">Diseases in the <b>MPS Database</b> </button>
+            <div class="content1">
                 <div id="diseaselistviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -795,8 +794,8 @@
         </div>
 
         <div id="mpslocations">
-            <button class="collapsible">Locations of MPS Model Devices </button>
-            <div class="content">
+            <button class="collapsible1">Locations of MPS Model Devices </button>
+            <div class="content1">
                 <div id="locationsviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -819,8 +818,8 @@
         </div>
 
         <div id="mpsmodels">
-            <button class="collapsible">Models in the Database</button>
-            <div class="content">
+            <button class="collapsible1">Models in the Database</button>
+            <div class="content1">
                 <div id="mpsmodelsviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -845,8 +844,8 @@
         </div>
 
         <div id="settings">
-            <button class="collapsible">Settings (Instrument Settings, Non-Compound Treatments, etcetera) </button>
-            <div class="content">
+            <button class="collapsible1">Settings (Instrument Settings, Non-Compound Treatments, etcetera) </button>
+            <div class="content1">
                 <div id="settingsviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -874,8 +873,8 @@
         </div>
 
         <div id="physicalunits">
-            <button class="collapsible">Units Available for Compounds, Cells, Settings, and Assay Targets</button>
-            <div class="content">
+            <button class="collapsible1">Units Available for Compounds, Cells, Settings, and Assay Targets</button>
+            <div class="content1">
                 <div id="physicalunitsviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -906,8 +905,8 @@
         <h1 class="sub2-bars"> Features Based on Study Data Only </h1>
 
         <div id="intrastudy">
-            <button class="collapsible">Intra-Study Analysis (Features Accessed from within a Specific Study)</button>
-            <div class="content">
+            <button class="collapsible1">Intra-Study Analysis (Features Accessed from within a Specific Study)</button>
+            <div class="content1">
                 <div id="intrastudyviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -931,8 +930,8 @@
                     </ul>
 
                     <div id="studies">
-                        <button class="showhidebutton"> Built-in Default Grouping/Filtering by Study  </button>
-                        <div class="content">
+                        <button class="collapsible2"> Built-in Default Grouping/Filtering by Study  </button>
+                        <div class="content2">
                             <div id="studiesviewer" class="viewersubtainer">
                                 <ul class="list-group">
                                     <li class="list-group-item">
@@ -984,8 +983,8 @@
                     </div>
 
                     <div id="matrices">
-                        <button class="showhidebutton"> Built-in Default Grouping/Filtering by Matrix </button>
-                        <div class="content">
+                        <button class="collapsible2"> Built-in Default Grouping/Filtering by Matrix </button>
+                        <div class="content2">
                             <div id="matricesviewer" class="viewersubtainer">
                                 <ul class="list-group">
                                     <li class="list-group-item">
@@ -1020,8 +1019,8 @@
                     </div>
 
                     <div id="matrixitems">
-                        <button class="showhidebutton"> Built-in Default Grouping/Filtering by Matrix Item </button>
-                        <div class="content">
+                        <button class="collapsible2"> Built-in Default Grouping/Filtering by Matrix Item </button>
+                        <div class="content2">
                             <div id="matrixitemsviewer" class="viewersubtainer">
                                 <ul class="list-group">
                                     <li class="list-group-item">
@@ -1059,8 +1058,8 @@
         </div>
 
         <div id="interstudy">
-            <button class="collapsible">Inter-Study Analysis (Cross-Center and/or Cross-Study) </button>
-            <div class="content">
+            <button class="collapsible1">Inter-Study Analysis (Cross-Center and/or Cross-Study) </button>
+            <div class="content1">
                 <div id="interstudyviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -1098,8 +1097,8 @@
         </div>
 
         <div id="groupingfiltering">
-            <button class="collapsible">Overriding the Built-in Default Grouping/Filtering of Assay Data</button>
-            <div class="content">
+            <button class="collapsible1">Overriding the Built-in Default Grouping/Filtering of Assay Data</button>
+            <div class="content1">
                 <div id="groupingfilteringviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -1108,8 +1107,8 @@
                                     <ul class="filled-circle">
                                         <li>Click on the filter symbol next to a metadata/data tag to limit selected data based on data associated with the tag </li>
                                         <li>Click on the group box next to a metadata/data tag to include (checked) or exclude (unchecked) data associated with the tag in determining how data are grouped </li>
-                                        <li>Click on the <b>Refresh</b> button to apply changes </li>
                                         <li>REPEAT for all attributes to override </li>
+                                        <li>Click on the <b>Refresh</b> button to apply changes </li>
                                     </ul>
                                 </li>
                                 <li><br>Notes
@@ -1125,8 +1124,8 @@
         </div>
 
         <div id="plottingoptions">
-            <button class="collapsible">Exploring Plotting/Graphing Options </button>
-            <div class="content">
+            <button class="collapsible1">Exploring Plotting/Graphing Options </button>
+            <div class="content1">
                 <div id="plottingoptionsviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -1143,7 +1142,7 @@
                                                 <li>To work correctly, chips must be categorized as either compound or control, and control chips must be present in the study (and/or the matrix) </li>
                                             </ul>
                                         </li>
-                                        <li>Include Excluded Data - chek to include datat that were marked for exclusion by the Data Provider </li>
+                                        <li>Include Excluded Data - check to include data that were marked for exclusion by the Data Provider </li>
                                         <li>Treat Negative Values as Zero - values stored as <0 will be displayed as 0 in plots </li>
                                         <li>Log Scale X-Axis - changes x-axis to log scale </li>
                                         <li>Log Scale Y-Axis - changes y-axis to log scale </li>
@@ -1159,8 +1158,8 @@
         <h1 class="sub2-bars"> Features Based on Study Data Plus Curated Reference Data </h1>
 
         <div id="diseasemodels">
-            <button class="collapsible">Disease Portal (Clinical Trials and Study Data Combined via a Disease)</button>
-            <div class="content">
+            <button class="collapsible1">Disease Portal (Clinical Trials and Study Data Combined via a Disease)</button>
+            <div class="content1">
                 <div id="diseaseviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -1192,8 +1191,8 @@
         </div>
 
         <div id="compoundreport">
-            <button class="collapsible">Compound Report (Chemical Properties and Study Data Combined via a Compound)</button>
-            <div class="content">
+            <button class="collapsible1">Compound Report (Chemical Properties and Study Data Combined via a Compound)</button>
+            <div class="content1">
                 <div id="compoundviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -1228,8 +1227,8 @@
         <h1 class="sub2-bars"> Features Based on Curated Reference Data </h1>
 
         <div id="chemicaldata">
-            <button class="collapsible">Chemical Data</button>
-            <div class="content">
+            <button class="collapsible1">Chemical Data</button>
+            <div class="content1">
                 <div id="chemicaldataviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -1259,8 +1258,8 @@
         </div>
 
         <div id="bioactivities">
-            <button class="collapsible">Bioactivities</button>
-            <div class="content">
+            <button class="collapsible1">Bioactivities</button>
+            <div class="content1">
                 <div id="bioactivitiesviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -1277,15 +1276,34 @@
                                         <li>Click on the <span class="glyphicon glyphicon-search" aria-hidden="true"></span> to perform the search </li>
                                     </ul>
                                 </li>
-                                <li><br>Option 1 - Quick Search - Example
-                                    <ul class="filled-circle">
-                                        <li>Enter Compound = "ASPIRIN"</li>
-                                        <li>Enter Target = "Blood" </li>
-                                        <li>Enter Name = "IC50" </li>
-                                        <li>Click on the <span class="glyphicon glyphicon-search" aria-hidden="true"></span>  </li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <button class="collapsible3">See A Quick Search Example</button>
+                    <div class="content3">
+                        <div id="examplebioactivitiesquick" class="editorsubtainer">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <ul class="list-unstyled background3">
+                                        <li>Follow these steps
+                                             <ul class="filled-circle">
+                                                <li>Enter Compound = "ASPIRIN"</li>
+                                                <li>Enter Target = "Blood" </li>
+                                                <li>Enter Name = "IC50" </li>
+                                                <li>Click on the <span class="glyphicon glyphicon-search" aria-hidden="true"></span>  </li>
+                                            </ul>
+                                        </li>
                                     </ul>
                                 </li>
-                                <li><br>Option 2 - Advanced Search
+                            </ul>
+                        </div>
+                    </div>
+
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <ul class="list-unstyled">
+                                <li>Option 2 - Advanced Search
                                     <ul class="filled-circle">
                                         <li>Optional - Click on the buttons to Exclude and/or change data as indicated on the button
                                             <ul class="open-circle">
@@ -1302,21 +1320,40 @@
                                         <li>Click the button to <b>Generate Table</b> </li>
                                     </ul>
                                 </li>
-                                <li><br>Option 2 - Advanced Search - Example
-                                    <ul class="filled-circle">
-                                        <li>Select Target Types - check the box in the top left to include all </li>
-                                        <li>Select Organisms - check the box in the top left to include all </li>
-                                        <li>Filter Compounds - check all boxes, leave LogP and Molecular Weight blank </li>
-                                        <li>Bioactivities Filter - type in "IC50" </li>
-                                        <li>Select Bioactivities - check the box in the top left to include all </li>
-                                        <li>Targets Filter - type in "Blood" </li>
-                                        <li>Select Targets - check the box in the top left to include all </li>
-                                        <li>Compounds Filter - type in "ASPIRIN" </li>
-                                        <li>Select Compounds - check the box in the top left to include all </li>
-                                        <li>Click the button to <b>Generate Table</b> </li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <button class="collapsible3">See An Advanced Search Example</button>
+                    <div class="content3">
+                        <div id="examplebioactivitiesadvanced" class="editorsubtainer">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <ul class="list-unstyled background3">
+                                        <li>Follow these steps
+                                             <ul class="filled-circle">
+                                                <li>Select Target Types - check the box in the top left to include all </li>
+                                                <li>Select Organisms - check the box in the top left to include all </li>
+                                                <li>Filter Compounds - check all boxes, leave LogP and Molecular Weight blank </li>
+                                                <li>Bioactivities Filter - type in "IC50" </li>
+                                                <li>Select Bioactivities - check the box in the top left to include all </li>
+                                                <li>Targets Filter - type in "Blood" </li>
+                                                <li>Select Targets - check the box in the top left to include all </li>
+                                                <li>Compounds Filter - type in "ASPIRIN" </li>
+                                                <li>Select Compounds - check the box in the top left to include all </li>
+                                                <li>Click the button to <b>Generate Table</b> </li>
+                                            </ul>
+                                        </li>
                                     </ul>
                                 </li>
-                                <li><br>Notes
+                            </ul>
+                        </div>
+                    </div>
+
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <ul class="list-unstyled">
+                                <li>Notes
                                     <ul class="filled-circle">
                                         <li>The <b>Data Validity</b> column of the results table/list indicates whether or not, and why, an entry was marked "questionable"</li>
                                         <li>Not every ChEMBL entry has a corresponding PubChem entry, and vice versa </li>
@@ -1336,8 +1373,8 @@
         </div>
 
         <div id="drugtrials">
-            <button class="collapsible">Drug Trials</button>
-            <div class="content">
+            <button class="collapsible1">Drug Trials</button>
+            <div class="content1">
                 <div id="drugtrialsviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -1362,8 +1399,8 @@
         </div>
 
         <div id="adverseevents">
-            <button class="collapsible">Adverse Events</button>
-            <div class="content">
+            <button class="collapsible1">Adverse Events</button>
+            <div class="content1">
                 <div id="adverseeventsviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -1401,8 +1438,8 @@
         </div>
 
         <div id="compareadverseevents">
-            <button class="collapsible">Compare Adverse Events</button>
-            <div class="content">
+            <button class="collapsible1">Compare Adverse Events</button>
+            <div class="content1">
                 <div id="compareadverseeventsviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -1439,8 +1476,8 @@
         </div>
 
         <div id="heatmap">
-            <button class="collapsible">Heatmap of Bioactivities</button>
-            <div class="content">
+            <button class="collapsible1">Heatmap of Bioactivities</button>
+            <div class="content1">
                 <div id="heatmapviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -1466,21 +1503,40 @@
                                         <li>Clicking on a specific square in the heatmap will show that particular value in a pop-up window </li>
                                     </ul>
                                 </li>
-                                <li><br>Headmap - Example
-                                    <ul class="filled-circle">
-                                        <li>Select Target Types - check the box in the top left to include all </li>
-                                        <li>Select Organisms - check the box in the top left to include all </li>
-                                        <li>Filter Compounds - check all boxes, leave LogP and Molecular Weight blank </li>
-                                        <li>Bioactivities Filter - type in "IC50" </li>
-                                        <li>Select Bioactivities - check the box in the top left to include all </li>
-                                        <li>Select Targets - check the box in the top left to include all </li>
-                                        <li>Compounds Filter - type in "ASPIRIN" </li>
-                                        <li>Select Compounds - check the box in the top left to include all </li>
-                                        <li>Select Drug Trials - check the box in the top left to include all </li>
-                                        <li>Click the button to <b>Generate Heatmap</b> </li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <button class="collapsible3">See An Example</button>
+                    <div class="content3">
+                        <div id="exampleheatmap" class="editorsubtainer">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <ul class="list-unstyled background3">
+                                        <li>Follow these steps
+                                            <ul class="filled-circle">
+                                                <li>Select Target Types - check the box in the top left to include all </li>
+                                                <li>Select Organisms - check the box in the top left to include all </li>
+                                                <li>Filter Compounds - check all boxes, leave LogP and Molecular Weight blank </li>
+                                                <li>Bioactivities Filter - type in "IC50" </li>
+                                                <li>Select Bioactivities - check the box in the top left to include all </li>
+                                                <li>Select Targets - check the box in the top left to include all </li>
+                                                <li>Compounds Filter - type in "ASPIRIN" </li>
+                                                <li>Select Compounds - check the box in the top left to include all </li>
+                                                <li>Select Drug Trials - check the box in the top left to include all </li>
+                                                <li>Click the button to <b>Generate Heatmap</b> </li>
+                                            </ul>
+                                        </li>
                                     </ul>
                                 </li>
-                                <li><br>Notes
+                            </ul>
+                        </div>
+                    </div>
+
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <ul class="list-unstyled">
+                                <li>Notes
                                     <ul class="filled-circle">
                                         <li>Not every ChEMBL entry has a corresponding PubChem entry, and vice versa </li>
                                         <li>The following will clear <em>all</em> selections
@@ -1499,8 +1555,8 @@
         </div>
 
         <div id="cluster">
-            <button class="collapsible">Compound Clustering</button>
-            <div class="content">
+            <button class="collapsible1">Compound Clustering</button>
+            <div class="content1">
                 <div id="clusterviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -1524,19 +1580,38 @@
                                         <li>Click on a node to see information about the compound (click the red X button to close)</li>
                                     </ul>
                                 </li>
-                                <li><br>Cluster - Example
-                                    <ul class="filled-circle">
-                                        <li>Select Target Types - check the box "Single Protein" </li>
-                                        <li>Select Organisms - check the box "Homo sapiens" </li>
-                                        <li>Filter Compounds - check all boxes, leave LogP and Molecular Weight blank </li>
-                                        <li>Select Bioactivities - check the box in the top left to include all </li>
-                                        <li>Select Targets - check the box "!No Target" </li>
-                                        <li>Select Compounds - check the box in the top left to include all </li>
-                                        <li>Select Drug Trials - check the box in the top left to include all </li>
-                                        <li>Click the button to <b>Generate Dendrogram</b> </li>
+                           </ul>
+                        </li>
+                    </ul>
+
+                    <button class="collapsible3">See An Example</button>
+                    <div class="content3">
+                        <div id="examplecluster" class="editorsubtainer">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <ul class="list-unstyled background3">
+                                        <li>Follow these steps
+                                            <ul class="filled-circle">
+                                                <li>Select Target Types - check the box "Single Protein" </li>
+                                                <li>Select Organisms - check the box "Homo sapiens" </li>
+                                                <li>Filter Compounds - check all boxes, leave LogP and Molecular Weight blank </li>
+                                                <li>Select Bioactivities - check the box in the top left to include all </li>
+                                                <li>Select Targets - check the box "!No Target" </li>
+                                                <li>Select Compounds - check the box in the top left to include all </li>
+                                                <li>Select Drug Trials - check the box in the top left to include all </li>
+                                                <li>Click the button to <b>Generate Dendrogram</b> </li>
+                                            </ul>
+                                        </li>
                                     </ul>
                                 </li>
-                                <li><br>Notes
+                            </ul>
+                        </div>
+                    </div>
+
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <ul class="list-unstyled">
+                                <li>Notes
                                     <ul class="filled-circle">
                                         <li>Not every ChEMBL entry has a corresponding PubChem entry, and vice versa </li>
                                         <li>The following will clear <em>all</em> selections
@@ -1561,9 +1636,9 @@
         <h1 class="sub1-bars">Instructions for Data Providers</h1>
 
         <div id="studies_editor">
-            <button class="collapsible">Adding Assay Data Step 1 - Add/Edit Study </button>
-            <div class="content">
-                <div id="studieseditor" class="adminsubtainer">
+            <button class="collapsible1">Adding Assay Data Step 1 - Add/Edit Study </button>
+            <div class="content1">
+                <div id="studieseditor" class="editorsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
@@ -1606,76 +1681,82 @@
                     </ul>
                 </div>
 
-                <button class="showhide2button">See a Note About Flags</button>
-                <div id="flagsnotes" class="editor2subtainer">
-                    <ul class="list-group">
-                        <li class="list-group-item">
-                            <ul class="list-unstyled">
-                                <li>A <b>Study</b>, each <b>Matrix</b>, and/or each <b>Matrix Item</b> can be flagged and annotated
-                                    <ul class="filled-circle">
-                                        <li> Clicking <a role='button' class="btn btn-sm" style="color:#337AB7"> <span class="glyphicon glyphicon-flag" aria-hidden="true"></span> </a> places the flag  </li>
-                                        <li> Clicking <a role='button' class="btn btn-sm btn-warning"> Notes </a> brings up an input dialog where annotations can be added </li>
-                                    </ul>
-                                </li>
-                                <li><br>Tips
-                                    <ul class="filled-circle">
-                                        <li> Flags and notes are fully reversible until a <b>Study</b> is signed off </li>
-                                        <li> The annotation process works the same way for a <b>Study</b>, a <b>Matrix</b>, and a <b>Matrix Item</b> </li>
-                                        <li> A <b>Study</b> is annotated at the bottom of the <b>Study Level Details</b> page </li>
-                                        <li> A <b>Matrix</b> is annotated at the bottom of the <b>Matrix Setup and Data</b> page </li>
-                                        <li> A <b>Matrix Item</b> is annotated at the bottom of the <b>Item Setup and Data</b> page </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
+                <button class="collapsible3">See a Note About Flags</button>
+                <div class="content3">
+                    <div id="flagsnotes" class="editorsubtainer">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <ul class="list-unstyled background3">
+                                    <li>A <b>Study</b>, each <b>Matrix</b>, and/or each <b>Matrix Item</b> can be flagged and annotated
+                                        <ul class="filled-circle">
+                                            <li> Clicking <a role='button' class="btn btn-sm" style="color:#337AB7"> <span class="glyphicon glyphicon-flag" aria-hidden="true"></span> </a> places the flag  </li>
+                                            <li> Clicking <a role='button' class="btn btn-sm btn-warning"> Notes </a> brings up an input dialog where annotations can be added </li>
+                                        </ul>
+                                    </li>
+                                    <li><br>Tips
+                                        <ul class="filled-circle">
+                                            <li> Flags and notes are fully reversible until a <b>Study</b> is signed off </li>
+                                            <li> The annotation process works the same way for a <b>Study</b>, a <b>Matrix</b>, and a <b>Matrix Item</b> </li>
+                                            <li> A <b>Study</b> is annotated at the bottom of the <b>Study Level Details</b> page </li>
+                                            <li> A <b>Matrix</b> is annotated at the bottom of the <b>Matrix Setup and Data</b> page </li>
+                                            <li> A <b>Matrix Item</b> is annotated at the bottom of the <b>Item Setup and Data</b> page </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
-                <button class="showhide2button">See a Sign Off and Validation</button>
-                <div id="validation" class="editor2subtainer">
-                    <ul class="list-group">
-                        <li class="list-group-item">
-                            <ul class="list-unstyled">
-                                <li>A <b>Study</b>, each <b>Matrix</b>, and/or each <b>Matrix Item</b> can be validated
-                                    <ul class="filled-circle">
-                                        <li> <b>Study</b> sign off is done by the Data Group Admin by clicking the <b>View/Edit Sigh Off Status of this Study</b> button on the <b>Study Matrices and Items</b> list page </li>
-                                        <li> A <b>Matrix</b> is validated from the <b>Matrix Setup and Data</b> page </li>
-                                        <li> A <b>Matrix Item</b> is validated from the <b>Item Setup and Data</b> page </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
+                <button class="collapsible3">See a Sign Off and Validation</button>
+                <div class="content3">
+                    <div id="validation" class="editorsubtainer">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <ul class="list-unstyled background3">
+                                    <li>A <b>Study</b>, each <b>Matrix</b>, and/or each <b>Matrix Item</b> can be validated
+                                        <ul class="filled-circle">
+                                            <li> <b>Study</b> sign off is done by the Data Group Admin by clicking the <b>View/Edit Sigh Off Status of this Study</b> button on the <b>Study Matrices and Items</b> list page </li>
+                                            <li> A <b>Matrix</b> is validated from the <b>Matrix Setup and Data</b> page </li>
+                                            <li> A <b>Matrix Item</b> is validated from the <b>Item Setup and Data</b> page </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
-                <button class="showhide2button">See a Note About Integrated Studies</button>
-                <div id="studyconfigurations" class="editor2subtainer">
-                    <ul class="list-group">
-                        <li class="list-group-item">
-                            <ul class="list-unstyled">
-                                <li>When performing <b>Integrated Studies</b>:
-                                    <ul class="filled-circle">
-                                        <li>When setting up a <b>Study</b>, <b>Models</b> can be associated </li>
-                                        <li>Each <b>Model</b> is assigned a <b>Label</b>, which can be one or two characters long </li>
-                                        <li><b>Sequence Number</b> shows the order of input for the <b>Models</b> </li>
-                                        <li><b>Output</b> lists all of the other <b>Models</b> the current <b>Models</b> feeds into </li>
-                                        <li><b>Output</b>  should be a list of labels separated by dashes (e.g. "AB-CD" means the model is connected to AB and CD) </li>
-                                        <li><b>Coupling</b> indicates whether or not the model is directly connected to the other models </li>
-                                        <li>Click <b>Add Model</b> to add another row </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
+                <button class="collapsible3">See a Note About Integrated Studies</button>
+                <div class="content3">
+                    <div id="studyconfigurations" class="editorsubtainer">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <ul class="list-unstyled background3">
+                                    <li>When performing <b>Integrated Studies</b>:
+                                        <ul class="filled-circle">
+                                            <li>When setting up a <b>Study</b>, <b>Models</b> can be associated </li>
+                                            <li>Each <b>Model</b> is assigned a <b>Label</b>, which can be one or two characters long </li>
+                                            <li><b>Sequence Number</b> shows the order of input for the <b>Models</b> </li>
+                                            <li><b>Output</b> lists all of the other <b>Models</b> the current <b>Models</b> feeds into </li>
+                                            <li><b>Output</b>  should be a list of labels separated by dashes (e.g. "AB-CD" means the model is connected to AB and CD) </li>
+                                            <li><b>Coupling</b> indicates whether or not the model is directly connected to the other models </li>
+                                            <li>Click <b>Add Model</b> to add another row </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
             </div>
         </div>
 
         <div id="matrices_editor">
-            <button class="collapsible">Adding Assay Data Step 2 - Matrices Setup </button>
-            <div class="content">
-                <div id="matriceseditor" class="adminsubtainer">
+            <button class="collapsible1">Adding Assay Data Step 2 - Matrices Setup </button>
+            <div class="content1">
+                <div id="matriceseditor" class="editorsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
@@ -1722,9 +1803,9 @@
         </div>
 
         <div id="matrixitems_editor">
-            <button class="collapsible">Adding Assay Data Step 3 - Matrix Items Update (Optional)</button>
-            <div class="content">
-                <div id="matrixitemseditor" class="adminsubtainer">
+            <button class="collapsible1">Adding Assay Data Step 3 - Matrix Items Update (Optional)</button>
+            <div class="content1">
+                <div id="matrixitemseditor" class="editorsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
@@ -1782,9 +1863,9 @@
         </div>
 
         <div id="assaydata_editor">
-            <button class="collapsible">Adding Assay Data Step 4 - Upload Assay Data</button>
-            <div class="content">
-                <div id="assaydataeditor" class="adminsubtainer">
+            <button class="collapsible1">Adding Assay Data Step 4 - Upload Assay Data</button>
+            <div class="content1">
+                <div id="assaydataeditor" class="editorsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
@@ -1820,93 +1901,96 @@
                     </ul>
                 </div>
 
-                <button class="showhide2button">Details of Assay Data File Format (MIF-C-a)</button>
-                <div id="uploadingdata" class="editorsubtainer">
-                    <ul class="list-group">
-                        <li class="list-group-item">
-                            <ul class="list-unstyled">
-                                <li>To get an example template file, <a href="/media/excel_templates/chip_template-{{ version }}.xlsx">click here</a>
-                                    <ul class="filled-circle">
-                                        <li>Chip ID must be unique within a <b>Study</b></li>
-                                        <li>Files can contain multiple tabs</li>
-                                        <li>All tabs with correct headers (i.e. column names) will be evaluated for upload, others will be ignored</li>
-                                        <li>The correct headers must be placed in the first three rows to be considered valid</li>
-                                    </ul>
-                                </li>
-                            </ul>
-                            <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
-                            <thead>
-                                <tr class="active">
-                                    <th>Chip ID</th>
-                                    <th>Cross Reference</th>
-                                    <th>Assay Plate ID</th>
-                                    <th>Assay Well ID</th>
-                                    <th>Day</th>
-                                    <th>Hour</th>
-                                    <th>Minute</th>
-                                    <th>Target / Analyte</th>
-                                    <th>Subtarget</th>
-                                    <th>Method / Kit</th>
-                                    <th>Sample Location</th>
-                                    <th>Value</th>
-                                    <th>Value Unit</th>
-                                    <th>Replicate</th>
-                                    <th>Caution Flag</th>
-                                    <th>Exclude</th>
-                                    <th>Notes</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>[Chip ID]</td>
-                                    <td>[Cross Reference]</td>
-                                    <td>[Assay Plate ID]</td>
-                                    <td>[Assay Well ID]</td>
-                                    <td>[Day]</td>
-                                    <td>[Hour]</td>
-                                    <td>[Minute]</td>
-                                    <td>[Target / Analyte]</td>
-                                    <td>[Subtarget]</td>
-                                    <td>[Method / Kit]</td>
-                                    <td>[Sample Location]</td>
-                                    <td>[Value]</td>
-                                    <td>[Value Unit]</td>
-                                    <td>[Replicate]</td>
-                                    <th>[Caution Flag]</th>
-                                    <td>[Leave Blank to Pass]</td>
-                                    <td>[Notes]</td>
-                                </tr>
-                                <tr>
-                                    <td>[Chip ID]</td>
-                                    <td>[Cross Reference]</td>
-                                    <td>[Assay Plate ID]</td>
-                                    <td>[Assay Well ID]</td>
-                                    <td>[Day]</td>
-                                    <td>[Hour]</td>
-                                    <td>[Minute]</td>
-                                    <td>[Target / Analyte]</td>
-                                    <td>[Subtarget]</td>
-                                    <td>[Method / Kit]</td>
-                                    <td>[Sample Location]</td>
-                                    <td>[Value]</td>
-                                    <td>[Value Unit]</td>
-                                    <td>[Replicate]</td>
-                                    <th>[Caution Flag]</th>
-                                    <td>[Any Value in this Column Marks the Reading Invalid]</td>
-                                    <td>[Notes]</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        </li>
-                    </ul>
+                <button class="collapsible3">Details of Assay Data File Format (MIF-C-a)</button>
+                <div class="content3">
+                    <div id="uploadingdata" class="editorsubtainer">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <ul class="list-unstyled background3">
+                                    <li>To get an example template file, <a href="/media/excel_templates/chip_template-{{ version }}.xlsx">click here</a>
+                                        <ul class="filled-circle">
+                                            <li>Chip ID must be unique within a <b>Study</b></li>
+                                            <li>Files can contain multiple tabs</li>
+                                            <li>All tabs with correct headers (i.e. column names) will be evaluated for upload, others will be ignored</li>
+                                            <li>The correct headers must be placed in the first three rows to be considered valid</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                                <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                <thead>
+                                    <tr class="active">
+                                        <th>Chip ID</th>
+                                        <th>Cross Reference</th>
+                                        <th>Assay Plate ID</th>
+                                        <th>Assay Well ID</th>
+                                        <th>Day</th>
+                                        <th>Hour</th>
+                                        <th>Minute</th>
+                                        <th>Target / Analyte</th>
+                                        <th>Subtarget</th>
+                                        <th>Method / Kit</th>
+                                        <th>Sample Location</th>
+                                        <th>Value</th>
+                                        <th>Value Unit</th>
+                                        <th>Replicate</th>
+                                        <th>Caution Flag</th>
+                                        <th>Exclude</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>[Chip ID]</td>
+                                        <td>[Cross Reference]</td>
+                                        <td>[Assay Plate ID]</td>
+                                        <td>[Assay Well ID]</td>
+                                        <td>[Day]</td>
+                                        <td>[Hour]</td>
+                                        <td>[Minute]</td>
+                                        <td>[Target / Analyte]</td>
+                                        <td>[Subtarget]</td>
+                                        <td>[Method / Kit]</td>
+                                        <td>[Sample Location]</td>
+                                        <td>[Value]</td>
+                                        <td>[Value Unit]</td>
+                                        <td>[Replicate]</td>
+                                        <th>[Caution Flag]</th>
+                                        <td>[Leave Blank to Pass]</td>
+                                        <td>[Notes]</td>
+                                    </tr>
+                                    <tr>
+                                        <td>[Chip ID]</td>
+                                        <td>[Cross Reference]</td>
+                                        <td>[Assay Plate ID]</td>
+                                        <td>[Assay Well ID]</td>
+                                        <td>[Day]</td>
+                                        <td>[Hour]</td>
+                                        <td>[Minute]</td>
+                                        <td>[Target / Analyte]</td>
+                                        <td>[Subtarget]</td>
+                                        <td>[Method / Kit]</td>
+                                        <td>[Sample Location]</td>
+                                        <td>[Value]</td>
+                                        <td>[Value Unit]</td>
+                                        <td>[Replicate]</td>
+                                        <th>[Caution Flag]</th>
+                                        <td>[Any Value in this Column Marks the Reading Invalid]</td>
+                                        <td>[Notes]</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
+
             </div>
         </div>
 
         <div id="assayimages_editor">
-            <button class="collapsible">Adding Assay Data Step 5 -  Adding Assay Images and Videos</button>
-            <div class="content">
-                <div id="imageseditor" class="adminsubtainer">
+            <button class="collapsible1">Adding Assay Data Step 5 -  Adding Assay Images and Videos</button>
+            <div class="content1">
+                <div id="imageseditor" class="editorsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
@@ -1939,8 +2023,8 @@
         <h1 class="sub2-bars"> Adding/Editing Items to Pick Lists for Database Admins </h1>
 
         <div id="methods_admin">
-            <button class="collapsible">Assay Methods/Kits</button>
-            <div class="content">
+            <button class="collapsible1">Assay Methods/Kits</button>
+            <div class="content1">
                 <div id="methodssadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -1964,8 +2048,8 @@
         </div>
 
         <div id="targets_admin">
-            <button class="collapsible">Assay Targets/Analytes</button>
-            <div class="content">
+            <button class="collapsible1">Assay Targets/Analytes</button>
+            <div class="content1">
                 <div id="targetsadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -1990,8 +2074,8 @@
         </div>
 
         <div id="devices_admin">
-            <button class="collapsible">Devices Used in MPS Models</button>
-            <div class="content">
+            <button class="collapsible1">Devices Used in MPS Models</button>
+            <div class="content1">
                 <div id="devicesadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -2019,8 +2103,8 @@
         </div>
 
         <div id="diseaselist_admin">
-            <button class="collapsible">Diseases in the <b>MPS Database</b> </button>
-            <div class="content">
+            <button class="collapsible1">Diseases in the <b>MPS Database</b> </button>
+            <div class="content1">
                 <div id="diseaselistadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -2046,8 +2130,8 @@
         </div>
 
         <div id="cellsamples_admin">
-            <button class="collapsible">Cell Samples Used in MPS Models...still need to update</button>
-            <div class="content">
+            <button class="collapsible1">Cell Samples Used in MPS Models...still need to update</button>
+            <div class="content1">
                 <div id="cellsamplesadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -2084,8 +2168,8 @@
         </div>
 
         <div id="chemicaldata_admin">
-            <button class="collapsible">Chemical Data...still need to update</button>
-            <div class="content">
+            <button class="collapsible1">Chemical Data...still need to update</button>
+            <div class="content1">
                 <div id="chemicaldataeditor" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -2120,8 +2204,8 @@
         </div>
 
         <div id="mpslocations_admin">
-            <button class="collapsible">Locations of MPS Model Devices </button>
-            <div class="content">
+            <button class="collapsible1">Locations of MPS Model Devices </button>
+            <div class="content1">
                 <div id="locationadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -2142,8 +2226,8 @@
         </div>
 
         <div id="mpsmodels_admin">
-            <button class="collapsible">Models in the Database</button>
-            <div class="content">
+            <button class="collapsible1">Models in the Database</button>
+            <div class="content1">
                 <div id="mpsmodelsadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -2171,8 +2255,8 @@
         </div>
 
         <div id="settings_admin">
-            <button class="collapsible">Settings (Instrument Settings, Non-Compound Treatments, etcetera) </button>
-            <div class="content">
+            <button class="collapsible1">Settings (Instrument Settings, Non-Compound Treatments, etcetera) </button>
+            <div class="content1">
                 <div id="settingsadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -2193,8 +2277,8 @@
         </div>
 
         <div id="physicalunits_admin">
-            <button class="collapsible">Units Available for Compounds, Cells, Settings, and Assay Targets</button>
-            <div class="content">
+            <button class="collapsible1">Units Available for Compounds, Cells, Settings, and Assay Targets</button>
+            <div class="content1">
                 <div id="physicalunitsadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -2217,8 +2301,8 @@
         <h1 class="sub2-bars"> Controlling User Access </h1>
 
         <div id="study_groups_admin">
-            <button class="collapsible">Assigning Groups to Studies</button>
-            <div class="content">
+            <button class="collapsible1">Assigning Groups to Studies</button>
+            <div class="content1">
                 <div id="studygroupsadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -2241,8 +2325,8 @@
         </div>
 
         <div id="user_groups_admin">
-            <button class="collapsible">Assigning Users To Groups</button>
-            <div class="content">
+            <button class="collapsible1">Assigning Users To Groups</button>
+            <div class="content1">
                 <div id="usergroupsadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -2298,7 +2382,7 @@
 
 <script>
   //From w3schools.com https://www.w3schools.com/howto/tryit.asp?filename=tryhow_js_collapsible_animate
-    var coll = $(".collapsible, .showhidebutton, .showhide2button");
+    var coll = $(".collapsible1, .collapsible2, .collapsible3");
     var i;
 
     for (i = 0; i < coll.length; i++) {
@@ -2311,6 +2395,7 @@
             }
         });
     }
+
 </script>
 
 </body>
