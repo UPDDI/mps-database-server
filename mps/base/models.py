@@ -4,6 +4,7 @@
 
 from django.db import models
 from django.utils import timezone
+from simple_history.models import HistoricalRecords
 # from django.shortcuts import redirect, get_object_or_404
 
 
@@ -47,6 +48,9 @@ class TrackableModel(models.Model):
     signed_off_date = models.DateTimeField(blank=True,
                                            null=True)
 
+    # Using django-simplehistory
+    history = HistoricalRecords(inherit=True)
+
     # May be useful... however might be better to just add as needed
     # sign_off_notes = models.CharField(max_length=255, blank=True, default='')
 
@@ -67,6 +71,14 @@ class TrackableModel(models.Model):
             return self.signed_off_by.first_name + ' ' + self.signed_off_by.last_name
         else:
             return 'Admin'
+
+    # @property
+    # def _history_user(self):
+    #     return self.modified_by
+    #
+    # @_history_user.setter
+    # def _history_user(self, value):
+    #     self.modified_by = value
 
 
 class LockableModel(TrackableModel):
@@ -147,24 +159,31 @@ def save_forms_with_tracking(self, form, formset=None, update=False):
             form.instance.signed_off_by = None
             form.instance.signed_off_date = None
 
-        self.object = form.save()
+        self.object = form.save(commit=False)
 
         # Else if Add
         if not update:
             self.object.modified_by = self.object.created_by = self.request.user
         else:
             self.object.modified_by = self.request.user
+
         self.object.save()
 
     if formset:
+        formset_has_changed = False
+
         # If a list of formsets, save each
         if type(formset) == list:
             for current_formset in formset:
-                current_formset.save()
-        # Otherwise, just save the one
-        else:
-            formset.save()
+                if current_formset.has_changed():
+                    current_formset.save()
+                    formset_has_changed = True
 
-        if update:
+        # Otherwise, just save the one
+        elif formset.has_changed():
+            formset.save()
+            formset_has_changed = True
+
+        if update and formset_has_changed:
             self.object.modified_by = self.request.user
             self.object.save()

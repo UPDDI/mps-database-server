@@ -132,7 +132,20 @@ NEVERCACHE_KEY = 'x=scmcpvq_$-9pz3651h=ln0b#-x&%%hz_)u0uzghfwk6#++pl'
 #     'django.template.loaders.eggs.Loader',
 # )
 
-MIDDLEWARE_CLASSES = (
+# DEPRECATED
+# MIDDLEWARE_CLASSES = (
+#     'debug_toolbar.middleware.DebugToolbarMiddleware',
+#     'django.middleware.common.CommonMiddleware',
+#     'django.contrib.sessions.middleware.SessionMiddleware',
+#     'django.middleware.csrf.CsrfViewMiddleware',
+#     'django.contrib.auth.middleware.AuthenticationMiddleware',
+#     'django.contrib.messages.middleware.MessageMiddleware',
+#     # Uncomment the next line for simple clickjacking protection:
+#     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+# )
+
+# Middleware for simple history
+MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -141,7 +154,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-)
+    'simple_history.middleware.HistoryRequestMiddleware',
+]
 
 ROOT_URLCONF = 'mps.urls'
 
@@ -224,6 +238,12 @@ INSTALLED_APPS = (
     # Haystack for searching
     'haystack',
 
+    # Compression
+    'compressor',
+
+    # Model history
+    'simple_history',
+
     # MPS applications:
     'mps',
     'assays',
@@ -234,7 +254,6 @@ INSTALLED_APPS = (
     'drugtrials',
     'resources',
     'diseases',
-    'compressor',
 )
 
 # COMPRESSION

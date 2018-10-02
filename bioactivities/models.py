@@ -47,7 +47,7 @@ def chembl_assay(chemblid):
             if key in FIELDS}
 
 
-class Target(LockableModel):
+class Target(models.Model):
     """Information for a Bioactivity Target (usually a protein)"""
     name = models.TextField(help_text="Preferred target name.")
     synonyms = models.TextField(default='', blank=True)
@@ -100,7 +100,7 @@ class Target(LockableModel):
 ASSAYTYPES = (('B', 'Binding'), ('F', 'Functional'), ('A', 'ADMET'), ('P', 'Physicochemical'), ('U', 'Unknown'))
 
 
-class Assay(LockableModel):
+class Assay(models.Model):
     """Information for a Bioactivity Assay (not to be mistaken for models of Assays app)"""
     # external identifiers, not unique because does go with null on SQL server
     chemblid = models.TextField('ChEMBL ID',
@@ -149,7 +149,7 @@ class Assay(LockableModel):
 DATA_VALIDITY_ANNOTATIONS = (('R', 'Outside typical range'), ('T', 'Potential transcription error'), ('O', 'Other'))
 
 
-class Bioactivity(LockableModel):
+class Bioactivity(models.Model):
     """A Bioactivity detailing the compound, target, assay, and pertinent values"""
     class Meta(object):
         verbose_name_plural = 'bioactivities'
@@ -209,7 +209,7 @@ class Bioactivity(LockableModel):
         )
 
 
-class BioactivityType(LockableModel):
+class BioactivityType(models.Model):
     """A unified Bioactivity unit with conversion"""
     class Meta(object):
         ordering = ('chembl_bioactivity', 'chembl_unit', )
@@ -228,7 +228,7 @@ class BioactivityType(LockableModel):
         return unicode(self.standard_name)
 
 
-class PubChemBioactivity(LockableModel):
+class PubChemBioactivity(models.Model):
     """A Bioactivity from PubChem (Bioactivity is from ChEMBL)"""
     # TextFields and CharFields have no performace benefits over eachother, but may want to use CharFields for clarity
     assay = models.ForeignKey('Assay', blank=True, null=True)
@@ -273,7 +273,7 @@ class PubChemBioactivity(LockableModel):
 
 # DEPRECATED
 # TODO PubChemTarget model is slated for removal
-class PubChemTarget(LockableModel):
+class PubChemTarget(models.Model):
     name = models.TextField(default='', blank=True, help_text="Preferred target name.")
 
     # May be difficult to acquire
@@ -297,7 +297,7 @@ class PubChemTarget(LockableModel):
 
 # DEPRECATED
 # TODO PubChemAssay model is slated for removal
-class PubChemAssay(LockableModel):
+class PubChemAssay(models.Model):
     # Source is an optional field showing where PubChem pulled their data
     source = models.TextField(default='', blank=True)
 

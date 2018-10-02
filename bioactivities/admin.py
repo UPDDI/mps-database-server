@@ -12,8 +12,10 @@ from .models import *
 from bioactivities.forms import AssayForm
 from bioactivities.forms import TargetsForm
 
+from import_export.admin import ImportExportModelAdmin
 
-class TargetAdmin(LockableAdmin):
+
+class TargetAdmin(ImportExportModelAdmin):
     """Admin for Bioactivity Target"""
     # class Media(object):
     #     js = ('bioactivities/customize_admin.js',)
@@ -31,12 +33,10 @@ class TargetAdmin(LockableAdmin):
 
     save_on_top = True
     list_per_page = 300
-    list_display = ('name', 'organism', 'target_type', 'chembl_link', 'GI', 'locked')
+    list_display = ('name', 'organism', 'target_type', 'chembl_link', 'GI')
     list_filter = ('target_type', 'organism')
     search_fields = ['name', 'organism', 'synonyms', '=chemblid', 'GI']
     actions = ['update_fields']
-    readonly_fields = ('last_update', 'created_by', 'created_on',
-                       'modified_by', 'modified_on')
 
     fieldsets = (
         (
@@ -52,16 +52,6 @@ class TargetAdmin(LockableAdmin):
                     'target_type',
                     'GI',
                     'last_update',
-                )
-            }
-        ),
-        (
-            'Change Tracking', {
-                'fields': (
-                    'locked',
-                    ('created_by', 'created_on'),
-                    ('modified_by', 'modified_on'),
-                    ('signed_off_by', 'signed_off_date'),
                 )
             }
         ),
@@ -142,7 +132,7 @@ class TargetAdmin(LockableAdmin):
 admin.site.register(Target, TargetAdmin)
 
 
-class AssayAdmin(LockableAdmin):
+class AssayAdmin(ImportExportModelAdmin):
     """Admin for Bioactivity Assay (not to be confused with models of the Assay App)"""
     form = AssayForm
 
@@ -159,12 +149,10 @@ class AssayAdmin(LockableAdmin):
     save_on_top = True
     list_per_page = 300
     list_display = (
-        'description', 'chembl_link', 'pubchem_id', 'organism', 'target', 'assay_type', 'locked')
+        'description', 'chembl_link', 'pubchem_id', 'organism', 'target', 'assay_type')
     list_filter = ('assay_type',)
     search_fields = ['description', '=chemblid', 'pubchem_id']
     actions = ['update_fields']
-    readonly_fields = ('last_update', 'created_by', 'created_on',
-                       'modified_by', 'modified_on')
 
     fieldsets = (
         (
@@ -181,16 +169,6 @@ class AssayAdmin(LockableAdmin):
                     'strain',
                     'journal',
                     'last_update',
-                )
-            }
-        ),
-        (
-            'Change Tracking', {
-                'fields': (
-                    'locked',
-                    ('created_by', 'created_on'),
-                    ('modified_by', 'modified_on'),
-                    ('signed_off_by', 'signed_off_date'),
                 )
             }
         ),
@@ -271,7 +249,7 @@ class AssayAdmin(LockableAdmin):
 admin.site.register(Assay, AssayAdmin)
 
 
-class BioactivityAdmin(LockableAdmin):
+class BioactivityAdmin(ImportExportModelAdmin):
     """Admin for an individual Bioactivity"""
     save_on_top = True
     list_per_page = 50
@@ -309,11 +287,8 @@ class BioactivityAdmin(LockableAdmin):
         'bioactivity_type',
         'value',
         'units',
-        'locked',
     )
     search_fields = ['compound__name', 'target__name', 'bioactivity_type']
-    readonly_fields = ['created_by', 'created_on', 'modified_by',
-                       'modified_on', 'bioactivity_display']
     actions = ['update_fields']
 
     fieldsets = (
@@ -322,10 +297,7 @@ class BioactivityAdmin(LockableAdmin):
                        ('bioactivity_type', 'value', 'units'),
                        ('standard_name', 'standardized_value', 'standardized_units'),
                        ('activity_comment', 'reference', 'name_in_reference'),
-                       ('notes', 'data_validity'),
-                       'locked',
-                       ('created_by', 'created_on'), ('modified_by', 'modified_on'),
-                       ('signed_off_by', 'signed_off_date'),)
+                       ('notes', 'data_validity'),)
         }),
     )
 
@@ -337,7 +309,7 @@ class BioactivityAdmin(LockableAdmin):
 admin.site.register(Bioactivity, BioactivityAdmin)
 
 
-class BioactivityTypeAdmin(LockableAdmin):
+class BioactivityTypeAdmin(ImportExportModelAdmin):
     """Admin for Bioactivty Type (for consolidating units and so on)"""
     resource_class = BioactivityTypeResource
     save_on_top = True
@@ -357,8 +329,6 @@ class BioactivityTypeAdmin(LockableAdmin):
     formfield_overrides = {
         models.TextField: {'widget': Textarea(attrs={'rows': 2, 'cols': 30})}
     }
-    readonly_fields = ['created_by', 'created_on', 'modified_by',
-                       'modified_on', 'chembl_bioactivity', 'chembl_unit']
 
     fieldsets = (
         (
@@ -371,23 +341,13 @@ class BioactivityTypeAdmin(LockableAdmin):
                 )
             }
         ),
-        (
-            'Change Tracking', {
-                'fields': (
-                    'locked',
-                    ('created_by', 'created_on'),
-                    ('modified_by', 'modified_on'),
-                    ('signed_off_by', 'signed_off_date'),
-                )
-            }
-        ),
     )
 
 
 admin.site.register(BioactivityType, BioactivityTypeAdmin)
 
 
-class PubChemBioactivityAdmin(LockableAdmin):
+class PubChemBioactivityAdmin(ImportExportModelAdmin):
     """Admin for a PubChem Bioactivity"""
     search_fields = ['compound__name', 'activity_name', 'target__name', 'outcome']
     list_filter = ['compound', ]
@@ -426,7 +386,7 @@ admin.site.register(PubChemBioactivity, PubChemBioactivityAdmin)
 
 
 # DEPRECATED
-#class PubChemTargetAdmin(LockableAdmin):
+#class PubChemTargetAdmin(ImportExportModelAdmin):
 #    search_fields = ['name', 'organism', 'GI']
 #
 #    save_on_top = True
@@ -452,7 +412,7 @@ admin.site.register(PubChemBioactivity, PubChemBioactivityAdmin)
 #admin.site.register(PubChemTarget, PubChemTargetAdmin)
 
 
-#class PubChemAssayAdmin(LockableAdmin):
+#class PubChemAssayAdmin(ImportExportModelAdmin):
 #    search_fields = ['aid', 'name', 'source']
 #
 #    save_on_top = True
