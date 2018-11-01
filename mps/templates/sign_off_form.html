@@ -1,6 +1,8 @@
-{% load custom_filters static %}
+{% load custom_filters static compress %}
 {# Is it in poor taste to include this here? #}
+{% compress js %}
 <script src="{% static "js/sign_off_form.js" %}"></script>
+{% endcompress %}
 
 {% if study_submit and user|is_group_admin:group or update and creator and user.id == creator or not study_submit and group and user|is_group_editor:group %}
 <div hidden>
@@ -19,7 +21,7 @@
 <div class="btn-group" id="mark_reviewed_button_group">
     <label class="btn btn-success">
         <span hidden class="glyphicon glyphicon-ok" id="mark_reviewed_check"></span>
-        <span> </span>
+        <span> </span>
     </label>
     <label id="mark_reviewed_label" for="mark_reviewed" class="btn btn-default active">
     </label>

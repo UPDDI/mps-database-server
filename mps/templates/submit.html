@@ -1,6 +1,6 @@
 {# Consolidated submit row #}
 {# Parameters passed via with: group -- group needed for Sign Off, creator -- user needed for Sign Off #}
-{% load custom_filters static %}
+{% load custom_filters static compress %}
 
 <nav id="floating-submit-row" class="footer navbar-fixed-bottom hidden-print floating-submit-row">
     <div class="container large-padding-top">
@@ -78,7 +78,9 @@
 
 {# This section gives a modal alert for when someone is going to overwrite an entry #}
 {% if update %}
+{% compress js %}
 <script src="{% static "js/overwrite.js" %}"></script>
+{% endcompress %}
 
 <div hidden id="overwrite_confirm" title="Overwrite this Entry?">
     <div class="alert alert-warning" role="alert">
