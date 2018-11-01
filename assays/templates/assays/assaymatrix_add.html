@@ -3,15 +3,15 @@
 
 {% block extra_head %}
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-{% endblock %}
-
-{% block load_js %}
     {% if not detail %}
     <script src="{% static "js/calendar.js" %}"></script>
     <script src="{% static "js/enter_override.js" %}"></script>
     <script src="{% static "assays/compound_instances.js" %}"></script>
     <script src="{% static "js/flag.js" %}"></script>
     {% endif %}
+{% endblock %}
+
+{% block load_js %}
     <script src="{% static "assays/organ_model_filter.js" %}"></script>
     <script src="{% static "assays/cell_sample_selection.js" %}"></script>
     <script src="{% static "assays/assaymatrix_add.js" %}"></script>
