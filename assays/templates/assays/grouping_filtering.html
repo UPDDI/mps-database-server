@@ -1,5 +1,7 @@
-{% load static %}
+{% load static compress %}
+{% compress js %}
 <script src="{% static "assays/grouping_filtering.js" %}"></script>
+{% endcompress %}
 
 <div id="filtering" class="well">
     {# Inline JS is a little risque, but expedient #}
