@@ -37,7 +37,9 @@ from assays.views import (
     AssayStudySetDataPlots,
     AssayStudySetReproducibility,
     AssayStudySetList,
-    AssayStudySetData
+    AssayStudySetData,
+    # SPECIFIC
+    TCTCSummary
 )
 import assays.ajax
 
@@ -139,4 +141,7 @@ urlpatterns = [
 
     # Ajax
     url(r'^assays_ajax/$', assays.ajax.ajax),
+
+    # SPECIFIC TO TCTC
+    url(r'^tctc_summary/$', TCTCSummary.as_view(), name='tctc-summary')
 ]

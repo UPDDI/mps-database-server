@@ -86,7 +86,8 @@ from mps.mixins import (
     PermissionDenied,
     StudyGroupMixin,
     StudyViewerMixin,
-    CreatorOrSuperuserRequiredMixin
+    CreatorOrSuperuserRequiredMixin,
+    SuperuserRequiredMixin
 )
 
 from mps.base.models import save_forms_with_tracking
@@ -2059,3 +2060,140 @@ class AssayStudySetData(DetailView):
         # Return nothing otherwise
         else:
             return HttpResponse('', content_type='text/plain')
+
+
+def get_summary_data(set_name, queryset):
+    organ_models = len(set(queryset.values_list('organ_model_id', flat=True)))
+    studies = len(set(queryset.values_list('study_id', flat=True)))
+    chips = queryset.count()
+    data_points = AssayDataPoint.objects.filter(
+        matrix_item_id__in=queryset,
+        replaced=False,
+        excluded=False
+    ).exclude(
+        value__isnull=True
+    ).count()
+
+    # NOT DRY
+    video_formats = {x: True for x in [
+        'webm',
+        'avi',
+        'ogv',
+        'mov',
+        'wmv',
+        'mp4',
+        '3gp',
+    ]}
+
+    all_media = AssayImage.objects.filter(matrix_item_id__in=queryset)
+
+    images = 0
+    videos = 0
+
+    for media in all_media:
+        is_video = media.file_name.split('.')[-1].lower() in video_formats
+        if is_video:
+            videos += 1
+        else:
+            images += 1
+
+    return [
+        set_name,
+        organ_models,
+        studies,
+        chips,
+        data_points,
+        images,
+        videos
+    ]
+
+
+class TCTCSummary(SuperuserRequiredMixin, TemplateView):
+    template_name = 'assays/tctc_summary.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(TCTCSummary, self).get_context_data(**kwargs)
+
+        queryset = AssayMatrixItem.objects.all()
+
+        all_group_ids = [41, 46]
+
+        stakeholder_group_whitelist = list(set(
+            AssayStudyStakeholder.objects.filter(
+                group_id__in=all_group_ids
+            ).values_list('study_id', flat=True)
+        ))
+
+        missing_stakeholder_blacklist = list(set(
+            AssayStudyStakeholder.objects.filter(
+                signed_off_by_id=None,
+                sign_off_required=True
+            ).values_list('study_id', flat=True)
+        ))
+
+        mit_studies = AssayStudy.objects.filter(
+            group_id__in=[46]
+        )
+        tamu_studies = AssayStudy.objects.filter(
+            group_id__in=[41]
+        )
+        level_1 = AssayStudy.objects.filter(
+            group_id__in=all_group_ids,
+            signed_off_by=None
+        ) | AssayStudy.objects.filter(
+            group_id__in=all_group_ids,
+            id__in=missing_stakeholder_blacklist
+        )
+        level_2 = AssayStudy.objects.filter(
+            group_id__in=all_group_ids,
+            restricted=True
+        ).exclude(
+            signed_off_by=None
+        ).exclude(
+            id__in=missing_stakeholder_blacklist
+        )
+        level_3 = AssayStudy.objects.filter(
+            group_id__in=all_group_ids,
+            restricted=False
+        ).exclude(
+            signed_off_by=None
+        ).exclude(
+            id__in=missing_stakeholder_blacklist
+        )
+
+        data_of_interest = (
+            ('MIT-3D Chips', queryset.filter(
+                study_id__in=mit_studies,
+                organ_model__model_type__in=['F3', 'S3']
+            )),
+            ('MIT-2D Wells', queryset.filter(
+                study_id__in=mit_studies,
+                organ_model__model_type__in=['F2', 'S2']
+            )),
+            ('TAMU-3D Chips', queryset.filter(
+                study_id__in=tamu_studies,
+                organ_model__model_type__in=['F3', 'S3']
+            )),
+            ('TAMU-2D Wells', queryset.filter(
+                study_id__in=tamu_studies,
+                organ_model__model_type__in=['F2', 'S2']
+            )),
+            ('Level 1', queryset.filter(
+                study_id__in=level_1
+            )),
+            ('Level 2', queryset.filter(
+                study_id__in=level_2
+            )),
+            ('Level 3', queryset.filter(
+                study_id__in=level_3
+            )),
+        )
+
+        rows = []
+
+        for data in data_of_interest:
+            rows.append(get_summary_data(data[0], data[1]))
+
+        context['rows'] = rows
+
+        return context
