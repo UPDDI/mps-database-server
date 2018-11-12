@@ -2162,19 +2162,19 @@ class TCTCSummary(SuperuserRequiredMixin, TemplateView):
         )
 
         data_of_interest = (
-            ('MIT-3D Chips', queryset.filter(
+            ('MIT-3D', queryset.filter(
                 study_id__in=mit_studies,
                 organ_model__model_type__in=['F3', 'S3']
             )),
-            ('MIT-2D Wells', queryset.filter(
+            ('MIT-2D', queryset.filter(
                 study_id__in=mit_studies,
                 organ_model__model_type__in=['F2', 'S2']
             )),
-            ('TAMU-3D Chips', queryset.filter(
+            ('TAMU-3D', queryset.filter(
                 study_id__in=tamu_studies,
                 organ_model__model_type__in=['F3', 'S3']
             )),
-            ('TAMU-2D Wells', queryset.filter(
+            ('TAMU-2D', queryset.filter(
                 study_id__in=tamu_studies,
                 organ_model__model_type__in=['F2', 'S2']
             )),
