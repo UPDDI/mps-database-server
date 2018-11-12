@@ -579,7 +579,7 @@ class AssayMatrixForm(SignOffMixin, BootstrapForm):
         ('add_name', 'Add Names/IDs*'),
         ('add_test_type', 'Add Test Type*'),
         ('add_date', 'Add Setup Date*'),
-        ('add_device', 'Add Device/Organ Model Information*'),
+        ('add_device', 'Add Device/MPS Model Information*'),
         ('add_settings', 'Add Settings'),
         ('add_compounds', 'Add Compounds'),
         ('add_cells', 'Add Cells'),

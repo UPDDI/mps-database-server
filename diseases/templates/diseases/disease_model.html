@@ -127,7 +127,7 @@
                     <td style="word-wrap: break-word">{{ study }}</td>
                     <td>{{ study.start_date|date:"M d, Y" }}</td>
                     <td>{{ study.get_study_types_string }}</td>
-                    <td>{{ study.organ_models|default:"-No Organ Models-" }}</td>
+                    <td>{{ study.organ_models|default:"-No MPS Models-" }}</td>
                     {% if study.data_points %}
                         <td class="text-success">{{ study.data_points|intcomma }}</td>
                     {% else %}

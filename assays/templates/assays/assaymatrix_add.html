@@ -156,8 +156,8 @@
 
     {# contrived for full dropdowns #}
     <div hidden>
-        {% include 'generic_field.html' with field=form.matrix_item_full_organ_model label="Full Organ Model" %}
-        {% include 'generic_field.html' with field=form.matrix_item_full_organ_model_protocol label="Full Organ Model Protocol" %}
+        {% include 'generic_field.html' with field=form.matrix_item_full_organ_model label="Full MPS Model" %}
+        {% include 'generic_field.html' with field=form.matrix_item_full_organ_model_protocol label="Full MPS Model Protocol" %}
     </div>
 
     <div id="device_div">
@@ -165,11 +165,11 @@
     </div>
 
     <div id="organ_model_div">
-    {% include 'generic_field.html' with field=form.matrix_item_organ_model label="Organ Model" %}
+    {% include 'generic_field.html' with field=form.matrix_item_organ_model label="MPS Model" %}
     </div>
 
     <div hidden id="protocol_div" class="form-group">
-        <label for="matrix_item_organ_model_protocol" class="col-sm-2 control-label">Organ Model Protocol</label>
+        <label for="matrix_item_organ_model_protocol" class="col-sm-2 control-label">MPS Model Protocol</label>
         <div class="col-sm-10">
           {{ form.matrix_item_organ_model_protocol }}
           <span>
