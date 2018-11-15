@@ -1759,14 +1759,6 @@ class AssaySampleLocationList(ListView):
     template_name = 'assays/assaylocation_list.html'
 
 
-class AssayInterStudyReproducibility(LoginRequiredMixin, TemplateView):
-    template_name = 'assays/assay_interstudy_reproducibility.html'
-
-
-class AssayStudyDataPlots(LoginRequiredMixin, TemplateView):
-    template_name = 'assays/assaystudy_data_plots.html'
-
-
 # Inappropriate use of CBV
 class AssayDataFromFilters(LoginRequiredMixin, TemplateView):
     """Returns a combined file for all data for given filters"""

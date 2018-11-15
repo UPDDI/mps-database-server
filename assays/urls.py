@@ -29,8 +29,6 @@ from assays.views import (
     AssayPhysicalUnitsList,
     AssaySampleLocationList,
     GraphingReproducibilityFilterView,
-    AssayInterStudyReproducibility,
-    AssayStudyDataPlots,
     AssayDataFromFilters
 )
 import assays.ajax
@@ -137,8 +135,6 @@ urlpatterns = [
 
     # Location for test filter, for now
     url(r'^assays/graphing_reproducibility/$', GraphingReproducibilityFilterView.as_view(), name='graphing-reproducibility'),
-    url(r'^assays/assay_interstudy_reproducibility/$', AssayInterStudyReproducibility.as_view(), name='interstudy-reproducibility'),
-    url(r'^assays/assaystudy_data_plots/$', AssayStudyDataPlots.as_view(), name='assaystudy-data-plots'),
 
     # Data from filters
     url(r'^assays/data_from_filters/$', AssayDataFromFilters.as_view(), name='data-from-filters'),

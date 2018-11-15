@@ -3,6 +3,7 @@
 
 {% block load_js %}
     <script src="{% static "assays/assay_filter.js" %}"></script>
+    <script src="{% static "assays/chart_display.js" %}"></script>
 {% endblock %}
 
 {% block extra_head %}
@@ -15,17 +16,21 @@
 
 {% block fluid-content %}
     <div class="row padded-row text-center padded-bottom large-padding-top">
-        <a href="/assays/assaystudy_data_plots/?" type="button" class="btn btn-xlarge btn-primary text-center submit-button" id="charts_submit">
+        <a href="#charts" type="button" class="btn btn-xlarge btn-primary text-center submit-button" id="charts_submit">
             <span class="glyphicon glyphicon glyphicon-stats" aria-hidden="true"></span>
             Show Plots
         </a>
-        <a href="/assays/assay_interstudy_reproducibility/?" type="button" class="btn btn-xlarge btn-primary text-center submit-button" id="repro_submit">
+        <a href="#inter_repro" type="button" class="btn btn-xlarge btn-primary text-center submit-button" id="repro_submit">
             <span class="glyphicon glyphicon glyphicon-random" aria-hidden="true"></span>
             Show Reproducibility
         </a>
         <a href="/assays/data_from_filters/?" type="button" class="btn btn-xlarge btn-info text-center submit-button" id="download_submit">
             <span class="glyphicon glyphicon glyphicon-download-alt" aria-hidden="true"></span>
             Download
+        </a>
+        <a href="#filter" id="back" class="btn btn-xlarge btn-info hidden">
+            <span class="glyphicon glyphicon-hand-left" aria-hidden="true"></span>
+            Back to Selection
         </a>
     </div>
 
@@ -115,6 +120,154 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    </div>
+
+    <div class="container" hidden id="grouping_filtering">
+        {% include 'assays/grouping_filtering.html' %}
+    </div>
+
+    <div class="container" hidden id="results">
+    {% include 'assays/chart_options.html' with chart_prefix="charts" chart_title="Selected Data" %}
+
+    {# Note indicating no data to display initially #}
+    <div id="charts" class="padded-bottom">
+        No data to display
+    </div>
+
+    {% include 'assays/group_table.html' %}
+    </div>
+
+    <div hidden id="inter_repro" class="padded-bottom">
+
+    {# TODO TODO TODO NEED GROUPING  AND FILTERING STUFF HERE TOO #}
+
+    <div class="well container">
+        {# TODO TODO TODO #}
+        <div class="row">
+        <div class="col-md-4">
+        <label class="radio-inline">
+            <input type="radio" name="inter_level" id="inter_level_by_center" value="1" checked>
+            By Center
+        </label>
+        <label class="radio-inline">
+            <input type="radio" name="inter_level" id="inter_level_by_study" value="0">
+            By Study
+        </label>
+        </div>
+        <div class="col-md-4">
+        <label>
+            <input type="checkbox" name="initial_norm" id="initial_norm">
+            Normalize by Median Value
+        </label>
+        </div>
+        <div class="col-md-4">
+        <label>Maximum Interpolation Size
+            <input id="max_interpolation_size" type="number" value="2" style="width: 40px;">
+        </label>
+        </div>
+        </div>
+    </div>
+
+    <div class="row padded-row">
+        <br><div class="text-center"><strong>Reproducibility Breakdown</strong><br><small>(Hover for Details)</small></div>
+        <div id="piechart" class="text-center" style="width: 250px; height: 250px; margin: auto; display: block;">Loading...</div>
+    </div>
+
+    <div class="row padded-row">
+        <div class="col-xs-12">
+        <div id="show_all_repro_wrapper" class="fancy-checkbox table-filter padded-bottom" align="left">
+            <input type="checkbox" name="show_all_repro" id="show_all_repro"/>
+            <div class="btn-group">
+                <label for="show_all_repro" class="btn btn-default">
+                    <span class="glyphicon glyphicon-ok"></span>
+                    <span> </span>
+                </label>
+                <label for="show_all_repro" class="btn btn-default active">
+                    Show All Sets
+                </label>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <div class="row padded-row">
+        <div class="col-xs-12">
+        <table id='repro_table' class="display table-bordered text-wrapped padded-row" cellspacing="0" width="100%">
+        </table>
+        </div>
+    </div>
+
+    <div id="expanded_data">
+
+    </div>
+
+    <div id='clone_container'>
+        <div data-id='repro-data' class='container hidden padded-bottom'>
+            <div class='row'>
+                <div class='col-xs-12'><h2 data-id='repro-title' class='text-center'></h2></div>
+            </div>
+            <div class='row' style='text-align: left;'>
+                <div class='col-md-12'>
+                    <h3>Reproducibility Status: <span data-id='repro-status'></span></h3>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-md-12'>
+                    <label>Selection Parameters</label>
+                    <table data-id="data-table" class="table table-striped table-condensed table-bordered bg-white">
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                    <table data-id="icc-table" class="table table-striped table-condensed table-bordered bg-white">
+                        <thead>
+                            <tr>
+                                {# TODO TOOLTIPS #}
+                                <th>Interpolation</th>
+{#                                <th>Interpolated Points</th>#}
+                                <th>Max CV or CV</th>
+                                <th>ICC</th>
+                                <th>ANOVA P-Value</th>
+                                <th>Reproducibility Status</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='row'>
+                <div class='col-md-6' data-id='tooltip_item'></div>
+                <div class='col-md-6' data-id='tooltip_average'></div>
+                </div>
+
+                <div class='col-md-6' data-id='item_chart'></div>
+                <div class='col-md-6' data-id='average_chart'></div>
+
+                <div class='row'>
+                <div class='col-md-6' data-id='tooltip_trimmed'></div>
+                <div class='col-md-6' data-id='tooltip_interpolated'></div>
+                </div>
+
+                <div class='col-md-6' data-id='trimmed_chart'></div>
+                <div class='col-md-6' data-id='nearest_chart'></div>
+
+                <div class='col-md-6' data-id='linear_chart'></div>
+                <div class='col-md-6' data-id='quadratic_chart'></div>
+                <div class='col-md-6' data-id='cubic_chart'></div>
+                {# This is just a buffer #}
+                <div class="col-md-6"></div>
+            </div>
+        </div>
+    </div>
+
+    {# Just a spacer (and yes, inline styles are ugly)#}
+    <div style="padding-bottom: 250px;"></div>
+
+    <div hidden id="repro_info_table_display" class="container hidden-print bg-warning ui-dialog">
+
     </div>
 
     </div>
