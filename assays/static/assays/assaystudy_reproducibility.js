@@ -222,7 +222,7 @@ $(document).ready(function () {
         content =
         '<tr><th><h4><strong>Target/Analyte</strong></h4></th><td id="target-analyte-value"><h4><strong>'+targetAnalyte+'</strong></h4></td></tr>'+
         '<tr><th>Study ID</th><td>'+studyId+'</td></tr>'+
-        '<tr><th>Organ Model</th><td>'+organModel+'</td></tr>'+
+        '<tr><th>MPS Model</th><td>'+organModel+'</td></tr>'+
         '<tr><th>Method/Kit</th><td>'+methodKit+'</td></tr>'+
         '<tr><th>Sample Location</th><td>'+sampleLocation+'</td></tr>'+
         '<tr><th>Compound Treatment(s)</th><td>'+compoundTreatments+'</td></tr>'+
@@ -380,7 +380,7 @@ $(document).ready(function () {
                 "sortable": false
                 },
                 { title: "Set", data: '11', type: "num" },
-                { title: "Organ Model", data: '0' },
+                { title: "MPS Model", data: '0' },
                 { title: "<span style='white-space: nowrap;'>Full Compound<br>Treatment(s)</span>", data: '2', className: 'none',
                     render:function (data, type, row, meta) {
                         return '<br>' + data.replace(/\n/g, '<br>');

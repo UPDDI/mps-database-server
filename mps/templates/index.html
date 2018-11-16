@@ -66,17 +66,17 @@
                                 Models &amp; Devices <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu" role="menu">
-                                <li class="dropdown-header">Model Data</li>
-                                <li title="View MPS models"><a href="/microdevices/model">View MPS Models</a></li>
-                                <li title="View disease models"><a href="/diseases/">View Diseases</a></li>
-                                <li class="divider"></li>
-                                <li class="dropdown-header">Model Components</li>
-                                <li title="View microdevices"><a href="/microdevices/device">View Microdevices</a></li>
-                                <li title="View microdevice locations"><a href="/assays/locations/">View Microdevice Locations</a></li>
-                                <li class="divider"></li>
-                                <li class="dropdown-header">Requires Permission</li>
-                                <li><a href="/microdevices/model/add/">Add MPS Model</a></li>
-                                <li><a href="/microdevices/device/add/">Add Microdevice</a></li>
+                                <li title="" class="dropdown-header">Model Data</li>
+                                <li title="Index of MPS models, as well as their devices and the centers responsible for them"><a href="/microdevices/model">View MPS Models</a></li>
+                                <li title="Index of diseases that may have been simulated in studies"><a href="/diseases/">View Diseases</a></li>
+                                <li title="" class="divider"></li>
+                                <li title="" class="dropdown-header">Model Components</li>
+                                <li title="Index of microdevices, along with their manufacturer and version/catalog number"><a href="/microdevices/device">View Microdevices</a></li>
+                                <li title="Index of possible compartments within represented microdevices"><a href="/assays/locations/">View Microdevice Locations</a></li>
+                                <li title="" class="divider"></li>
+                                <li title="" class="dropdown-header">Requires Permission</li>
+                                <li title="Add a new MPS model for use in studies"><a href="/microdevices/model/add/">Add MPS Model</a></li>
+                                <li title="Add a new microdevice for use in MPS models"><a href="/microdevices/device/add/">Add Microdevice</a></li>
                             </ul>
                         </div>
                     </div>
@@ -94,19 +94,19 @@
                                 Compounds <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu" role="menu">
-                                <li class="dropdown-header">Compound Data</li>
-                                <li><a href="/compounds/">View Chemical Data</a></li>
+                                <li title="" class="dropdown-header">Compound Data</li>
+                                <li title="View compound information"><a href="/compounds/">View Chemical Data</a></li>
                                 {# TODO NOTE THAT THIS IS A REPEAT LINK! #}
-                                <li><a href="/bioactivities/table/#filter">View Bioactivities</a></li>
-                                <li><a href="/drugtrials/">View Drug Trials</a></li>
-                                <li><a href="/adverse_events/">View Adverse Events</a></li>
-                                <li class="divider"></li>
-                                <li class="dropdown-header">Reports</li>
-                                <li><a href="/compare_adverse_events/">Compare Adverse Events</a></li>
-                                <li><a href="/compounds/report/#filter">Compound Report</a></li>
-                                <li class="divider"></li>
-                                <li class="dropdown-header">Requires Permission</li>
-                                <li><a href="/compounds/add/">Add Compound</a></li>
+                                <li title="Generate tables of information for compounds and bioactivities"><a href="/bioactivities/table/#filter">View Bioactivities</a></li>
+                                <li title="An assortment of drug trials and their findings"><a href="/drugtrials/">View Drug Trials</a></li>
+                                <li title="Index of adverse events and data regarding their occurrences"><a href="/adverse_events/">View Adverse Events</a></li>
+                                <li title="" class="divider"></li>
+                                <li title="" class="dropdown-header">Reports</li>
+                                <li title="Plot data related to compounds and adverse events"><a href="/compare_adverse_events/">Compare Adverse Events</a></li>
+                                <li title="Generate reports of compound properties"><a href="/compounds/report/#filter">Compound Report</a></li>
+                                <li title="" class="divider"></li>
+                                <li title="" class="dropdown-header">Requires Permission</li>
+                                <li title="Add a new compound for usage within the database"><a href="/compounds/add/">Add Compound</a></li>
                             </ul>
                           </div>
                     </div>
@@ -124,15 +124,15 @@
                             Cell Samples <span class="caret"></span>
                         </button>
                           <ul class="dropdown-menu" role="menu">
-                              <li class="dropdown-header">Cell Data</li>
-                              <li><a href="/cellsamples/celltype/">View Cell Types</a></li>
-                              <li><a href="/cellsamples/cellsubtype/">View Cell Origins</a></li>
-                              <li><a href="/cellsamples/cellsample/">View Cell Samples</a></li>
-                              <li class="divider"></li>
-                              <li class="dropdown-header">Requires Permission</li>
-                              <li><a href="/cellsamples/celltype/add/">Add Cell Type</a></li>
-                              <li><a href="/cellsamples/cellsubtype/add/">Add Cell Origin</a></li>
-                              <li><a href="/cellsamples/cellsample/add/">Add Cell Sample</a></li>
+                              <li title="" class="dropdown-header">Cell Data</li>
+                              <li title="View and edit cell types"><a href="/cellsamples/celltype/">View Cell Types</a></li>
+                              <li title="View and edit cell origins"><a href="/cellsamples/cellsubtype/">View Cell Origins</a></li>
+                              <li title="View and edit cell samples"><a href="/cellsamples/cellsample/">View Cell Samples</a></li>
+                              <li title="" class="divider"></li>
+                              <li title="" class="dropdown-header">Requires Permission</li>
+                              <li title="Add cell type (i.e. hepatocyte, monocyte, immune, stellate cell)"><a href="/cellsamples/celltype/add/">Add Cell Type</a></li>
+                              <li title="Add cell origin (i.e. freshly isolated primary, cryopreserved primary, cell-lines, iPS derived)"><a href="/cellsamples/cellsubtype/add/">Add Cell Origin</a></li>
+                              <li title="Add cell sample (i.e. THLE-3 Human Liver Epithelial Cells (ATCC® CRL-11233™))"><a href="/cellsamples/cellsample/add/">Add Cell Sample</a></li>
                           </ul>
                         </div>
                     </div>
@@ -159,23 +159,23 @@
                                 Studies <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu" role="menu">
-                                <li class="dropdown-header">Study Data</li>
+                                <li title="" class="dropdown-header">Study Data</li>
                                 <li title="Index of all the studies created by groups you are a member of"><a href="/assays/assaystudy/editable_studies/">View Editable Studies</a></li>
-                                <li><a href="/assays/assaystudy/">View All Studies</a></li>
-                                <li><a href="/assays/studyconfiguration/">View Integrated Study Configurations</a></li>
-                                <li class="divider"></li>
-                                <li class="dropdown-header">Study Components</li>
-                                <li><a href="/assays/targets/">View Target/Analytes</a></li>
-                                <li><a href="/assays/methods/">View Method/Kits</a></li>
-                                <li><a href="/assays/units/">View Measurement Units</a></li>
+                                <li title="Index of all studies that have been made public or were created by groups you are a member of"><a href="/assays/assaystudy/">View All Studies</a></li>
+                                <li title="Index of configurations for linking chips (for integrated studies)"><a href="/assays/studyconfiguration/">View Integrated Study Configurations</a></li>
+                                <li title="" class="divider"></li>
+                                <li title="" class="dropdown-header">Study Components</li>
+                                <li title="Index of target/analytes and their occurrences within visible studies"><a href="/assays/targets/">View Target/Analytes</a></li>
+                                <li title="Index of method/kits and their occurrences within visible studies"><a href="/assays/methods/">View Method/Kits</a></li>
+                                <li title="Index of physical measurement units"><a href="/assays/units/">View Measurement Units</a></li>
                       {#          <li class="divider"></li>#}
                       {#          <li><a href="/assays/assaychipsetup/">View Setups</a></li>#}
                       {#          <li><a href="/assays/assaychipreadout/">View Readouts</a></li>#}
                       {#          <li><a href="/assays/assaychiptestresult/">View Results</a></li>#}
-                                <li class="divider"></li>
-                                <li class="dropdown-header">Requires Permission</li>
-                                <li><a href="/assays/assaystudy/add/">Add Study</a></li>
-                                <li><a href="/assays/studyconfiguration/add/">Add Integrated Study Configuration</a></li>
+                                <li title="" class="divider"></li>
+                                <li title="" class="dropdown-header">Requires Permission</li>
+                                <li title="Add a study to subsequently populate with assay data"><a href="/assays/assaystudy/add/">Add Study</a></li>
+                                <li title="Add a new definition for how chips are linked together (for integrated studies)"><a href="/assays/studyconfiguration/add/">Add Integrated Study Configuration</a></li>
                             </ul>
                         </div>
                     </div>
@@ -193,12 +193,12 @@
                                 Data Analysis <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu" role="menu">
-                                <li class="dropdown-header">Study Data Analysis</li>
+                                <li title="" class="dropdown-header">Study Data Analysis</li>
                                 <li title="View plots and reproducibility"><a href="/assays/graphing_reproducibility/">
                                     Graphing/Reproducibility
                                 </a></li>
-                                <li class="divider"></li>
-                                <li class="dropdown-header">Compound Activities</li>
+                                <li title="" class="divider"></li>
+                                <li title="" class="dropdown-header">Compound Activities</li>
                                 <li title="Generate a heatmap for selected bioactivity data">
                                     <a href="/bioactivities/heatmap/#filter">Heatmap</a>
                                 </li>
@@ -222,7 +222,7 @@
                                 Computational Modeling <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu" role="menu">
-                                <li class="dropdown-header">Computational Modeling</li>
+                                <li title="" class="dropdown-header">Computational Modeling</li>
                                 <li title="This feature is still in development"><a href="/under_construction/">
                                     <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
                                     PBPK
@@ -231,12 +231,10 @@
                                     <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
                                     Predictive Modeling
                                 </a></li>
-{#                                <li title="This feature is still in development">#}
-{#                                    <a href="/under_construction/">#}
-{#                                        <span id="generic_alert_symbol" class="glyphicon glyphicon-wrench" aria-hidden="true"></span>#}
-{#                                        Pathway Modeling#}
-{#                                    </a>#}
-{#                                </li>#}
+                      {#          <li title="This feature is still in development"><a href="/under_construction/">#}
+                      {#              <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>#}
+                      {#              Pathway Modeling#}
+                      {#          </a></li>#}
                             </ul>
                         </div>
                     </div>

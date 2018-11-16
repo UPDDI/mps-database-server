@@ -431,7 +431,7 @@ def get_data_as_list_of_lists(ids, data_points=None, both_assay_names=False, inc
         if data_point.matrix_item.organ_model:
             organ_model = data_point.matrix_item.organ_model.name
         else:
-            organ_model = '-No Organ Model-'
+            organ_model = '-No MPS Model-'
 
         value = data_point.value
 
