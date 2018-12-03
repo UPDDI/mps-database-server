@@ -32,7 +32,11 @@
     </li>
 {% endblock %}
 
-{% block content %}
+{% block sidebar %}
+    {% include 'assays/grouping_filtering.html' with charts="true" %}
+{% endblock %}
+
+{% block fluid-content %}
 {% if update %}
     <form class="form-horizontal" method="post">
 
@@ -637,9 +641,9 @@
         </tfoot>
     </table>
 
-    {% include 'assays/grouping_filtering.html' %}
+    {# {% include 'assays/grouping_filtering.html' %} #}
 
-    {% include 'assays/chart_options.html' with chart_title="Data" chart_prefix="charts"%}
+    {# {% include 'assays/chart_options.html' with chart_title="Data" chart_prefix="charts"%} #}
 
     <div id="charts" class="padded-bottom"></div>
 

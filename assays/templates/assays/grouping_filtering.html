@@ -3,24 +3,110 @@
 <script src="{% static "assays/grouping_filtering.js" %}"></script>
 {% endcompress %}
 
-<div id="filtering" class="well">
-    {# Inline JS is a little risque, but expedient #}
-    <h3 class="text-center">
-        Grouping/Filtering
-    </h3>
+{# TODO MOVE #}
+<style>
+    #sidebar {
+        overflow: auto;
+        position: fixed;
+        height: 100vh;
+        min-width: 250px;
+        max-width: 250px;
+        background: #eaeaea;
+        transition: all 0.3s;
+        margin-left: -250px;
+        margin-top: -20px;
+        z-index: 3000;
+    }
 
-    <div class="padded-row padded-bottom">
-        <a role="button" onclick="$('#filtering_tables').toggle('slow');$(this).text($(this).text() === 'Show' ? 'Hide' : 'Show');" class="btn btn-info toggle-hide-button">Hide Grouping/Filtering</a>
+    #sidebar.active {
+        margin-left: 0px;
+    }
+
+    #sidebar ul.components {
+        padding: 20px 0;
+    }
+
+    #sidebar ul li a {
+        padding: 10px;
+        display: block;
+    }
+    #sidebar ul li a:hover {
+        background: #fff;
+    }
+
+    #sidebar ul li.active > a, a[aria-expanded="true"] {
+        background: #f8f8ff;
+    }
+
+    a[data-toggle="collapse"] {
+        position: relative;
+    }
+
+    a[aria-expanded="false"]::before {
+        content: "\e259";
+        display: block;
+        position: absolute;
+        right: 20px;
+        font-family: "Glyphicons Halflings";
+    }
+    a.collapsed::before {
+        content: "\e260";
+    }
+
+    #page {
+        min-height: 100vh;
+        transition: all 0.3s;
+    }
+
+    #page.pushed {
+        padding-left: 275px;
+        min-height: 100vh;
+        max-width: 90vw;
+        transition: all 0.3s;
+    }
+
+    @media (max-width: 768px) {
+        #sidebar {
+            margin-left: -250px;
+        }
+        #sidebar.active {
+            margin-left: 0;
+        }
+        #sidebarCollapse span {
+            display: none;
+        }
+    }
+</style>
+
+<nav id="sidebar">
+    <div class="row text-center well">
+        {# Crude inline js #}
+        <input type="checkbox" name="manually_refresh" id="id_manually_refresh" class="big-checkbox" onchange="$('#refresh_section').toggle('fast');">
+        {# Crude inline style #}
+        <label for="id_manually_refresh" style="margin-left: 10px;">
+            <strong>Manually Refresh</strong>
+        </label>
     </div>
 
-    <div class="row" id="filtering_tables">
-    <div class="col-md-3">
-        <p class="text-center">
-            <label>
-                Assay Metadata
-            </label>
-        </p>
-        <div>
+    <div hidden id="refresh_section" class="row text-center">
+        <a role="button" id="refresh_plots" class="btn btn-primary btn-lg">Refresh</a>
+    </div>
+
+    <div hidden id="refresh_section" class="row text-center">
+        <a role="button" id="refresh_plots" class="btn btn-primary btn-lg">Refresh</a>
+    </div>
+
+    {# Inline JS is a little risque, but expedient #}
+    <h3 class="text-center">
+        <u>Grouping/Filtering</u>
+    </h3>
+
+    <ul class="list-unstyled components" id="filtering_tables">
+    <li>
+        <a href="#assay_metadata" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
+            Assay Metadata
+        </a>
+        <div class="collapse" id="assay_metadata">
             <table class="table table-bordered table-condensed bg-white">
                 <thead>
                     <tr>
@@ -212,16 +298,14 @@
                 </tbody>
             </table>
         </div>
-    </div>
+    </li>
 
 
-    <div class="col-md-3">
-        <p class="text-center">
-            <label>
-                Cell Metadata
-            </label>
-        </p>
-        <div>
+    <li>
+        <a href="#cell_metatdata" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
+            Cell Metadata
+        </a>
+        <div class="collapse" id="cell_metatdata">
             <table class="table table-bordered table-condensed bg-white">
                 <thead>
                     <tr>
@@ -352,17 +436,15 @@
                 </tbody>
             </table>
         </div>
-    </div>
+    </li>
 
 
 
-    <div class="col-md-3">
-        <p class="text-center">
-            <label>
-                Compound Metadata
-            </label>
-        </p>
-        <div>
+    <li>
+        <a href="#compound_metatdata" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
+            Compound Metadata
+        </a>
+        <div class="collapse" id="compound_metatdata">
             <table class="table table-bordered table-condensed bg-white">
                 <thead>
                     <tr>
@@ -509,16 +591,13 @@
                 </tbody>
             </table>
         </div>
-    </div>
+    </li>
 
-
-    <div class="col-md-3">
-        <p class="text-center">
-            <label>
-                Setting Metadata
-            </label>
-        </p>
-        <div>
+    <li>
+        <a href="#setting_metatdata" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
+            Setting Metadata
+        </a>
+        <div class="collapse" id="setting_metatdata">
             <table class="table table-bordered table-condensed bg-white">
                 <thead>
                     <tr>
@@ -619,12 +698,15 @@
                 </tbody>
             </table>
         </div>
-    </div>
-</div>
-<div class="row text-center">
-    <a role="button" id="refresh_plots" class="btn btn-primary btn-lg">Refresh</a>
-</div>
-</div>
+    </li>
+</ul>
+
+{# TODO REMOVE THE BLASTED PREFIX PLEASE #}
+{% if charts == 'true' %}
+    {% include "assays/chart_options.html" with chart_prefix='charts' %}
+{% endif %}
+
+</nav>
 
 <div hidden id="filter_popup" title="X">
     <div class="padded-bottom">

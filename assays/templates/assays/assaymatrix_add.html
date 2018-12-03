@@ -35,6 +35,10 @@
     </li>
 {% endblock %}
 
+{% block sidebar %}
+    {% include 'assays/grouping_filtering.html' with charts="true" %}
+{% endblock %}
+
 {# TODO MAKE SURE FLUID CONTENT STUFF IS NEAT #}
 {% block fluid-content %}
     {% if update %}
@@ -957,11 +961,11 @@
 
     {# CHARTING STUFF #}
     {% if not adding %}
-    <div class="container">
+    <div>
 
-    {% include 'assays/grouping_filtering.html' %}
+    {# {% include 'assays/grouping_filtering.html' %} #}
 
-    {% include 'assays/chart_options.html' with chart_prefix="charts" chart_title="Current Data" %}
+    {# {% include 'assays/chart_options.html' with chart_prefix="charts" chart_title="Current Data" % #}
 
     {# Note indicating no data to display initially #}
     <div id="charts" class="padded-bottom">

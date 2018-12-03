@@ -16,6 +16,10 @@
     <li class="active">Reproducibility Analysis</li>
 {% endblock %}
 
+{% block sidebar %}
+    {% include 'assays/grouping_filtering.html' with charts="true" %}
+{% endblock %}
+
 {% block content %}
     <div class="well">
         <div class="row text-center">
@@ -26,10 +30,6 @@
         <div class="row text-center small-padding-top">
             <a href="{{ object.get_summary_url }}" class="btn btn-primary" role="button">Study Summary</a>
         </div>
-    </div>
-
-    <div class="container" id="grouping_filtering">
-        {% include 'assays/grouping_filtering.html' with intra_flag="1" %}
     </div>
 {% endblock %}
 <br>

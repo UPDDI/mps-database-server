@@ -1,7 +1,10 @@
 // Contains functions for making charts for data
 
 // Global variable for charts
-window.CHARTS = {};
+window.CHARTS = {
+    // Should this be here, or in grouping?
+    // refresh_function: null;
+};
 
 // Load the Visualization API and the corechart package.
 // google.charts.load('current', {'packages':['corechart']});
@@ -49,6 +52,8 @@ $(document).ready(function () {
     var device_to_group = {};
     var all_treatment_groups = [];
 
+    var min_height = 400;
+
     // Conversion dictionary
     var headers = {
         // 'device': 'Device',
@@ -60,12 +65,67 @@ $(document).ready(function () {
         'Items with Same Treatment': 'Matrix Items (Chips/Wells) in Group'
     };
 
+    // TODO PLEASE MAKE THIS NOT CONTRIVED SOON
+    var chart_filter_popup = $('#chart_filter_popup');
+    var chart_filter_table = chart_filter_popup.find('table');
+    var chart_filter_data_table = null;
+    var chart_filter_body = chart_filter_table.find('tbody');
+
+    var charts_to_hide = {};
+    var chart_filter_buffer = {};
+
+    // var filter_popup_header = filter_popup.find('h5');
+
+    if (chart_filter_popup) {
+        chart_filter_popup.dialog({
+            width: 825,
+            closeOnEscape: true,
+            autoOpen: false,
+            close: function () {
+                // Purge the buffer
+                chart_filter_buffer = {};
+                $('body').removeClass('stop-scrolling');
+            },
+            open: function () {
+                $('body').addClass('stop-scrolling');
+            },
+            buttons: [
+            {
+                text: 'Apply',
+                click: function() {
+                    // Iterate over the charts to hide
+                    charts_to_hide = $.extend({}, chart_filter_buffer);
+
+                    $.each(function(chart_id, status) {
+                        if (status) {
+                            $(chart_id).hide('slow');
+                        }
+                        else {
+                            $(chart_id).show('slow');
+                        }
+                    });
+
+                    $(this).dialog("close");
+                }
+            },
+            {
+                text: 'Cancel',
+                click: function() {
+                   $(this).dialog("close");
+                }
+            }]
+        });
+        chart_filter_popup.removeProp('hidden');
+    }
+
     window.CHARTS.prepare_chart_options = function(charts) {
         var options = {};
 
-        $.each($('#' + charts + 'chart_options').find('input'), function() {
+        //$.each($('#' + charts + 'chart_options').find('input'), function() {
+        // Object extraneous as there is only one option set now
+        $('#charting_options_tables').find('input').each(function() {
             if (this.checked) {
-                options[this.name.replace(charts, '')] = this.value;
+                options[this.name] = this.value;
             }
         });
 
@@ -86,30 +146,71 @@ $(document).ready(function () {
         var sorted_assays = json.sorted_assays;
         var assays = json.assays;
 
-        var previous = null;
+        // Old method
+        // var previous = null;
+        // for (var index in sorted_assays) {
+        //     if (assays[index].length > 1) {
+        //         if (!previous) {
+        //             previous = $('<div>')
+        //             //.addClass('padded-row')
+        //                 .css('min-height', min_height);
+        //             charts_id.append(previous
+        //                 .append($('<div>')
+        //                     .attr('id', charts + '_' + index)
+        //                     .addClass('col-sm-12 col-md-6 chart-container')
+        //                 )
+        //             );
+        //         }
+        //         else {
+        //             previous.append($('<div>')
+        //                 .attr('id', charts + '_' + index)
+        //                 .addClass('col-sm-12 col-md-6 chart-container')
+        //             );
+        //             previous = null;
+        //         }
+        //     }
+        // }
+
         for (var index in sorted_assays) {
             if (assays[index].length > 1) {
-                if (!previous) {
-                    previous = $('<div>')
-                    //.addClass('padded-row')
-                        .css('min-height', 400);
-                    charts_id.append(previous
-                        .append($('<div>')
-                            .attr('id', charts + '_' + index)
-                            .addClass('col-sm-12 col-md-6 chart-container')
-                        )
-                    );
-                }
-                else {
-                    previous.append($('<div>')
+                charts_id.append($('<div>')
                         .attr('id', charts + '_' + index)
                         .addClass('col-sm-12 col-md-6 chart-container')
-                    );
-                    previous = null;
-                }
+                        .css('min-height', min_height)
+                );
             }
         }
     };
+
+    window.CHARTS.prepare_row_by_row_charts = function(json, charts) {
+        // Clear existing charts
+        var charts_id = $('#' + charts);
+        charts_id.empty();
+
+        // If errors, report them and then terminate
+        if (json.errors) {
+            alert(json.errors);
+            return;
+        }
+
+        var sorted_assays = json.sorted_assays;
+        var assays = json.assays;
+
+        var previous = null;
+        for (var index in sorted_assays) {
+            if (assays[index].length > 1) {
+                new_div = $('<div>')
+                //.addClass('padded-row')
+                    .css('min-height', min_height);
+                charts_id.append(new_div
+                    .append($('<div>')
+                        .attr('id', charts + '_' + index)
+                        .addClass('chart-container')
+                    )
+                );
+            }
+        }
+    }
 
     // No longer in use
     window.CHARTS.prepare_charts_by_table = function(json, charts) {
@@ -219,11 +320,6 @@ $(document).ready(function () {
             columnDefs: [
                 // Treat the group column as if it were just the number
                 { "type": "brute-numeric", "targets": 0, "width": "10%" }
-                // Poses a problem due to variable table
-                // { "width": "10%", "targets": 1 },
-                // { "width": "15%", "targets": 2 },
-                // { "width": "20%", "targets": 3 },
-                // { "width": "15%", "targets": 4 }
             ]
         });
 
@@ -242,97 +338,98 @@ $(document).ready(function () {
         treatment_group_data_table.fixedHeader.enable();
     };
 
-    window.CHARTS.get_heatmap_dropdowns = function(starting_index) {
-        if (heatmap_data.matrices && _.keys(heatmap_data.matrices).length > 0) {
-            heatmap_wrapper_selector.show();
-
-            var current_index = 0;
-            var data_level = heatmap_data.values;
-            var current;
-
-            while (current_index < starting_index) {
-                current = heatmap_filters_selector.eq(current_index);
-                data_level = data_level[current.val()];
-                current_index++;
-            }
-
-            while (current_index < heatmap_filters_selector.length) {
-                current = heatmap_filters_selector.eq(current_index);
-                var former_value = current.val();
-
-                if (former_value === null || starting_index < current_index) {
-                    current.empty();
-                    $.each(_.sortBy(_.keys(data_level)), function (index, key) {
-                        var dropdown_text = key.split('\n')[0];
-                        current.append($('<option>').val(key).text(dropdown_text));
-                    });
-
-                    if (former_value && current.find('option[value="' + former_value + '"]').length > 0) {
-                        current.val(former_value);
-                    }
-                }
-
-                data_level = data_level[current.val()];
-                current_index++;
-            }
-
-            // Make the heatmap
-            // Get the values for the heatmap
-            var means = {};
-
-            $.each(data_level, function (key, values) {
-                means[key] = d3.mean(values);
-            });
-
-            var median = d3.median(means);
-            // Get the min
-            var min_value = _.min(means);
-            min_value -= min_value * 0.000001;
-            // Get the max
-            var max_value = _.max(means);
-            max_value += max_value * 0.000001;
-            // Get the colorscale
-            var color_scale = d3.scale.quantile()
-                .domain([min_value, median, max_value])
-                .range(colors);
-
-            // Actually display the heatmap
-            var current_matrix = heatmap_data.matrices[$('#id_heatmap_matrix').val()];
-
-            matrix_body_selector.empty();
-
-            // Check to see if new forms will be generated
-            for (var row_index = 0; row_index < current_matrix.length; row_index++) {
-                var row_id = 'row_' + row_index;
-                var current_row = $('<tr>')
-                    .attr('id', row_id);
-
-                for (var column_index = 0; column_index < current_matrix[row_index].length; column_index++) {
-                    var new_cell = $('<td>');
-
-                    var current_key = row_index + '_' + column_index;
-                    var value = data_level[current_key];
-                    var mean_value = means[current_key];
-
-                    if (value) {
-                        new_cell.html(value.join(', '));
-                        new_cell.css('background-color', color_scale(mean_value));
-                    }
-                    else {
-                        new_cell.css('background-color', '#606060');
-                    }
-
-                    // Add
-                    current_row.append(new_cell);
-                }
-
-                matrix_body_selector.append(current_row);
-            }
-        }
-        else {
-            heatmap_wrapper_selector.hide();
-        }
-    };
+    // UNUSED
+    // window.CHARTS.get_heatmap_dropdowns = function(starting_index) {
+    //     if (heatmap_data.matrices && _.keys(heatmap_data.matrices).length > 0) {
+    //         heatmap_wrapper_selector.show();
+    //
+    //         var current_index = 0;
+    //         var data_level = heatmap_data.values;
+    //         var current;
+    //
+    //         while (current_index < starting_index) {
+    //             current = heatmap_filters_selector.eq(current_index);
+    //             data_level = data_level[current.val()];
+    //             current_index++;
+    //         }
+    //
+    //         while (current_index < heatmap_filters_selector.length) {
+    //             current = heatmap_filters_selector.eq(current_index);
+    //             var former_value = current.val();
+    //
+    //             if (former_value === null || starting_index < current_index) {
+    //                 current.empty();
+    //                 $.each(_.sortBy(_.keys(data_level)), function (index, key) {
+    //                     var dropdown_text = key.split('\n')[0];
+    //                     current.append($('<option>').val(key).text(dropdown_text));
+    //                 });
+    //
+    //                 if (former_value && current.find('option[value="' + former_value + '"]').length > 0) {
+    //                     current.val(former_value);
+    //                 }
+    //             }
+    //
+    //             data_level = data_level[current.val()];
+    //             current_index++;
+    //         }
+    //
+    //         // Make the heatmap
+    //         // Get the values for the heatmap
+    //         var means = {};
+    //
+    //         $.each(data_level, function (key, values) {
+    //             means[key] = d3.mean(values);
+    //         });
+    //
+    //         var median = d3.median(means);
+    //         // Get the min
+    //         var min_value = _.min(means);
+    //         min_value -= min_value * 0.000001;
+    //         // Get the max
+    //         var max_value = _.max(means);
+    //         max_value += max_value * 0.000001;
+    //         // Get the colorscale
+    //         var color_scale = d3.scale.quantile()
+    //             .domain([min_value, median, max_value])
+    //             .range(colors);
+    //
+    //         // Actually display the heatmap
+    //         var current_matrix = heatmap_data.matrices[$('#id_heatmap_matrix').val()];
+    //
+    //         matrix_body_selector.empty();
+    //
+    //         // Check to see if new forms will be generated
+    //         for (var row_index = 0; row_index < current_matrix.length; row_index++) {
+    //             var row_id = 'row_' + row_index;
+    //             var current_row = $('<tr>')
+    //                 .attr('id', row_id);
+    //
+    //             for (var column_index = 0; column_index < current_matrix[row_index].length; column_index++) {
+    //                 var new_cell = $('<td>');
+    //
+    //                 var current_key = row_index + '_' + column_index;
+    //                 var value = data_level[current_key];
+    //                 var mean_value = means[current_key];
+    //
+    //                 if (value) {
+    //                     new_cell.html(value.join(', '));
+    //                     new_cell.css('background-color', color_scale(mean_value));
+    //                 }
+    //                 else {
+    //                     new_cell.css('background-color', '#606060');
+    //                 }
+    //
+    //                 // Add
+    //                 current_row.append(new_cell);
+    //             }
+    //
+    //             matrix_body_selector.append(current_row);
+    //         }
+    //     }
+    //     else {
+    //         heatmap_wrapper_selector.hide();
+    //     }
+    // };
 
     // window.CHARTS.make_heatmap = function() {
     //
@@ -343,12 +440,13 @@ $(document).ready(function () {
         return obj !== undefined && typeof(obj) === 'number' && !isNaN(obj);
     }
 
+    function populate_selection_filter() {
+
+    }
+
     window.CHARTS.make_charts = function(json, charts, changes_to_options) {
         // post_filter setup
-        if (window.GROUPING.full_post_filter === null) {
-            window.GROUPING.full_post_filter = json.post_filter;
-            window.GROUPING.current_post_filter = JSON.parse(JSON.stringify(json.post_filter));
-        }
+        window.GROUPING.set_grouping_filtering(json.post_filter);
 
         // Remove triggers
         if (all_events[charts]) {
@@ -371,9 +469,10 @@ $(document).ready(function () {
         // window.CHARTS.get_heatmap_dropdowns(0);
 
         // Naive way to learn whether dose vs. time
-        var is_dose = $('#' + charts + 'dose_select').prop('checked');
+        var is_dose = $('#dose_select').prop('checked');
 
         var x_axis_label = 'Time (Days)';
+        // Still need to work in dose-response
         if (is_dose) {
             x_axis_label = 'Dose (μM)';
         }
@@ -385,6 +484,37 @@ $(document).ready(function () {
 
         var sorted_assays = json.sorted_assays;
         var assays = json.assays;
+
+        var time_conversion = null;
+        var time_label = null;
+
+        // CRUDE: Perform time unit conversions
+        if (document.getElementById('id_chart_option_time_unit').value != 'Day') {
+            if (document.getElementById('id_chart_option_time_unit').value == 'Hour') {
+                time_conversion = 24;
+                time_label = 'Time (Hours)';
+            }
+            else {
+                time_conversion = 1440;
+                time_label = 'Time (Minutes)';
+            }
+        }
+
+        if (time_conversion)
+        {
+            x_axis_label = time_label;
+
+            $.each(assays, function(index, assay) {
+                // Don't bother if empty
+                assay[0][0] = time_label;
+                // Crude
+                $.each(assay, function(index, row) {
+                    if (index) {
+                        row[0] *= time_conversion;
+                    }
+                });
+            });
+        }
 
         for (index in sorted_assays) {
             // Don't bother if empty
@@ -489,7 +619,7 @@ $(document).ready(function () {
                     'width': '75%',
                     'height': '65%'
                 },
-                'height':400,
+                'height':min_height,
                 // Individual point tooltips, not aggregate
                 focusTarget: 'datum',
                 intervals: {
@@ -499,16 +629,19 @@ $(document).ready(function () {
             };
 
             // NAIVE: I shouldn't perform a whole refresh just to change the scale!
-            if (document.getElementById(charts + 'category_select').checked) {
+            if (document.getElementById('category_select').checked) {
                 options.focusTarget = 'category';
             }
 
+            // Removed for now
+/*
             if (document.getElementById(charts + 'log_x').checked) {
                 options.hAxis.scaleType = 'log';
             }
             if (document.getElementById(charts + 'log_y').checked) {
                 options.vAxis.scaleType = 'log';
             }
+*/
 
             // Merge options with the specified changes
             $.extend(options, changes_to_options);
@@ -606,7 +739,7 @@ $(document).ready(function () {
                     // Need to link EACH CHARTS values to the proper group
                     // EMPHASIS ON EACH CHART
                     // Somewhat naive
-                    if (document.getElementById(charts + 'group_select').checked) {
+                    if (document.getElementById('group_select').checked) {
                         // NOTE -1
                         group_to_data[charts][index][i] = assays[index][0][i].split(' || ')[0].replace(/\D/g, '') - 1;
                     }
@@ -647,4 +780,45 @@ $(document).ready(function () {
             all_events[charts].push(current_event);
         }
     };
+
+    // Setup triggers
+    $('#charting_options_tables').find('input, select').change(function() {
+        // Odd, perhaps innapropriate!
+        window.GROUPING.refresh_wrapper();
+    });
+
+    // TODO TODO TODO NOT DRY
+    $(document).on('click', '.chart-filter-checkbox', function() {
+        chart_filter_buffer[$(this).val()] = $(this).prop('checked');
+    });
+
+    // Triggers for select all
+    $('#chart_filter_section_select_all').click(function() {
+        chart_filter_data_table.page.len(-1).draw();
+
+        chart_filter_table.find('.chart-filter-checkbox').each(function() {
+            $(this)
+                .prop('checked', false)
+                .attr('checked', false)
+                .trigger('click');
+        });
+
+        chart_filter_data_table.order([[1, 'asc']]);
+        chart_filter_data_table.page.len(10).draw();
+    });
+
+    // Triggers for deselect all
+    $('#chart_filter_section_deselect_all').click(function() {
+        chart_filter_data_table.page.len(-1).draw();
+
+        chart_filter_table.find('.chart-filter-checkbox').each(function() {
+            $(this)
+                .prop('checked', true)
+                .attr('checked', true)
+                .trigger('click');
+        });
+
+        chart_filter_data_table.order([[1, 'asc']]);
+        chart_filter_data_table.page.len(10).draw();
+    });
 });

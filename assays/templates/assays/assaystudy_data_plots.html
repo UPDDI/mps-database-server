@@ -14,8 +14,12 @@
     <li class="active">Data Plots</li>
 {% endblock %}
 
-{% block content %}
-<div class="row padded-row text-center padded-bottom large-padding-top">
+{% block sidebar %}
+    {% include 'assays/grouping_filtering.html' with charts='true' %}
+{% endblock %}
+
+{% block fluid-content %}
+<div class="row padded-row text-center padded-bottom large-padding-top hidden-print">
     <a href="/assays/graphing_reproducibility/?filters=" type="button" class="btn btn-xlarge btn-primary text-center submit-button" id="back_button">
         <span class="glyphicon glyphicon glyphicon-hand-left" aria-hidden="true"></span>
         Go Back
@@ -30,9 +34,9 @@
     </a>
 </div>
 
-{% include 'assays/grouping_filtering.html' %}
+{# {% include 'assays/grouping_filtering.html' %} #}
 
-{% include 'assays/chart_options.html' with chart_prefix="charts" chart_title="Selected Data" %}
+{# {% include 'assays/chart_options.html' with chart_prefix="charts" chart_title="Selected Data" %} #}
 
 {# Note indicating no data to display initially #}
 <div id="charts" class="padded-bottom">

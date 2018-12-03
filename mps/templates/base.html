@@ -120,6 +120,9 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
+      <button id="toggle_sidebar_button" type="button" class="btn btn-primary navbar-btn collapsed hidden">
+        Toggle Sidebar
+      </button>
       <a title="Click to return to homepage" class="navbar-brand" href="/">
         <img alt="MPS Database Logo" src="/static/img/brand.png" style="margin-top:-10px;">
       </a>
@@ -267,13 +270,11 @@
     </div>
   </nav>
 
-  <div id="page" style="margin-top: 70px;">
+  <div id="sidebar_wrapper">
+    {% block sidebar %}{% endblock %}
+  </div>
 
-  {# Have yet to use sidebar #}
-{#  <div id="sidebar">#}
-{#    {% block sidebar %}#}
-{#    {% endblock %}#}
-{#  </div>#}
+  <div id="page" style="margin-top: 70px;">
 
   {# For most elements #}
   <div id="content" class="container">
