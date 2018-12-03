@@ -7,6 +7,8 @@ $(document).ready(function() {
     // TODO TODO TODO
     window.GROUPING.refresh_function = show_repro;
 
+    var study_set_id = Math.floor(window.location.href.split('/')[5]);
+
     // TODO TODO TODO REPRO STUFF
     // TODO: UGLY
     var cv_tooltip = "The CV is calculated for each time point and the value reported is the max CV across time points, or the CV if a single time point is present.  The reproducibility status is excellent if Max CV/CV < 5% (Excellent (CV)), acceptable if Max CV/CV < 15% (Acceptable (CV)), and poor if CV > 15% for a single time point (Poor (CV))";
@@ -108,17 +110,6 @@ $(document).ready(function() {
 
     var pie_chart = null;
 
-    // Filters acquired naively from GET
-    var filters = decodeURIComponent(window.location.search.split('?filters=')[1]);
-    // Change the hrefs to include the filters
-    var submit_buttons_selector = $('.submit-button');
-    submit_buttons_selector.each(function() {
-        var current_download_href = $(this).attr('href');
-        var initial_href = current_download_href.split('?')[0];
-        var get_for_href = 'filters=' + filters;
-        $(this).attr('href', initial_href + '?' + get_for_href);
-    });
-
     function show_repro() {
         // Clear anything in extra_info
         area_to_copy_to.empty();
@@ -139,13 +130,6 @@ $(document).ready(function() {
 
         // Loading Piechart
         loadingPie();
-
-        // Special check to see whether to default to studies (only one center selected)
-        if (Object.keys(JSON.parse(filters)['groups']).length === 1) {
-            $('#inter_level_by_center').prop('checked', false);
-            $('#inter_level_by_study').prop('checked', true);
-            inter_level = 0;
-        }
 
         // Define what the legend is
         // TODO TODO TODO CONTRIVED FOR NOW
@@ -222,7 +206,7 @@ $(document).ready(function() {
                 width: '20%'
             },
             {
-                title: "MPS Models",
+                title: "Organ Models",
                 "render": function (data, type, row) {
                     return data_group_to_organ_models[row[0]].join('<br>');
                 }
@@ -271,9 +255,9 @@ $(document).ready(function() {
                 url: '/assays_ajax/',
                 data: {
                     // TODO TODO TODO THIS DEPENDS ON THE INTERFACE
-                    call: 'fetch_data_points_from_filters',
+                    call: 'fetch_data_points_from_study_set',
                     intention: 'inter_repro',
-                    filters: filters,
+                    study_set_id: study_set_id,
                     criteria: JSON.stringify(window.GROUPING.get_grouping_filtering()),
                     post_filter: JSON.stringify(window.GROUPING.current_post_filter),
                     inter_level: inter_level,
@@ -312,13 +296,7 @@ $(document).ready(function() {
                     value_unit_index = json.header_keys.data.indexOf('Value Unit');
 
                     // Piechart info
-                    var pie_all_zero = summary_pie.every(function(x){
-                        if (!x){
-                            return true;
-                        }
-                        return false;
-                    })
-                    if (pie_all_zero){
+                    if (summary_pie === '0,0,0'){
                         pie_chart = new google.visualization.PieChart(document.getElementById('piechart'));
                         pie_chart.draw(na_data, na_options);
                     } else {

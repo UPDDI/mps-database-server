@@ -24,7 +24,8 @@ from assays.models import (
     AssayStudyStakeholder,
     AssayTarget,
     AssayMethod,
-    AssayStudyModel
+    AssayStudyModel,
+    AssayStudySet
 )
 from compounds.models import Compound, CompoundInstance, CompoundSupplier
 from microdevices.models import (
@@ -43,7 +44,8 @@ from .utils import (
     # get_plate_details,
     TIME_CONVERSIONS,
     # EXCLUDED_DATA_POINT_CODE,
-    AssayFileProcessor
+    AssayFileProcessor,
+    get_user_accessible_studies,
 )
 from django.utils import timezone
 
@@ -1529,3 +1531,37 @@ class AssayStudyDataUploadForm(BootstrapForm):
                 self.cleaned_data['preview_data'] = file_processor.preview_data
 
         return self.cleaned_data
+
+
+class AssayStudySetForm(BootstrapForm):
+    class Meta(object):
+        model = AssayStudySet
+        exclude = ('',)
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 10})
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+
+        super(AssayStudySetForm, self).__init__(*args, **kwargs)
+
+        study_queryset = get_user_accessible_studies(
+            self.request.user
+        ).prefetch_related(
+            'group__microphysiologycenter_set',
+        )
+        assay_queryset = AssayStudyAssay.objects.filter(
+            study_id__in=study_queryset.values_list('id', flat=True)
+        ).prefetch_related(
+            'target',
+            'method',
+            'unit'
+        )
+
+        self.fields['studies'].queryset = study_queryset
+        self.fields['assays'].queryset = assay_queryset
+
+        # CONTRIVED
+        self.fields['studies'].widget.attrs['class'] = 'no-selectize'
+        self.fields['assays'].widget.attrs['class'] = 'no-selectize'

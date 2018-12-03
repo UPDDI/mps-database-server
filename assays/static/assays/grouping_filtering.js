@@ -182,10 +182,6 @@ $(document).ready(function () {
                 order: [1, 'asc']
             });
 
-            // Swap positions of filter and length selection; clarify filter
-            $('.dataTables_filter').css('float', 'left').prop('title', 'Separate terms with a space to search multiple fields');
-            $('.dataTables_length').css('float', 'right');
-
             filter_popup.dialog('open');
         }
     });
