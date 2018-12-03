@@ -396,7 +396,9 @@ $(document).ready(function () {
         // NOTE: SPECIAL EXCEPTION FOR CELL SAMPLES
         if (field_name === 'cell_sample') {
             // TODO VERY POORLY DONE
-            return $('#' + 'cell_sample_' + field.val()).attr('name');
+            // return $('#' + 'cell_sample_' + field.val()).attr('name');
+            // Global here is a little sloppy, but should always succeed
+            return window.CELLS.cell_sample_id_to_label[field.val()];
         }
         // SPECIAL EXCEPTION FOR ORGAN MODELS
         else if (field_name === 'organ_model') {

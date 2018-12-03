@@ -2056,7 +2056,7 @@ def acquire_post_filter(studies, assays, matrix_items, data_points):
 
     # Contrived: Add no cells
     post_filter.setdefault('matrix_item', {}).setdefault(
-        'assaysetupcell__cell_sample__cell_type_id__in', {}
+        'assaysetupcell__cell_sample_id__in', {}
     ).update({
         0: '-No Cells-'
     })
@@ -2412,25 +2412,25 @@ def apply_post_filter(post_filter, studies, assays, matrix_items, data_points):
     matrix_item_post_filters = {
         current_filter: [
             x for x in post_filter.get('matrix_item', {}).get(current_filter, [])
-        ] for current_filter in post_filter.get('matrix_item') if not current_filter.startswith('assaysetup')
+        ] for current_filter in post_filter.get('matrix_item', {}) if not current_filter.startswith('assaysetup')
     }
 
     matrix_item_compound_post_filters = {
         current_filter: [
             x for x in post_filter.get('matrix_item', {}).get(current_filter, [])
-        ] for current_filter in post_filter.get('matrix_item') if current_filter.startswith('assaysetupcompound__')
+        ] for current_filter in post_filter.get('matrix_item', {}) if current_filter.startswith('assaysetupcompound__')
     }
 
     matrix_item_cell_post_filters = {
         current_filter: [
             x for x in post_filter.get('matrix_item', {}).get(current_filter, [])
-        ] for current_filter in post_filter.get('matrix_item') if current_filter.startswith('assaysetupcell__')
+        ] for current_filter in post_filter.get('matrix_item', {}) if current_filter.startswith('assaysetupcell__')
     }
 
     matrix_item_setting_post_filters = {
         current_filter: [
             x for x in post_filter.get('matrix_item', {}).get(current_filter, [])
-        ] for current_filter in post_filter.get('matrix_item') if current_filter.startswith('assaysetupsetting__')
+        ] for current_filter in post_filter.get('matrix_item', {}) if current_filter.startswith('assaysetupsetting__')
     }
 
     matrix_items = matrix_items.filter(study__in=studies)
@@ -2452,7 +2452,7 @@ def apply_post_filter(post_filter, studies, assays, matrix_items, data_points):
         )
 
     # Cells
-    if post_filter.get('matrix_item', {}).get('assaysetupcell__cell_sample__cell_type_id__in', {}).get('0', None):
+    if post_filter.get('matrix_item', {}).get('assaysetupcell__cell_sample_id__in', {}).get('0', None):
         matrix_items = matrix_items.filter(
             **matrix_item_cell_post_filters
         ) | matrix_items.filter(assaysetupcell__isnull=True)

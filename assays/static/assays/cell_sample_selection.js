@@ -1,4 +1,9 @@
 // This script was made to prevent redundant code in setup pages
+
+// For passing data
+window.CELLS = {
+    cell_sample_id_to_label: {}
+};
 $(document).ready(function () {
     // var cell_sample_search = $('#id_cell_sample_search');
     // var cell_sample_search = $('.open-cell-sample-dialog');
@@ -6,6 +11,14 @@ $(document).ready(function () {
     // Defaults for matrix (irrelevant in matrix item)
     var cell_sample_id_selector = $('#id_cell_sample');
     var cell_sample_label_selector = $('#id_cell_sample_label');
+    var cellsamples_selector = $('#cellsamples');
+
+    // Populate cell_sampel_id_to_label
+    cellsamples_selector.find('button').each(function() {
+        var current_sample_id = $(this).attr('data-cell-sample-id');
+        var current_label = $(this).attr('name');
+        window.CELLS.cell_sample_id_to_label[current_sample_id] = current_label;
+    });
 
     // Open and then close dialog so it doesn't get placed in window itself
     var dialog = $('#dialog');
@@ -23,7 +36,7 @@ $(document).ready(function () {
     });
     dialog.removeProp('hidden');
 
-    $('#cellsamples').DataTable({
+    cellsamples_selector.DataTable({
         "iDisplayLength": -1,
         // Initially sort on receipt date
         "order": [ 1, "desc" ],
