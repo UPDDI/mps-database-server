@@ -1088,47 +1088,52 @@ def Single_Time_Reproducibility_Index(X):
     rep_index=rep_index.round(2)
     return rep_index
 
-def Reproducibility_Report(study_data):
+
+def Reproducibility_Report(group_count, study_data):
     #Calculate and report the reproducibility index and status and other parameters
     #Select unique group rows by study, organ model,sample location, assay and unit
     #Drop null value rows
+
     study_data= study_data.dropna(subset=['Value'])
     #Define the Chip ID column to string type
     study_data[['Chip ID']] = study_data[['Chip ID']].astype(str)
 
-    study_group=study_data[["Organ Model","Cells","Compound Treatment(s)","Target/Analyte","Method/Kit","Sample Location","Value Unit","Settings"]]
-    study_unique_group=study_group.drop_duplicates()
-    study_unique_group.set_index([range(study_unique_group.shape[0])],drop=True, append=False, inplace=True)
+    # OLD
+    # study_group=study_data[["Organ Model","Cells","Compound Treatment(s)","Target/Analyte","Method/Kit","Sample Location","Value Unit","Settings"]]
+    # study_unique_group=study_group.drop_duplicates()
+    # study_unique_group.set_index([range(study_unique_group.shape[0])],drop=True, append=False, inplace=True)
+    chip_data = study_data.groupby(['Treatment Group', 'Chip ID', 'Time (day)', 'Study ID'], as_index=False)['Value'].mean()
 
     #create reproducibility report table
-    reproducibility_results_table=study_unique_group
-    header_list=study_unique_group.columns.values.tolist()
+    reproducibility_results_table=chip_data
+    header_list=chip_data.columns.values.tolist()
     header_list.append('Max CV')
     header_list.append('ICC Absolute Agreement')
     header_list.append('Reproducibility Status')
-    header_list.append('Replica Set')
+    header_list.append('Treatment Group')
     header_list.append('# of Chips/Wells')
     header_list.append('# of Time Points')
     header_list.append('Reproducibility Note')
 
-    #Define all columns of reproducibility report table
+    # Define all columns of reproducibility report table
     reproducibility_results_table = reproducibility_results_table.reindex(columns = header_list)
-    #Loop every unique replicate group
-    group_count=len(study_unique_group.index)
+    # Loop every unique replicate group
+    # group_count=len(study_unique_group.index)
     for row in range(group_count):
-        rep_matrix=study_data[study_data['Organ Model']==study_unique_group['Organ Model'][row]]
-        rep_matrix=rep_matrix[rep_matrix['Cells']==study_unique_group['Cells'][row]]
-        rep_matrix=rep_matrix[rep_matrix['Compound Treatment(s)']==study_unique_group['Compound Treatment(s)'][row]]
-        rep_matrix=rep_matrix[rep_matrix['Target/Analyte']==study_unique_group['Target/Analyte'][row]]
-        rep_matrix=rep_matrix[rep_matrix['Method/Kit']==study_unique_group['Method/Kit'][row]]
-        rep_matrix=rep_matrix[rep_matrix['Sample Location']==study_unique_group['Sample Location'][row]]
-        rep_matrix=rep_matrix[rep_matrix['Value Unit']==study_unique_group['Value Unit'][row]]
-        rep_matrix=rep_matrix[rep_matrix['Settings']==study_unique_group['Settings'][row]]
-        #create replicate matrix for intra reproducibility analysis
+        # rep_matrix=study_data[study_data['Organ Model']==study_unique_group['Organ Model'][row]]
+        # rep_matrix=rep_matrix[rep_matrix['Cells']==study_unique_group['Cells'][row]]
+        # rep_matrix=rep_matrix[rep_matrix['Compound Treatment(s)']==study_unique_group['Compound Treatment(s)'][row]]
+        # rep_matrix=rep_matrix[rep_matrix['Target/Analyte']==study_unique_group['Target/Analyte'][row]]
+        # rep_matrix=rep_matrix[rep_matrix['Method/Kit']==study_unique_group['Method/Kit'][row]]
+        # rep_matrix=rep_matrix[rep_matrix['Sample Location']==study_unique_group['Sample Location'][row]]
+        # rep_matrix=rep_matrix[rep_matrix['Value Unit']==study_unique_group['Value Unit'][row]]
+        # rep_matrix=rep_matrix[rep_matrix['Settings']==study_unique_group['Settings'][row]]
+        # create replicate matrix for intra reproducibility analysis
+        rep_matrix = chip_data[chip_data['Treatment Group'] == str(row + 1)]
         icc_pivot = pd.pivot_table(rep_matrix, values='Value', index='Time (day)',columns=['Chip ID'], aggfunc=np.mean)
         group_id = str(row+1) #Define group ID
 
-        reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Replica Set')] = group_id
+        reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Treatment Group')] = group_id
         reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('# of Chips/Wells')] = icc_pivot.shape[1]
         reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('# of Time Points')] = icc_pivot.shape[0]
 
@@ -1184,6 +1189,8 @@ def Reproducibility_Report(study_data):
             reproducibility_results_table=reproducibility_results_table.round(2)
     return reproducibility_results_table
 
+# ?
+# Used anywhere...?
 def study_group_setting(study_unique_group,row):
     group_setting=pd.DataFrame(index=range(study_unique_group.shape[1]),columns=['Replicate Set Parameters','Setting'])
     for i in range(study_unique_group.shape[1]):
@@ -1195,45 +1202,48 @@ def study_group_setting(study_unique_group,row):
 
 
 def pivot_data_matrix(study_data,group_index):
-    #Drop null value rows
-    study_data= study_data.dropna(subset=['Value'])
-    #Define the Chip ID column to string type
-    study_data[['Chip ID']] = study_data[['Chip ID']].astype(str)
-    row=group_index
-    study_group=study_data[["Organ Model","Cells","Compound Treatment(s)","Target/Analyte","Method/Kit","Sample Location","Value Unit","Settings"]]
-    study_unique_group=study_group.drop_duplicates()
-    study_unique_group.set_index([range(study_unique_group.shape[0])],drop=True, append=False, inplace=True)
-    rep_matrix=study_data[study_data['Organ Model']==study_unique_group['Organ Model'][row]]
-    rep_matrix=rep_matrix[rep_matrix['Cells']==study_unique_group['Cells'][row]]
-    rep_matrix=rep_matrix[rep_matrix['Compound Treatment(s)']==study_unique_group['Compound Treatment(s)'][row]]
-    rep_matrix=rep_matrix[rep_matrix['Target/Analyte']==study_unique_group['Target/Analyte'][row]]
-    rep_matrix=rep_matrix[rep_matrix['Method/Kit']==study_unique_group['Method/Kit'][row]]
-    rep_matrix=rep_matrix[rep_matrix['Sample Location']==study_unique_group['Sample Location'][row]]
-    rep_matrix=rep_matrix[rep_matrix['Value Unit']==study_unique_group['Value Unit'][row]]
-    rep_matrix=rep_matrix[rep_matrix['Settings']==study_unique_group['Settings'][row]]
+    rep_matrix = study_data[study_data['Treatment Group']==group_index]
+    # #Drop null value rows
+    # study_data= study_data.dropna(subset=['Value'])
+    # #Define the Chip ID column to string type
+    # study_data[['Chip ID']] = study_data[['Chip ID']].astype(str)
+    # row=group_index
+    # study_group=study_data[["Organ Model","Cells","Compound Treatment(s)","Target/Analyte","Method/Kit","Sample Location","Value Unit","Settings"]]
+    # study_unique_group=study_group.drop_duplicates()
+    # study_unique_group.set_index([range(study_unique_group.shape[0])],drop=True, append=False, inplace=True)
+    # rep_matrix=study_data[study_data['Organ Model']==study_unique_group['Organ Model'][row]]
+    # rep_matrix=rep_matrix[rep_matrix['Cells']==study_unique_group['Cells'][row]]
+    # rep_matrix=rep_matrix[rep_matrix['Compound Treatment(s)']==study_unique_group['Compound Treatment(s)'][row]]
+    # rep_matrix=rep_matrix[rep_matrix['Target/Analyte']==study_unique_group['Target/Analyte'][row]]
+    # rep_matrix=rep_matrix[rep_matrix['Method/Kit']==study_unique_group['Method/Kit'][row]]
+    # rep_matrix=rep_matrix[rep_matrix['Sample Location']==study_unique_group['Sample Location'][row]]
+    # rep_matrix=rep_matrix[rep_matrix['Value Unit']==study_unique_group['Value Unit'][row]]
+    # rep_matrix=rep_matrix[rep_matrix['Settings']==study_unique_group['Settings'][row]]
     #create replicate matrix for intra reproducibility analysis
     icc_pivot = pd.pivot_table(rep_matrix, values='Value', index='Time (day)',columns=['Chip ID'], aggfunc=np.mean)
     return icc_pivot
 
 
 def scatter_plot_matrix(study_data,group_index):
-    #Drop null value rows
-    study_data= study_data.dropna(subset=['Value'])
-    #Define the Chip ID column to string type
-    study_data[['Chip ID']] = study_data[['Chip ID']].astype(str)
-    row=group_index
-    study_group=study_data[["Organ Model","Cells","Compound Treatment(s)","Target/Analyte","Method/Kit","Sample Location","Value Unit","Settings"]]
-    study_unique_group=study_group.drop_duplicates()
-    study_unique_group.set_index([range(study_unique_group.shape[0])],drop=True, append=False, inplace=True)
-    rep_matrix=study_data[study_data['Organ Model']==study_unique_group['Organ Model'][row]]
-    rep_matrix=rep_matrix[rep_matrix['Cells']==study_unique_group['Cells'][row]]
-    rep_matrix=rep_matrix[rep_matrix['Compound Treatment(s)']==study_unique_group['Compound Treatment(s)'][row]]
-    rep_matrix=rep_matrix[rep_matrix['Target/Analyte']==study_unique_group['Target/Analyte'][row]]
-    rep_matrix=rep_matrix[rep_matrix['Method/Kit']==study_unique_group['Method/Kit'][row]]
-    rep_matrix=rep_matrix[rep_matrix['Sample Location']==study_unique_group['Sample Location'][row]]
-    rep_matrix=rep_matrix[rep_matrix['Value Unit']==study_unique_group['Value Unit'][row]]
-    rep_matrix=rep_matrix[rep_matrix['Settings']==study_unique_group['Settings'][row]]
+    rep_matrix = study_data[study_data['Treatment Group']==group_index]
+    # #Drop null value rows
+    # study_data= study_data.dropna(subset=['Value'])
+    # #Define the Chip ID column to string type
+    # study_data[['Chip ID']] = study_data[['Chip ID']].astype(str)
+    # row=group_index
+    # study_group=study_data[["Organ Model","Cells","Compound Treatment(s)","Target/Analyte","Method/Kit","Sample Location","Value Unit","Settings"]]
+    # study_unique_group=study_group.drop_duplicates()
+    # study_unique_group.set_index([range(study_unique_group.shape[0])],drop=True, append=False, inplace=True)
+    # rep_matrix=study_data[study_data['Organ Model']==study_unique_group['Organ Model'][row]]
+    # rep_matrix=rep_matrix[rep_matrix['Cells']==study_unique_group['Cells'][row]]
+    # rep_matrix=rep_matrix[rep_matrix['Compound Treatment(s)']==study_unique_group['Compound Treatment(s)'][row]]
+    # rep_matrix=rep_matrix[rep_matrix['Target/Analyte']==study_unique_group['Target/Analyte'][row]]
+    # rep_matrix=rep_matrix[rep_matrix['Method/Kit']==study_unique_group['Method/Kit'][row]]
+    # rep_matrix=rep_matrix[rep_matrix['Sample Location']==study_unique_group['Sample Location'][row]]
+    # rep_matrix=rep_matrix[rep_matrix['Value Unit']==study_unique_group['Value Unit'][row]]
+    # rep_matrix=rep_matrix[rep_matrix['Settings']==study_unique_group['Settings'][row]]
     #create replicate matrix for intra reproducibility analysis
+
     icc_pivot = pd.pivot_table(rep_matrix, values='Value', index='Time (day)',columns=['Chip ID'], aggfunc=np.mean)
     if icc_pivot.isnull().sum().sum()>0:
         Y=Matrix_Fill(icc_pivot)
@@ -1250,7 +1260,7 @@ def scatter_plot_matrix(study_data,group_index):
     return plot_matrix
 
 
-def get_repro_data(data):
+def get_repro_data(group_count, data):
     #Load the summary data into the dataframe
     study_data = pd.DataFrame(data)
     study_data.columns = study_data.iloc[0]
@@ -1263,16 +1273,16 @@ def get_repro_data(data):
     study_data[['Chip ID']] = study_data['Chip ID'].astype(str)
 
     #Add Time (day) calculated from three time column
-    study_data["Time (day)"] = study_data["Day"] + study_data["Hour"]/24.0+study_data["Minute"]/24.0/60.0
+    study_data["Time (day)"] = study_data['Time']/1440.0
     study_data["Time (day)"] = study_data["Time (day)"].apply(lambda x: round(x,2))
 
-    #Select unique group rows by study, organ model,sample location, assay and unit
-    study_group=study_data[["Organ Model","Cells","Compound Treatment(s)","Target/Analyte","Method/Kit","Sample Location","Value Unit","Settings"]]
-    study_unique_group=study_group.drop_duplicates()
-    study_unique_group.set_index([range(study_unique_group.shape[0])],drop=True, append=False, inplace=True)
+    # #Select unique group rows by study, organ model,sample location, assay and unit
+    # study_group=study_data[["Organ Model","Cells","Compound Treatment(s)","Target/Analyte","Method/Kit","Sample Location","Value Unit","Settings"]]
+    # study_unique_group=study_group.drop_duplicates()
+    # study_unique_group.set_index([range(study_unique_group.shape[0])],drop=True, append=False, inplace=True)
 
     #create reproducibility report table
-    reproducibility_results_table=Reproducibility_Report(study_data)
+    reproducibility_results_table=Reproducibility_Report(group_count, study_data)
 
     datadict = {}
 
@@ -1281,20 +1291,20 @@ def get_repro_data(data):
     datadict['reproducibility_results_table'] = reproducibility_results_table_nanless.to_dict('split')
 
     #Loop every unique replicate group
-    group_count=len(study_unique_group.index)
+    # group_count=len(study_unique_group.index)
 
     for row in range(group_count):
         datadict[row] = {}
 
         group_id = str(row+1) #Define group ID
 
-        icc_pivot = pivot_data_matrix(study_data,row)
+        icc_pivot = pivot_data_matrix(study_data, group_id)
 
         #Call MAD score function
         mad_score_matrix=MAD_score(icc_pivot)#.round(2)
         datadict[row]['mad_score_matrix'] = mad_score_matrix.to_dict('split')
 
-        cv_chart=scatter_plot_matrix(study_data,row).fillna('')
+        cv_chart=scatter_plot_matrix(study_data,group_id).fillna('')
         datadict[row]['cv_chart'] = cv_chart.to_dict('split')
 
         if icc_pivot.shape[0]>1 and all(icc_pivot.eq(icc_pivot.iloc[0, :], axis=1).all(1)):
@@ -1315,7 +1325,7 @@ def get_repro_data(data):
             #Call a single time reproducibility index dataframe
             rep_index=Single_Time_Reproducibility_Index(icc_pivot).round(2)
             datadict[row]['rep_index'] = rep_index.to_dict('list')
-        group_index=study_group_setting(study_unique_group,row)
+        # group_index=study_group_setting(study_data,group_id)
 
     return datadict
 
@@ -1332,17 +1342,12 @@ def consecutive_one_new(data):
             current += 1
             if current == 1:
                 start_row = row
-                # print('start_row=',start_row)
         else:
             longest = max(longest, current)
             current = 0
 
-        # print('long_start_row=',long_start_row)
-        # print('current=',current,'','longest=',longest)
         if current > longest:
             long_start_row = start_row
-
-            # print('long_start_row=',long_start_row)
 
     return max(longest, current), long_start_row
 
@@ -1439,7 +1444,6 @@ def fill_nan(A, interp_method):
     '''
     try:
         inds = np.arange(A.shape[0])
-        # print "total # " + str(inds)
         good = np.where(np.isfinite(A))
         if interp_method == 'cubic':
             cs = CubicSpline(inds[good], A[good], extrapolate=False)
@@ -1522,7 +1526,6 @@ def matrix_interpolate(group_chip_data, interp_method, inter_level):
 
     fill_header_list = interp_group_matrix.columns.values.tolist()
     for col in range(interp_group_matrix.shape[1]):
-        # print col
         df_arr = interp_group_matrix.values[:, col]
         df_s = interp_group_matrix.iloc[:, col]
         if max_in_nan_size_array(df_s) > 0:
@@ -1667,9 +1670,7 @@ def Inter_reproducibility(group_count, inter_data_df, inter_level=1, max_interpo
     inter_data_df[['Study ID']] = inter_data_df[['Study ID']].astype(str)
 
     # Calculate the average value group by chip level
-    chip_data = \
-    inter_data_df.groupby(['Treatment Group', 'Chip ID', 'Time', 'Study ID', 'MPS User Group'], as_index=False)[
-        'Value'].mean()
+    chip_data = inter_data_df.groupby(['Treatment Group', 'Chip ID', 'Time', 'Study ID', 'MPS User Group'], as_index=False)['Value'].mean()
 
     # create reproducibility report table
     # reproducibility_results_table=group_df
@@ -1896,6 +1897,12 @@ def get_inter_study_reproducibility_report(group_count, inter_data, inter_level,
     """
     @author: Tongying Shun (tos8@pitt.edu)
     """
+    # Error if only headers present
+    if len(inter_data) < 2:
+        return [{}, {
+            'errors': 'No data. Please review filter options.'
+        }]
+
     # load inter data
     inter_head = inter_data.pop(0)
     inter_data_df = pd.DataFrame(inter_data)

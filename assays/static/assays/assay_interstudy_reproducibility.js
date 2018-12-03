@@ -312,7 +312,13 @@ $(document).ready(function() {
                     value_unit_index = json.header_keys.data.indexOf('Value Unit');
 
                     // Piechart info
-                    if (summary_pie === '0,0,0'){
+                    var pie_all_zero = summary_pie.every(function(x){
+                        if (!x){
+                            return true;
+                        }
+                        return false;
+                    })
+                    if (pie_all_zero){
                         pie_chart = new google.visualization.PieChart(document.getElementById('piechart'));
                         pie_chart.draw(na_data, na_options);
                     } else {

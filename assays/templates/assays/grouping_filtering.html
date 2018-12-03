@@ -30,6 +30,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% if not intra_flag %}
                     <tr>
                         <td>
                             <a data-parent-model='study' data-filter-relation='id__in' role='button' class="btn btn-sm post-filter-spawn">
@@ -44,6 +45,7 @@
                             Study
                         </td>
                     </tr>
+                    {% endif %}
                     {# Subject to removal? #}
 {#                    <tr>#}
 {#                        <td>#}
