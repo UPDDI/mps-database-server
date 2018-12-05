@@ -129,7 +129,12 @@
     {% include 'assays/grouping_filtering.html' %}
 
     {# Temporary #}
-    {% include 'assays/chart_options.html' with chart_title="New Data" chart_prefix="charts" %}
+    {# {% include 'assays/chart_options.html' with chart_title="New Data" chart_prefix="charts" %} #}
+    <div class="well">
+        <button type="button" class="btn btn-primary toggle_sidebar_button">
+            Toggle Sidebar
+        </button>
+    </div>
     <div id="charts" class="padded-bottom">Preview Unavailable</div>
 
     {# Revised for now #}
