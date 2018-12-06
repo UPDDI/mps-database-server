@@ -22,7 +22,7 @@
         {% else %}
 
         <button id="submit" type="submit" class="btn btn-primary">Submit</button>
-        <a class="btn btn-warning" role="button" onclick="window.location.reload(false);">Clear all Changes</a>
+        {# <a class="btn btn-warning" role="button" onclick="window.location.reload(false);">Clear all Changes</a> #}
 
         {% if update and object.get_delete_url %}
             <a role="button" class="btn btn-danger pull-right" href="{{ object.get_delete_url }}">Delete</a>
