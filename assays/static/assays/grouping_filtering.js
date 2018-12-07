@@ -221,7 +221,6 @@ $(document).ready(function () {
             filter_body.html(html_to_append.join(''));
 
             filter_data_table = filter_table.DataTable({
-                autoWidth: false,
                 destroy: true,
                 dom: '<"wrapper"lfrtip>',
                 deferRender: true,

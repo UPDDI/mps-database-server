@@ -38,7 +38,7 @@
         </a>
     </div>
 
-    <div class="container" id="filter">
+    <div id="filter">
     <div id="number_of_points_container" class="row text-center padded-bottom text-success">
         <h1 id="make_more_selections_message" class="text-danger">Please Select at Least One MPS Model</h1>
         <h2>Number of Points: <span id="number_of_points"></span></h2>
@@ -128,13 +128,13 @@
 
     </div>
 
-    {# }<div class="container" hidden id="grouping_filtering"> #}
-        {# {% include 'assays/grouping_filtering.html' %} #}
-    {# }</div> #}
+    <div hidden id="results">
 
-    {# }<div class="container" hidden id="results"> #}
-    {# }{% include 'assays/chart_options.html' with chart_prefix="charts" chart_title="Selected Data" %} #}
-
+    <div class="well">
+        <button type="button" class="btn btn-primary toggle_sidebar_button">
+            Toggle Sidebar
+        </button>
+    </div>
     {# Note indicating no data to display initially #}
     <div id="charts" class="padded-bottom">
         No data to display
@@ -147,6 +147,13 @@
 
     {# TODO TODO TODO NEED GROUPING  AND FILTERING STUFF HERE TOO #}
 
+    <div class="well">
+        <button type="button" class="btn btn-primary toggle_sidebar_button">
+            Toggle Sidebar
+        </button>
+    </div>
+
+    {# NEEDS TO BE MOVED #}
     <div class="container">
     <div class="well">
         {# TODO TODO TODO #}

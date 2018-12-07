@@ -1114,41 +1114,36 @@ $(document).ready(function () {
         // EXCEEDINGLY NAIVE, PLEASE REVISE
         $('.' + item_prefix).each(function(form_index) {
             // Removed the notion of shadow deleting "empty" items
-            // var empty = true;
-            // $(this).find('input:not(:checkbox)').each(function(input_index) {
-            //     // console.log($(this));
-            //     if($(this).val()) {
-            //         if(
-            //             $(this).attr('name').indexOf('_index') === -1 &&
-            //             $(this).attr('name').indexOf('-name') === -1 &&
-            //             $(this).attr('name').indexOf('-matrix') === -1 &&
-            //             $(this).attr('name').indexOf('-test_type') === -1 &&
-            //             (!device_selector.val() || $(this).attr('name').indexOf('-device') === -1)
-            //         ) {
-            //             empty = false;
-            //             return false;
-            //         }
-            //     }
-            // });
-            // // Mark for deletion if empty
-            // if (empty) {
-            //     $(this).find('input[name$="DELETE"]').prop('checked', true);
-            // }
-            // Otherwise make sure has device
-            // if (device_selector.val()) {
-            //     $(this).find('input[name$="device"]').val(device_selector.val());
-            // }
+            var empty = true;
 
             var current_name = $(this).find('input[name$="-name"]').val();
-
+            if (current_name) {
+                $(this).find('input:not(:checkbox)').each(function(input_index) {
+                    if($(this).val()) {
+                        if(
+                            $(this).attr('name').indexOf('_index') === -1 &&
+                            $(this).attr('name').indexOf('-name') === -1 &&
+                            $(this).attr('name').indexOf('-matrix') === -1 &&
+                            $(this).attr('name').indexOf('-test_type') === -1 &&
+                            $(this).attr('name').indexOf('-setup_date') === -1 &&
+                            (!device_selector.val() || $(this).attr('name').indexOf('-device') === -1)
+                        ) {
+                            empty = false;
+                            return false;
+                        }
+                    }
+                });
+            }
+            // Mark for deletion if empty
+            // Items without names should always be removed
+            if (empty) {
+                $(this).find('input[name$="DELETE"]').prop('checked', true);
+            }
             // Items with names must have device
             // Only apply global device when plate representation is selected
+            // Otherwise make sure has device
             if (current_name && representation_selector.val() === 'plate') {
                 $(this).find('input[name$="device"]').val(device_selector.val());
-            }
-            // Items without names must be removed
-            if (!current_name) {
-                $(this).find('input[name$="DELETE"]').prop('checked', true);
             }
         });
     });
