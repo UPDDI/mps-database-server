@@ -3,12 +3,6 @@
 
 {% block extra_head %}
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    {% if not detail %}
-    <script src="{% static "js/calendar.js" %}"></script>
-    <script src="{% static "js/enter_override.js" %}"></script>
-    <script src="{% static "assays/compound_instances.js" %}"></script>
-    <script src="{% static "js/flag.js" %}"></script>
-    {% endif %}
 {% endblock %}
 
 {% block load_js %}
@@ -16,6 +10,11 @@
     <script src="{% static "assays/cell_sample_selection.js" %}"></script>
     <script src="{% static "assays/assaymatrix_add.js" %}"></script>
     <script src="{% static "assays/chart_display.js" %}"></script>
+    {# Not used in detail, but shouldn't be problem #}
+    <script src="{% static "js/calendar.js" %}"></script>
+    <script src="{% static "js/enter_override.js" %}"></script>
+    <script src="{% static "assays/compound_instances.js" %}"></script>
+    <script src="{% static "js/flag.js" %}"></script>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -294,7 +293,8 @@
         </tr>
         <tr>
         <td>
-            <input readonly="readonly" id="id_cell_cell_sample" name="cell_cell_sample" size="5" value="{{ form.cell_cell_sample.value|default_if_none:'' }}">
+            {# Inline styles are evil #}
+            <input readonly="readonly" id="id_cell_cell_sample" name="cell_cell_sample" value="{{ form.cell_cell_sample.value|default_if_none:'' }}" class="form-control" style="width: 75px; display: inline;">
             <button id='id_cell_sample_search' type="button" class="btn btn-xs btn-primary open-cell-sample-dialog">
                 <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
             </button>
@@ -826,7 +826,6 @@
             </div>
             <div>
                 <span class="cell-cell_sample"></span>
-                <span class="cell-passage"></span>
                 {% if not detail %}
                 <a class="pull-right btn btn-xs subform-delete">
                     <span class="glyphicon glyphicon-remove text-danger"></span>
@@ -836,7 +835,8 @@
 {#                </a>#}
                 {% endif %}
             </div>
-            <div class="cell-biosensor"></div>
+            <div>Passage: <span class="cell-passage"></span></div>
+            <div>Biosensor: <span class="cell-biosensor"></span></div>
             <div>
                 <span class="cell-density"></span>
                 <span class="cell-density_unit"></span>

@@ -396,7 +396,9 @@ $(document).ready(function () {
         // NOTE: SPECIAL EXCEPTION FOR CELL SAMPLES
         if (field_name === 'cell_sample') {
             // TODO VERY POORLY DONE
-            return $('#' + 'cell_sample_' + field.val()).attr('name');
+            // return $('#' + 'cell_sample_' + field.val()).attr('name');
+            // Global here is a little sloppy, but should always succeed
+            return window.CELLS.cell_sample_id_to_label[field.val()];
         }
         // SPECIAL EXCEPTION FOR ORGAN MODELS
         else if (field_name === 'organ_model') {
@@ -479,7 +481,7 @@ $(document).ready(function () {
                     }
                     else {
                         display.find('.matrix_item-name').attr('disabled', '');
-                        display.find('.form-delete').hide();
+                        // display.find('.form-delete').hide();
                     }
                 }
                 // Generate a subdisplay if this is not item TODO TODO TODO
@@ -524,10 +526,20 @@ $(document).ready(function () {
                     }
                 });
 
+                // Hide deletes for forms without names
+                if (!$(this).find('input[name$="-name"]').val()) {
+                    display.find('.form-delete').hide();
+                }
+                else {
+                    display.find('.form-delete').show();
+                }
+
                 var errors_display = null;
                 var errors_list = null;
 
-                if (errors.length > 0 && !$(this).find('input[name$="DELETE"]').prop('checked')) {
+                var item_was_marked_deleted = $(this).find('input[name$="DELETE"]').prop('checked');
+
+                if (errors.length > 0 && !item_was_marked_deleted) {
                     errors_display = $('#empty_error_html').children().clone();
                     errors_list = $('<ul>');
                     $.each(errors, function(index, error_message) {
@@ -536,6 +548,9 @@ $(document).ready(function () {
                     errors_display.html(errors_list);
                     errors_exist = true;
                 }
+                else if (item_was_marked_deleted) {
+                    display.addClass('strikethrough');
+                }
 
                 if (new_subdisplay) {
                     // If this subform is to be deleted
@@ -543,7 +558,7 @@ $(document).ready(function () {
                     var delete_input = $('#id_' + prefix + '-' + new_subdisplay.attr(item_subform_index_attribute) + '-DELETE');
                     var checked_value = delete_input.prop('checked');
 
-                    if (checked_value) {
+                    if (checked_value || item_was_marked_deleted) {
                         new_subdisplay.addClass('strikethrough');
                     }
                     else {
@@ -618,6 +633,9 @@ $(document).ready(function () {
             // Set form
             $('#id_' + item_prefix + '-' + $(this).attr(item_form_index_attribute) + '-name').val(value);
         });
+
+        // Semi-superfluous (refreshes things like delete button)
+        refresh_all_contents_from_forms();
     }
 
     function default_incrementer(
@@ -745,7 +763,11 @@ $(document).ready(function () {
                     form_field_to_add_to = current_form.find('select[name$="' + field_name + '"]');
                 }
 
-                form_field_to_add_to.val(current_value);
+                // DO NOT ADD TO FORMS THAT ARE MISSING THEIR NAME!
+                // ONLY IGNORE IF field_name IS NAME
+                if (field_name == 'name' || current_form.find('input[name$="name"]').val()) {
+                    form_field_to_add_to.val(current_value);
+                }
             });
         });
 
@@ -923,7 +945,7 @@ $(document).ready(function () {
                 window.get_organ_models(device_selector.val());
             }
         }
-        else {
+        else if (!window.device.val() || representation_selector.val() === 'plate') {
             window.device.val('');
             window.get_organ_models('');
         }
@@ -1091,28 +1113,36 @@ $(document).ready(function () {
         // Iterate over every Matrix Item form
         // EXCEEDINGLY NAIVE, PLEASE REVISE
         $('.' + item_prefix).each(function(form_index) {
+            // Removed the notion of shadow deleting "empty" items
             var empty = true;
-            $(this).find('input:not(:checkbox)').each(function(input_index) {
-                // console.log($(this));
-                if($(this).val()) {
-                    if(
-                        $(this).attr('name').indexOf('_index') === -1 &&
-                        $(this).attr('name').indexOf('-name') === -1 &&
-                        $(this).attr('name').indexOf('-matrix') === -1 &&
-                        $(this).attr('name').indexOf('-test_type') === -1 &&
-                        (!device_selector.val() || $(this).attr('name').indexOf('-device') === -1)
-                    ) {
-                        empty = false;
-                        return false;
+
+            var current_name = $(this).find('input[name$="-name"]').val();
+            if (current_name) {
+                $(this).find('input:not(:checkbox)').each(function(input_index) {
+                    if($(this).val()) {
+                        if(
+                            $(this).attr('name').indexOf('_index') === -1 &&
+                            $(this).attr('name').indexOf('-name') === -1 &&
+                            $(this).attr('name').indexOf('-matrix') === -1 &&
+                            $(this).attr('name').indexOf('-test_type') === -1 &&
+                            $(this).attr('name').indexOf('-setup_date') === -1 &&
+                            (!device_selector.val() || $(this).attr('name').indexOf('-device') === -1)
+                        ) {
+                            empty = false;
+                            return false;
+                        }
                     }
-                }
-            });
+                });
+            }
             // Mark for deletion if empty
+            // Items without names should always be removed
             if (empty) {
                 $(this).find('input[name$="DELETE"]').prop('checked', true);
             }
+            // Items with names must have device
+            // Only apply global device when plate representation is selected
             // Otherwise make sure has device
-            if (device_selector.val()) {
+            if (current_name && representation_selector.val() === 'plate') {
                 $(this).find('input[name$="device"]').val(device_selector.val());
             }
         });

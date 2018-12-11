@@ -608,7 +608,7 @@ $(document).ready(function () {
                     // Somewhat naive
                     if (document.getElementById(charts + 'group_select').checked) {
                         // NOTE -1
-                        group_to_data[charts][index][i] = assays[index][0][i].replace(/\D/g, '') - 1;
+                        group_to_data[charts][index][i] = assays[index][0][i].split(' || ')[0].replace(/\D/g, '') - 1;
                     }
                     else {
                         var device = assays[index][0][i].split(' || ')[0];

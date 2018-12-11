@@ -272,7 +272,7 @@ def fetch_dropdown(request):
     for finding in findings:
         # match value to the desired subject ID
         value = str(finding.id)
-        dropdown += '<option value="' + value + '">' + str(finding) + '</option>'
+        dropdown += u'<option value="' + value + '">' + unicode(finding) + u'</option>'
 
     data = {}
 
@@ -1092,7 +1092,45 @@ def get_data_points_for_charting(
             # If by compound
             if key == 'group':
                 # tag = get_list_of_present_compounds(related_compounds_map, raw, ' & ')
-                tag = 'Group {}'.format(setup_to_treatment_group.get(matrix_item_id).get('index') + 1)
+                tag = u'Group {}'.format(setup_to_treatment_group.get(matrix_item_id).get('index') + 1)
+            elif key == 'compound':
+                tag = []
+
+                is_control = True
+
+                for compound in raw.matrix_item.assaysetupcompound_set.all():
+                    # Makes sure the compound doesn't violate filters
+                    # This is because a compound can be excluded even if its parent matrix item isn't!
+                    valid_compound = True
+
+                    for filter, values in matrix_item_compound_post_filters.items():
+                        if unicode(attr_getter(compound, filter.split('__'))) not in values:
+                            valid_compound = False
+                            break
+
+                    # TERRIBLE CONDITIONAL
+                    if (valid_compound and
+                        compound.addition_time <= raw_time and
+                        compound.addition_time + compound.duration >= raw_time
+                    ):
+                        concentration = compound.concentration * compound.concentration_unit.scale_factor
+                        tag.append(
+                            # May need this to have float minutes, unsure
+                            u'{} {} {}'.format(
+                                compound.compound_instance.compound.name,
+                                concentration,
+                                compound.concentration_unit.base_unit,
+                            )
+                        )
+
+                    is_control = False
+
+                if tag:
+                    tag = u' & '.join(tag)
+                elif is_control and (post_filter is None or u'0' in post_filter_compounds):
+                    tag = u'-No Compound-'
+                else:
+                    continue
             elif key == 'dose':
                 tag = []
                 concentration = 0
@@ -1117,7 +1155,7 @@ def get_data_points_for_charting(
                         concentration += compound.concentration * compound.concentration_unit.scale_factor
                         tag.append(
                             # May need this to have float minutes, unsure
-                            '{} at D{}H{}M{}'.format(
+                            u'{} at D{}H{}M{}'.format(
                                 compound.compound_instance.compound.name,
                                 int(raw_time / 24 / 60),
                                 int(raw_time / 60 % 24),
@@ -1130,9 +1168,9 @@ def get_data_points_for_charting(
                 # CONTRIVED: Set time to concentration AND time
                 time = (concentration, time)
                 if tag:
-                    tag = ' & '.join(tag)
+                    tag = u' & '.join(tag)
                 elif is_control and (post_filter is None or u'0' in post_filter_compounds):
-                    tag = '-No Compound- at D{}H{}M{}'.format(
+                    tag = u'-No Compound- at D{}H{}M{}'.format(
                         int(raw_time / 24 / 60),
                         int(raw_time / 60 % 24),
                         int(raw_time % 60)
@@ -1215,15 +1253,15 @@ def get_data_points_for_charting(
             if not percent_control:
                 # Not converted to percent control
                 # Newline is used as a delimiter
-                assay_label = target + '\n' + unit
+                assay_label = target + u'\n' + unit
             else:
                 # Convert to percent control
                 if accommodate_units:
-                    current_unit = '%Control from ' + unit
+                    current_unit = u'%Control from {}'.format(unit)
                 else:
-                    current_unit = '%Control'
+                    current_unit = u'%Control'
                 # Newline is used as a delimiter
-                assay_label = target + '\n' + current_unit
+                assay_label = target + u'\n' + current_unit
 
             current_table = intermediate_data.setdefault(assay_label, [['Time']])
             # row_indices = {}
@@ -1244,7 +1282,7 @@ def get_data_points_for_charting(
 
                 for sample_location, time_values in sample_locations.items():
                     if accommodate_sample_location:
-                        current_key = tag + ' || ' + sample_location
+                        current_key = u'{} || {}'.format(tag, sample_location)
                         accommodate_intervals = False
                         include_current = False
 
@@ -1269,8 +1307,8 @@ def get_data_points_for_charting(
 
                             if not percent_control:
                                 current_data.setdefault(current_key, {}).update({concentration: value})
-                                current_data.setdefault(current_key + '     ~@i1', {}).update({concentration: value - interval})
-                                current_data.setdefault(current_key + '     ~@i2', {}).update({concentration: value + interval})
+                                current_data.setdefault(u'{}{}'.format(current_key,  '     ~@i1'), {}).update({concentration: value - interval})
+                                current_data.setdefault(u'{}{}'.format(current_key, '     ~@i2'), {}).update({concentration: value + interval})
                                 y_header.update({concentration: True})
                                 include_current = True
 
@@ -1286,9 +1324,9 @@ def get_data_points_for_charting(
                                 adjusted_interval = (interval / control_value) * 100
 
                                 current_data.setdefault(current_key, {}).update({concentration: adjusted_value})
-                                current_data.setdefault(current_key + '     ~@i1', {}).update(
+                                current_data.setdefault(u'{}{}'.format(current_key , '     ~@i1'), {}).update(
                                     {concentration: adjusted_value - adjusted_interval})
-                                current_data.setdefault(current_key + '     ~@i2', {}).update(
+                                current_data.setdefault(u'{}{}'.format(current_key, '     ~@i2'), {}).update(
                                     {concentration: adjusted_value + adjusted_interval})
                                 y_header.update({concentration: True})
                                 include_current = True
@@ -1330,13 +1368,13 @@ def get_data_points_for_charting(
                     # Only include intervals if necessary
                     if accommodate_intervals and include_current and not key_present:
                         x_header.extend([
-                            current_key + '     ~@i1',
-                            current_key + '     ~@i2'
+                            u'{}{}'.format(current_key, '     ~@i1'),
+                            u'{}{}'.format(current_key, '     ~@i2')
                         ])
                     else:
-                        if current_key+'     ~@i1' in current_data:
-                            del current_data[current_key+'     ~@i1']
-                            del current_data[current_key + '     ~@i2']
+                        if u'{}{}'.format(current_key, '     ~@i1') in current_data:
+                            del current_data[u'{}{}'.format(current_key, '     ~@i1')]
+                            del current_data[u'{}{}'.format(current_key, '     ~@i2')]
 
             # for current_key in all_keys:
             #     if current_key not in x_header:
@@ -2056,7 +2094,7 @@ def acquire_post_filter(studies, assays, matrix_items, data_points):
 
     # Contrived: Add no cells
     post_filter.setdefault('matrix_item', {}).setdefault(
-        'assaysetupcell__cell_sample__cell_type_id__in', {}
+        'assaysetupcell__cell_sample_id__in', {}
     ).update({
         0: '-No Cells-'
     })
@@ -2412,25 +2450,25 @@ def apply_post_filter(post_filter, studies, assays, matrix_items, data_points):
     matrix_item_post_filters = {
         current_filter: [
             x for x in post_filter.get('matrix_item', {}).get(current_filter, [])
-        ] for current_filter in post_filter.get('matrix_item') if not current_filter.startswith('assaysetup')
+        ] for current_filter in post_filter.get('matrix_item', {}) if not current_filter.startswith('assaysetup')
     }
 
     matrix_item_compound_post_filters = {
         current_filter: [
             x for x in post_filter.get('matrix_item', {}).get(current_filter, [])
-        ] for current_filter in post_filter.get('matrix_item') if current_filter.startswith('assaysetupcompound__')
+        ] for current_filter in post_filter.get('matrix_item', {}) if current_filter.startswith('assaysetupcompound__')
     }
 
     matrix_item_cell_post_filters = {
         current_filter: [
             x for x in post_filter.get('matrix_item', {}).get(current_filter, [])
-        ] for current_filter in post_filter.get('matrix_item') if current_filter.startswith('assaysetupcell__')
+        ] for current_filter in post_filter.get('matrix_item', {}) if current_filter.startswith('assaysetupcell__')
     }
 
     matrix_item_setting_post_filters = {
         current_filter: [
             x for x in post_filter.get('matrix_item', {}).get(current_filter, [])
-        ] for current_filter in post_filter.get('matrix_item') if current_filter.startswith('assaysetupsetting__')
+        ] for current_filter in post_filter.get('matrix_item', {}) if current_filter.startswith('assaysetupsetting__')
     }
 
     matrix_items = matrix_items.filter(study__in=studies)
@@ -2452,7 +2490,7 @@ def apply_post_filter(post_filter, studies, assays, matrix_items, data_points):
         )
 
     # Cells
-    if post_filter.get('matrix_item', {}).get('assaysetupcell__cell_sample__cell_type_id__in', {}).get('0', None):
+    if post_filter.get('matrix_item', {}).get('assaysetupcell__cell_sample_id__in', {}).get('0', None):
         matrix_items = matrix_items.filter(
             **matrix_item_cell_post_filters
         ) | matrix_items.filter(assaysetupcell__isnull=True)
@@ -2956,14 +2994,14 @@ def get_inter_study_reproducibility(
                     x_header.update({
                         legend: True,
                         # This is to deal with intervals
-                        legend + '     ~@i1': True,
-                        legend + '     ~@i2': True,
+                        u'{}{}'.format(legend, '     ~@i1'): True,
+                        u'{}{}'.format(legend, '     ~@i2'): True,
                     })
                 else:
                     x_header.update({
                         legend: True,
                         # This is to deal with custom tooltips
-                        legend + '     ~@t': True,
+                        u'{}{}'.format(legend, '     ~@t'): True,
                     })
 
                 for time, values in times.items():
@@ -2972,7 +3010,7 @@ def get_inter_study_reproducibility(
                             value = value_pair[0]
                             matrix_item_id = value_pair[1]
                             current_data.setdefault(legend, {}).update({u'{}~{}'.format(time, index): value})
-                            current_data.setdefault(legend + '     ~@t', {}).update(
+                            current_data.setdefault(u'{}{}'.format(legend, '     ~@t'), {}).update(
                                 {
                                     u'{}~{}'.format(time, index): [time, legend, value, matrix_item_id]
                                 }
@@ -2989,8 +3027,8 @@ def get_inter_study_reproducibility(
                             value = np.mean(values)
                             std = np.std(values)
                             current_data.setdefault(legend, {}).update({time: value})
-                            current_data.setdefault(legend + '     ~@i1', {}).update({time: value - std})
-                            current_data.setdefault(legend + '     ~@i2', {}).update({time: value + std})
+                            current_data.setdefault(u'{}{}'.format(legend, '     ~@i1'), {}).update({time: value - std})
+                            current_data.setdefault(u'{}{}'.format(legend, '     ~@i2'), {}).update({time: value + std})
                         else:
                             current_data.setdefault(legend, {}).update({time: values[0]})
                         y_header.update({time: True})
@@ -3148,16 +3186,16 @@ def get_inter_study_reproducibility(
                 x_header.update({
                     legend: True,
                     # This is to deal with the style
-                    legend + '     ~@s': True,
+                    u'{}{}'.format(legend, '     ~@s'): True,
                     # This is to deal with intervals
-                    legend + '     ~@i1': True,
-                    legend + '     ~@i2': True,
+                    u'{}{}'.format(legend, '     ~@i1'): True,
+                    u'{}{}'.format(legend, '     ~@i2'): True,
                 })
                 for time, value_shape in times.items():
                     value, shape = value_shape[0], value_shape[1]
                     if shape:
                         current_data.setdefault(legend, {}).update({time: value})
-                        current_data.setdefault(legend + '     ~@s', {}).update({time: shape})
+                        current_data.setdefault(u'{}{}'.format(legend, '     ~@s'), {}).update({time: shape})
                         y_header.update({time: True})
                     else:
                         values = initial_chart_data.get(
@@ -3178,9 +3216,9 @@ def get_inter_study_reproducibility(
                             value = np.mean(values)
                             std = np.std(values)
                             current_data.setdefault(legend, {}).update({time: value})
-                            current_data.setdefault(legend + '     ~@i1', {}).update({time: value - std})
-                            current_data.setdefault(legend + '     ~@i2', {}).update({time: value + std})
-                            current_data.setdefault(legend + '     ~@s', {}).update({time: shape})
+                            current_data.setdefault(u'{}{}'.format(legend, '     ~@i1'), {}).update({time: value - std})
+                            current_data.setdefault(u'{}{}'.format(legend, '     ~@i2'), {}).update({time: value + std})
+                            current_data.setdefault(u'{}{}'.format(legend, '     ~@s'), {}).update({time: shape})
                         else:
                             current_data.setdefault(legend, {}).update({time: values[0]})
 
