@@ -63,4 +63,15 @@ $(document).ready(function() {
     $('#' + charts_name + 'chart_options').find('input').change(function() {
         show_plots();
     });
+
+    // On load
+    $(document).ready(function() {
+        document.getElementById('id_current_url_input').value = window.location.href
+    });
+
+    // On click of copy to URL button (DEPRECATED)
+    $('#id_copy_url_button').click(function() {
+        var current_url = document.getElementById('id_current_url_input'); current_url.select();
+        document.execCommand('copy');
+    });
 });

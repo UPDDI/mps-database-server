@@ -937,4 +937,15 @@ $(document).ready(function() {
         var chart = new google.visualization.PieChart(document.getElementById('piechart'));
         chart.draw(loading_data, loading_options);
     }
+
+    // On load
+    $(document).ready(function() {
+        document.getElementById('id_current_url_input').value = window.location.href
+    });
+
+    // On click of copy to URL button (DEPRECATED)
+    $('#id_copy_url_button').click(function() {
+        var current_url = document.getElementById('id_current_url_input'); current_url.select();
+        document.execCommand('copy');
+    });
 });

@@ -35,6 +35,7 @@
 
         <div class="row text-center padded-bottom">
             <a href="{% url 'assay_study_add' %}"  class="btn btn-lg btn-success" role="button">Add Study</a>
+            <a href="{% url 'assaystudyset-add' %}" class="btn btn-lg btn-success" role="button">Create Study Set</a>
             {% if not editable %}
                 <a href="{% url 'editable_study_list' %}" class="btn btn-lg btn-primary" role="button">Show Editable Studies Only</a>
             {% else %}

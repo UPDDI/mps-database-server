@@ -110,7 +110,7 @@ urlpatterns = [
     url(
         r'^assays/assaystudyset/(?P<pk>[0-9]+)/update/$',
         AssayStudySetUpdate.as_view(),
-        name='assaystudyset-add'
+        name='assaystudyset-update'
     ),
     url(
         r'^assays/assaystudyset/(?P<pk>[0-9]+)/$',
