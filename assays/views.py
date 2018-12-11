@@ -30,7 +30,7 @@ from assays.models import (
     AssayDataFileUpload,
     AssayDataPoint,
     AssayStudySupportingData,
-    AssayStudySet
+    AssayStudySet,
     # Deprecated, just in case
     AssayRun,
     AssayDataUpload
