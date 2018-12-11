@@ -1105,7 +1105,6 @@ def Reproducibility_Report(group_count, study_data):
     chip_data = study_data.groupby(['Treatment Group', 'Chip ID', 'Time (day)', 'Study ID'], as_index=False)['Value'].mean()
 
     #create reproducibility report table
-    reproducibility_results_table=chip_data
     header_list=chip_data.columns.values.tolist()
     header_list.append('Max CV')
     header_list.append('ICC Absolute Agreement')
@@ -1115,8 +1114,14 @@ def Reproducibility_Report(group_count, study_data):
     header_list.append('# of Time Points')
     header_list.append('Reproducibility Note')
 
+    reproducibility_results_table = []
+
+    for x in range(group_count+1):
+        reproducibility_results_table.append(header_list)
+
+    reproducibility_results_table = pd.DataFrame(columns=header_list)
+
     # Define all columns of reproducibility report table
-    reproducibility_results_table = reproducibility_results_table.reindex(columns = header_list)
     # Loop every unique replicate group
     # group_count=len(study_unique_group.index)
     for row in range(group_count):
@@ -1132,6 +1137,9 @@ def Reproducibility_Report(group_count, study_data):
         rep_matrix = chip_data[chip_data['Treatment Group'] == str(row + 1)]
         icc_pivot = pd.pivot_table(rep_matrix, values='Value', index='Time (day)',columns=['Chip ID'], aggfunc=np.mean)
         group_id = str(row+1) #Define group ID
+
+        group_rep_matrix = pd.DataFrame(index=[0], columns=header_list)
+        reproducibility_results_table = reproducibility_results_table.append(group_rep_matrix, ignore_index=True)
 
         reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Treatment Group')] = group_id
         reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('# of Chips/Wells')] = icc_pivot.shape[1]

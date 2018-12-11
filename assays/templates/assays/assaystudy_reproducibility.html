@@ -8,6 +8,11 @@
 
 {% block extra_head %}
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+        .dataTables_wrapper.no-footer .dataTables_scrollBody {
+            border-bottom: 0;
+        }
+    </style>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -36,6 +41,24 @@
 {% block fluid-content %}
     <br><div class="text-center"><strong>Reproducibility Breakdown</strong><br><small>(Hover for Details)</small></div>
     <div id="piechart" class="text-center" style="width: 250px; height: 250px; margin: auto; display: block;">Loading...</div>
+
+    <div class="row padded-row">
+        <div class="col-xs-12">
+        <div id="show_all_repro_wrapper" class="fancy-checkbox table-filter padded-bottom" align="left">
+            <input type="checkbox" name="show_all_repro" id="show_all_repro"/>
+            <div class="btn-group">
+                <label for="show_all_repro" class="btn btn-default">
+                    <span class="glyphicon glyphicon-ok"></span>
+                    <span> </span>
+                </label>
+                <label for="show_all_repro" class="btn btn-default active">
+                    Show All Sets
+                </label>
+            </div>
+        </div>
+        </div>
+    </div>
+
     <div class="row padded-row">
         <div class="col-xs-12">
         <label>Replica Set Table</label>
@@ -85,15 +108,19 @@
         <div class='row'>
             <div class='col-md-6'>
                 <label id='mad-score-label'>Chip MAD Scores of Assay Target/Analyte Measurements </label>
+                <div style="display: inline-block; max-height: 300px; max-width: 100%;">
                 <table id='mad-score-matrix' class='table-hover table-striped table-bordered pull-left spawned-datatable'>
 
                 </table>
+                </div>
             </div>
             <div class='col-md-6'>
                 <label id='med-comp-label'>Compare with the Median of the Chip Observations </label>
+                <div style="display: inline-block; max-height: 300px; max-width: 100%;">
                 <table id='chip-comp-med' class='table-hover table-striped table-bordered pull-left spawned-datatable'>
 
                 </table>
+                </div>
             </div>
         </div>
         <br>

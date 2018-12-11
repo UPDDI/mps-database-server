@@ -2,9 +2,9 @@ $(document).ready(function () {
     // Load core chart package
     google.charts.load('current', {'packages':['corechart']});
     // Set the callback
-    google.charts.setOnLoadCallback(loadRepro);
+    google.charts.setOnLoadCallback(load_repro);
 
-    window.GROUPING.refresh_function = loadRepro;
+    window.GROUPING.refresh_function = load_repro;
 
     // FILE-SCOPE VARIABLES
     var study_id = Math.floor(window.location.href.split('/')[5]);
@@ -26,7 +26,7 @@ $(document).ready(function () {
     var mad_tooltip = "Median Absolute Deviation (MAD) scores of all chip measurement population at every time point. A score > 3.5 or < -3.5 indicates that the chip is an outlier relative to the median of chip measurement population at a that time point";
     var comp_tooltip = "The ICC is calculated for each chip relative to the median of all of the chips.";
 
-    var gasTable = null;
+    var gas_table = null;
 
     function escapeHtml(html) {
         return $('<div>').text(html).html();
@@ -44,25 +44,26 @@ $(document).ready(function () {
 
     function draw_tables(){
         //Clone reproducibility section per row
-        gasTable.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+        gas_table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
             var data = this.data();
             var icc_status = data[7];
             if (icc_status){
-                // console.log("DATA: ", data);
                 var organModel = data_group_to_organ_models[data[0]].join('<br>');
-                var targetAnalyte = data_groups[data[0]][0];;
-                var methodKit = "";
+                var targetAnalyte = data_groups[data[0]][0];
+                var methodKit = data_groups[data[0]][method_index];
                 var sampleLocation = data_group_to_sample_locations[data[0]].join('<br>');
                 var compoundTreatments = treatment_groups[data_groups[data[0]][data_groups[data[0]].length - 1]]['Trimmed Compounds'];
                 var valueUnit = data_groups[data[0]][value_unit_index];
+                var setting = data_groups[data[0]][setting_index];
+                var cells = data_groups[data[0]][cells_index];
                 var group = data[0];
-                // console.log("GROUP: ", group);
 
                 var $elem = $( "#repro-data" );
                 var $clone = $elem.clone( true ).removeAttr('id').addClass('repro-'+group).appendTo("#clone-container");
+                $clone.removeClass('hidden');
                 mad_list[group]['columns'].unshift("Time");
                 $clone.find('#repro-title').text('Set ' + group);
-                $clone.find('#selection-parameters').html(buildSelectionParameters(studyID, organModel, targetAnalyte, methodKit, sampleLocation, compoundTreatments, valueUnit));
+                $clone.find('#selection-parameters').html(build_selection_parameters(studyID, organModel, targetAnalyte, methodKit, sampleLocation, compoundTreatments, valueUnit));
                 $clone.find('#selection-parameters').find('td, th').css('padding','8px 10px');
                 $clone.find('#chip-rep-rep-ind').html(buildCV_ICC(data[5],data[6]));
                 $clone.find('#chip-rep-rep-ind').find('td, th').css('padding','8px 10px');
@@ -80,17 +81,33 @@ $(document).ready(function () {
                     $clone.find('#repro-status').html('<em>'+icc_status+'</em><small style="color: black;"><span data-toggle="tooltip" title="'+data[14]+'" class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></small>').css("background-color", "Grey");
                 }
 
-                $clone.find('#mad-score-matrix').DataTable({
+                // More than 6 rows, scrollY 270px, else 100%
+                var mad_scroll_y = "100%";
+                if (mad_list[group]['data']){
+                    if (mad_list[group]['data'].length > 6){
+                        mad_scroll_y = "270px";
+                    }
+                }
+                var comp_scroll_y = "100%";
+                if (comp_list[group]){
+                    if (comp_list[group].length > 6){
+                        comp_scroll_y = "270px";
+                    }
+                }
+
+                var mad_score_matrix = $clone.find('#mad-score-matrix').DataTable({
                     columns: mad_columns(group),
                     data: mad_list[group]['data'],
                     searching: false,
                     paging: false,
-                    info: false
-                    // fixedColumns: {leftColumns: 1},
-                    // scrollX: true
+                    info: false,
+                    responsive: false,
+                    fixedHeader: {headerOffset: 50},
+                    scrollY: mad_scroll_y,
+                    scrollX: "100%"
                 });
 
-                $clone.find('#chip-comp-med').DataTable({
+                var median_comparisons_table = $clone.find('#chip-comp-med').DataTable({
                     columns: [
                         { title: "Chip ID", data: '0' },
                         { title: "ICC Absolute Agreement", data: '1' },
@@ -99,8 +116,15 @@ $(document).ready(function () {
                     data: comp_list[group],
                     searching: false,
                     paging: false,
-                    info: false
+                    info: false,
+                    responsive: false,
+                    fixedHeader: {headerOffset: 50},
+                    scrollY: comp_scroll_y,
+                    scrollX: "100"
                 });
+                mad_score_matrix.fixedHeader.disable();
+                median_comparisons_table.fixedHeader.disable();
+                $clone.addClass('hidden');
             }
         });
     }
@@ -117,30 +141,34 @@ $(document).ready(function () {
         var current_repro = $('.repro-' + number);
         if (checkbox.is(':checked')) {
             current_repro.removeClass('hidden');
+            current_repro.find('#chip-comp-med, #mad-score-matrix').find('table').DataTable().fixedHeader.enable();
             draw_charts(number);
         } else {
-            current_repro.addClass('hidden')
+            current_repro.addClass('hidden');
+            current_repro.find('#chip-comp-med, #mad-score-matrix').find('table').DataTable().fixedHeader.disable();
         }
         // Activates Bootstrap tooltips
         $('[data-toggle="tooltip"]').tooltip({container:"body", html: true});
+        // Recalc Fixed Headers
+        $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
     });
 
-    function order_info(orderList){
-        for (var i=0; i < orderList.length; i++) {
-            $('#clone-container .repro-'+orderList[i]).appendTo('#clone-container');
+    function order_info(order_list){
+        for (var i=0; i < order_list.length; i++) {
+            $('#clone-container .repro-'+order_list[i]).appendTo('#clone-container');
         }
     }
 
     // Piecharts
-    function loadRepro() {
+    function load_repro() {
         // Show spinner
         window.spinner.spin(
             document.getElementById("spinner")
         );
 
-        if (gasTable) {
-            gasTable.clear();
-            gasTable.destroy();
+        if (gas_table) {
+            gas_table.clear();
+            gas_table.destroy();
         }
 
         $('#gas-table').find('body').empty();
@@ -180,7 +208,7 @@ $(document).ready(function () {
                     }
                 },
                 "sortable": false,
-                width: '7.5%'
+                width: '5%'
             },
             {
                 title: "Set",
@@ -221,6 +249,8 @@ $(document).ready(function () {
                     return data_group_to_sample_locations[row[0]].join('<br>');
                 }
             },
+            {title: "# of Chips", data: '9'},
+            {title: "# of Time Points", data: '10'},
             {title: "<span style='white-space: nowrap;'>Max CV<br>or CV " + make_escaped_tooltip(cv_tooltip) + "</span>", data: '5'},
             {title: "<span style='white-space: nowrap;'>ICC " + make_escaped_tooltip(icc_tooltip) + "</span>", data: '6'},
             {
@@ -234,16 +264,14 @@ $(document).ready(function () {
                     } else if (data[0] === 'P') {
                         return '<td><span class="hidden">1</span>' + data + '</td>';
                     } else {
-                        return '<td><span class="hidden">0</span>' + data + '<span data-toggle="tooltip" title="' + row[9] + '" class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></td>';
+                        return '<td><span class="hidden">0</span>' + data + '<span data-toggle="tooltip" title="' + row[11] + '" class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></td>';
                     }
                 }
             },
-            {title: "Cells", data: '1', 'className': 'none'},
-            {title: "Settings", data: '7', 'className': 'none'},
             {title: "NA Explanation", data: '11', visible: false, 'name': 'naText' }
         ];
 
-        gasTable = $('#gas-table').DataTable({
+        gas_table = $('#gas-table').DataTable({
             ajax: {
                 url: '/assays_ajax/',
                 data: {
@@ -270,6 +298,10 @@ $(document).ready(function () {
                     data_group_to_sample_locations = json.data_group_to_sample_locations;
                     data_group_to_organ_models = json.data_group_to_organ_models;
                     value_unit_index = header_keys.indexOf('Value Unit');
+                    method_index = header_keys.indexOf('Method');
+                    setting_index = header_keys.indexOf('Settings');
+                    cells_index = header_keys.indexOf('Cells');
+                    target_index = header_keys.indexOf('Target');
 
                     var pie_all_zero = pie.every(function(x){
                         if (!x){
@@ -348,7 +380,7 @@ $(document).ready(function () {
             },
             columns: columns,
             columnDefs: [
-                { "aTargets": [9], "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
+                { "aTargets": [11], "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
                     if (sData[0] === "E") {
                         $(nTd).css('background-color', '#74ff5b').css('font-weight', 'bold');
                     } else if (sData[0] === "A") {
@@ -367,6 +399,12 @@ $(document).ready(function () {
             deferRender: true,
             initComplete: function () {
                 draw_tables();
+
+                // Stopgap: Remove compound column if no compound criteria selected
+                if (!window.GROUPING.get_grouping_filtering()['compound'] || window.GROUPING.get_grouping_filtering()['compound'].indexOf('compound_instance.compound_id') === -1) {
+                    // Note magic number
+                    gas_table.column(4).visible(false);
+                }
             },
             drawCallback: function() {
                 // Make sure tooltips displayed properly
@@ -375,9 +413,9 @@ $(document).ready(function () {
         });
 
         // On reorder
-        gasTable.on( 'order.dt', function () {
+        gas_table.on( 'order.dt', function () {
             var setOrder = [];
-            gasTable.column(1, { search:'applied' } ).data().each(function(value, index) {
+            gas_table.column(0, { search:'applied' } ).data().each(function(value, index) {
                 setOrder.push(value);
             });
             order_info(setOrder);
@@ -390,25 +428,24 @@ $(document).ready(function () {
                 return true;
             }
 
-            if (aData[11]) {
+            // If show all is not toggled on, then exclude those without overlap
+            // BEWARE MAGIC NUMBERS
+            if ($('#show_all_repro').prop('checked') || aData[11] !== "0NA") {
                 return true;
             }
+        });
+
+        // When a filter is clicked, set the filter values and redraw the table
+        $('#show_all_repro').change(function() {
+            // Redraw the table
+            gas_table.draw();
         });
     }
 
     function draw_charts(set) {
         var value_unit = data_groups[set][value_unit_index];
+        // var target_analyte = data_groups[data[0]][0];
         var cv_chart_data, chip_chart_data = null;
-        if (passes_null_check(lists.cv_list[set])) {
-            cv_chart_data = google.visualization.arrayToDataTable(lists.cv_list[set]);
-        } else {
-            console.log("CV Chart fails null check. Determine what to do.");
-        }
-        if (passes_null_check(lists.chip_list[set])) {
-            chip_chart_data = google.visualization.arrayToDataTable(lists.chip_list[set]);
-        } else {
-            console.log("Chip Value Chart fails null check. Determine what to do.");
-        }
         var cv_chart_options = {
             interpolateNulls: true,
             legend: {
@@ -457,46 +494,52 @@ $(document).ready(function () {
             }
         };
         chip_chart_options = $.extend( {}, cv_chart_options );
-        // First chip value series will be the Median, with special formatting.
-        chip_chart_options['series'] = {
-            0: {
-                lineDashStyle: [4, 4], pointShape: {
-                    type: 'diamond', sides: 4
-                }
+        if (passes_null_check(lists.cv_list[set])) {
+            cv_chart_data = google.visualization.arrayToDataTable(lists.cv_list[set]);
+            // CV Chart will have a different label on its vAxis, min-max 0-100.
+            cv_chart_options['vAxis'] = {
+                title: 'CV(%)',
+                format: 'short',
+                textStyle: { bold: true },
+                titleTextStyle: {
+                    fontSize: 14,
+                    bold: true,
+                    italic: false
+                },
+                minValue: 0,
+                maxValue: 100,
+                viewWindowMode: 'explicit'
+            };
+            var cv_chart = null;
+            if (cv_chart_data.length === 2) {
+                cv_chart = new google.visualization.ColumnChart(document.getElementById('chart2-'+set));
+                options['bar'] = {groupWidth: '25%'};
+                options['hAxis']['ticks'] = [{v:cv_chart_data[1][0], f:cv_chart_data[1][0].toString()}]
+            } else {
+                cv_chart = new google.visualization.LineChart(document.getElementById('chart2-'+set));
             }
-        };
-        // CV Chart will have a different label on its vAxis, min-max 0-100.
-        cv_chart_options['vAxis'] = {
-            title: 'CV(%)',
-            format: 'short',
-            textStyle: { bold: true },
-            titleTextStyle: {
-                fontSize: 14,
-                bold: true,
-                italic: false
-            },
-            minValue: 0,
-            maxValue: 100,
-            viewWindowMode: 'explicit'
-        };
-        var cv_chart = null;
-        var chip_chart = null;
-        if (chip_chart_data.length === 2) {
-            chip_chart = new google.visualization.ColumnChart(document.getElementById('chart1-'+set));
-            options['bar'] = {groupWidth: '25%'};
-            options['hAxis']['ticks'] = [{v:chip_chart_data[1][0], f:chip_chart_data[1][0].toString()}]
-        } else {
-            chip_chart = new google.visualization.LineChart(document.getElementById('chart1-'+set));
+            cv_chart.draw(cv_chart_data, cv_chart_options);
         }
-        if (cv_chart_data.length === 2) {
-            cv_chart = new google.visualization.ColumnChart(document.getElementById('chart2-'+set));
-            options['bar'] = {groupWidth: '25%'};
-            options['hAxis']['ticks'] = [{v:cv_chart_data[1][0], f:cv_chart_data[1][0].toString()}]
-        } else {
-            cv_chart = new google.visualization.LineChart(document.getElementById('chart2-'+set));
+        if (passes_null_check(lists.chip_list[set])) {
+            chip_chart_data = google.visualization.arrayToDataTable(lists.chip_list[set]);
+            // First chip value series will be the Median, with special formatting.
+            chip_chart_options['series'] = {
+                0: {
+                    lineDashStyle: [4, 4], pointShape: {
+                        type: 'diamond', sides: 4
+                    }
+                }
+            };
+            var chip_chart = null;
+            if (chip_chart_data.length === 2) {
+                chip_chart = new google.visualization.ColumnChart(document.getElementById('chart1-'+set));
+                options['bar'] = {groupWidth: '25%'};
+                options['hAxis']['ticks'] = [{v:chip_chart_data[1][0], f:chip_chart_data[1][0].toString()}]
+            } else {
+                chip_chart = new google.visualization.LineChart(document.getElementById('chart1-'+set));
+            }
+            chip_chart.draw(chip_chart_data, chip_chart_options);
         }
-        chip_chart.draw(chip_chart_data, chip_chart_options);
-        cv_chart.draw(cv_chart_data, cv_chart_options);
     }
 
     function passes_null_check(values){
@@ -516,20 +559,36 @@ $(document).ready(function () {
         return !all_null;
     }
 
-    function buildSelectionParameters(studyId, organModel, targetAnalyte, methodKit, sampleLocation, compoundTreatments, valueUnit){
-        content =
-        '<tr><th><h4><strong>Target/Analyte</strong></h4></th><td id="target-analyte-value"><h4><strong>'+targetAnalyte+'</strong></h4></td></tr>'+
-        '<tr><th>Study ID</th><td>'+studyId+'</td></tr>'+
-        '<tr><th>MPS Model</th><td>'+organModel+'</td></tr>'+
-        '<tr><th>Method/Kit</th><td>'+methodKit+'</td></tr>'+
-        '<tr><th>Sample Location</th><td>'+sampleLocation+'</td></tr>'+
-        '<tr><th>Compound Treatment(s)</th><td>'+compoundTreatments+'</td></tr>'+
-        '<tr><th>Value Unit</th><td id="value-unit">'+valueUnit+'</td></tr>'
+    function build_selection_parameters(studyId, organModel, targetAnalyte, methodKit, sampleLocation, compoundTreatments, valueUnit){
+        var content = ''
+        if (targetAnalyte) {
+            content += '<tr><th><h4><strong>Target/Analyte</strong></h4></th><td id="target-analyte-value"><h4><strong>'+targetAnalyte+'</strong></h4></td></tr>'
+        }
+        if (studyId) {
+            content += '<tr><th>Study ID</th><td>'+studyId+'</td></tr>'
+        }
+        if (organModel) {
+            content += '<tr><th>MPS Model</th><td>'+organModel+'</td></tr>'
+        }
+        if (methodKit) {
+            content += '<tr><th>Method/Kit</th><td>'+methodKit+'</td></tr>'
+        }
+        if (sampleLocation) {
+            content += '<tr><th>Sample Location</th><td>'+sampleLocation+'</td></tr>'
+        }
+        if (compoundTreatments) {
+            content += '<tr><th>Compound Treatment(s)</th><td>'+compoundTreatments+'</td></tr>'
+        }
+        if (valueUnit) {
+            content += '<tr><th>Value Unit</th><td id="value-unit">'+valueUnit+'</td></tr>'
+        }
         return content;
     }
 
     function buildCV_ICC(cv, icc){
-        content = '<tr><th>CV(%)</th><th>ICC-Absolute Agreement</th></tr><tr><td>'+cv+'</td><td>'+icc+'</td></tr>'
+        var content =
+        '<tr><th>CV(%)</th><th>ICC-Absolute Agreement</th></tr>'+
+        '<tr><td>'+cv+'</td><td>'+icc+'</td></tr>'
         return content;
     }
 

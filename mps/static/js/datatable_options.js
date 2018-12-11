@@ -56,6 +56,7 @@ $(document).ready(function () {
         buttons: [
             'copy', 'csv', 'print', 'colvis'
         ],
+        autoWidth: false,
         // swfPath: '/static/swf/flashExport.swf'
         // Default draw callback
         drawCallback: function () {
