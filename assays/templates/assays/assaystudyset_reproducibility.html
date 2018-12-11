@@ -13,6 +13,10 @@
     <li class="active">Reproducibility</li>
 {% endblock %}
 
+{% block sidebar %}
+    {% include 'assays/grouping_filtering.html' %}
+{% endblock %}
+
 {% block fluid-content %}
 <div class="row padded-row text-center padded-bottom large-padding-top">
     {% if user.id == object.created_by_id %}
@@ -46,9 +50,9 @@
     </div>
 </div>
 
-<div class="container" id="grouping_filtering">
+{% comment %} <div class="container" id="grouping_filtering">
     {% include 'assays/grouping_filtering.html' %}
-</div>
+</div> {% endcomment %}
 
 {# TODO TODO TODO NEED GROUPING  AND FILTERING STUFF HERE TOO #}
 <div class="container">
