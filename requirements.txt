@@ -1,7 +1,7 @@
 matplotlib
 django-uwsgi-cache
 networkx
-Django==1.11.16
+Django==1.11.17
 Jinja2
 Markdown
 MarkupSafe

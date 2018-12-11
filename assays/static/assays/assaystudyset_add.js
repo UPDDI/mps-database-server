@@ -312,6 +312,7 @@ $(document).ready(function () {
     });
 
     // Get initial study filter
+
     // reset_study_filter();
 
     // TODO dialog for selecting a set of assays (per study)

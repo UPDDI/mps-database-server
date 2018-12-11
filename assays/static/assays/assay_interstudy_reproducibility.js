@@ -389,6 +389,12 @@ $(document).ready(function() {
             deferRender: true,
             destroy: true,
             initComplete: function () {
+                // Stopgap: Remove compound column if no compound criteria selected
+                if (!window.GROUPING.get_grouping_filtering()['compound'] || window.GROUPING.get_grouping_filtering()['compound'].indexOf('compound_instance.compound_id') === -1) {
+                    // Note magic number
+                    repro_table.column(5).visible(false);
+                }
+
                 // TODO TODO TODO
                 // Draw necessary sections below
                 draw_subsections();
@@ -430,8 +436,7 @@ $(document).ready(function() {
     });
 
     // When a filter is clicked, set the filter values and redraw the table
-    $('#show_all_repro_wrapper').click(function() {
-        $('#show_all_repro').prop('checked', !$('#show_all_repro').prop('checked'));
+    $('#show_all_repro').change(function() {
         // Redraw the table
         repro_table.draw();
     });

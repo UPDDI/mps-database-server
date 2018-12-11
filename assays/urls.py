@@ -39,7 +39,7 @@ from assays.views import (
     AssayStudySetList,
     AssayStudySetData,
     # SPECIFIC
-    TCTCSummary,
+    TCTCSummary
 )
 import assays.ajax
 

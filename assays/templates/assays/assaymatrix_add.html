@@ -464,6 +464,16 @@
                     {{ object.number_of_rows }}x{{ object.number_of_columns }}
                 </td>
             </tr>
+            {% if object.notes %}
+            <tr>
+                <th>
+                    Notes
+                </th>
+                <td>
+                    {{ object.notes }}
+                </td>
+            </tr>
+            {% endif %}
         </tbody>
     </table>
     {% endif %}
