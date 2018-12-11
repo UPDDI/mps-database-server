@@ -96,12 +96,12 @@ $(document).ready(function () {
 
         $.each(adverse_events, function(name, index) {
             var checkbox_index = adverse_events_checkboxes[name];
-            adverse_events_table.data()[checkbox_index].checkbox = adverse_events_table.data()[checkbox_index].checkbox.replace(' checked>', '>');
+            adverse_events_table.data()[checkbox_index].checkbox = adverse_events_table.data()[checkbox_index].checkbox.replace(' checked="checked">', '>');
         });
 
         $.each(compounds, function(name, index) {
             var checkbox_index = compounds_checkboxes[name];
-            compounds_table.data()[checkbox_index].checkbox = compounds_table.data()[checkbox_index].checkbox.replace(' checked>', '>');
+            compounds_table.data()[checkbox_index].checkbox = compounds_table.data()[checkbox_index].checkbox.replace(' checked="checked">', '>');
         });
 
         adverse_events = {};
@@ -198,7 +198,7 @@ $(document).ready(function () {
             adverse_events[adverse_event] = adverse_event;
             var checkbox_index = adverse_events_checkboxes[adverse_event];
             if (checkbox_index) {
-                adverse_events_table.data()[checkbox_index].checkbox = adverse_events_table.data()[checkbox_index].checkbox.replace('>', ' checked>');
+                adverse_events_table.data()[checkbox_index].checkbox = adverse_events_table.data()[checkbox_index].checkbox.replace('>', ' checked="checked">');
             }
         });
 
@@ -220,7 +220,7 @@ $(document).ready(function () {
             compounds[compound] = compound;
             var checkbox_index = compounds_checkboxes[compound];
             if (checkbox_index) {
-                compounds_table.data()[checkbox_index].checkbox = compounds_table.data()[checkbox_index].checkbox.replace('>', ' checked>');
+                compounds_table.data()[checkbox_index].checkbox = compounds_table.data()[checkbox_index].checkbox.replace('>', ' checked="checked">');
             }
         });
 
@@ -591,7 +591,7 @@ $(document).ready(function () {
 
         if (this.checked) {
             compounds[compound] = compound;
-            compounds_table.data()[checkbox_index].checkbox = compounds_table.data()[checkbox_index].checkbox.replace('>', ' checked>');
+            compounds_table.data()[checkbox_index].checkbox = compounds_table.data()[checkbox_index].checkbox.replace('>', ' checked="checked">');
             collect_all_adverse_events();
         }
         else {
@@ -605,7 +605,7 @@ $(document).ready(function () {
 
         if (this.checked) {
             adverse_events[adverse_event] = adverse_event;
-            adverse_events_table.data()[checkbox_index].checkbox = adverse_events_table.data()[checkbox_index].checkbox.replace('>', ' checked>');
+            adverse_events_table.data()[checkbox_index].checkbox = adverse_events_table.data()[checkbox_index].checkbox.replace('>', ' checked="checked">');
             collect_all_adverse_events();
         }
         else {

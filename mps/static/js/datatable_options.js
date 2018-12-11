@@ -9,7 +9,7 @@ $(document).ready(function () {
 
     $.fn.dataTable.ext.order['dom-checkbox'] = function(settings, col) {
         return settings.aoData.map(function(data, index) {
-            return data._aData[0].indexOf(' checked>') > -1 ? 0 : 1;
+            return data._aData[0].indexOf(' checked="checked">') > -1 ? 0 : 1;
         });
     };
 

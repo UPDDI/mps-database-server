@@ -193,7 +193,7 @@ $(document).ready(function() {
                         var checkbox = '<input class="big-checkbox filter-checkbox" data-table-index="' + index + '" data-filter="' + filter + '" type="checkbox" value="' + content_id + '">';
                         if (initial_filter[content_id]) {
                             current_filter[content_id] = true;
-                            checkbox = '<input class="big-checkbox filter-checkbox" data-table-index="' + index + '" data-filter="' + filter + '" type="checkbox" value="' + content_id + '" checked>';
+                            checkbox = '<input class="big-checkbox filter-checkbox" data-table-index="' + index + '" data-filter="' + filter + '" type="checkbox" value="' + content_id + '" checked="checked">';
                         }
 
                         rows_to_add.push(
@@ -268,7 +268,7 @@ $(document).ready(function() {
                 checkbox_index
             ][0] = current_table.data()[
                 checkbox_index
-            ][0].replace('>', ' checked>');
+            ][0].replace('>', ' checked="checked">');
 
             if (data_filter) {
                 data_filter[checkbox_data_filter][checkbox.value] = true;
@@ -281,7 +281,7 @@ $(document).ready(function() {
                 checkbox_index
             ][0] = current_table.data()[
                 checkbox_index
-            ][0].replace(' checked>', '>');
+            ][0].replace(' checked="checked">', '>');
 
             if (data_filter) {
                 delete data_filter[checkbox_data_filter][checkbox.value];
