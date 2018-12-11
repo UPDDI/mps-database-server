@@ -2543,3 +2543,6 @@ class AssayStudySet(FlaggableModel):
 
     def get_absolute_url(self):
         return '/assays/assaystudyset/{}/'.format(self.id)
+
+    def __unicode__(self):
+        return self.name

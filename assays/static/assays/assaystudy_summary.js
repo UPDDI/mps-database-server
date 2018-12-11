@@ -66,11 +66,6 @@ $(document).ready(function() {
         });
     }
 
-    // Setup triggers
-    $('#' + charts_name + 'chart_options').find('input').change(function() {
-        get_readouts();
-    });
-
     $('#exportinclude_all').change(function() {
         var export_button = $('#export_button');
         if ($(this).prop('checked')) {

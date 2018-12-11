@@ -21,6 +21,10 @@
     <li class="active">Reproducibility Analysis</li>
 {% endblock %}
 
+{% block sidebar %}
+    {% include 'assays/grouping_filtering.html' with charts="true" %}
+{% endblock %}
+
 {% block content %}
     <div class="well">
         <div class="row text-center">

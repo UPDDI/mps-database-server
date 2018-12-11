@@ -17,8 +17,13 @@
     <li class="active">Study Summary</li>
 {% endblock %}
 
-{% block content %}
-    <div class="well">
+{% block sidebar %}
+    {% include 'assays/grouping_filtering.html' with charts="true" %}
+{% endblock %}
+
+{# Not an ideal method; will need to revise sizing issues soon #}
+{% block fluid-content %}
+    <div class="well large-margin-top">
         <div class="row text-center">
             <h1>
                 {{ object }}
@@ -85,7 +90,7 @@
     {% if object.assaystudyassay_set.count %}
     <div class="padded-bottom">
     <legend>Assays</legend>
-    <table id="assay_table" class="table table-striped table-bordered">
+    <table id="assay_table" style="width: 100%" class="table table-striped table-bordered">
         <thead>
             <tr>
                 <th>Target/Analyte</th>
@@ -106,9 +111,11 @@
     </div>
     {% endif %}
 
-    {% include 'assays/grouping_filtering.html' %}
-
-    {% include 'assays/chart_options.html' with chart_prefix="charts" chart_title="Current Data" %}
+    <div class="well">
+        <button type="button" class="btn btn-primary toggle_sidebar_button">
+            Toggle Sidebar
+        </button>
+    </div>
 
     {# Note indicating no data to display initially #}
     <div id="charts" class="padded-bottom">

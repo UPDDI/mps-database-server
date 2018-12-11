@@ -1918,6 +1918,19 @@ class AssayStudySetAdd(CreateView, OneGroupRequiredMixin):
     template_name = 'assays/assaystudyset_add.html'
     form_class = AssayStudySetForm
 
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudySetAdd, self).get_context_data(**kwargs)
+        combined = get_user_accessible_studies(self.request.user)
+
+        get_queryset_with_organ_model_map(combined)
+        get_queryset_with_number_of_data_points(combined)
+        get_queryset_with_stakeholder_sign_off(combined)
+        get_queryset_with_group_center_dictionary(combined)
+
+        context['object_list'] = combined;
+
+        return context
+
     def get_form(self, form_class=None):
         form_class = self.get_form_class()
 
@@ -1951,6 +1964,15 @@ class AssayStudySetUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super(AssayStudySetUpdate, self).get_context_data(**kwargs)
 
+        combined = get_user_accessible_studies(self.request.user)
+
+        get_queryset_with_organ_model_map(combined)
+        get_queryset_with_number_of_data_points(combined)
+        get_queryset_with_stakeholder_sign_off(combined)
+        get_queryset_with_group_center_dictionary(combined)
+
+        context['object_list'] = combined;
+        
         context['update'] = True
 
         return context

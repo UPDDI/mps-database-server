@@ -1,79 +1,152 @@
-<div id="{{ chart_prefix }}chart_options" class="well hidden-print chart-option-block">
-{#    <h3 class="text-center">Chip Readout Data</h3>#}
-    <h3 class="text-center">
-        {{ chart_title }}
-    </h3>
-    <div class="row">
-        <label class="radio-inline">
-            <input type="radio" name="{{ chart_prefix }}key" id="{{ chart_prefix }}device_select" value="device" checked>
-            By Chip
-        </label>
-        <label class="radio-inline">
-            <input type="radio" name="{{ chart_prefix }}key" id="{{ chart_prefix }}group_select" value="group">
-            By Group
-        </label>
-        <label class="radio-inline">
-            <input type="radio" name="{{ chart_prefix }}key" id="{{ chart_prefix }}dose_select" value="dose">
-            By Dose-Response
-        </label>
-        <label for="{{ chart_prefix }}percent_control" class="pull-right">
-            <input type="checkbox" name="{{ chart_prefix }}percent_control" id="{{ chart_prefix }}percent_control" />
-            Convert to Percent of Control&nbsp;
-        </label>
-    </div>
-    <div class="row">
-        <label class="radio-inline">
-            <input type="radio" name="{{ chart_prefix }}mean_type" id="{{ chart_prefix }}arithmetic_select" value="arithmetic" checked>
-            Arithmetic Mean
-        </label>
-        <label class="radio-inline">
-            <input type="radio" name="{{ chart_prefix }}mean_type" id="{{ chart_prefix }}geometric_select" value="geometric">
-            Geometric Mean
-        </label>
-        <label for="{{ chart_prefix }}include_all" class="pull-right">
-            <input type="checkbox" name="{{ chart_prefix }}include_all" id="{{ chart_prefix }}include_all" />
-            {# Beyond crude, don't do things like this #}
-            Include Excluded Data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        </label>
-    </div>
-    <div class="row">
-        <label class="radio-inline">
-            <input type="radio" name="{{ chart_prefix }}interval_type" id="{{ chart_prefix }}ste_select" value="ste" checked>
-            Standard Error
-        </label>
-        <label class="radio-inline">
-            <input type="radio" name="{{ chart_prefix }}interval_type" id="{{ chart_prefix }}std_select" value="std">
-            Standard Deviation
-        </label>
-        <label for="{{ chart_prefix }}truncate_negative" class="pull-right">
-            <input type="checkbox" name="{{ chart_prefix }}truncate_negative" id="{{ chart_prefix }}truncate_negative" />
-            Treat Negative Values as Zero&nbsp;
-        </label>
-    </div>
-    <div class="row">
-        {# Subject to removal #}
-        <label class="radio-inline">
-            <input type="radio" name="{{ chart_prefix }}tooltip_type" id="{{ chart_prefix }}datum_select" value="datum" checked>
-            Tooltips for each Data Point
-        </label>
-        <label class="radio-inline">
-            <input type="radio" name="{{ chart_prefix }}tooltip_type" id="{{ chart_prefix }}category_select" value="category">
-            Tooltips for Entire Time Point
-        </label>
-        <label for="{{ chart_prefix }}log_x" class="pull-right">
-            <input type="checkbox" name="{{ chart_prefix }}log_x" id="{{ chart_prefix }}log_x" />
-            Log Scale X-Axis&nbsp;
-        </label>
-    </div>
-    <div class="row">
-        <label for="{{ chart_prefix }}log_y" class="pull-right">
-            <input type="checkbox" name="{{ chart_prefix }}log_y" id="{{ chart_prefix }}log_y" />
-            Log Scale Y-Axis&nbsp;
-        </label>
-    </div>
+<h3 class="text-center">
+    <u>General Graph Properties</u>
+</h3>
 
-    {# Inline JS is a little risque, but expedient #}
-    <div class="padded-row padded-bottom">
-        <a role="button" onclick="$('#{{ chart_prefix }}').toggle('slow');$(this).text($(this).text() === 'Show' ? 'Hide' : 'Show');" class="btn btn-info toggle-hide-button">Hide Charts</a>
-    </div>
+<ul class="list-unstyled components padded-bottom" id="charting_options_tables">
+    <li>
+        <a href="#plot_graph_by" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
+            Plot Graph By
+        </a>
+        <div class="collapse well" id="plot_graph_by">
+            <div class="radio">
+                <label class="radio-inline">
+                    <input type="radio" name="key" id="device_select" value="device" checked>
+                    By Chip
+                </label>
+            </div>
+
+            <div class="radio">
+                <label class="radio-inline">
+                    <input type="radio" name="key" id="group_select" value="group">
+                    By Group
+                </label>
+            </div>
+
+            <div class="radio">
+                <label class="radio-inline">
+                    <input type="radio" name="key" id="compound_select" value="compound">
+                    By Compound
+                </label>
+            </div>
+
+            {# <div class="radio"> #}
+                {# <label class="radio-inline"> #}
+                    {# <input type="radio" name="key" id="dose_select" value="dose"> #}
+                    {# By Dose-Response #}
+                {# </label> #}
+            {# </div> #}
+    </li>
+    <li>
+        <a href="#data_aggregation" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
+            Data Aggregation
+        </a>
+        <div class="collapse well" id="data_aggregation">
+            <div class="radio">
+                <label class="radio-inline">
+                    <input type="radio" name="mean_type" id="arithmetic_select" value="arithmetic" checked>
+                    Arithmetic Mean
+                </label>
+            </div>
+            <div class="radio">
+                <label class="radio-inline">
+                    <input type="radio" name="mean_type" id="geometric_select" value="geometric">
+                    Geometric Mean
+                </label>
+            </div>
+            <div class="radio">
+                <label class="radio-inline">
+                    <input type="radio" name="mean_type" id="median_select" value="median">
+                    Median
+                </label>
+            </div>
+            {# Not available at the moment #}
+            {# <div class="radio"> #}
+                {# <label class="radio-inline"> #}
+                    {# <input type="radio" name="mean_type" id="none_select" value="none"> #}
+                    {# None #}
+                {# </label> #}
+            {# </div> #}
+        </div>
+    </li>
+    <li>
+        <a href="#error_bar_by" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
+            Error Bar By
+        </a>
+        <div class="collapse well" id="error_bar_by">
+            <div class="radio">
+                <label class="radio-inline">
+                    <input type="radio" name="interval_type" id="ste_select" value="ste" checked>
+                    Standard Error
+                </label>
+            </div>
+            <div class="radio">
+                <label class="radio-inline">
+                    <input type="radio" name="interval_type" id="std_select" value="std">
+                    Standard Deviation
+                </label>
+            </div>
+            <div class="radio">
+                <label class="radio-inline">
+                    <input type="radio" name="interval_type" id="iqr_select" value="iqr">
+                    Interquartile Range
+                </label>
+            </div>
+        </div>
+    </li>
+    <li>
+        <a href="#tooltip_display" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
+            Tooltip Display
+        </a>
+        <div class="collapse well" id="tooltip_display">
+            {# Subject to removal #}
+            <div class="radio">
+                <label class="radio-inline">
+                    <input type="radio" name="tooltip_type" id="datum_select" value="datum" checked>
+                    Each Data Point
+                </label>
+            </div>
+            <div class="radio">
+                <label class="radio-inline">
+                    <input type="radio" name="tooltip_type" id="category_select" value="category">
+                    Entire Time Point
+                </label>
+            </div>
+        </div>
+    </li>
+    <li>
+        <a href="#data_display" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
+            Data Display
+        </a>
+        <div class="collapse well" id="data_display">
+            <div class="radio">
+                <label for="include_all">
+                    <input type="checkbox" name="include_all" id="include_all" />
+                    {# Beyond crude, don't do things like this #}
+                    Include Excluded Data
+                </label>
+            </div>
+            <div class="radio">
+                <label for="truncate_negative">
+                    <input type="checkbox" name="truncate_negative" id="truncate_negative" />
+                    Negative Values to 0
+                </label>
+            </div>
+        </div>
+    </li>
+    <li>
+        <a href="#time_unit" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
+            Time Unit
+        </a>
+        <div class="collapse well" id="time_unit">
+            <select id="id_chart_option_time_unit">
+                <option val="day">Day</option>
+                <option val="Hour">Hour</option>
+                <option val="Minute">Minute</option>
+            </select>
+        </div>
+    </li>
+</ul>
+
+<div class="row text-center padded-bottom">
+    <a role="button" id="show_hide_plots" class="btn btn-warning btn-lg">Show/Hide Plots</a>
 </div>
