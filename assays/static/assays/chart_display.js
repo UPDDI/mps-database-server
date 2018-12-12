@@ -711,4 +711,9 @@ $(document).ready(function () {
         chart_filter_data_table.order([[1, 'asc']]);
         chart_filter_data_table.page.len(10).draw();
     });
+
+    // CONTEXT MENU
+    // $(document).on('contextmenu', '.chart-container', function() {
+    //     alert('TODO: Context Menu');
+    // });
 });

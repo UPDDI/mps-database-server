@@ -39,12 +39,26 @@ $(document).ready(function() {
 
     var treatment_group_table = $('#treatment_group_table');
 
+    // Side bar
+    var sidebar = $('#sidebar');
+    // Hide sidebar initially
+    sidebar.hide();
+    var charting_sidebar_section = $('#charting_sidebar_section');
+    var repro_sidebar_section = $('#repro_sidebar_section');
+
     var charts_name = 'charts';
 
     var current_context = '';
 
     function show_plots() {
         current_context = 'plots';
+
+        // Get correct sidebar sections
+        charting_sidebar_section.show();
+        repro_sidebar_section.hide();
+
+        // Show sidebar
+        sidebar.show();
 
         // Hide irrelevant floating headers
         if (repro_table) {
@@ -452,6 +466,13 @@ $(document).ready(function() {
             ['Status', 'Count'],
             ['No Matching Records Found', 1]
         ]);
+
+        // Get correct sidebar sections
+        charting_sidebar_section.hide();
+        repro_sidebar_section.show();
+
+        // Show sidebar
+        sidebar.show();
 
         // Hide fixed headers
         $.each(filters, function (filter, contents) {
@@ -1293,7 +1314,7 @@ $(document).ready(function() {
         submit_buttons_selector.hide();
 
         if (current_context === 'plots') {
-           show_plots();
+            show_plots();
         }
         else if (current_context === 'repro') {
             show_repro();
@@ -1346,9 +1367,10 @@ $(document).ready(function() {
     });
 
     // Setup triggers
-    $('#' + charts_name + 'chart_options').find('input').change(function() {
-        show_plots();
-    });
+    // Now handled in grouping_filtering
+    // $('#' + charts_name + 'chart_options').find('input').change(function() {
+    //     show_plots();
+    // });
 
     // Piecharts
     function loadingPie(){

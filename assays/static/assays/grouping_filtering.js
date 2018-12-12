@@ -320,7 +320,8 @@ $(document).ready(function () {
     });
 
     // Setup triggers
-    $('#filtering_tables').find('input').change(function() {
+    // Sloppy: Checks for all sidebar inputs and selects
+    $('#sidebar').find('input, select').change(function() {
         // Odd, perhaps innapropriate!
         window.GROUPING.refresh_wrapper();
     });
@@ -349,7 +350,6 @@ $(document).ready(function () {
     if($(window).width() > 768) {
         $('#page').addClass('pushed');
         $('#sidebar').addClass('active');
-
 
         setTimeout(function() {
             $($.fn.dataTable.tables(true)).DataTable().columns.adjust();

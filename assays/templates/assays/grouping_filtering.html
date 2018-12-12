@@ -703,11 +703,53 @@
 
 {# TODO REMOVE THE BLASTED PREFIX PLEASE #}
 {% if charts == 'true' %}
+<div id="charting_sidebar_section">
     {% include "assays/chart_options.html" with chart_prefix='charts' %}
+</div>
 {% endif %}
 
-{# Contrived #}
-<div class="padded-bottom"></div>
+{% if repro == 'true' %}
+<div id="repro_sidebar_section">
+<h3 class="text-center">
+    <u>Reproducibility Properties</u>
+</h3>
+
+<ul class="list-unstyled components padded-bottom" id="repro_options_tables">
+    <li>
+        <div class="well" id="inter_level">
+            {# Subject to removal #}
+            <div class="radio">
+                <label class="radio-inline">
+                    <input type="radio" name="inter_level" id="inter_level_by_center" value="1" checked>
+                    By Center
+                </label>
+            </div>
+            <div class="radio">
+                <label class="radio-inline">
+                    <input type="radio" name="inter_level" id="inter_level_by_study" value="0">
+                    By Study
+                </label>
+            </div>
+        </div>
+    </li>
+    <li>
+        <div class="well" id="initial_norm_section">
+            <label for="initial_norm">
+                <input type="checkbox" name="initial_norm" id="initial_norm" />
+                Normalize by Median
+            </label>
+        </div>
+    </li>
+    <li>
+        <div class="well" id="max_interpolation_size_section">
+            <label for="max_interpolation_size">Maximum Interpolation Size</label>
+            <input id="max_interpolation_size" class="form-control" type="number" value="2">
+        </div>
+    </li>
+</ul>
+</div>
+{% endif %}
+
 </nav>
 
 <div hidden id="filter_popup" title="X">
