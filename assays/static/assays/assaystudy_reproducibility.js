@@ -6,8 +6,6 @@ $(document).ready(function () {
 
     window.GROUPING.refresh_function = load_repro;
 
-    window.GROUPING.refresh_function = loadRepro;
-
     // FILE-SCOPE VARIABLES
     var study_id = Math.floor(window.location.href.split('/')[5]);
 

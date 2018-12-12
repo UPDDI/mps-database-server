@@ -22,7 +22,7 @@
 {% endblock %}
 
 {% block sidebar %}
-    {% include 'assays/grouping_filtering.html' with charts="true" %}
+    {% include 'assays/grouping_filtering.html' %}
 {% endblock %}
 
 {% block content %}
@@ -37,9 +37,9 @@
         </div>
     </div>
 
-    <div class="container" id="grouping_filtering">
+    {% comment %} <div class="container" id="grouping_filtering">
         {% include 'assays/grouping_filtering.html' with intra_flag="1" %}
-    </div>
+    </div> {% endcomment %}
 {% endblock %}
 <br>
 {% block fluid-content %}
