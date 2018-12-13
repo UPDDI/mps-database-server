@@ -18,6 +18,7 @@ $(document).ready(function () {
     // Charts
     var all_charts = {};
     var all_events = {};
+    var all_options = {};
 
     // Semi-arbitrary at the moment
     var treatment_group_table = $('#treatment_group_table');
@@ -28,6 +29,59 @@ $(document).ready(function () {
     var group_display = $('#group_display');
     var group_display_body = $('#group_display_body');
     var group_display_head = $('#group_display_head');
+
+    var show_hide_plots_popup = $('#show_hide_plots_popup');
+    var show_hide_plots_table = $('#show_hide_plots_popup table');
+    var show_hide_plots_body = $('#show_hide_plots_popup table tbody');
+    var show_hide_plots_data_table = null;
+
+    var chart_visibility = {};
+    var chart_filter_buffer = {};
+
+    var name_to_chart = {};
+
+    if (show_hide_plots_popup[0]) {
+        show_hide_plots_popup.dialog({
+            width: 825,
+            closeOnEscape: true,
+            autoOpen: false,
+            close: function () {
+                // Purge the buffer
+                chart_filter_buffer = {};
+                $('body').removeClass('stop-scrolling');
+            },
+            open: function () {
+                $('body').addClass('stop-scrolling');
+            },
+            buttons: [
+            {
+                text: 'Apply',
+                click: function() {
+                    // Iterate over the charts to hide
+                    chart_visibility = $.extend({}, chart_filter_buffer);
+
+                    $.each(chart_visibility, function(chart_name, status) {
+                        var chart_id = name_to_chart[chart_name];
+                        if (status) {
+                            $(chart_id).show('slow');
+                        }
+                        else {
+                            $(chart_id).hide('slow');
+                        }
+                    });
+
+                    $(this).dialog("close");
+                }
+            },
+            {
+                text: 'Cancel',
+                click: function() {
+                   $(this).dialog("close");
+                }
+            }]
+        });
+        show_hide_plots_popup.removeProp('hidden');
+    }
 
     // Probably should just have full data!
     var group_to_data = [];
@@ -47,58 +101,7 @@ $(document).ready(function () {
         'Items with Same Treatment': 'Matrix Items (Chips/Wells) in Group'
     };
 
-    // TODO PLEASE MAKE THIS NOT CONTRIVED SOON
-    var chart_filter_popup = $('#chart_filter_popup');
-    var chart_filter_table = chart_filter_popup.find('table');
-    var chart_filter_data_table = null;
-    var chart_filter_body = chart_filter_table.find('tbody');
-
-    var charts_to_hide = {};
-    var chart_filter_buffer = {};
-
     // var filter_popup_header = filter_popup.find('h5');
-
-    if (chart_filter_popup) {
-        chart_filter_popup.dialog({
-            width: 825,
-            closeOnEscape: true,
-            autoOpen: false,
-            close: function () {
-                // Purge the buffer
-                chart_filter_buffer = {};
-                $('body').removeClass('stop-scrolling');
-            },
-            open: function () {
-                $('body').addClass('stop-scrolling');
-            },
-            buttons: [
-            {
-                text: 'Apply',
-                click: function() {
-                    // Iterate over the charts to hide
-                    charts_to_hide = $.extend({}, chart_filter_buffer);
-
-                    $.each(function(chart_id, status) {
-                        if (status) {
-                            $(chart_id).hide('slow');
-                        }
-                        else {
-                            $(chart_id).show('slow');
-                        }
-                    });
-
-                    $(this).dialog("close");
-                }
-            },
-            {
-                text: 'Cancel',
-                click: function() {
-                   $(this).dialog("close");
-                }
-            }]
-        });
-        chart_filter_popup.removeProp('hidden');
-    }
 
     window.CHARTS.prepare_chart_options = function(charts) {
         var options = {};
@@ -158,15 +161,66 @@ $(document).ready(function () {
             $('.toggle_sidebar_button').first().trigger('click');
         }
 
+        // Revise show/hide plots
+        // NOTE: POPULATE THE SELECTION TABLE
+        // Clear current contents
+        if (show_hide_plots_data_table) {
+            show_hide_plots_data_table.clear();
+            show_hide_plots_data_table.destroy();
+        }
+
+        show_hide_plots_body.empty();
+
+        var html_to_append = [];
+
         for (var index in sorted_assays) {
             if (assays[index].length > 1) {
                 charts_id.append($('<div>')
-                        .attr('id', charts + '_' + index)
-                        .addClass('col-sm-12 col-md-6 chart-container')
-                        .css('min-height', min_height)
+                    .attr('id', charts + '_' + index)
+                    .addClass('col-sm-12 col-md-6 chart-container')
+                    .css('min-height', min_height)
                 );
-            }
+
+                // Populate each row
+                // SLOPPY NOT DRY
+                var row = '<tr>';
+                var full_name = sorted_assays[index];
+                var title = full_name.split('\n')[0];
+                var unit = full_name.split('\n')[1];
+
+                var current_index = html_to_append.length;
+
+                row += '<td width="10%" class="text-center"><input data-table-index="' + current_index + '" data-obj-name="' + full_name + '" class="big-checkbox chart-filter-checkbox" type="checkbox" value="' + full_name + '" checked="checked"></td>';
+
+                // WARNING: NAIVE REPLACE
+                row += '<td>' + title + '</td>';
+                row += '<td>' + unit + '</td>';
+
+                row += '</tr>';
+
+                name_to_chart[full_name] = '#charts_' + current_index;
+
+                html_to_append.push(row);
         }
+        }
+
+        if (!html_to_append) {
+            html_to_append.push('<tr><td></td><td>No data to display.</td></tr>');
+        }
+
+        show_hide_plots_body.html(html_to_append.join(''));
+
+        show_hide_plots_data_table = show_hide_plots_table.DataTable({
+            destroy: true,
+            dom: '<"wrapper"lfrtip>',
+            deferRender: true,
+            iDisplayLength: 10,
+            order: [1, 'asc'],
+            columnDefs: [
+                // Try to sort on checkbox
+                { "sSortDataType": "dom-checkbox", "targets": 0, "width": "10%" }
+            ]
+        });
     };
 
     window.CHARTS.prepare_row_by_row_charts = function(json, charts) {
@@ -328,10 +382,6 @@ $(document).ready(function () {
     // TODO THIS SHOULDN'T BE REDUNDANT
     function isNumber(obj) {
         return obj !== undefined && typeof(obj) === 'number' && !isNaN(obj);
-    }
-
-    function populate_selection_filter() {
-
     }
 
     window.CHARTS.make_charts = function(json, charts, changes_to_options) {
@@ -679,7 +729,15 @@ $(document).ready(function () {
 
     // TODO TODO TODO NOT DRY
     $(document).on('click', '.chart-filter-checkbox', function() {
+        var current_index = $(this).attr('data-table-index');
         chart_filter_buffer[$(this).val()] = $(this).prop('checked');
+
+        if ($(this).prop('checked')) {
+            show_hide_plots_data_table.data()[current_index][0] = show_hide_plots_data_table.data()[current_index][0].replace('>', ' checked="checked">');
+        }
+        else {
+            show_hide_plots_data_table.data()[current_index][0] = show_hide_plots_data_table.data()[current_index][0].replace(' checked="checked">', '>');
+        }
     });
 
     // Triggers for select all
@@ -710,6 +768,10 @@ $(document).ready(function () {
 
         chart_filter_data_table.order([[1, 'asc']]);
         chart_filter_data_table.page.len(10).draw();
+    });
+
+    $('#show_hide_plots').click(function() {
+        show_hide_plots_popup.dialog('open');
     });
 
     // CONTEXT MENU

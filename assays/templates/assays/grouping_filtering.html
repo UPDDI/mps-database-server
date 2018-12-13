@@ -768,3 +768,29 @@
         </tbody>
     </table>
 </div>
+
+{% if charts == 'true' %}
+{# Popup for showing and hiding plots #}
+<div hidden id="show_hide_plots_popup" title="Show/Hide Plots">
+  <div class="padded-bottom">
+      <a id="show_hide_plots_select_all" class="btn btn-primary">Select All</a>
+      <a id="show_hide_plots_deselect_all" class="btn btn-danger">Deselect All</a>
+  </div>
+  <table class="display table" cellspacing="0" width="100%">
+      <thead>
+          <tr>
+              <th>Select</th>
+              <th>Title</th>
+              <th>Unit</th>
+          </tr>
+      </thead>
+      <tbody>
+      </tbody>
+  </table>
+</div>
+
+{# Popup for individual chart options #}
+<div hidden id="chart_options_popup" title="Chart Options">
+    {# How best to organize options? #}
+</div>
+{% endif %}
