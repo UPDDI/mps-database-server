@@ -357,11 +357,8 @@ $(document).ready(function () {
                         chart.draw(pie_data, pie_options);
                     }
 
-                    if (window.GROUPING.full_post_filter === null) {
-                        window.GROUPING.full_post_filter = json.post_filter;
-                        window.GROUPING.current_post_filter = JSON.parse(JSON.stringify(json.post_filter));
-                    }
-
+                    // post_filter setup
+                    window.GROUPING.set_grouping_filtering(json.post_filter);
                     // Stop spinner
                     window.spinner.stop();
 
