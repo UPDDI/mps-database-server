@@ -355,4 +355,9 @@ $(document).ready(function () {
             $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
         }, 250);
     }
+
+    // EXPERIMENTAL
+    // IF THERE IS A SIDEBAR, GET RID OF CONTAINER CLASS IN BREADCRUMBS AND FOOTER
+    $('#content').removeClass('container').addClass('fluid-container');
+    $('#footer').removeClass('container').addClass('fluid-container');
 });

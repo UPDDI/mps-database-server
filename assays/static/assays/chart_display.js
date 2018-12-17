@@ -20,6 +20,8 @@ $(document).ready(function () {
     var all_events = {};
     var all_options = {};
 
+    var all_data = {};
+
     // Semi-arbitrary at the moment
     var treatment_group_table = $('#treatment_group_table');
     var treatment_group_display = $('#treatment_group_display');
@@ -38,10 +40,12 @@ $(document).ready(function () {
     var chart_visibility = {};
     var chart_filter_buffer = {};
 
+    // NOTE: At the moment superfluous, HOWEVER: will become useful if we need to keep show/hide after refresh
     var name_to_chart = {};
 
     if (show_hide_plots_popup[0]) {
         show_hide_plots_popup.dialog({
+            // Causes problems on small devices
             width: 825,
             closeOnEscape: true,
             autoOpen: false,
@@ -103,6 +107,115 @@ $(document).ready(function () {
 
     // var filter_popup_header = filter_popup.find('h5');
 
+    // Prepare individual plot stuff
+    var current_chart_id = null;
+    var current_chart_name = null;
+    var individual_plot_type = $('#individual_plot_type');
+    var individual_plot_popup = $('#individual_plot_popup');
+    var hide_this_plot_button = $('#id_hide_this_plot');
+
+    var individual_plot_popup_options_section = $('#individual_plot_popup_options_section');
+    var individual_plot_popup_plot_section = $('#individual_plot_popup_plot_section');
+    var individual_plot_popup_plot_container = $('#individual_plot_popup_plot_container');
+
+    hide_this_plot_button.click(function() {
+        alert('This is supposed to hide the plot');
+    });
+
+    if (individual_plot_popup[0]) {
+        individual_plot_popup.dialog({
+            // Causes problems on small devices
+            width: 825,
+            height: 600,
+            closeOnEscape: true,
+            autoOpen: false,
+            close: function () {
+                $('body').removeClass('stop-scrolling');
+            },
+            open: function () {
+                $('body').addClass('stop-scrolling');
+            },
+            buttons: [
+            {
+                text: 'Apply',
+                click: function() {
+                    get_individual_chart();
+                }
+            },
+            {
+                text: 'Close',
+                click: function() {
+                   $(this).dialog("close");
+                }
+            }]
+        });
+        individual_plot_popup.removeProp('hidden');
+    }
+
+    function get_individual_chart() {
+        var individual_post_filter = $.extend(window.GROUPING.current_post_filter, {});
+
+        // TODO TODO TODO METHODS
+        // Modify post filter to be for only current plot
+        var current_ids_of_interest = all_data.assay_ids[current_chart_name];
+
+        individual_post_filter.assay.target_id__in = current_ids_of_interest.target;
+        individual_post_filter.assay.unit_id__in = current_ids_of_interest.unit;
+
+        if (current_ids_of_interest.method) {
+            individual_post_filter.assay.method_id__in = current_ids_of_interest.method;
+        }
+
+        console.log(individual_post_filter);
+        console.log(current_ids_of_interest);
+
+        var data = {
+            // TODO TODO TODO CHANGE CALL
+            call: '',
+            // TODO TODO TODO NEED TO GET
+            study: '',
+            // TODO TODO TODO MIGHT BE USING A FILTER
+            filter: '',
+            criteria: JSON.stringify(window.GROUPING.get_grouping_filtering()),
+            post_filter: JSON.stringify(),
+            csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
+        };
+
+        var options = window.CHARTS.prepare_chart_options(charts_name);
+
+        data = $.extend(data, options);
+
+        // Show spinner
+        window.spinner.spin(
+            document.getElementById("spinner")
+        );
+
+        // TODO TODO TODO
+        // $.ajax({
+        //     url: "/assays_ajax/",
+        //     type: "POST",
+        //     dataType: "json",
+        //     data: data,
+        //     success: function (json) {
+        //         // Stop spinner
+        //         window.spinner.stop();
+        //
+        //         // Make the plot (probably should be in a separate function)
+        //
+        //
+        //         // Recalculate responsive and fixed headers
+        //         $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
+        //         $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+        //     },
+        //     error: function (xhr, errmsg, err) {
+        //         // Stop spinner
+        //         window.spinner.stop();
+        //
+        //         console.log(xhr.status + ": " + xhr.responseText);
+        //     }
+        // });
+    }
+
     window.CHARTS.prepare_chart_options = function(charts) {
         var options = {};
 
@@ -118,6 +231,9 @@ $(document).ready(function () {
     };
 
     window.CHARTS.prepare_side_by_side_charts = function(json, charts) {
+        // Store all data
+        all_data = $.extend(json, {});
+
         // Clear existing charts
         var charts_id = $('#' + charts);
         charts_id.empty();
@@ -175,12 +291,6 @@ $(document).ready(function () {
 
         for (var index in sorted_assays) {
             if (assays[index].length > 1) {
-                charts_id.append($('<div>')
-                    .attr('id', charts + '_' + index)
-                    .addClass('col-sm-12 col-md-6 chart-container')
-                    .css('min-height', min_height)
-                );
-
                 // Populate each row
                 // SLOPPY NOT DRY
                 var row = '<tr>';
@@ -189,6 +299,13 @@ $(document).ready(function () {
                 var unit = full_name.split('\n')[1];
 
                 var current_index = html_to_append.length;
+
+                charts_id.append($('<div>')
+                    .attr('id', charts + '_' + index)
+                    .attr('data-chart-name', full_name)
+                    .addClass('col-sm-12 col-md-6 chart-container')
+                    .css('min-height', min_height)
+                );
 
                 row += '<td width="10%" class="text-center"><input data-table-index="' + current_index + '" data-obj-name="' + full_name + '" class="big-checkbox chart-filter-checkbox" type="checkbox" value="' + full_name + '" checked="checked"></td>';
 
@@ -775,7 +892,9 @@ $(document).ready(function () {
     });
 
     // CONTEXT MENU
-    // $(document).on('contextmenu', '.chart-container', function() {
-    //     alert('TODO: Context Menu');
-    // });
+    $(document).on('contextmenu', '.chart-container', function() {
+        current_chart_id = $(this).attr('id');
+        current_chart_name = $(this).attr('data-chart-name');
+        individual_plot_popup.dialog('open');
+    });
 });
