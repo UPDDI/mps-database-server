@@ -487,7 +487,9 @@ $(document).ready(function() {
                 window.spinner.stop();
 
                 window.CHARTS.prepare_side_by_side_charts(json, charts_name);
-                window.CHARTS.make_charts(json, charts_name, changes_to_chart_options);
+                // TODO TODO TODO FIX FIX FIX
+                // window.CHARTS.make_charts(json, charts_name, changes_to_chart_options);
+                window.CHARTS.make_charts(json, charts_name);
                 // Recalculate responsive and fixed headers
                 $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
                 $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();

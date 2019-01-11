@@ -4,10 +4,14 @@ $(document).ready(function() {
     // Set the callback
     google.charts.setOnLoadCallback(get_readouts);
 
+    window.CHARTS.call = 'fetch_data_points';
+
     window.GROUPING.refresh_function = get_readouts;
 
     var charts = $('#charts');
     var study_id = Math.floor(window.location.href.split('/')[5]);
+
+    window.CHARTS.study_id = study_id;
 
     // Name for the charts for binding events etc
     var charts_name = 'charts';
@@ -25,7 +29,7 @@ $(document).ready(function() {
     function get_readouts() {
         var data = {
             // TODO TODO TODO CHANGE CALL
-            call: 'fetch_data_points',
+            call: window.CHARTS.call,
             study: study_id,
             criteria: JSON.stringify(window.GROUPING.get_grouping_filtering()),
             post_filter: JSON.stringify(window.GROUPING.current_post_filter),

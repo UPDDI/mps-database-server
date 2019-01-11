@@ -130,11 +130,7 @@
 
     <div hidden id="results">
 
-    <div class="well">
-        <button type="button" class="btn btn-primary toggle_sidebar_button">
-            Toggle Sidebar
-        </button>
-    </div>
+    {% include 'assays/sidebar_extras.html' with show_hide="true" %}
     {# Note indicating no data to display initially #}
     <div id="charts" class="padded-bottom">
         No data to display
@@ -147,11 +143,7 @@
 
     {# TODO TODO TODO NEED GROUPING  AND FILTERING STUFF HERE TOO #}
 
-    <div class="well">
-        <button type="button" class="btn btn-primary toggle_sidebar_button">
-            Toggle Sidebar
-        </button>
-    </div>
+    {% include 'assays/sidebar_extras.html' %}
 
     {# NEEDS TO BE MOVED #}
     {% comment %} <div class="container">

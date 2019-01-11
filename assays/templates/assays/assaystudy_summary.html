@@ -111,11 +111,7 @@
     </div>
     {% endif %}
 
-    <div class="well">
-        <button type="button" class="btn btn-primary toggle_sidebar_button">
-            Toggle Sidebar
-        </button>
-    </div>
+    {% include 'assays/sidebar_extras.html' with show_hide="true" %}
 
     {# Note indicating no data to display initially #}
     <div id="charts" class="padded-bottom">

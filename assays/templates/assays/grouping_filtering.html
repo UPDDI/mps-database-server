@@ -790,14 +790,26 @@
 </div>
 
 {# Popup for individual chart options #}
-<div hidden id="individual_plot_popup" title="Individual Plot">
+{# SLOPPY: ENFORCES WIDTH IN INLINE STYLE #}
+<div hidden id="individual_plot_popup" title="Individual Plot" style="width: 850px;">
     {# How best to organize options? #}
     {# For the moment, just show butons for each type #}
     <div id="individual_plot_popup_options_section">
     <div class="row padded-bottom well">
-        <div class="col-sm-4">
-            <button id="id_hide_this_plot" class="btn btn-warning">Hide this Plot</button>
-        </div>
+      <div class="col-sm-4">
+      <div class="fancy-checkbox table-filter padded-bottom" align="left">
+          <input class="visibility-checkbox" type="checkbox" name="plot_is_visible" id="plot_is_visible" checked/>
+          <div class="btn-group">
+              <label for="plot_is_visible" class="btn btn-default">
+                  <span class="glyphicon glyphicon-ok"></span>
+                  <span> </span>
+              </label>
+              <label for="plot_is_visible" class="btn btn-default active">
+                  Show Plot
+              </label>
+          </div>
+      </div>
+      </div>
 
         <div class="col-sm-4">
         <div class="fancy-checkbox table-filter padded-bottom" align="left">
@@ -835,22 +847,51 @@
             <label>Plot Type</label>
         </div>
         <div class="col-xs-12">
-            <select id="id_individual_plot_type" class="form-control">
+            <select id="id_individual_plot_type" class="form-control no-selectize">
                 <option val="scatter" selected>Scatter/Line Plot</option>
                 <option val="bar">Bar Chart</option>
                 <option val="box">Box Plot</option>
             </select>
         </div>
     </div>
-
-    <div class="row padded-bottom well">
-        Options per plot type here?
-    </div>
     </div>
 
-    <div id="individual_plot_popup_plot_section">
-        <div class="chart-container" id="individual_plot_popup_plot_container">
+    <div id="individual_plot_popup_plot_section" style="width: 800px; min-height: 450px;">
+        {# PLEASE NOTE CONTRIVANCE #}
+        {% comment %} <div class="chart-container" id="individual_plot_popup_plot_container"> {% endcomment %}
+        {# Inline style of width prevents glitch where in width changes on hover events #}
+        <div class="chart-container" id="popup_0" style="width: 500px; float: left; padding: 0 10 0 10;">
+        </div>
+
+        {# Options section #}
+        <div id="scatter_options" class="well" style="width: 275px; float: left;">
+            Legend
+            Legend Position
+            Legend By
+
+            X-Axis
+
+            Y-Axis
+
+            Filtering
+
+            Markers
+
+            Error By
+
+            Time Unit
+        </div>
+        <div hidden id="bar_options" class="well" style="width: 275px; float: left;">
+
+        </div>
+        <div hidden id="box_options" class="well" style="width: 275px; float: left;">
+
         </div>
     </div>
+</div>
+
+{# Yet another popup for manipulating the options for a popup plot #}
+<div hidden id="individual_plot_options_popup" title="Individual Plot">
+
 </div>
 {% endif %}

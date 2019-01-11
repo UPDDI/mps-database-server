@@ -645,11 +645,8 @@
 
     {# {% include 'assays/chart_options.html' with chart_title="Data" chart_prefix="charts"%} #}
 
-    <div class="well">
-        <button type="button" class="btn btn-primary toggle_sidebar_button">
-            Toggle Sidebar
-        </button>
-    </div>
+    {% include 'assays/sidebar_extras.html' with show_hide="true" %}
+
     <div id="charts" class="padded-bottom"></div>
 
     <div>

@@ -2,8 +2,9 @@
 
 // Global variable for charts
 window.CHARTS = {
-    // Should this be here, or in grouping?
-    // refresh_function: null;
+    study_id: 0,
+    filter: {},
+    call: ''
 };
 
 // Load the Visualization API and the corechart package.
@@ -16,11 +17,25 @@ window.CHARTS = {
 
 $(document).ready(function () {
     // Charts
-    var all_charts = {};
-    var all_events = {};
-    var all_options = {};
+    // SUBJECT TO REVISION
+    // Maybe would be more intelligible to have a single object?
+    var all_charts = {
+        charts: [],
+        popup: []
+    };
+    var all_events = {
+        charts: [],
+        popup: []
+    };
+    var all_options = {
+        charts: [],
+        popup: []
+    };
 
-    var all_data = {};
+    var all_data = {
+        charts: [],
+        popup: []
+    };
 
     // Semi-arbitrary at the moment
     var treatment_group_table = $('#treatment_group_table');
@@ -42,6 +57,9 @@ $(document).ready(function () {
 
     // NOTE: At the moment superfluous, HOWEVER: will become useful if we need to keep show/hide after refresh
     var name_to_chart = {};
+
+    // Some global options of note
+    var global_options = {};
 
     if (show_hide_plots_popup[0]) {
         show_hide_plots_popup.dialog({
@@ -88,7 +106,10 @@ $(document).ready(function () {
     }
 
     // Probably should just have full data!
-    var group_to_data = [];
+    var group_to_data = {
+        charts: [],
+        popup: []
+    };
     var device_to_group = {};
     var all_treatment_groups = [];
 
@@ -108,25 +129,25 @@ $(document).ready(function () {
     // var filter_popup_header = filter_popup.find('h5');
 
     // Prepare individual plot stuff
+    var current_chart = null;
     var current_chart_id = null;
     var current_chart_name = null;
     var individual_plot_type = $('#individual_plot_type');
     var individual_plot_popup = $('#individual_plot_popup');
-    var hide_this_plot_button = $('#id_hide_this_plot');
+
+    var popup_chart = null;
+
+    var plot_is_visible = $('#plot_is_visible');
 
     var individual_plot_popup_options_section = $('#individual_plot_popup_options_section');
     var individual_plot_popup_plot_section = $('#individual_plot_popup_plot_section');
-    var individual_plot_popup_plot_container = $('#individual_plot_popup_plot_container');
-
-    hide_this_plot_button.click(function() {
-        alert('This is supposed to hide the plot');
-    });
+    // var individual_plot_popup_plot_container = $('#individual_plot_popup_plot_container');
+    var individual_plot_popup_plot_container = $('#popup_0');
 
     if (individual_plot_popup[0]) {
         individual_plot_popup.dialog({
             // Causes problems on small devices
             width: 825,
-            height: 600,
             closeOnEscape: true,
             autoOpen: false,
             close: function () {
@@ -134,16 +155,59 @@ $(document).ready(function () {
             },
             open: function () {
                 $('body').addClass('stop-scrolling');
+                individual_plot_popup_options_section.show('slow');
+                individual_plot_popup_plot_container.hide('slow');
+                // Plot needs to be visible for you to, you know, see it here
+                plot_is_visible.prop('checked', true);
             },
             buttons: [
             {
-                text: 'Apply',
+                text: 'Make Popup Plot',
                 click: function() {
-                    get_individual_chart();
+                    // Kill events
+                    destroy_events('popup');
+
+                    // Clear all charts
+                    // OBJECTIVELY DUMB
+                    all_charts['popup'] = [];
+                    all_events['popup'] = [];
+
+                    all_options['popup'] = [];
+
+                    group_to_data['popup'] = [];
+
+                    individual_plot_popup_options_section.hide();
+                    individual_plot_popup_plot_container.show();
+
+                    get_individual_chart('popup', individual_plot_popup_plot_container[0]);
                 }
             },
             {
-                text: 'Close',
+                text: 'Apply to Plot',
+                click: function() {
+                    get_individual_chart('charts', current_chart);
+
+                    if (!plot_is_visible.prop('checked')) {
+                        // HIDE THE CHART
+                        // A LITTLE MESSY TO MAKE SURE THAT THE SHOW/HIDE PLOTS MATCHES
+                        chart_filter_data_table.page.len(-1).draw();
+
+                        chart_filter_table.find('.chart-filter-checkbox').each(function() {
+                            $(this)
+                                .prop('checked', false)
+                                .attr('checked', false)
+                                .trigger('click');
+                        });
+
+                        chart_filter_data_table.order([[1, 'asc']]);
+                        chart_filter_data_table.page.len(10).draw();
+                    }
+
+                    $(this).dialog("close");
+                }
+            },
+            {
+                text: 'Cancel',
                 click: function() {
                    $(this).dialog("close");
                 }
@@ -152,36 +216,47 @@ $(document).ready(function () {
         individual_plot_popup.removeProp('hidden');
     }
 
-    function get_individual_chart() {
-        var individual_post_filter = $.extend(window.GROUPING.current_post_filter, {});
+    function get_individual_chart(charts, chart_selector) {
+        // Naive way to learn whether dose vs. time
+        global_options.is_dose = $('#dose_select').prop('checked');
+
+        global_options.x_axis_label = 'Time (Days)';
+        // Still need to work in dose-response
+        if (global_options.is_dose) {
+            global_options.x_axis_label = 'Dose (μM)';
+        }
+
+        var individual_post_filter = $.extend({}, window.GROUPING.current_post_filter);
 
         // TODO TODO TODO METHODS
         // Modify post filter to be for only current plot
-        var current_ids_of_interest = all_data.assay_ids[current_chart_name];
+        var current_ids_of_interest = all_data['charts'].assay_ids[current_chart_name];
 
-        individual_post_filter.assay.target_id__in = current_ids_of_interest.target;
-        individual_post_filter.assay.unit_id__in = current_ids_of_interest.unit;
+        individual_post_filter.assay.target_id__in = {};
+        individual_post_filter.assay.target_id__in[current_ids_of_interest.target] = '';
+
+        individual_post_filter.assay.unit_id__in = {};
+        individual_post_filter.assay.unit_id__in[current_ids_of_interest.unit] = '';
 
         if (current_ids_of_interest.method) {
-            individual_post_filter.assay.method_id__in = current_ids_of_interest.method;
+            individual_post_filter.assay.method_id__in = {};
+            individual_post_filter.assay.method_id__in[current_ids_of_interest.method] = '';
         }
-
-        console.log(individual_post_filter);
-        console.log(current_ids_of_interest);
 
         var data = {
             // TODO TODO TODO CHANGE CALL
-            call: '',
+            call: window.CHARTS.call,
             // TODO TODO TODO NEED TO GET
-            study: '',
+            study: window.CHARTS.study_id,
             // TODO TODO TODO MIGHT BE USING A FILTER
-            filter: '',
+            filter: window.CHARTS.filter,
             criteria: JSON.stringify(window.GROUPING.get_grouping_filtering()),
-            post_filter: JSON.stringify(),
+            post_filter: JSON.stringify(window.GROUPING.current_post_filter),
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
         };
 
-        var options = window.CHARTS.prepare_chart_options(charts_name);
+        // ONLY APPLICABLE TO IN PLACE CHANGES
+        var options = window.CHARTS.prepare_chart_options('charts');
 
         data = $.extend(data, options);
 
@@ -191,29 +266,267 @@ $(document).ready(function () {
         );
 
         // TODO TODO TODO
-        // $.ajax({
-        //     url: "/assays_ajax/",
-        //     type: "POST",
-        //     dataType: "json",
-        //     data: data,
-        //     success: function (json) {
-        //         // Stop spinner
-        //         window.spinner.stop();
-        //
-        //         // Make the plot (probably should be in a separate function)
-        //
-        //
-        //         // Recalculate responsive and fixed headers
-        //         $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
-        //         $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
-        //     },
-        //     error: function (xhr, errmsg, err) {
-        //         // Stop spinner
-        //         window.spinner.stop();
-        //
-        //         console.log(xhr.status + ": " + xhr.responseText);
+        $.ajax({
+            url: "/assays_ajax/",
+            type: "POST",
+            dataType: "json",
+            data: data,
+            success: function (json) {
+                // Stop spinner
+                window.spinner.stop();
+
+                // Empty the chart
+                $(chart_selector).empty();
+
+                // Always 0 index methinks for popup
+                if (charts === 'popup') {
+                    current_chart_id = 0;
+                }
+
+                // Store all data
+                // TODO INDEX INDEX INDEX
+                all_data[charts] = $.extend({}, json);
+
+                // Make the plot
+                build_individual_chart(charts, chart_selector, current_chart_id);
+
+                // Only popup for now
+                // NEED TO MODIFY EVENTS FOR INDIVIDUAL LATER
+                if (charts === 'popup') {
+                    create_events(charts, true)
+                }
+            },
+            error: function (xhr, errmsg, err) {
+                // Stop spinner
+                window.spinner.stop();
+
+                console.log(xhr.status + ": " + xhr.responseText);
+            }
+        });
+    }
+
+    function build_individual_chart(charts, chart_selector, index) {
+        // Clear old chart (when applicable)
+        $(chart_selector).empty();
+
+        // Aliases
+        var sorted_assays = all_data[charts].sorted_assays;
+        var assays = all_data[charts].assays;
+
+        // Don't bother if empty
+        if (assays[index][1] === undefined) {
+            return;
+        }
+
+        var assay_unit = sorted_assays[index];
+        var assay = assay_unit.split('\n')[0];
+        var unit = assay_unit.split('\n')[1];
+
+        var data = google.visualization.arrayToDataTable(assays[index]);
+
+        var y_axis_label_type = '';
+
+        // Go through y values
+        $.each(assays[index].slice(1), function(index, current_values) {
+            // Idiomatic way to remove NaNs
+            var trimmed_values = current_values.slice(1).filter(isNumber);
+
+            var current_max_y = Math.abs(Math.max.apply(null, trimmed_values));
+            var current_min_y = Math.abs(Math.min.apply(null, trimmed_values));
+
+            if (current_max_y > 1000 || current_max_y < 0.001) {
+                y_axis_label_type = '0.00E0';
+                return false;
+            }
+            else if (Math.abs(current_max_y - current_min_y) < 10 && Math.abs(current_max_y - current_min_y) > 0.1 && Math.abs(current_max_y - current_min_y) !== 0) {
+                y_axis_label_type = '0.00';
+                return false;
+            }
+            else if (Math.abs(current_max_y - current_min_y) < 0.1 && Math.abs(current_max_y - current_min_y) !== 0) {
+                y_axis_label_type = '0.00E0';
+                return false;
+            }
+        });
+
+        var current_min_x = assays[index][1][0];
+        var current_max_x = assays[index][assays[index].length - 1][0];
+        var current_x_range = current_max_x - current_min_x;
+
+        var options = {
+            title: assay,
+            interpolateNulls: true,
+            // Changes styling and prevents flickering issue
+            // tooltip: {
+            //     isHtml: true
+            // },
+            titleTextStyle: {
+                fontSize: 18,
+                bold: true,
+                underline: true
+            },
+            // curveType: 'function',
+            legend: {
+                position: 'top',
+                maxLines: 5,
+                textStyle: {
+                    // fontSize: 8,
+                    bold: true
+                }
+            },
+            hAxis: {
+                title: global_options.x_axis_label,
+                textStyle: {
+                    bold: true
+                },
+                titleTextStyle: {
+                    fontSize: 14,
+                    bold: true,
+                    italic: false
+                }
+                // ADD PROGRAMMATICALLY
+                // viewWindowMode:'explicit',
+                // viewWindow: {
+                //     max: current_max_x + 0.05 * current_x_range,
+                //     min: current_min_x - 0.05 * current_x_range
+                // }
+                // baselineColor: 'none',
+                // ticks: []
+            },
+            vAxis: {
+                title: unit,
+                // If < 1000 and > 0.001 don't use scientific! (absolute value)
+                format: y_axis_label_type,
+                textStyle: {
+                    bold: true
+                },
+                titleTextStyle: {
+                    fontSize: 14,
+                    bold: true,
+                    italic: false
+                },
+                // This doesn't seem to interfere with displaying negative values
+                minValue: 0,
+                viewWindowMode: 'explicit'
+                // baselineColor: 'none',
+                // ticks: []
+            },
+            pointSize: 5,
+            'chartArea': {
+                'width': '75%',
+                'height': '65%'
+            },
+            'height': min_height,
+            // Individual point tooltips, not aggregate
+            focusTarget: 'datum',
+            intervals: {
+                // style: 'bars'
+                'lineWidth': 0.75
+            }
+        };
+
+        // NAIVE: I shouldn't perform a whole refresh just to change the scale!
+        if (document.getElementById('category_select').checked) {
+            options.focusTarget = 'category';
+        }
+
+        // Removed for now
+/*
+        if (document.getElementById(charts + 'log_x').checked) {
+            options.hAxis.scaleType = 'log';
+        }
+        if (document.getElementById(charts + 'log_y').checked) {
+            options.vAxis.scaleType = 'log';
+        }
+*/
+
+        // Merge options with the specified changes
+        // REMOVED FOR NOW
+        // $.extend(options, changes_to_options);
+
+        // REMOVED FOR NOW
+        // Find out whether to shrink text
+        // $.each(assays[index][0], function(index, column_header) {
+        //     if (column_header.length > 12) {
+        //         options.legend.textStyle.fontSize = 10;
         //     }
         // });
+
+        var chart = null;
+
+        var num_colors = 0;
+
+        $.each(assays[index][0].slice(1), function(index, value) {
+            if (value.indexOf('     ~@i1') === -1) {
+                num_colors++;
+            }
+        });
+
+        // Line chart if more than two time points and less than 101 colors
+        if (assays[index].length > 3 && num_colors < 101) {
+            chart = new google.visualization.LineChart(chart_selector);
+
+            // Change the options
+            options.hAxis.viewWindowMode = 'explicit';
+            options.hAxis.viewWindow = {
+                max: current_max_x + 0.05 * current_x_range,
+                min: current_min_x - 0.05 * current_x_range
+            };
+        }
+        // Nothing if more than 100 colors
+        else if (num_colors > 100) {
+            chart_selector.innerHTML = '<div class="alert alert-danger" role="alert">' +
+                '<span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>' +
+                '<span class="sr-only">Danger:</span>' +
+                ' <strong>' + assay + ' ' + unit + '</strong>' +
+                '<br>This plot has too many data points, please try filtering.' +
+            '</div>'
+        }
+        // Bar chart if only one or two time points
+        else if (assays[index].length > 1) {
+            // Convert to categories
+            data.insertColumn(0, 'string', data.getColumnLabel(0));
+            // copy values from column 1 (old column 0) to column 0, converted to numbers
+            for (var i = 0; i < data.getNumberOfRows(); i++) {
+                var val = data.getValue(i, 1);
+                // I don't mind this type-coercion, null, undefined (and maybe 0?) don't need to be parsed
+                if (val != null) {
+                    // PLEASE NOTE: Floats are truncated to 3 decimals
+                    data.setValue(i, 0, parseFloat(val.toFixed(3)) + ''.valueOf());
+                }
+            }
+            // remove column 1 (the old column 0)
+            data.removeColumn(1);
+
+            chart = new google.visualization.ColumnChart(chart_selector);
+        }
+
+        if (chart) {
+            var dataView = new google.visualization.DataView(data);
+
+            // Change interval columns to intervals
+            var interval_setter = [0];
+
+            i = 1;
+            while (i < data.getNumberOfColumns()) {
+                interval_setter.push(i);
+                if (i + 2 < data.getNumberOfColumns() && assays[index][0][i+1].indexOf('     ~@i1') > -1) {
+                    interval_setter.push({sourceColumn: i + 1, role: 'interval'});
+                    interval_setter.push({sourceColumn: i + 2, role: 'interval'});
+                    i += 2;
+                }
+                i += 1;
+            }
+            dataView.setColumns(interval_setter);
+
+            chart.draw(dataView, options);
+
+            chart.chart_index = index;
+
+            all_charts[charts].push(chart);
+
+            // Add the options
+            all_options[charts].push(options);
+        }
     }
 
     window.CHARTS.prepare_chart_options = function(charts) {
@@ -232,7 +545,7 @@ $(document).ready(function () {
 
     window.CHARTS.prepare_side_by_side_charts = function(json, charts) {
         // Store all data
-        all_data = $.extend(json, {});
+        all_data[charts] = $.extend({}, json);
 
         // Clear existing charts
         var charts_id = $('#' + charts);
@@ -246,31 +559,6 @@ $(document).ready(function () {
 
         var sorted_assays = json.sorted_assays;
         var assays = json.assays;
-
-        // Old method
-        // var previous = null;
-        // for (var index in sorted_assays) {
-        //     if (assays[index].length > 1) {
-        //         if (!previous) {
-        //             previous = $('<div>')
-        //             //.addClass('padded-row')
-        //                 .css('min-height', min_height);
-        //             charts_id.append(previous
-        //                 .append($('<div>')
-        //                     .attr('id', charts + '_' + index)
-        //                     .addClass('col-sm-12 col-md-6 chart-container')
-        //                 )
-        //             );
-        //         }
-        //         else {
-        //             previous.append($('<div>')
-        //                 .attr('id', charts + '_' + index)
-        //                 .addClass('col-sm-12 col-md-6 chart-container')
-        //             );
-        //             previous = null;
-        //         }
-        //     }
-        // }
 
         // Hide sidebar if no data
         if (assays.length < 1) {
@@ -318,7 +606,7 @@ $(document).ready(function () {
                 name_to_chart[full_name] = '#charts_' + current_index;
 
                 html_to_append.push(row);
-        }
+            }
         }
 
         if (!html_to_append) {
@@ -488,10 +776,6 @@ $(document).ready(function () {
         // Reposition download/print/copy
         $('.DTTT_container').css('float', 'none');
 
-        // Recalculate responsive and fixed headers
-        $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
-        $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
-
         // Make sure the header is fixed and active
         treatment_group_data_table.fixedHeader.enable();
     };
@@ -501,20 +785,105 @@ $(document).ready(function () {
         return obj !== undefined && typeof(obj) === 'number' && !isNaN(obj);
     }
 
-    window.CHARTS.make_charts = function(json, charts, changes_to_options) {
-        // post_filter setup
-        window.GROUPING.set_grouping_filtering(json.post_filter);
-
-        // Remove triggers
+    function destroy_events(charts) {
         if (all_events[charts]) {
             $.each(all_events[charts], function(index, event) {
                 google.visualization.events.removeListener(event);
             });
         }
+    }
+
+    //
+    function revise_event(charts, index) {
+        // NOT DRY NOT DRY
+
+    }
+
+    // DUMB PARAMETERS
+    function modify_group_to_data(group_to_data, assays, charts, index, i) {
+        // Need to link EACH CHARTS values to the proper group
+        // EMPHASIS ON EACH CHART
+        // Somewhat naive
+        if (document.getElementById('group_select').checked) {
+            // NOTE -1
+            group_to_data[charts][index][i] = assays[index][0][i].split(' || ')[0].replace(/\D/g, '') - 1;
+        }
+        else {
+            var device = assays[index][0][i].split(' || ')[0];
+            // console.log(device);
+            // console.log(device_to_group);
+            group_to_data[charts][index][i] = device_to_group[device];
+        }
+    }
+
+    function create_events(charts, is_popup) {
+        // TODO NEEDS TO BE MADE GENERIC
+        for (var index=0; index < all_charts[charts].length; index++) {
+            group_to_data[charts].push({});
+
+            var assays = all_data[charts].assays;
+
+            for (i=0; i < assays[index][0].length; i++) {
+                if (assays[index][0][i].indexOf('     ~@i1') === -1 && assays[index][0][i].indexOf('     ~@i2') === -1) {
+                    modify_group_to_data(group_to_data, assays, charts, index, i);
+                }
+            }
+
+            // Makes use of a somewhat zany closure
+            var current_event = google.visualization.events.addListener(all_charts[charts][index], 'onmouseover', (function (charts, chart_index) {
+                return function (entry) {
+                    // Only attempts to display if there is a valid treatment group
+                    if (all_treatment_groups[group_to_data[charts][chart_index][entry.column]]) {
+                        var current_pos = $(all_charts[charts][chart_index].container).position();
+
+                        var current_top = current_pos.top + 75;
+                        var current_left = $('#breadcrumbs').position.left;
+
+                        if (is_popup) {
+                            current_pos = $(all_charts[charts][chart_index].container).parent().parent().parent().position();
+                            current_top = current_pos.top + 200;
+                            current_left = current_pos.left;
+                        }
+
+                        if (entry.row === null && entry.column) {
+                            var row_clone = all_treatment_groups[group_to_data[charts][chart_index][entry.column]].clone().addClass('bg-warning');
+                            if (row_clone) {
+                                group_display_body.empty().append(row_clone);
+
+                                group_display.show()
+                                    .css({top: current_top, left: current_left, position: 'absolute'});
+                            }
+                        }
+                    }
+                }
+            })(charts, index));
+            all_events[charts].push(current_event);
+
+            current_event = google.visualization.events.addListener(all_charts[charts][index], 'onmouseout', function () {
+                group_display.hide();
+            });
+            all_events[charts].push(current_event);
+        }
+    }
+
+    window.CHARTS.make_charts = function(json, charts) {
+        // post_filter setup
+        window.GROUPING.set_grouping_filtering(json.post_filter);
+
+        // Remove triggers
+        destroy_events(charts)
+        // if (all_events[charts]) {
+        //     $.each(all_events[charts], function(index, event) {
+        //         google.visualization.events.removeListener(event);
+        //     });
+        // }
 
         // Clear all charts
         all_charts[charts] = [];
         all_events[charts] = [];
+
+        all_options[charts] = [];
+
         group_to_data[charts] = [];
 
         // Show the chart options
@@ -526,12 +895,12 @@ $(document).ready(function () {
         // window.CHARTS.get_heatmap_dropdowns(0);
 
         // Naive way to learn whether dose vs. time
-        var is_dose = $('#dose_select').prop('checked');
+        global_options.is_dose = $('#dose_select').prop('checked');
 
-        var x_axis_label = 'Time (Days)';
+        global_options.x_axis_label = 'Time (Days)';
         // Still need to work in dose-response
-        if (is_dose) {
-            x_axis_label = 'Dose (μM)';
+        if (global_options.is_dose) {
+            global_options.x_axis_label = 'Dose (μM)';
         }
 
         // If nothing to show
@@ -557,9 +926,8 @@ $(document).ready(function () {
             }
         }
 
-        if (time_conversion)
-        {
-            x_axis_label = time_label;
+        if (time_conversion) {
+            global_options.x_axis_label = time_label;
 
             $.each(assays, function(index, assay) {
                 // Don't bother if empty
@@ -574,268 +942,12 @@ $(document).ready(function () {
         }
 
         for (index in sorted_assays) {
-            // Don't bother if empty
-            if (assays[index][1] === undefined) {
-                continue;
-            }
-
-            var assay_unit = sorted_assays[index];
-            var assay = assay_unit.split('\n')[0];
-            var unit = assay_unit.split('\n')[1];
-
-            var data = google.visualization.arrayToDataTable(assays[index]);
-
-            var y_axis_label_type = '';
-
-            // Go through y values
-            $.each(assays[index].slice(1), function(index, current_values) {
-                // Idiomatic way to remove NaNs
-                var trimmed_values = current_values.slice(1).filter(isNumber);
-
-                var current_max_y = Math.abs(Math.max.apply(null, trimmed_values));
-                var current_min_y = Math.abs(Math.min.apply(null, trimmed_values));
-
-                if (current_max_y > 1000 || current_max_y < 0.001) {
-                    y_axis_label_type = '0.00E0';
-                    return false;
-                }
-                else if (Math.abs(current_max_y - current_min_y) < 10 && Math.abs(current_max_y - current_min_y) > 0.1 && Math.abs(current_max_y - current_min_y) !== 0) {
-                    y_axis_label_type = '0.00';
-                    return false;
-                }
-                else if (Math.abs(current_max_y - current_min_y) < 0.1 && Math.abs(current_max_y - current_min_y) !== 0) {
-                    y_axis_label_type = '0.00E0';
-                    return false;
-                }
-            });
-
-            var current_min_x = assays[index][1][0];
-            var current_max_x = assays[index][assays[index].length - 1][0];
-            var current_x_range = current_max_x - current_min_x;
-
-            var options = {
-                title: assay,
-                interpolateNulls: true,
-                // Changes styling and prevents flickering issue
-                // tooltip: {
-                //     isHtml: true
-                // },
-                titleTextStyle: {
-                    fontSize: 18,
-                    bold: true,
-                    underline: true
-                },
-                // curveType: 'function',
-                legend: {
-                    position: 'top',
-                    maxLines: 5,
-                    textStyle: {
-                        // fontSize: 8,
-                        bold: true
-                    }
-                },
-                hAxis: {
-                    title: x_axis_label,
-                    textStyle: {
-                        bold: true
-                    },
-                    titleTextStyle: {
-                        fontSize: 14,
-                        bold: true,
-                        italic: false
-                    }
-                    // ADD PROGRAMMATICALLY
-                    // viewWindowMode:'explicit',
-                    // viewWindow: {
-                    //     max: current_max_x + 0.05 * current_x_range,
-                    //     min: current_min_x - 0.05 * current_x_range
-                    // }
-                    // baselineColor: 'none',
-                    // ticks: []
-                },
-                vAxis: {
-                    title: unit,
-                    // If < 1000 and > 0.001 don't use scientific! (absolute value)
-                    format: y_axis_label_type,
-                    textStyle: {
-                        bold: true
-                    },
-                    titleTextStyle: {
-                        fontSize: 14,
-                        bold: true,
-                        italic: false
-                    },
-                    // This doesn't seem to interfere with displaying negative values
-                    minValue: 0,
-                    viewWindowMode: 'explicit'
-                    // baselineColor: 'none',
-                    // ticks: []
-                },
-                pointSize: 5,
-                'chartArea': {
-                    'width': '75%',
-                    'height': '65%'
-                },
-                'height':min_height,
-                // Individual point tooltips, not aggregate
-                focusTarget: 'datum',
-                intervals: {
-                    // style: 'bars'
-                    'lineWidth': 0.75
-                }
-            };
-
-            // NAIVE: I shouldn't perform a whole refresh just to change the scale!
-            if (document.getElementById('category_select').checked) {
-                options.focusTarget = 'category';
-            }
-
-            // Removed for now
-/*
-            if (document.getElementById(charts + 'log_x').checked) {
-                options.hAxis.scaleType = 'log';
-            }
-            if (document.getElementById(charts + 'log_y').checked) {
-                options.vAxis.scaleType = 'log';
-            }
-*/
-
-            // Merge options with the specified changes
-            $.extend(options, changes_to_options);
-
-            // REMOVED FOR NOW
-            // Find out whether to shrink text
-            // $.each(assays[index][0], function(index, column_header) {
-            //     if (column_header.length > 12) {
-            //         options.legend.textStyle.fontSize = 10;
-            //     }
-            // });
-
-            var chart = null;
-
-            var num_colors = 0;
-
-            $.each(assays[index][0].slice(1), function(index, value) {
-                if (value.indexOf('     ~@i1') === -1) {
-                    num_colors++;
-                }
-            });
-
-            // Line chart if more than two time points and less than 101 colors
-            if (assays[index].length > 3 && num_colors < 101) {
-                chart = new google.visualization.LineChart(document.getElementById(charts + '_' + index));
-
-                // Change the options
-                options.hAxis.viewWindowMode = 'explicit';
-                options.hAxis.viewWindow = {
-                    max: current_max_x + 0.05 * current_x_range,
-                    min: current_min_x - 0.05 * current_x_range
-                };
-            }
-            // Nothing if more than 100 colors
-            else if (num_colors > 100) {
-                document.getElementById(charts + '_' + index).innerHTML = '<div class="alert alert-danger" role="alert">' +
-                    '<span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>' +
-                    '<span class="sr-only">Danger:</span>' +
-                    ' <strong>' + assay + ' ' + unit + '</strong>' +
-                    '<br>This plot has too many data points, please try filtering.' +
-                '</div>'
-            }
-            // Bar chart if only one or two time points
-            else if (assays[index].length > 1) {
-                // Convert to categories
-                data.insertColumn(0, 'string', data.getColumnLabel(0));
-                // copy values from column 1 (old column 0) to column 0, converted to numbers
-                for (var i = 0; i < data.getNumberOfRows(); i++) {
-                    var val = data.getValue(i, 1);
-                    // I don't mind this type-coercion, null, undefined (and maybe 0?) don't need to be parsed
-                    if (val != null) {
-                        // PLEASE NOTE: Floats are truncated to 3 decimals
-                        data.setValue(i, 0, parseFloat(val.toFixed(3)) + ''.valueOf());
-                    }
-                }
-                // remove column 1 (the old column 0)
-                data.removeColumn(1);
-
-                chart = new google.visualization.ColumnChart(document.getElementById(charts + '_' + index));
-            }
-
-            if (chart) {
-                var dataView = new google.visualization.DataView(data);
-
-                // Change interval columns to intervals
-                var interval_setter = [0];
-
-                i = 1;
-                while (i < data.getNumberOfColumns()) {
-                    interval_setter.push(i);
-                    if (i + 2 < data.getNumberOfColumns() && assays[index][0][i+1].indexOf('     ~@i1') > -1) {
-                        interval_setter.push({sourceColumn: i + 1, role: 'interval'});
-                        interval_setter.push({sourceColumn: i + 2, role: 'interval'});
-                        i += 2;
-                    }
-                    i += 1;
-                }
-                dataView.setColumns(interval_setter);
-
-                chart.draw(dataView, options);
-
-                chart.chart_index = index;
-
-                all_charts[charts].push(chart);
-            }
+            build_individual_chart('charts', document.getElementById('charts_' + index), index);
         }
 
         window.CHARTS.display_treatment_groups(json.treatment_groups, json.header_keys);
 
-        for (var index=0; index < all_charts[charts].length; index++) {
-            group_to_data[charts].push({});
-
-            for (i=0; i < assays[index][0].length; i++) {
-                if (assays[index][0][i].indexOf('     ~@i1') === -1 && assays[index][0][i].indexOf('     ~@i2') === -1) {
-                    // Need to link EACH CHARTS values to the proper group
-                    // EMPHASIS ON EACH CHART
-                    // Somewhat naive
-                    if (document.getElementById('group_select').checked) {
-                        // NOTE -1
-                        group_to_data[charts][index][i] = assays[index][0][i].split(' || ')[0].replace(/\D/g, '') - 1;
-                    }
-                    else {
-                        var device = assays[index][0][i].split(' || ')[0];
-                        // console.log(device);
-                        // console.log(device_to_group);
-                        group_to_data[charts][index][i] = device_to_group[device];
-                    }
-                }
-            }
-
-            // Makes use of a somewhat zany closure
-            var current_event = google.visualization.events.addListener(all_charts[charts][index], 'onmouseover', (function (charts, chart_index) {
-                return function (entry) {
-                    // Only attempts to display if there is a valid treatment group
-                    if (all_treatment_groups[group_to_data[charts][chart_index][entry.column]]) {
-                        var current_pos = $(all_charts[charts][chart_index].container).position();
-                        var current_top = current_pos.top + 75;
-                        var current_left = $('#breadcrumbs').position.left;
-                        if (entry.row === null && entry.column) {
-                            var row_clone = all_treatment_groups[group_to_data[charts][chart_index][entry.column]].clone().addClass('bg-warning');
-                            if (row_clone) {
-                                group_display_body.empty().append(row_clone);
-
-                                group_display.show()
-                                    .css({top: current_top, left: current_left, position: 'absolute'});
-                            }
-                        }
-                    }
-                }
-            })(charts, index));
-            all_events[charts].push(current_event);
-
-            current_event = google.visualization.events.addListener(all_charts[charts][index], 'onmouseout', function () {
-                group_display.hide();
-            });
-            all_events[charts].push(current_event);
-        }
+        create_events('charts');
     };
 
     // Setup triggers
@@ -887,14 +999,19 @@ $(document).ready(function () {
         chart_filter_data_table.page.len(10).draw();
     });
 
-    $('#show_hide_plots').click(function() {
+    $('.show_hide_plots').click(function() {
         show_hide_plots_popup.dialog('open');
+    });
+
+    $('#id_make_plot_form_data').click(function() {
+        alert('TODO');
     });
 
     // CONTEXT MENU
     $(document).on('contextmenu', '.chart-container', function() {
-        current_chart_id = $(this).attr('id');
+        current_chart = $(this);
         current_chart_name = $(this).attr('data-chart-name');
+        current_chart_id = Math.floor($(this).attr('id').split('_')[1]);
         individual_plot_popup.dialog('open');
     });
 });
