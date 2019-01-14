@@ -108,7 +108,7 @@
                         </ul>
                     </li>
 
-                   <li class="dropdown">
+                    <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Features<span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li class="dropdown-header"><b>Study Data Only</b></li>
@@ -134,7 +134,7 @@
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Providing Data<span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li class="divider"></li>
-                            <li class="dropdown-header"><b>Review Components (Study Context)</b></li>
+                            <li class="dropdown-header"><b>Review Components </b></li>
                             <li><a href="#assaymts">Assays (Methods and Targets) </a></li>
                             <li><a href="#cellsamples">Cell Samples</a></li>
                             <li><a href="#chemicallist">Compounds</a></li>
@@ -146,11 +146,11 @@
                             <li><a href="#physicalunits">Units</a></li>
                             <li class="divider"></li>
                             <li class="dropdown-header"><b>Enter Study Data</b></li>
-                            <li><a href="#studies_editor">1. Studies </a></li>
-                            <li><a href="#matrices_editor">2. Matrices  </a></li>
-                            <li><a href="#matrixitems_editor">3. Matrix Items  </a></li>
-                            <li><a href="#assaydata_editor">4. Assay Data  </a></li>
-                            <li><a href="#assayimages_editor">5. Assay Images &amp; Videos </a></li>
+                            <li><a href="#studies_editor">1. Study (Create or Edit) </a></li>
+                            <li><a href="#matrices_editor">2. Matrix(ces) (Add or Edit) </a></li>
+                            <li><a href="#matrixitems_editor">3. Matrix Items (Edit) </a></li>
+                            <li><a href="#assaydata_editor">4. Assay Data (Upload or Reupload) </a></li>
+                            <li><a href="#assayimages_editor">5. Assay Images &amp; Videos (Prepare) </a></li>
                         </ul>
                     </li>
 
@@ -180,7 +180,6 @@
                     {% endif %}
 
                     <li><a href="#glossary">Glossary</a></li>
-
 
                     <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">I Want To...<span class="caret"></span></a>
@@ -2392,19 +2391,57 @@
                                     <li><br>It should be noted that there is some overlap between these categories, for example, some study design information will likely be included in the model protocol. </li>
                                     <li><br>The Study Description, Study Design, and Study Data can be added directly to the database by a data provider (a registered user who has been granted permission to add study data to the database). Adding new components to the study component lists requires special permission that is not typically granted to data providers. </li>
                                     <li><br>To learn how to review Study Components and request new components be added, click on the link to the component
-                                        <ul class="filled-circle">
-                                            <li><a href="#assaymts">Assays (Methods and Targets) </a></li>
-                                            <li><a href="#cellsamples">Cell Samples</a></li>
-                                            <li><a href="#chemicallist">Compounds</a></li>
-                                            <li><a href="#devices">Devices</a></li>
-                                            <li><a href="#diseaselist">Diseases</a></li>
-                                            <li><a href="#mpslocations">Location of MPS Models </a></li>
-                                            <li><a href="#mpsmodels">Models</a></li>
-                                            <li><a href="#settings">Settings</a></li>
-                                            <li><a href="#physicalunits">Units</a></li>
-                                        </ul>
+                                    <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                    <thead>
+                                        <tr class="active">
+                                        <th> Link in Help </th>
+                                        <th> Link in Database </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td> <a href="#assaymts">Assays (Methods/Kits) </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/assays/methods/#" target="_blank" >See List of Methods/Kits in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#assaymts">Assays (Targets/Analytes) </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/assays/targets/#" target="_blank" >See List of Targets/Analytes in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#cellsamples">Cell Samples </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/cellsamples/cellsample/" target="_blank" >See List of Cell Samples in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#chemicallist">Compounds </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/compounds/" target="_blank" >See List of Compounds in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#devices">Devices </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/microdevices/device/" target="_blank" >See List of Devices in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#diseaselist">Diseases </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/diseases/" target="_blank" >See List of Diseases in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#mpslocations">Location of MPS Models </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/assays/locations/" target="_blank" >See List of Locations in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#mpsmodels">Models </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/microdevices/model/" target="_blank" >See List of MPS Models in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#settings">Settings </a> </td>
+                                            <td> No list available - see link in HELP for instructions on viewing Settings </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#physicalunits">Units </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/assays/units/" target="_blank" >See List of Units in Database</a> </td>
+                                        </tr>
+                                    </tbody>
+                                    </table>
                                     </li>
-                                    <li><br>CLICK HERE To download all component lists, each to a csv file (e.g., MPS Database Methods.csv, MPS Database Targets.csv, etc.) </li>
                                     <li><br>Notes
                                         <ul class="filled-circle">
                                             <li> The MPS Database Center has prepared an Excel file (the SCD3 Workbook) that describes <b>Study</b> data and metadata stored in the MPS Database </li>
