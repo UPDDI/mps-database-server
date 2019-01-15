@@ -37,7 +37,7 @@
                     <th>Rule of 5 Violations</th>
                     <th>Known Drug</th>
 {#                    <th>Last Update</th>#}
-                    <th>Image</th>
+                    {% comment %} <th>Image</th> {% endcomment %}
                     <th>Project</th>
                 </tr>
             </thead>
@@ -70,13 +70,14 @@
 {#                    <td>{{ compound.logp }}</td>#}
 {#                    <td>{{ compound.ro5_violations }}</td>#}
 {#                    <td>{{ compound.last_update }}</td>#}
-                    <td>
+                    {# Image removed for now #}
+                    {% comment %} <td>
                       {% if compound.chemblid %}
                           <img src="https://www.ebi.ac.uk/chembldb/compound/displayimage/{{ compound.chemblid }}">
                       {% else %}
                         <span style="width: 128px; height: 128px;" class="glyphicon glyphicon-file text-warning" aria-hidden="true"></span>
                       {% endif %}
-                    </td>
+                    </td> {% endcomment %}
 
                     <td>
                         {% if compound.mps %}

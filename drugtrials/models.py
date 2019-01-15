@@ -365,6 +365,8 @@ class FindingResult(models.Model):
 
     value_units = models.ForeignKey(PhysicalUnits, blank=True, null=True, related_name='finding_value_units')
 
+    notes = models.CharField(max_length=2048, blank=True, default='')
+
     def __unicode__(self):
         return u'{} {}'.format(unicode(self.drug_trial), unicode(self.finding_name))
 

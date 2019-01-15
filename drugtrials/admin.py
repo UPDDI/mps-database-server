@@ -133,7 +133,7 @@ class FindingResultInline(admin.TabularInline):
     verbose_name = 'Organ Finding'
     verbose_name_plural = 'Organ Findings'
     fields = ('finding_name', 'get_edit_link', 'descriptor', 'finding_time', 'time_units',
-              'result', 'severity', 'frequency', 'value', 'value_units',)
+              'result', 'severity', 'frequency', 'value', 'value_units', 'notes')
     readonly_fields = ['get_edit_link']
     extra = 0
 

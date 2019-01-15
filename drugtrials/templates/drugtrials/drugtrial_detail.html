@@ -176,6 +176,7 @@
             <th>Frequency</th>
             <th>Value</th>
             <th>Value Units</th>
+            <th>Notes</th>
         </tr>
         </thead>
         <tbody>
@@ -203,6 +204,7 @@
                 <td>{{ result.frequency|default_if_none:"" }}</td>
                 <td>{{ result.value|default_if_none:"" }}</td>
                 <td>{{ result.value_units|default_if_none:"" }}</td>
+                <td>{{ result.notes|default_if_none:"" }}</td>
             </tr>
         {% endfor %}
         </tbody>

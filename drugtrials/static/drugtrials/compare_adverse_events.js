@@ -95,13 +95,15 @@ $(document).ready(function () {
         // compounds_checkboxes.prop('checked', false);
 
         $.each(adverse_events, function(name, index) {
+            $(this).removeAttr('checked');
             var checkbox_index = adverse_events_checkboxes[name];
-            adverse_events_table.data()[checkbox_index].checkbox = adverse_events_table.data()[checkbox_index].checkbox.replace(' checked="checked">', '>');
+            adverse_events_table.data()[checkbox_index].checkbox = adverse_events_table.data()[checkbox_index].checkbox.replace(' checked="checked"&gt;', '&gt;');
         });
 
         $.each(compounds, function(name, index) {
+            $(this).removeAttr('checked');
             var checkbox_index = compounds_checkboxes[name];
-            compounds_table.data()[checkbox_index].checkbox = compounds_table.data()[checkbox_index].checkbox.replace(' checked="checked">', '>');
+            compounds_table.data()[checkbox_index].checkbox = compounds_table.data()[checkbox_index].checkbox.replace(' checked="checked"&gt;', '&gt;');
         });
 
         adverse_events = {};
@@ -198,7 +200,8 @@ $(document).ready(function () {
             adverse_events[adverse_event] = adverse_event;
             var checkbox_index = adverse_events_checkboxes[adverse_event];
             if (checkbox_index) {
-                adverse_events_table.data()[checkbox_index].checkbox = adverse_events_table.data()[checkbox_index].checkbox.replace('>', ' checked="checked">');
+                $(this).attr('checked', 'checked');
+                adverse_events_table.data()[checkbox_index].checkbox = adverse_events_table.data()[checkbox_index].checkbox.replace('&gt;', ' checked="checked"&gt;');
             }
         });
 
@@ -220,7 +223,8 @@ $(document).ready(function () {
             compounds[compound] = compound;
             var checkbox_index = compounds_checkboxes[compound];
             if (checkbox_index) {
-                compounds_table.data()[checkbox_index].checkbox = compounds_table.data()[checkbox_index].checkbox.replace('>', ' checked="checked">');
+                $(this).attr('checked', 'checked');
+                compounds_table.data()[checkbox_index].checkbox = compounds_table.data()[checkbox_index].checkbox.replace('&gt;', ' checked="checked"&gt;');
             }
         });
 
@@ -493,8 +497,10 @@ $(document).ready(function () {
                 data: 'checkbox',
                 sSortDataType: 'dom-checkbox-defer',
                 width: '10%',
+                className: 'dt-center',
                 render: function (data, type, row, meta) {
-                    return '<input class="checkbox big-checkbox adverse-event" type="checkbox" value="' + data + '">';
+                    // return '<input class="checkbox big-checkbox adverse-event" type="checkbox" value="' + data + '">';
+                    return $('<div>').html(data).text();
                 }
             },
             // {data: 'checkbox', type: 'dom-checkbox-defer', width: '10%'},
@@ -529,8 +535,10 @@ $(document).ready(function () {
                 data: 'checkbox',
                 sSortDataType: 'dom-checkbox-defer',
                 width: '10%',
+                className: 'dt-center',
                 render:function (data, type, row, meta) {
-                    return '<input class="checkbox big-checkbox compound" type="checkbox" value="' + data + '">';
+                    // return '<input class="checkbox big-checkbox compound" type="checkbox" value="' + data + '">';
+                    return $('<div>').html(data).text();
                 }
             },
             // {data: 'checkbox', type: 'dom-checkbox-defer', width: '10%'},
@@ -590,12 +598,15 @@ $(document).ready(function () {
         var checkbox_index = compounds_checkboxes[compound];
 
         if (this.checked) {
+            $(this).attr('checked', 'checked');
             compounds[compound] = compound;
-            compounds_table.data()[checkbox_index].checkbox = compounds_table.data()[checkbox_index].checkbox.replace('>', ' checked="checked">');
+            compounds_table.data()[checkbox_index].checkbox = compounds_table.data()[checkbox_index].checkbox.replace('&gt;', ' checked="checked"&gt;');
             collect_all_adverse_events();
         }
         else {
+            $(this).removeAttr('checked');
             remove_compound(compound);
+            compounds_table.data()[checkbox_index].checkbox = compounds_table.data()[checkbox_index].checkbox.replace( ' checked="checked"&gt;', '&gt;');
         }
     });
     // Tracks the clicking of checkboxes to fill adverse events
@@ -604,12 +615,15 @@ $(document).ready(function () {
         var checkbox_index = adverse_events_checkboxes[adverse_event];
 
         if (this.checked) {
+            $(this).attr('checked', 'checked');
             adverse_events[adverse_event] = adverse_event;
-            adverse_events_table.data()[checkbox_index].checkbox = adverse_events_table.data()[checkbox_index].checkbox.replace('>', ' checked="checked">');
+            adverse_events_table.data()[checkbox_index].checkbox = adverse_events_table.data()[checkbox_index].checkbox.replace('&gt;', ' checked="checked"&gt;');
             collect_all_adverse_events();
         }
         else {
+            $(this).removeAttr('checked');
             remove_adverse_event(adverse_event);
+            adverse_events_table.data()[checkbox_index].checkbox = adverse_events_table.data()[checkbox_index].checkbox.replace(' checked="checked"&gt;', '&gt;');
         }
 
         // Reset compounds to show
@@ -641,7 +655,8 @@ $(document).ready(function () {
     // (I reversed it so that ascending will place checked first)
     $.fn.dataTable.ext.order['dom-checkbox-defer'] = function(settings, col) {
         return settings.aoData.map(function(data, index) {
-            return refs_for_sorting[settings.nTable.getAttribute('id')][data['_aData']['checkbox']] ? 0 : 1;
+            // return refs_for_sorting[settings.nTable.getAttribute('id')][data['_aData']['checkbox']] ? 0 : 1;
+            return data._aData['checkbox'].indexOf(' checked="checked"&gt;') > -1 ? 0 : 1;
         });
     };
 });

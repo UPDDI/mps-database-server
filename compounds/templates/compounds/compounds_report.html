@@ -52,7 +52,7 @@
             {% for compound in object_list %}
                 <tr class="compound" id={{ compound.id }} name={{ compound.name }}>
                     {# Checkbox for each compound #}
-                    <td><input class="big-checkbox checkbox" type="checkbox" value="{{ compound.name|safe }}"></td>
+                    <td><input data-table-index="{{ forloop.counter0 }}" class="big-checkbox checkbox" type="checkbox" value="{{ compound.name|safe }}"></td>
                     <td><a href="/compounds/{{ compound.id }}">{{ compound.name }}</a></td>
                     <td><a href="https://www.ebi.ac.uk/chembl/compound/inspect/{{ compound.chemblid }}">{{ compound.chemblid }}</a></td>
                     <td>{{ compound.synonyms }}</td>

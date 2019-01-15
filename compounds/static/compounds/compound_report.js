@@ -348,11 +348,19 @@ $(document).ready(function () {
     // Tracks the clicking of checkboxes to fill compounds
     $('.checkbox').change(function() {
         var compound = this.value;
+        var checkbox_index = $(this).attr('data-table-index');
+
         if (this.checked) {
             compounds[compound] = compound;
+            window.TABLE.data()[checkbox_index][0] = window.TABLE.data()[
+                checkbox_index
+            ][0].replace('>', ' checked="checked">');
         }
         else {
             delete compounds[compound];
+            window.TABLE.data()[checkbox_index][0] = window.TABLE.data()[
+                checkbox_index
+            ][0].replace(' checked="checked">', '>');
         }
     });
 
@@ -407,10 +415,7 @@ $(document).ready(function () {
                 "visible": false,
                 "searchable": true
             },
-            {
-                sortable: false,
-                "targets": [0]
-            }
+            { "sSortDataType": "dom-checkbox", "targets": 0, "width": "10%" },
         ],
         "iDisplayLength": 25
     });
