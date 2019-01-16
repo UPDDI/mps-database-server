@@ -856,36 +856,73 @@
     </div>
     </div>
 
-    <div id="individual_plot_popup_plot_section" style="width: 800px; min-height: 450px;">
+    <div hidden id="individual_plot_popup_plot_section" style="width: 800px; height: 500px; overflow: auto;">
         {# PLEASE NOTE CONTRIVANCE #}
         {% comment %} <div class="chart-container" id="individual_plot_popup_plot_container"> {% endcomment %}
         {# Inline style of width prevents glitch where in width changes on hover events #}
-        <div class="chart-container" id="popup_0" style="width: 500px; float: left; padding: 0 10 0 10;">
+        <div class="chart-container" id="popup_0" style="width: 500px; float: left; min-height: 400px;">
         </div>
 
         {# Options section #}
-        <div id="scatter_options" class="well" style="width: 275px; float: left;">
-            Legend
-            Legend Position
-            Legend By
+        <div class="well" style="width: 275px; float: left;">
+            {# Legend position is tricky... especially with the options on the side #}
+            {% comment %} <legend>Legend</legend> {% endcomment %}
+            {% comment %} <div>
+                Legend Position
+                <select class="form-control">
+                </select>
+            </div> {% endcomment %}
 
-            X-Axis
+            <div>
+                <label>Legend By</label>
+                <select class="form-control">
+                </select>
+            </div>
 
-            Y-Axis
+            {% comment %} <legend>X-Axis</legend> {% endcomment %}
 
-            Filtering
+            <div>
+                <label>X-Axis Range</label>
+                <input style="width: 50px;"> <span class="glyphicon glyphicon-chevron-right"></span> <input style="width: 50px;">
+            </div>
 
-            Markers
+            {% comment %} <legend>Y-Axis</legend> {% endcomment %}
 
-            Error By
+            <div class="padded-bottom">
+                <label>Y-Axis Range</label>
+                <input style="width: 50px;"> <span class="glyphicon glyphicon-chevron-right"></span> <input style="width: 50px;">
+            </div>
 
-            Time Unit
-        </div>
-        <div hidden id="bar_options" class="well" style="width: 275px; float: left;">
+            {# Deferred #}
+            {% comment %} <legend>Filtering</legend> {% endcomment %}
 
-        </div>
-        <div hidden id="box_options" class="well" style="width: 275px; float: left;">
+            {% comment %} <legend>Markers</legend> {% endcomment %}
 
+            <div class="padded-bottom">
+                <label>
+                    Show Point Marker
+                    <input class="big-checkbox" type="checkbox" style="margin-left: 30px;">
+                </label>
+            </div>
+
+            {% comment %} <legend>Error By</legend> {% endcomment %}
+            <div>
+                <label id="aggregation_type">Error Bar Standard Deviations</label>
+                <input>
+            </div>
+
+            {% comment %} <legend>Time Unit</legend> {% endcomment %}
+
+            <div>
+                <label>Time Unit</label>
+                <select id="">
+                    <option val="day">Day</option>
+                    <option val="Hour">Hour</option>
+                    <option val="Minute">Minute</option>
+                </select>
+            </div>
+
+            <div style="padding-bottom: 100px;">
         </div>
     </div>
 </div>

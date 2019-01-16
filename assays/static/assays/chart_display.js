@@ -59,7 +59,88 @@ $(document).ready(function () {
     var name_to_chart = {};
 
     // Some global options of note
-    var global_options = {};
+    // TODO MAKE SURE REVISIONS ARE PROPER
+    var global_options = {
+        // TOO SPECIFIC, OBVIOUSLY
+        // title: assay,
+        interpolateNulls: true,
+        // Changes styling and prevents flickering issue
+        // tooltip: {
+        //     isHtml: true
+        // },
+        titleTextStyle: {
+            fontSize: 18,
+            bold: true,
+            underline: true
+        },
+        // curveType: 'function',
+        legend: {
+            position: 'top',
+            maxLines: 5,
+            textStyle: {
+                // fontSize: 8,
+                bold: true
+            }
+        },
+        hAxis: {
+            // Begins empty
+            title: 'Time (Days)',
+            textStyle: {
+                bold: true
+            },
+            titleTextStyle: {
+                fontSize: 14,
+                bold: true,
+                italic: false
+            }
+            // ADD PROGRAMMATICALLY
+            // viewWindowMode:'explicit',
+            // viewWindow: {
+            //     max: current_max_x + 0.05 * current_x_range,
+            //     min: current_min_x - 0.05 * current_x_range
+            // }
+            // baselineColor: 'none',
+            // ticks: []
+        },
+        vAxis: {
+            title: '',
+            // If < 1000 and > 0.001 don't use scientific! (absolute value)
+            // y_axis_label_type
+            format: '',
+            textStyle: {
+                bold: true
+            },
+            titleTextStyle: {
+                fontSize: 14,
+                bold: true,
+                italic: false
+            },
+            // This doesn't seem to interfere with displaying negative values
+            minValue: 0,
+            viewWindowMode: 'explicit'
+            // baselineColor: 'none',
+            // ticks: []
+        },
+        pointSize: 5,
+        'chartArea': {
+            'width': '75%',
+            'height': '65%'
+        },
+        'height': min_height,
+        // Individual point tooltips, not aggregate
+        focusTarget: 'datum',
+        intervals: {
+            // style: 'bars'
+            'lineWidth': 0.75
+        },
+        tracking: {
+            is_default: true,
+            is_dose: false,
+            is_percent_control: false,
+            time_conversion: 1,
+            chart_type: 'scatter'
+        }
+    };
 
     if (show_hide_plots_popup[0]) {
         show_hide_plots_popup.dialog({
@@ -156,7 +237,7 @@ $(document).ready(function () {
             open: function () {
                 $('body').addClass('stop-scrolling');
                 individual_plot_popup_options_section.show('slow');
-                individual_plot_popup_plot_container.hide('slow');
+                individual_plot_popup_plot_section.hide('slow');
                 // Plot needs to be visible for you to, you know, see it here
                 plot_is_visible.prop('checked', true);
             },
@@ -177,7 +258,7 @@ $(document).ready(function () {
                     group_to_data['popup'] = [];
 
                     individual_plot_popup_options_section.hide();
-                    individual_plot_popup_plot_container.show();
+                    individual_plot_popup_plot_section.show();
 
                     get_individual_chart('popup', individual_plot_popup_plot_container[0]);
                 }
@@ -190,17 +271,17 @@ $(document).ready(function () {
                     if (!plot_is_visible.prop('checked')) {
                         // HIDE THE CHART
                         // A LITTLE MESSY TO MAKE SURE THAT THE SHOW/HIDE PLOTS MATCHES
-                        chart_filter_data_table.page.len(-1).draw();
+                        show_hide_plots_data_table.page.len(-1).draw();
 
-                        chart_filter_table.find('.chart-filter-checkbox').each(function() {
+                        $('.chart-filter-checkbox').each(function() {
                             $(this)
                                 .prop('checked', false)
                                 .attr('checked', false)
                                 .trigger('click');
                         });
 
-                        chart_filter_data_table.order([[1, 'asc']]);
-                        chart_filter_data_table.page.len(10).draw();
+                        show_hide_plots_data_table.order([[1, 'asc']]);
+                        show_hide_plots_data_table.page.len(10).draw();
                     }
 
                     $(this).dialog("close");
@@ -217,15 +298,6 @@ $(document).ready(function () {
     }
 
     function get_individual_chart(charts, chart_selector) {
-        // Naive way to learn whether dose vs. time
-        global_options.is_dose = $('#dose_select').prop('checked');
-
-        global_options.x_axis_label = 'Time (Days)';
-        // Still need to work in dose-response
-        if (global_options.is_dose) {
-            global_options.x_axis_label = 'Dose (μM)';
-        }
-
         var individual_post_filter = $.extend({}, window.GROUPING.current_post_filter);
 
         // TODO TODO TODO METHODS
@@ -293,7 +365,10 @@ $(document).ready(function () {
                 // Only popup for now
                 // NEED TO MODIFY EVENTS FOR INDIVIDUAL LATER
                 if (charts === 'popup') {
-                    create_events(charts, true)
+                    create_events(charts, true);
+
+                    // Show the correct option section
+                    // TODO TODO TODO
                 }
             },
             error: function (xhr, errmsg, err) {
@@ -324,10 +399,16 @@ $(document).ready(function () {
 
         var data = google.visualization.arrayToDataTable(assays[index]);
 
-        var y_axis_label_type = '';
+        var options = {};
+        if (!all_options[charts][index] || all_options[charts][index].tracking.is_default) {
+            options = $.extend({}, global_options);
+        }
+        else {
+            options = all_options[charts][index];
+        }
 
         // Go through y values
-        $.each(assays[index].slice(1), function(index, current_values) {
+        $.each(assays[index].slice(1), function(current_index, current_values) {
             // Idiomatic way to remove NaNs
             var trimmed_values = current_values.slice(1).filter(isNumber);
 
@@ -335,15 +416,15 @@ $(document).ready(function () {
             var current_min_y = Math.abs(Math.min.apply(null, trimmed_values));
 
             if (current_max_y > 1000 || current_max_y < 0.001) {
-                y_axis_label_type = '0.00E0';
+                options.vAxis.format = '0.00E0';
                 return false;
             }
             else if (Math.abs(current_max_y - current_min_y) < 10 && Math.abs(current_max_y - current_min_y) > 0.1 && Math.abs(current_max_y - current_min_y) !== 0) {
-                y_axis_label_type = '0.00';
+                options.vAxis.format = '0.00';
                 return false;
             }
             else if (Math.abs(current_max_y - current_min_y) < 0.1 && Math.abs(current_max_y - current_min_y) !== 0) {
-                y_axis_label_type = '0.00E0';
+                options.vAxis.format = '0.00E0';
                 return false;
             }
         });
@@ -352,77 +433,9 @@ $(document).ready(function () {
         var current_max_x = assays[index][assays[index].length - 1][0];
         var current_x_range = current_max_x - current_min_x;
 
-        var options = {
-            title: assay,
-            interpolateNulls: true,
-            // Changes styling and prevents flickering issue
-            // tooltip: {
-            //     isHtml: true
-            // },
-            titleTextStyle: {
-                fontSize: 18,
-                bold: true,
-                underline: true
-            },
-            // curveType: 'function',
-            legend: {
-                position: 'top',
-                maxLines: 5,
-                textStyle: {
-                    // fontSize: 8,
-                    bold: true
-                }
-            },
-            hAxis: {
-                title: global_options.x_axis_label,
-                textStyle: {
-                    bold: true
-                },
-                titleTextStyle: {
-                    fontSize: 14,
-                    bold: true,
-                    italic: false
-                }
-                // ADD PROGRAMMATICALLY
-                // viewWindowMode:'explicit',
-                // viewWindow: {
-                //     max: current_max_x + 0.05 * current_x_range,
-                //     min: current_min_x - 0.05 * current_x_range
-                // }
-                // baselineColor: 'none',
-                // ticks: []
-            },
-            vAxis: {
-                title: unit,
-                // If < 1000 and > 0.001 don't use scientific! (absolute value)
-                format: y_axis_label_type,
-                textStyle: {
-                    bold: true
-                },
-                titleTextStyle: {
-                    fontSize: 14,
-                    bold: true,
-                    italic: false
-                },
-                // This doesn't seem to interfere with displaying negative values
-                minValue: 0,
-                viewWindowMode: 'explicit'
-                // baselineColor: 'none',
-                // ticks: []
-            },
-            pointSize: 5,
-            'chartArea': {
-                'width': '75%',
-                'height': '65%'
-            },
-            'height': min_height,
-            // Individual point tooltips, not aggregate
-            focusTarget: 'datum',
-            intervals: {
-                // style: 'bars'
-                'lineWidth': 0.75
-            }
-        };
+        // Tack on change
+        options.title = assay;
+        options.vAxis.title = unit;
 
         // NAIVE: I shouldn't perform a whole refresh just to change the scale!
         if (document.getElementById('category_select').checked) {
@@ -481,8 +494,10 @@ $(document).ready(function () {
                 '<br>This plot has too many data points, please try filtering.' +
             '</div>'
         }
-        // Bar chart if only one or two time points
+        // Bar chart if only one time point
         else if (assays[index].length > 1) {
+            // Crude...
+            delete options.hAxis.viewWindow;
             // Convert to categories
             data.insertColumn(0, 'string', data.getColumnLabel(0));
             // copy values from column 1 (old column 0) to column 0, converted to numbers
@@ -830,14 +845,14 @@ $(document).ready(function () {
             }
 
             // Makes use of a somewhat zany closure
-            var current_event = google.visualization.events.addListener(all_charts[charts][index], 'onmouseover', (function (charts, chart_index) {
+            var current_event = google.visualization.events.addListener(all_charts[charts][index], 'onmouseover', (function (charts, chart_index, is_popup) {
                 return function (entry) {
                     // Only attempts to display if there is a valid treatment group
                     if (all_treatment_groups[group_to_data[charts][chart_index][entry.column]]) {
                         var current_pos = $(all_charts[charts][chart_index].container).position();
 
                         var current_top = current_pos.top + 75;
-                        var current_left = $('#breadcrumbs').position.left;
+                        var current_left = $('#breadcrumbs').position().left;
 
                         if (is_popup) {
                             current_pos = $(all_charts[charts][chart_index].container).parent().parent().parent().position();
@@ -856,7 +871,7 @@ $(document).ready(function () {
                         }
                     }
                 }
-            })(charts, index));
+            })(charts, index, is_popup));
             all_events[charts].push(current_event);
 
             current_event = google.visualization.events.addListener(all_charts[charts][index], 'onmouseout', function () {
@@ -895,12 +910,12 @@ $(document).ready(function () {
         // window.CHARTS.get_heatmap_dropdowns(0);
 
         // Naive way to learn whether dose vs. time
-        global_options.is_dose = $('#dose_select').prop('checked');
+        global_options.tracking.is_dose = $('#dose_select').prop('checked');
 
-        global_options.x_axis_label = 'Time (Days)';
+        global_options.hAxis.title = 'Time (Days)';
         // Still need to work in dose-response
-        if (global_options.is_dose) {
-            global_options.x_axis_label = 'Dose (μM)';
+        if (global_options.tracking.is_dose) {
+            global_options.hAxis.title = 'Dose (μM)';
         }
 
         // If nothing to show
@@ -927,7 +942,7 @@ $(document).ready(function () {
         }
 
         if (time_conversion) {
-            global_options.x_axis_label = time_label;
+            global_options.hAxis.title = time_label;
 
             $.each(assays, function(index, assay) {
                 // Don't bother if empty
@@ -970,33 +985,33 @@ $(document).ready(function () {
     });
 
     // Triggers for select all
-    $('#chart_filter_section_select_all').click(function() {
-        chart_filter_data_table.page.len(-1).draw();
+    $('#show_hide_plots_select_all').click(function() {
+        show_hide_plots_data_table.page.len(-1).draw();
 
-        chart_filter_table.find('.chart-filter-checkbox').each(function() {
+        $('.chart-filter-checkbox').each(function() {
             $(this)
                 .prop('checked', false)
                 .attr('checked', false)
                 .trigger('click');
         });
 
-        chart_filter_data_table.order([[1, 'asc']]);
-        chart_filter_data_table.page.len(10).draw();
+        show_hide_plots_data_table.order([[1, 'asc']]);
+        show_hide_plots_data_table.page.len(10).draw();
     });
 
     // Triggers for deselect all
-    $('#chart_filter_section_deselect_all').click(function() {
-        chart_filter_data_table.page.len(-1).draw();
+    $('#show_hide_plots_deselect_all').click(function() {
+        show_hide_plots_data_table.page.len(-1).draw();
 
-        chart_filter_table.find('.chart-filter-checkbox').each(function() {
+        $('.chart-filter-checkbox').each(function() {
             $(this)
                 .prop('checked', true)
                 .attr('checked', true)
                 .trigger('click');
         });
 
-        chart_filter_data_table.order([[1, 'asc']]);
-        chart_filter_data_table.page.len(10).draw();
+        show_hide_plots_data_table.order([[1, 'asc']]);
+        show_hide_plots_data_table.page.len(10).draw();
     });
 
     $('.show_hide_plots').click(function() {
