@@ -124,7 +124,7 @@ $(document).ready(function() {
     //         dynamic_excluded_new = {};
     //     }
     //
-    //     var dynamic_excluded = $.extend({}, dynamic_excluded_current, dynamic_excluded_new);
+    //     var dynamic_excluded = $.extend(true, {}, dynamic_excluded_current, dynamic_excluded_new);
     //
     //     var data = {
     //         call: 'validate_individual_chip_file',
@@ -456,7 +456,7 @@ $(document).ready(function() {
     };
 
     function plot_existing_data() {
-        var dynamic_excluded = $.extend({}, dynamic_excluded_current, dynamic_excluded_new);
+        var dynamic_excluded = $.extend(true, {}, dynamic_excluded_current, dynamic_excluded_new);
 
         var data = {
             call: 'fetch_data_points',

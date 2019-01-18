@@ -136,7 +136,7 @@ $(document).ready(function () {
             {
                 text: 'Apply',
                 click: function() {
-                    window.GROUPING.current_post_filter[current_parent_model][current_filter] = $.extend({}, filter_buffer);
+                    window.GROUPING.current_post_filter[current_parent_model][current_filter] = $.extend(true, {}, filter_buffer);
                     filter_buffer = {};
 
                     // Refresh on apply
@@ -177,7 +177,7 @@ $(document).ready(function () {
             current_post_filter_data = window.GROUPING.current_post_filter[current_parent_model][current_filter];
 
             // Initially set buffer to current
-            filter_buffer = $.extend({}, current_post_filter_data);
+            filter_buffer = $.extend(true, {}, current_post_filter_data);
 
             // Clear current contents
             if (filter_data_table) {

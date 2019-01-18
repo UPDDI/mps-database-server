@@ -63,7 +63,7 @@ $(document).ready(function () {
 
     function apply_show_hide() {
         // Iterate over the charts to hide
-        chart_visibility = $.extend({}, chart_filter_buffer);
+        chart_visibility = $.extend(true, {}, chart_filter_buffer);
 
         $.each(chart_visibility, function(chart_name, status) {
             var chart_id = name_to_chart[chart_name];
@@ -239,6 +239,7 @@ $(document).ready(function () {
             autoOpen: false,
             close: function () {
                 $('body').removeClass('stop-scrolling');
+                side_bar_global = true;
             },
             open: function () {
                 $('body').addClass('stop-scrolling');
@@ -246,6 +247,7 @@ $(document).ready(function () {
                 individual_plot_popup_plot_section.hide('slow');
                 // Plot needs to be visible for you to, you know, see it here
                 plot_is_visible.prop('checked', true);
+                side_bar_global = false;
             },
             buttons: [
             {
@@ -303,7 +305,7 @@ $(document).ready(function () {
     }
 
     function get_individual_chart(charts, chart_selector) {
-        var individual_post_filter = $.extend({}, window.GROUPING.current_post_filter);
+        var individual_post_filter = $.extend(true, {}, window.GROUPING.current_post_filter);
 
         // TODO TODO TODO METHODS
         // Modify post filter to be for only current plot
@@ -328,7 +330,7 @@ $(document).ready(function () {
             // TODO TODO TODO MIGHT BE USING A FILTER
             filter: window.CHARTS.filter,
             criteria: JSON.stringify(window.GROUPING.get_grouping_filtering()),
-            post_filter: JSON.stringify(window.GROUPING.current_post_filter),
+            post_filter: JSON.stringify(individual_post_filter),
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
         };
 
@@ -362,7 +364,7 @@ $(document).ready(function () {
 
                 // Store all data
                 // TODO INDEX INDEX INDEX
-                all_data[charts] = $.extend({}, json);
+                all_data[charts] = $.extend(true, {}, json);
 
                 // Make the plot
                 build_individual_chart(charts, chart_selector, current_chart_id);
@@ -406,7 +408,7 @@ $(document).ready(function () {
 
         var options = {};
         if (!all_options[charts][index] || all_options[charts][index].tracking.is_default) {
-            options = $.extend({}, global_options);
+            options = $.extend(true, {}, global_options);
         }
         else {
             options = all_options[charts][index];
@@ -565,7 +567,7 @@ $(document).ready(function () {
 
     window.CHARTS.prepare_side_by_side_charts = function(json, charts) {
         // Store all data
-        all_data[charts] = $.extend({}, json);
+        all_data[charts] = $.extend(true, {}, json);
 
         // Clear existing charts
         var charts_id = $('#' + charts);

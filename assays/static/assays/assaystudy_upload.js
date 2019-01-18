@@ -68,7 +68,7 @@ $(document).ready(function () {
         // var charts_name = 'new_charts';
         var charts_name = 'charts';
 
-        // var dynamic_quality = $.extend({}, dynamic_quality_current, dynamic_quality_new);
+        // var dynamic_quality = $.extend(true, {}, dynamic_quality_current, dynamic_quality_new);
 
         var data = {
             call: 'validate_data_file',
@@ -170,4 +170,3 @@ $(document).ready(function () {
     });
 */
 });
-
