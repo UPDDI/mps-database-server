@@ -37,6 +37,9 @@ $(document).ready(function () {
         popup: []
     };
 
+    // BOOLEAN INDICATING WHETHER THE SIDEBAR IS FOR GLOBAL OR LOCAL
+    var side_bar_global = true;
+
     // Semi-arbitrary at the moment
     var treatment_group_table = $('#treatment_group_table');
     var treatment_group_display = $('#treatment_group_display');
@@ -57,6 +60,21 @@ $(document).ready(function () {
 
     // NOTE: At the moment superfluous, HOWEVER: will become useful if we need to keep show/hide after refresh
     var name_to_chart = {};
+
+    function apply_show_hide() {
+        // Iterate over the charts to hide
+        chart_visibility = $.extend({}, chart_filter_buffer);
+
+        $.each(chart_visibility, function(chart_name, status) {
+            var chart_id = name_to_chart[chart_name];
+            if (status) {
+                $(chart_id).show('slow');
+            }
+            else {
+                $(chart_id).hide('slow');
+            }
+        });
+    }
 
     // Some global options of note
     // TODO MAKE SURE REVISIONS ARE PROPER
@@ -160,19 +178,7 @@ $(document).ready(function () {
             {
                 text: 'Apply',
                 click: function() {
-                    // Iterate over the charts to hide
-                    chart_visibility = $.extend({}, chart_filter_buffer);
-
-                    $.each(chart_visibility, function(chart_name, status) {
-                        var chart_id = name_to_chart[chart_name];
-                        if (status) {
-                            $(chart_id).show('slow');
-                        }
-                        else {
-                            $(chart_id).hide('slow');
-                        }
-                    });
-
+                    apply_show_hide();
                     $(this).dialog("close");
                 }
             },
@@ -266,22 +272,21 @@ $(document).ready(function () {
             {
                 text: 'Apply to Plot',
                 click: function() {
-                    get_individual_chart('charts', current_chart);
-
                     if (!plot_is_visible.prop('checked')) {
                         // HIDE THE CHART
                         // A LITTLE MESSY TO MAKE SURE THAT THE SHOW/HIDE PLOTS MATCHES
                         show_hide_plots_data_table.page.len(-1).draw();
 
-                        $('.chart-filter-checkbox').each(function() {
-                            $(this)
-                                .prop('checked', false)
-                                .attr('checked', false)
-                                .trigger('click');
-                        });
+                        $('.chart-filter-checkbox[data-table-index="' + current_chart_id + '"]').trigger('click');
+
+                        apply_show_hide();
 
                         show_hide_plots_data_table.order([[1, 'asc']]);
                         show_hide_plots_data_table.page.len(10).draw();
+                    }
+                    else {
+                        // Tricky, may create unpleasant scenarios however...
+                        get_individual_chart('charts', current_chart);
                     }
 
                     $(this).dialog("close");
@@ -1024,7 +1029,7 @@ $(document).ready(function () {
 
     // CONTEXT MENU
     $(document).on('contextmenu', '.chart-container', function() {
-        current_chart = $(this);
+        current_chart = this;
         current_chart_name = $(this).attr('data-chart-name');
         current_chart_id = Math.floor($(this).attr('id').split('_')[1]);
         individual_plot_popup.dialog('open');
