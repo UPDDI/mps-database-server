@@ -11,7 +11,10 @@ $(document).ready(function() {
                 call: 'fetch_adverse_events_data',
                 csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
             },
-            type: 'POST'
+            type: 'POST',
+            error: function (xhr, errmsg, err) {
+                console.log(xhr.status + ": " + xhr.responseText);
+            }
         },
         columns: [
             {
@@ -47,7 +50,17 @@ $(document).ready(function() {
                     return '';
                 }
             },
-            {data: 'project', visible: false, searchable: true}
+            {
+                data: 'logp',
+                visible: false,
+                searchable: true,
+            },
+            {
+                data: 'alogp',
+                visible: false,
+                searchable: true,
+            },
+            {data: 'project', visible: false, searchable: true},
         ],
         "order": [[ 1, "asc" ], [ 3, "desc"]]
     });

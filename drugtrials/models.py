@@ -324,6 +324,10 @@ FREQUENCIES = (
 
 class FindingResult(models.Model):
     """A Finding Result describes in detail a single finding from a Drug Trial"""
+
+    class Meta(object):
+        verbose_name = 'Drug Trial Result'
+
     drug_trial = models.ForeignKey(DrugTrial)
 
     finding_name = models.ForeignKey(Finding,

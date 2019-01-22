@@ -52,6 +52,7 @@ from .utils import (
     NO_COMPOUNDS_STRING,
     # NO_CELLS_STRING,
     # NO_SETTINGS_STRING,
+    intra_status_for_inter,
 )
 
 from StringIO import StringIO
@@ -2871,6 +2872,8 @@ def get_inter_study_reproducibility(
 
     additional_keys = []
 
+    sets_intra_points = {}
+
     # CRUDE
     if criteria:
         group_sample_location = 'sample_location' in criteria.get('special', [])
@@ -2916,6 +2919,20 @@ def get_inter_study_reproducibility(
             # 'Group {}'.format(len(data_point_treatment_groups) + 1)
             u'{}'.format(len(data_point_treatment_groups) + 1)
         )
+
+        # TODO Intra-in-Inter: Dictionary of format {group_num : {study1 : [point1, point2], study2 : [point1, point2]}}
+        study_name = "{} ({})".format(point.study.name, point.study.group)
+
+        if current_group not in sets_intra_points:
+            sets_intra_points[current_group] = {}
+        if study_name not in sets_intra_points[current_group]:
+            sets_intra_points[current_group][study_name] = []
+        sets_intra_points[current_group][study_name].append([
+            point.time,
+            point.value,
+            point.matrix_item_id
+        ])
+
         point.data_group = current_group
         if current_group not in treatment_group_table:
             if point.study_assay.unit.base_unit_id:
@@ -3292,10 +3309,21 @@ def get_inter_study_reproducibility(
         # BAD
         'data_group_to_sample_locations': final_data_group_to_sample_locations,
         'data_group_to_organ_models': final_data_group_to_organ_models,
-        'pie': [excellent_counter, acceptable_counter, poor_counter]
+        'pie': [excellent_counter, acceptable_counter, poor_counter],
+        'sets_intra_points': sets_intra_points
     }
 
     return data
+
+
+def intra_repro_in_inter(request):
+    datapoints = json.loads(request.POST.get('datapoints', '{}'))
+    statuses = []
+    for x in datapoints:
+        statuses.append(intra_status_for_inter(x))
+
+    return HttpResponse(json.dumps(statuses),
+                        content_type='application/json')
 
 
 def study_viewer_validation(request):
@@ -3365,6 +3393,9 @@ switch = {
     },
     'fetch_data_points_from_filters': {
         'call': fetch_data_points_from_filters
+    },
+    'intra_repro_in_inter': {
+        'call': intra_repro_in_inter
     },
     'fetch_data_points_from_study_set': {
         'call': fetch_data_points_from_study_set

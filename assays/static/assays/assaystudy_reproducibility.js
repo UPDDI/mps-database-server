@@ -377,6 +377,11 @@ $(document).ready(function () {
             },
             columns: columns,
             columnDefs: [
+                { "responsivePriority": 1, "targets": 11 },
+                { "responsivePriority": 2, "targets": [0,1,2,3] },
+                { "responsivePriority": 3, "targets": 5 },
+                { "responsivePriority": 4, "targets": 6 },
+                { "responsivePriority": 5, "targets": 4 },
                 { "aTargets": [11], "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
                     if (sData[0] === "E") {
                         $(nTd).css('background-color', '#74ff5b').css('font-weight', 'bold');
@@ -389,7 +394,7 @@ $(document).ready(function () {
                     }
                 }}
             ],
-            "order": [[9, 'desc'], [ 1, "asc" ]],
+            "order": [[11, 'desc'], [ 10, 'desc' ]],
             "responsive": true,
             dom: 'B<"row">lfrtip',
             fixedHeader: {headerOffset: 50},

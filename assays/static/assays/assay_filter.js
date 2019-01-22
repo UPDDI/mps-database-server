@@ -655,6 +655,7 @@ $(document).ready(function() {
                     data_groups = json.data_groups;
                     header_keys = json.header_keys;
                     treatment_groups = json.treatment_groups;
+                    sets_intra_points = json.sets_intra_points;
 
                     data_group_to_studies = json.data_group_to_studies;
                     data_group_to_sample_locations = json.data_group_to_sample_locations;
@@ -1248,7 +1249,7 @@ $(document).ready(function() {
         var current_repro = $('.repro-' + number);
         if (checkbox.is(':checked')) {
             current_repro.removeClass('hidden');
-
+            intra_in_inter(number);
             draw_charts(number);
         } else {
             current_repro.addClass('hidden')
@@ -1389,5 +1390,47 @@ $(document).ready(function() {
         };
         var chart = new google.visualization.PieChart(document.getElementById('piechart'));
         chart.draw(loading_data, loading_options);
+    }
+
+    // Intra-Repro in Inter-Repro
+    function intra_in_inter(number) {
+        var repro_element = $('.repro-' + number);
+        var studies_cell = $(repro_element).find('[data-id=data-table] tr:last td');
+        var studies_anchors = $(studies_cell).find('a');
+        var studies_raw = studies_cell.html().split('<br>');
+        var datapoints = [];
+        for (i=0; i<studies_raw.length; i++) {
+            datapoints.push(sets_intra_points[number][studies_raw[i].substring(studies_raw[i].indexOf("\">")+2).split("<")[0]]);
+        }
+        $.ajax({
+            url: "/assays_ajax/",
+            type: "POST",
+            dataType: "json",
+            data: {
+                call: 'intra_repro_in_inter',
+                csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
+                datapoints: JSON.stringify(datapoints)
+            },
+            success: function (json) {
+                var content, color, repro_url;
+                for (x=0; x<studies_anchors.length; x++) {
+                    repro_url = $(studies_anchors[x]).attr("href") + "reproducibility/";
+                    if (json[x][0] === 'E') {
+                        color = "#74ff5b";
+                    } else if (json[x][0] === 'A') {
+                        color = "#fcfa8d";
+                    } else if (json[x][0] === 'P') {
+                        color = "#ff7863";
+                    } else {
+                        color = "Grey";
+                    }
+                    content = "&emsp;Reproducibility Status: <em style='padding:2px; background-color: " + color + "'><a style='color: #333;' href='"+ repro_url +"' target='_blank'>" + json[x] + "</a></em>";
+                    $(studies_anchors[x]).after(content);
+                }
+            },
+            error: function (xhr, errmsg, err) {
+                console.log(xhr.status + ": " + xhr.responseText);
+            }
+        });
     }
 });
