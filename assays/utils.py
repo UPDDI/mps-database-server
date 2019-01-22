@@ -1126,6 +1126,7 @@ def Reproducibility_Report(study_data):
         rep_matrix=rep_matrix[rep_matrix['Settings']==study_unique_group['Settings'][row]]
         #create replicate matrix for intra reproducibility analysis
         icc_pivot = pd.pivot_table(rep_matrix, values='Value', index='Time (day)',columns=['Chip ID'], aggfunc=np.mean)
+
         group_id = str(row+1) #Define group ID
 
         reproducibility_results_table.iloc[row, reproducibility_results_table.columns.get_loc('Replica Set')] = group_id
@@ -1926,3 +1927,69 @@ def get_inter_study_reproducibility_report(group_count, inter_data, inter_level,
         max_interpolation_size,
         initial_norm
     )
+
+def intra_status_for_inter(study_data):
+    #Calculate and report the reproducibility index and status and other parameters
+     #Select unique group rows by study, organ model,sample location, assay and unit
+    #Drop null value rows
+    study_data = pd.DataFrame(study_data)
+    study_data.columns = ["Time", "Value", "Chip ID"]
+    study_data = study_data.dropna(subset=['Value'])
+    #Define the Chip ID column to string type
+    study_data[['Chip ID']] = study_data[['Chip ID']].astype(str)
+
+    #create reproducibility report table
+    reproducibility_results_table=study_data
+    header_list=study_data.columns.values.tolist()
+    header_list.append('Reproducibility Status')
+
+    #Define all columns of reproducibility report table
+    reproducibility_results_table = reproducibility_results_table.reindex(columns = header_list)
+
+    #Define all columns of reproducibility report table
+    reproducibility_results_table = reproducibility_results_table.reindex(columns = header_list)
+   #create replicate matrix for intra reproducibility analysis
+    icc_pivot = pd.pivot_table(study_data, values='Value', index='Time',columns=['Chip ID'], aggfunc=np.mean)
+    # Check all coulmns are redundent
+    if icc_pivot.shape[1]>1 and all(icc_pivot.eq(icc_pivot.iloc[:, 0], axis=0).all(1)):
+        reproducibility_results_table.iloc[0, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='NA'
+    elif icc_pivot.shape[0]>1 and all(icc_pivot.eq(icc_pivot.iloc[0, :], axis=1).all(1)):
+        reproducibility_results_table.iloc[0, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='NA'
+    else:
+        if icc_pivot.shape[0]>1 and icc_pivot.shape[1]>1:
+            #Call a chip time series reproducibility index dataframe
+            rep_index=Reproducibility_Index(icc_pivot)
+            if pd.isnull(rep_index.iloc[0][0]) != True:
+                if rep_index.iloc[0][0] <= 15 and rep_index.iloc[0][0] >0:
+                    if rep_index.iloc[0][0] <= 5:
+                        reproducibility_results_table.iloc[0, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Excellent (CV)'
+                    elif rep_index.iloc[0][1] >= 0.8:
+                        reproducibility_results_table.iloc[0, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Excellent (ICC)'
+                    else:
+                        reproducibility_results_table.iloc[0, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Acceptable (CV)'
+                else:
+                    if rep_index.iloc[0][1] >= 0.8:
+                        reproducibility_results_table.iloc[0, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Excellent (ICC)'
+                    elif rep_index.iloc[0][1] >= 0.2:
+                        reproducibility_results_table.iloc[0, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Acceptable (ICC)'
+                    else:
+                        reproducibility_results_table.iloc[0, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Poor (ICC)'
+            else:
+                reproducibility_results_table.iloc[0, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='NA'
+        elif icc_pivot.shape[0]<2 and icc_pivot.shape[1]>1:
+             #Call a single time reproducibility index dataframe
+            rep_index=Single_Time_Reproducibility_Index(icc_pivot)
+            if rep_index.iloc[0][0] <= 5 and rep_index.iloc[0][0] > 0:
+                reproducibility_results_table.iloc[0, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Excellent (CV)'
+            elif rep_index.iloc[0][0] <= 15 and rep_index.iloc[0][0] > 5:
+                reproducibility_results_table.iloc[0, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Acceptable (CV)'
+            elif rep_index.iloc[0][0] > 15:
+                reproducibility_results_table.iloc[0, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='Poor (CV)'
+            elif rep_index.iloc[0][0] < 0:
+                reproducibility_results_table.iloc[0, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='NA'
+            else:
+                reproducibility_results_table.iloc[0, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='NA'
+        else:
+            reproducibility_results_table.iloc[0, reproducibility_results_table.columns.get_loc('Reproducibility Status')] ='NA'
+
+    return reproducibility_results_table.loc[reproducibility_results_table.index[0], 'Reproducibility Status']
