@@ -10,7 +10,8 @@ $(document).ready(function () {
     window.GROUPING.refresh_function = refresh_current;
 
     function refresh_current() {
-        get_readouts();
+        // Not currently used
+        // get_readouts();
 
         if ($('#id_bulk_file').val()) {
             validate_bulk_file();
@@ -19,6 +20,7 @@ $(document).ready(function () {
 
     var study_id = Math.floor(window.location.href.split('/')[5]);
 
+    // Not currently used
     function get_readouts() {
         var charts_name = 'current_charts';
 
@@ -63,9 +65,10 @@ $(document).ready(function () {
     // Please note that bulk upload does not currently allow changing QC or notes
     // Before permitting this, ensure that the update_number numbers are accurate!
     function validate_bulk_file() {
-        var charts_name = 'new_charts';
+        // var charts_name = 'new_charts';
+        var charts_name = 'charts';
 
-        // var dynamic_quality = $.extend({}, dynamic_quality_current, dynamic_quality_new);
+        // var dynamic_quality = $.extend(true, {}, dynamic_quality_current, dynamic_quality_new);
 
         var data = {
             call: 'validate_data_file',
@@ -116,7 +119,8 @@ $(document).ready(function () {
                         alert(json.errors);
                         // Remove file selection
                         $('#id_bulk_file').val('');
-                        $('#new_charts').empty();
+                        // $('#new_charts').empty();
+                        $('#charts').empty();
                     }
                     else {
                         // TODO TODO TODO ALERTS ARE EVIL
@@ -141,7 +145,8 @@ $(document).ready(function () {
                     console.log(xhr.status + ": " + xhr.responseText);
                     // Remove file selection
                     $('#id_bulk_file').val('');
-                    $('#new_charts').empty();
+                    //$('#new_charts').empty();
+                    $('#charts').empty();
                 }
             });
         }
@@ -153,6 +158,8 @@ $(document).ready(function () {
     });
 
     // NOTE MAGIC STRING HERE
+    // Commented out for now, will just have preview (not current data to avoid ambiguity with only one sidebar)
+/*
     $('#new_chartschart_options').find('input').change(function() {
         validate_bulk_file();
     });
@@ -161,5 +168,5 @@ $(document).ready(function () {
     $('#current_chartschart_options').find('input').change(function() {
         get_readouts();
     });
+*/
 });
-

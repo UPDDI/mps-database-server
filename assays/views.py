@@ -30,6 +30,7 @@ from assays.models import (
     AssayDataFileUpload,
     AssayDataPoint,
     AssayStudySupportingData,
+    AssayStudySet,
     # Deprecated, just in case
     AssayRun,
     AssayDataUpload
@@ -52,7 +53,8 @@ from assays.forms import (
     AssayStudySignOffForm,
     AssayStudyStakeholderFormSetFactory,
     AssayStudyDataUploadForm,
-    AssayStudyModelFormSet
+    AssayStudyModelFormSet,
+    AssayStudySetForm,
 )
 from microdevices.models import MicrophysiologyCenter
 from django import forms
@@ -86,7 +88,9 @@ from mps.mixins import (
     user_is_active,
     PermissionDenied,
     StudyGroupMixin,
-    StudyViewerMixin
+    StudyViewerMixin,
+    CreatorOrSuperuserRequiredMixin,
+    SuperuserRequiredMixin
 )
 
 from mps.base.models import save_forms_with_tracking
@@ -447,7 +451,7 @@ class AssayStudyEditableList(OneGroupRequiredMixin, ListView):
         return context
 
 
-class AssayStudyList(LoginRequiredMixin, ListView):
+class AssayStudyList(ListView):
     """A list of all studies"""
     template_name = 'assays/assaystudy_list.html'
     model = AssayStudy
@@ -1674,8 +1678,16 @@ class AssayStudyImages(StudyViewerMixin, DetailView):
         return context
 
 
-class GraphingReproducibilityFilterView(LoginRequiredMixin, TemplateView):
+class GraphingReproducibilityFilterView(TemplateView):
     template_name = 'assays/assay_filter.html'
+
+
+class AssayInterStudyReproducibility(TemplateView):
+    template_name = 'assays/assay_interstudy_reproducibility.html'
+
+
+class AssayStudyDataPlots(TemplateView):
+    template_name = 'assays/assaystudy_data_plots.html'
 
 
 class AssayTargetList(ListView):
@@ -1763,7 +1775,7 @@ class AssaySampleLocationList(ListView):
 
 
 # Inappropriate use of CBV
-class AssayDataFromFilters(LoginRequiredMixin, TemplateView):
+class AssayDataFromFilters(TemplateView):
     """Returns a combined file for all data for given filters"""
     template_name = 'assays/assay_filter.html'
 
@@ -1899,3 +1911,428 @@ class AssayDataFromFilters(LoginRequiredMixin, TemplateView):
         # Return nothing otherwise
         else:
             return HttpResponse('', content_type='text/plain')
+
+
+class AssayStudySetAdd(CreateView, OneGroupRequiredMixin):
+    model = AssayStudySet
+    template_name = 'assays/assaystudyset_add.html'
+    form_class = AssayStudySetForm
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudySetAdd, self).get_context_data(**kwargs)
+        combined = get_user_accessible_studies(self.request.user)
+
+        get_queryset_with_organ_model_map(combined)
+        get_queryset_with_number_of_data_points(combined)
+        get_queryset_with_stakeholder_sign_off(combined)
+        get_queryset_with_group_center_dictionary(combined)
+
+        context['object_list'] = combined;
+
+        return context
+
+    def get_form(self, form_class=None):
+        form_class = self.get_form_class()
+
+        # If POST
+        if self.request.method == 'POST':
+            return form_class(self.request.POST, request=self.request)
+        # If GET
+        else:
+            return form_class(request=self.request)
+
+    def form_valid(self, form):
+        if form.is_valid():
+            save_forms_with_tracking(self, form, update=False)
+            form.save_m2m()
+            return redirect(
+                self.object.get_absolute_url()
+            )
+        else:
+            return self.render_to_response(
+                self.get_context_data(
+                    form=form
+                )
+            )
+
+
+class AssayStudySetUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
+    model = AssayStudySet
+    template_name = 'assays/assaystudyset_add.html'
+    form_class = AssayStudySetForm
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudySetUpdate, self).get_context_data(**kwargs)
+
+        combined = get_user_accessible_studies(self.request.user)
+
+        get_queryset_with_organ_model_map(combined)
+        get_queryset_with_number_of_data_points(combined)
+        get_queryset_with_stakeholder_sign_off(combined)
+        get_queryset_with_group_center_dictionary(combined)
+
+        context['object_list'] = combined;
+        
+        context['update'] = True
+
+        return context
+
+    def get_form(self, form_class=None):
+        form_class = self.get_form_class()
+
+        # If POST
+        if self.request.method == 'POST':
+            return form_class(self.request.POST, instance=self.object, request=self.request)
+        # If GET
+        else:
+            return form_class(instance=self.object, request=self.request)
+
+    def form_valid(self, form):
+        if form.is_valid():
+            save_forms_with_tracking(self, form, update=True)
+            form.save_m2m()
+            return redirect(
+                self.object.get_absolute_url()
+            )
+        else:
+            return self.render_to_response(
+                self.get_context_data(
+                    form=form
+                )
+            )
+
+
+class AssayStudySetDataPlots(DetailView):
+    model = AssayStudySet
+    template_name = 'assays/assaystudyset_data_plots.html'
+
+
+class AssayStudySetReproducibility(DetailView):
+    model = AssayStudySet
+    template_name = 'assays/assaystudyset_reproducibility.html'
+
+
+# The queryset for this will be somewhat complicated...
+# TODO REVISE THE QUERYSET
+class AssayStudySetList(ListView):
+    model = AssayStudySet
+    template_name = 'assays/assaystudyset_list.html'
+
+
+# TODO CONSIDER DISPATCH
+class AssayStudySetData(DetailView):
+    """Returns a combined file for all data in a study set"""
+    model = AssayStudySet
+
+    def render_to_response(self, context, **response_kwargs):
+        # Make sure that the study exists, then continue
+        if self.object:
+            # TODO TODO TODO
+            studies = get_user_accessible_studies(self.request.user).filter(id__in=self.object.studies.all())
+            assays = self.object.assays.all()
+
+            matrix_items = AssayMatrixItem.objects.filter(study_id__in=studies)
+
+            matrix_items = matrix_items.filter(
+                assaydatapoint__study_assay_id__in=assays
+            ).distinct()
+
+            # If chip data
+            # Not particularly DRY
+            data_points = AssayDataPoint.objects.filter(
+                study_id__in=studies,
+                study_assay_id__in=assays
+            ).prefetch_related(
+                # TODO
+                'study__group__microphysiologycenter_set',
+                'matrix_item__assaysetupsetting_set__setting',
+                'matrix_item__assaysetupcell_set__cell_sample',
+                'matrix_item__assaysetupcell_set__density_unit',
+                'matrix_item__assaysetupcell_set__cell_sample__cell_type__organ',
+                'matrix_item__assaysetupcompound_set__compound_instance__compound',
+                'matrix_item__assaysetupcompound_set__concentration_unit',
+                'matrix_item__device',
+                'matrix_item__organ_model',
+                'matrix_item__matrix',
+                'study_assay__target',
+                'study_assay__method',
+                'study_assay__unit',
+                'sample_location',
+                # 'data_file_upload',
+                # Will use eventually, maybe
+                'subtarget'
+            ).filter(
+                replaced=False,
+                excluded=False,
+                value__isnull=False
+            ).order_by(
+                'matrix_item__name',
+                'study_assay__target__name',
+                'study_assay__method__name',
+                'time',
+                'sample_location__name',
+                'excluded',
+                'update_number'
+            )
+
+            data = get_data_as_csv(matrix_items, data_points=data_points, include_header=True)
+
+            # For specifically text
+            response = HttpResponse(data, content_type='text/csv')
+            response['Content-Disposition'] = 'attachment;filename=' + unicode(self.object) + '.csv'
+
+            return response
+        # Return nothing otherwise
+        else:
+            return HttpResponse('', content_type='text/plain')
+
+
+def get_summary_data(set_name, queryset, on_or_after_date=None):
+    if on_or_after_date:
+        queryset = queryset.filter(created_on__lt=on_or_after_date)
+
+    organ_models = len(set(queryset.values_list('organ_model_id', flat=True)))
+    studies = len(set(queryset.values_list('study_id', flat=True)))
+    chips = queryset.count()
+
+    if on_or_after_date:
+        data_points = AssayDataPoint.objects.filter(
+            matrix_item_id__in=queryset,
+            replaced=False,
+            excluded=False,
+            data_file_upload__created_on__lt=on_or_after_date
+        ).exclude(
+            value__isnull=True,
+        ).count()
+    else:
+        data_points = AssayDataPoint.objects.filter(
+            matrix_item_id__in=queryset,
+            replaced=False,
+            excluded=False
+        ).exclude(
+            value__isnull=True
+        ).count()
+
+    # NOT DRY
+    video_formats = {x: True for x in [
+        'webm',
+        'avi',
+        'ogv',
+        'mov',
+        'wmv',
+        'mp4',
+        '3gp',
+    ]}
+
+    all_media = AssayImage.objects.filter(matrix_item_id__in=queryset)
+
+    images = 0
+    videos = 0
+
+    for media in all_media:
+        is_video = media.file_name.split('.')[-1].lower() in video_formats
+        if is_video:
+            videos += 1
+        else:
+            images += 1
+
+    return [
+        set_name,
+        organ_models,
+        studies,
+        chips,
+        data_points,
+        images,
+        videos
+    ]
+
+
+class TCTCSummary(SuperuserRequiredMixin, TemplateView):
+    template_name = 'assays/tctc_summary.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(TCTCSummary, self).get_context_data(**kwargs)
+
+        if self.request.GET.get('delta', ''):
+            on_or_after_date = datetime.strptime(self.request.GET.get('delta'), '%Y-%m-%d')
+        else:
+            on_or_after_date = None
+
+        queryset = AssayMatrixItem.objects.all()
+
+        all_group_ids = [41, 46]
+
+        missing_stakeholder_blacklist = list(set(
+            AssayStudyStakeholder.objects.filter(
+                signed_off_by_id=None,
+                sign_off_required=True
+            ).values_list('study_id', flat=True)
+        ))
+
+        mit_studies = AssayStudy.objects.filter(
+            group_id__in=[46]
+        )
+        tamu_studies = AssayStudy.objects.filter(
+            group_id__in=[41]
+        )
+        level_1 = AssayStudy.objects.filter(
+            group_id__in=all_group_ids,
+            signed_off_by=None
+        ) | AssayStudy.objects.filter(
+            group_id__in=all_group_ids,
+            id__in=missing_stakeholder_blacklist
+        )
+        level_2 = AssayStudy.objects.filter(
+            group_id__in=all_group_ids,
+            restricted=True
+        ).exclude(
+            signed_off_by=None
+        ).exclude(
+            id__in=missing_stakeholder_blacklist
+        )
+        level_3 = AssayStudy.objects.filter(
+            group_id__in=all_group_ids,
+            restricted=False
+        ).exclude(
+            signed_off_by=None
+        ).exclude(
+            id__in=missing_stakeholder_blacklist
+        )
+
+        data_of_interest = (
+            ('MIT-3D', queryset.filter(
+                study_id__in=mit_studies,
+                organ_model__model_type__in=['F3', 'S3']
+            )),
+            ('MIT-2D', queryset.filter(
+                study_id__in=mit_studies,
+                organ_model__model_type__in=['F2', 'S2']
+            )),
+            ('TAMU-3D', queryset.filter(
+                study_id__in=tamu_studies,
+                organ_model__model_type__in=['F3', 'S3']
+            )),
+            ('TAMU-2D', queryset.filter(
+                study_id__in=tamu_studies,
+                organ_model__model_type__in=['F2', 'S2']
+            )),
+            ('Level 1', queryset.filter(
+                study_id__in=level_1
+            )),
+            ('Level 2', queryset.filter(
+                study_id__in=level_2
+            )),
+            ('Level 3', queryset.filter(
+                study_id__in=level_3
+            )),
+        )
+
+        rows = []
+
+        for data in data_of_interest:
+            rows.append(get_summary_data(data[0], data[1]))
+
+        context['rows'] = rows
+
+        if on_or_after_date:
+            stakeholder_sign_off_too_new_blacklist = AssayStudyStakeholder.objects.filter(
+                sign_off_required=True,
+                signed_off_date__gte=on_or_after_date
+            ).values_list('study_id', flat=True)
+
+            if stakeholder_sign_off_too_new_blacklist:
+                missing_stakeholder_blacklist = list(set(missing_stakeholder_blacklist.extend(stakeholder_sign_off_too_new_blacklist)))
+
+            studies_before_date = AssayStudy.objects.filter(
+                created_on__lt=on_or_after_date,
+                group_id__in=[46, 41]
+            )
+
+            mit_studies = studies_before_date.filter(
+                group_id__in=[46]
+            )
+            tamu_studies = studies_before_date.filter(
+                group_id__in=[41]
+            )
+
+            level_1 = studies_before_date.filter(
+                group_id__in=all_group_ids,
+                signed_off_by=None
+            ) | AssayStudy.objects.filter(
+                group_id__in=all_group_ids,
+                id__in=missing_stakeholder_blacklist
+            ) | AssayStudy.objects.filter(
+                signed_off_date__gte=on_or_after_date
+            )
+            level_2 = studies_before_date.filter(
+                group_id__in=all_group_ids,
+                restricted=True
+            ).exclude(
+                signed_off_by=None
+            ).exclude(
+                id__in=missing_stakeholder_blacklist
+            ).exclude(
+                id__in=level_1
+            ) | studies_before_date.filter(
+                group_id__in=all_group_ids,
+                restricted=True
+            ).exclude(
+                signed_off_date__gte=on_or_after_date
+            ).exclude(
+                id__in=missing_stakeholder_blacklist
+            ).exclude(
+                id__in=level_1
+            )
+            level_3 = studies_before_date.filter(
+                group_id__in=all_group_ids,
+                restricted=False
+            ).exclude(
+                signed_off_by=None
+            ).exclude(
+                id__in=missing_stakeholder_blacklist
+            ).exclude(
+                signed_off_date__gte=on_or_after_date
+            )
+
+            data_of_interest = (
+                ('MIT-3D', queryset.filter(
+                    study_id__in=mit_studies,
+                    organ_model__model_type__in=['F3', 'S3']
+                )),
+                ('MIT-2D', queryset.filter(
+                    study_id__in=mit_studies,
+                    organ_model__model_type__in=['F2', 'S2']
+                )),
+                ('TAMU-3D', queryset.filter(
+                    study_id__in=tamu_studies,
+                    organ_model__model_type__in=['F3', 'S3']
+                )),
+                ('TAMU-2D', queryset.filter(
+                    study_id__in=tamu_studies,
+                    organ_model__model_type__in=['F2', 'S2']
+                )),
+                ('Level 1', queryset.filter(
+                    study_id__in=level_1
+                )),
+                ('Level 2', queryset.filter(
+                    study_id__in=level_2
+                )),
+                ('Level 3', queryset.filter(
+                    study_id__in=level_3
+                )),
+            )
+
+            delta_rows = []
+
+            for index, data in enumerate(data_of_interest):
+                delta_row = get_summary_data(data[0], data[1], on_or_after_date)
+                new_row = [delta_row[0]]
+
+                for i in range(1, len(delta_row)):
+                    new_row.append(rows[index][i] - delta_row[i])
+
+                delta_rows.append(new_row)
+
+            context['delta_rows'] = delta_rows
+
+        return context

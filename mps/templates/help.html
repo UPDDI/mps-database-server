@@ -108,7 +108,7 @@
                         </ul>
                     </li>
 
-                   <li class="dropdown">
+                    <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Features<span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li class="dropdown-header"><b>Study Data Only</b></li>
@@ -134,23 +134,23 @@
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Providing Data<span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li class="divider"></li>
-                            <li class="dropdown-header"><b>Review Component Lists</b></li>
+                            <li class="dropdown-header"><b>Review Components </b></li>
                             <li><a href="#assaymts">Assays (Methods and Targets) </a></li>
                             <li><a href="#cellsamples">Cell Samples</a></li>
                             <li><a href="#chemicallist">Compounds</a></li>
                             <li><a href="#devices">Devices</a></li>
                             <li><a href="#diseaselist">Diseases</a></li>
-                            <li><a href="#mpslocations">Locations (Add/Sample)</a></li>
-                            <li><a href="#mpsmodels">Models</a></li>
+                            <li><a href="#mpslocations">Locations of MPS Models</a></li>
+                            <li><a href="#mpsmodels">MPS Models</a></li>
                             <li><a href="#settings">Settings</a></li>
                             <li><a href="#physicalunits">Units</a></li>
                             <li class="divider"></li>
                             <li class="dropdown-header"><b>Enter Study Data</b></li>
-                            <li><a href="#studies_editor">1. Studies</a></li>
-                            <li><a href="#matrices_editor">2. Matrices</a></li>
-                            <li><a href="#matrixitems_editor">3. Matrix Items</a></li>
-                            <li><a href="#assaydata_editor">4. Assay Data Points</a></li>
-                            <li><a href="#assayimages_editor">5. Assay Images &amp; Videos</a></li>
+                            <li><a href="#studies_editor">1. Study (Create or Edit) </a></li>
+                            <li><a href="#matrices_editor">2. Matrix(ces) (Add or Edit) </a></li>
+                            <li><a href="#matrixitems_editor">3. Matrix Items (Edit) </a></li>
+                            <li><a href="#assaydata_editor">4. Assay Data (Upload or Reupload) </a></li>
+                            <li><a href="#assayimages_editor">5. Assay Images &amp; Videos (Prepare) </a></li>
                         </ul>
                     </li>
 
@@ -166,12 +166,13 @@
                             <li><a href="#chemicaldata_admin">Compounds</a></li>
                             <li><a href="#devices_admin">Devices</a></li>
                             <li><a href="#diseaselist_admin">Diseases</a></li>
-                            <li><a href="#mpslocations_admin">Locations (Add/Sample)</a></li>
-                            <li><a href="#mpsmodels_admin">Models</a></li>
+                            <li><a href="#mpslocations_admin">Locations of MPS Models</a></li>
+                            <li><a href="#mpsmodels_admin">MPS Models</a></li>
                             <li><a href="#settings_admin">Settings</a></li>
                             <li><a href="#physicalunits_admin">Units</a></li>
                             <li class="divider"></li>
                             <li class="dropdown-header"><b>Controlling Access</b></li>
+                            <li><a href="#add_groups_admin">Adding Groups to Database</a></li>
                             <li><a href="#study_groups_admin">Adding Groups to Studies</a></li>
                             <li><a href="#user_groups_admin">Adding Users to Groups</a></li>
                         </ul>
@@ -179,7 +180,6 @@
                     {% endif %}
 
                     <li><a href="#glossary">Glossary</a></li>
-
 
                     <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">I Want To...<span class="caret"></span></a>
@@ -207,6 +207,9 @@
                             <li class="dropdown-header"><b>Review Study Data</b></li>
                             <li><a href="#intrastudy">Single Study (Design &amp; Data)</a></li>
                             <li><a href="#interstudy">Multiple Studies (Data)</a></li>
+                            <li class="divider"></li>
+                            <li class="dropdown-header"><b>Contribute Study Data</b></li>
+                            <li><a href="#studies_editor">Provide Data - Getting Started </a></li>
                         </ul>
                     </li>
 
@@ -242,7 +245,7 @@
                         <li class="list-group-item"> <b><em>Inter-Study Analysis with Grouping and Filtering</em></b> - The grouping and filtering feature is a powerful tool that offers the user a wide range of options for grouping and filtering data. The tool can be accessed in several places throughout the database, including: through the <b>Data Analysis</b> icon or tab and the <b>Study Summary</b> page. The tool can be used to customize what data are used (via the filtering feature) and how data will be grouped (via the grouping feature) in subsequent graphing and analysis.
                             For more information on this feature, <a href="#interstudy">click here</a>.
                         </li>
-                        <li class="list-group-item"> <b><em>View Diseases</em></b> - The <b>View Diseases</b> feature allows users to quickly find information regarding a specific disease. Users can drill down on data stored in the <b>MPS database</b> (study data and data extracted from the clinicaltrials.gov website), and link to clinicaltrials.gov where additional drug trial information can be obtained. The <b>View Diseases</b> feature can be accessed through the <b>Models</b> icon or tab.
+                        <li class="list-group-item"> <b><em>View Diseases</em></b> - The <b>View Diseases</b> feature allows users to quickly find information regarding a specific disease. Users can drill down on data stored in the <b>MPS database</b> (study data and data extracted from the clinicaltrials.gov website), and link to clinicaltrials.gov where additional drug trial information can be obtained. The <b>View Diseases</b> feature can be accessed through the <b>MPS Models</b> icon or tab.
                             For more information on this feature, <a href="#diseasemodels">click here</a>.
                         </li>
                         <li class="list-group-item"> <b><em>Add Experimental Variables as Settings</em></b> - This feature allows the <b>Data Provider</b> the ability to enter treatments and/or experimental parameters (such as instrument settings) that impact assay data measurements. These, along with the added compounds, can be used to group and filter data in preparation for visualization and analysis.
@@ -268,7 +271,7 @@
                         <li class="list-group-item">
                             The <b>Microphysiology Systems (MPS) Database</b> was designed for the management and analysis of MPS data together with curated reference and clinical data. The <b>MPS Database</b> can store curated assay data and associated metadata from a wide variety of plate-based and microfluidic models. Data from external reference sources are brought into the <b>MPS Database</b> to facilitate ease of access to those data and to support integration of data across curated data sources.
                             <br><br>
-                            <b>Study Data</b> and <b>Study Components</b> (e.g., <b>Models</b>, <b>Devices</b>, <b>Cell Samples</b>) are manually curated into the <b>MPS Database</b>. Data from some reference data sources are both manually and auto-curated. The <b>MPS Database</b> provides tools to analyze and/or visualize data pulled from external data sources, and also provides tools to analyze curated study data in combination with reference data. <b>Study Data</b>, <b>Study Components</b>, and the <b>Features</b> available in the <b>MPS Database</b> are described briefly in the tables below.
+                            <b>Study Data</b> and <b>Study Components</b> (e.g., <b>MPS Models</b>, <b>Devices</b>, <b>Cell Samples</b>) are manually curated into the <b>MPS Database</b>. Data from some reference data sources are both manually and auto-curated. The <b>MPS Database</b> provides tools to analyze and/or visualize data pulled from external data sources, and also provides tools to analyze curated study data in combination with reference data. <b>Study Data</b>, <b>Study Components</b>, and the <b>Features</b> available in the <b>MPS Database</b> are described briefly in the tables below.
                             <br><br>
                             Many of the terms used in the MPS-GUI and here in the <b>Help</b> are defined in the <b>Glossary</b>. It is recommended that users rely heavily on the <b>Glossary</b> to assist in understanding how to appropriately review, edit, and/or add data to the <b>MPS Database</b>.
                         </li>
@@ -297,11 +300,11 @@
                                 </tr>
                                 <tr>
                                 <td> Assay Targets/Analytes </td>
-                                    <td> A list of assay <b>Targets/Analytes</b> used to assess the response of a <b>Model</b>. Assay <b>Targets/Analytes</b> are associated to the <b>Method/Kit</b> used to measure response. For more information, <a href="#assaymts">click here</a>.</td>
+                                    <td> A list of assay <b>Targets/Analytes</b> used to assess the response of a <b>MPS Model</b>. Assay <b>Targets/Analytes</b> are associated to the <b>Method/Kit</b> used to measure response. For more information, <a href="#assaymts">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> Cell Samples </td>
-                                    <td> A list of <b>Cell Samples</b> used in <b>Models</b> in the <b>MPS Database</b>. The <b>Cell Types</b> and <b>Cell Origins</b> are included as part of the <b>Cell Sample</b>. For more information on this feature, <a href="#cellsamples">click here</a>.</td>
+                                    <td> A list of <b>Cell Samples</b> used in <b>MPS Models</b> in the <b>MPS Database</b>. The <b>Cell Types</b> and <b>Cell Origins</b> are included as part of the <b>Cell Sample</b>. For more information on this feature, <a href="#cellsamples">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> Compounds </td>
@@ -310,7 +313,7 @@
 
                                 <tr>
                                 <td> Devices </td>
-                                    <td> A list of <b>Devices</b> used in <b>Models</b> in the <b>MPS Database</b> with the option to click on the <b>Device</b> to view details of the <b>Device</b>. For more information on this feature, <a href="#devices">click here</a>.</td>
+                                    <td> A list of <b>Devices</b> used in <b>MPS Models</b> in the <b>MPS Database</b> with the option to click on the <b>Device</b> to view details of the <b>Device</b>. For more information on this feature, <a href="#devices">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> Diseases </td>
@@ -321,8 +324,8 @@
                                     <td> A list of <b>Locations</b> within a <b>Device</b> where treatments can be added and/or samples removed. For more information on this feature, <a href="#mpslocations">click here</a>.</td>
                                 </tr>
                                 <tr>
-                                <td> Models </td>
-                                    <td> A list of <b>Models</b> in the <b>MPS Database</b> with the option to click on the model and view details of the model's design. For more information on this feature, <a href="#mpsmodels">click here</a>.</td>
+                                <td> MPS Models </td>
+                                    <td> A list of <b>MPS Models</b> in the <b>MPS Database</b> with the option to click on the model and view details of the model's design. For more information on this feature, <a href="#mpsmodels">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> Settings </td>
@@ -360,7 +363,7 @@
                             <tbody>
                                 <tr>
                                 <td> Study </td>
-                                    <td> A <b>Study</b> is a container for all data and metadata associated to an experiment assessing <b>Model</b> response. A list of <b>Studies</b> in the <b>MPS Database</b>, with summary information about the <b>Models</b> used in the <b>Study</b> and associated assay results, is provided on the <b>Studies</b> list page of the MPS-GUI. Selecting a <b>Study</b> from the list allows the user to focus on data from a single <b>Study</b>. For more information, <a href="#intrastudy">click here</a>.</td>
+                                    <td> A <b>Study</b> is a container for all data and metadata associated to an experiment assessing <b>MPS Model</b> response. A list of <b>Studies</b> in the <b>MPS Database</b>, with summary information about the <b>MPS Models</b> used in the <b>Study</b> and associated assay results, is provided on the <b>Studies</b> list page of the MPS-GUI. Selecting a <b>Study</b> from the list allows the user to focus on data from a single <b>Study</b>. For more information, <a href="#intrastudy">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> Matrices </td>
@@ -507,7 +510,7 @@
                                     <tr>
                                     <td> 6 </td>
                                     <td> OpenFDA </td>
-                                    <td> Some data pulled dynamically and not stored. Note: data are not intended for clinical use. </td>
+                                    <td> Some data pulled dynamically and not stored (Adverse events are updated quarterly). Note: data are not intended for clinical use. </td>
                                     </tr>
                                     <tr>
                                     <td> 7 </td>
@@ -517,7 +520,7 @@
                                     <tr>
                                     <td> 8 </td>
                                     <td> PubChem </td>
-                                    <td> Auto Curation </td>
+                                    <td> Auto Curation (Bioactivity data updated quarterly) </td>
                                     </tr>
                                     <tr>
                                     <td> 9 </td>
@@ -532,12 +535,12 @@
                                     <tr>
                                     <td> 11 </td>
                                     <td> DrugBank  </td>
-                                    <td> Auto Curation </td>
+                                    <td> Auto Curation (Compound data updated when compound added to MPS Database) </td>
                                     </tr>
                                     <tr>
                                     <td> 12 </td>
                                     <td> ChEMBL </td>
-                                    <td> Auto Curation </td>
+                                    <td> Auto Curation (Bioactivity data updated quarterly; Compound data updated when compound added to MPS Database) </td>
                                     </tr>
                                     <tr>
                                     <td> 13 </td>
@@ -578,7 +581,7 @@
                                 <tbody>
                                     <tr>
                                     <td> Registered MPS Users with No Additional Permissions  </td>
-                                    <td> Can view all reference data and associated features. Can view <b>Study</b> component lists (e.g., <b>Models</b>, <b>Devices</b>, <b>Cell Samples</b>). Can view <b>Study Data</b> in <b>Studies</b> that have been designated as open to all registered MPS users, including: viewing <b>Matrix Item</b> setup, study protocols, images, videos, and <b>Study Data</b>. </td>
+                                    <td> Can view all reference data and associated features. Can view <b>Study</b> component lists (e.g., <b>MPS Models</b>, <b>Devices</b>, <b>Cell Samples</b>). Can view <b>Study Data</b> in <b>Studies</b> that have been designated as open to all registered MPS users, including: viewing <b>Matrix Item</b> setup, study protocols, images, videos, and <b>Study Data</b>. </td>
                                     </tr>
                                     <tr>
                                     <td> Data Group Viewers and Users with Additional Permissions  </td>
@@ -594,7 +597,7 @@
                                     </tr>
                                     <tr>
                                     <td> MPS Database Administrators  </td>
-                                    <td> Have all the access of <i>Data Group Admins</i> plus the ability to add/edit/delete new controlled vocabulary (e.g., <b>Models</b>, <b>Devices</b>, <b>Cell Samples</b>) and change user permissions, including establishing users with special access to specific studies. </td>
+                                    <td> Have all the access of <i>Data Group Admins</i> plus the ability to add/edit/delete new controlled vocabulary (e.g., <b>MPS Models</b>, <b>Devices</b>, <b>Cell Samples</b>) and change user permissions, including establishing users with special access to specific studies. </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -711,87 +714,100 @@
                         <div id="assaymtseditor" class="editorsubtainer">
                             <ul class="list-group">
                                 <li class="list-group-item background3">
-                                    To have a new assay added to the MPS Database, provide the information shown in the table.
+                                    To have a new assay added to the MPS Database, compile the information shown in the table and contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Assay to MPS Database").
                                     <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
                                     <thead>
                                         <tr class="active">
-                                            <th> Description </th>
-                                            <th> Required </th>
-                                            <th> Assay 1 </th>
-                                            <th> Assay 2 </th>
+                                        <th> Description </th>
+                                        <th> Required </th>
+                                        <th> Assay 1 </th>
+                                        <th> Assay 2 </th>
+                                        <th> Assay 3 </th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
                                             <td> Assay Name </td>
-                                            <td> yes if using plate map generator </td>
+                                            <td> yes </td>
                                             <td> Membrane Permeability </td>
+                                            <td> Imaging </td>
                                             <td> Cytokines quantification </td>
                                         </tr>
                                         <tr>
                                             <td> Method/Kit Name </td>
                                             <td> yes </td>
                                             <td> Fluorescence (490/525) (Sigma-Aldrich: FD10S) </td>
+                                            <td> Immunocytochemistry and immunofluorescence protocol (DAPI, FITC, Cy5), Phase Contrast </td>
                                             <td> V-PLEX Cytokine Panel 1 Human Kit (MSD: K15050D) </td>
                                         </tr>
                                         <tr>
-                                            <td> Target/Analyte Name </td>
+                                            <td> Target/Analyte Name (what is being measured/observed) </td>
                                             <td> yes </td>
                                             <td> Dextran-FITC (10kDa) </td>
+                                            <td> DNA | OAT4 in Cells | HO-1 in Cells | Tissue Structure </td>
                                             <td> GM-CSF, IL-12/IL-23p40, IL-15, IL-16, IL-17A, IL-1α, IL-5, IL-7, TNFB, VEGF </td>
                                         </tr>
                                         <tr>
                                             <td> Unit of Measure </td>
                                             <td> yes </td>
-                                            <td> mg/mL </td>
-                                            <td> pg/mL </td>
+                                            <td> mg/mL, ng/day/10^6 cells </td>
+                                            <td> image </td>
+                                            <td> pg/mL, ng/day/10^6 cells </td>
                                         </tr>
                                         <tr>
-                                            <td> Unit of Measure </td>
+                                            <td> Target/Analyte is Surrogate or Marker for (e.g., bone sialoprotein (BSP II) - bone marker)  </td>
+                                            <td> no </td>
+                                            <td> Membrane Permeability </td>
+                                            <td> vascular inflammation (HO-1); uptake and transport of organic anions (OAT4) </td>
+                                            <td> inflammation response and immune system regulation </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Assay Category (i.e. Secreted Molecule, Cell Viability, etc.) </td>
+                                            <td> no </td>
+                                            <td> Monolayer Integrity </td>
+                                            <td> Protein Expression </td>
+                                            <td> Secreted Molecule </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Measurement Type </td>
                                             <td> yes </td>
-                                            <td> ng/day/10^6 cells </td>
-                                            <td> ng/day/10^6 cells </td>
-                                        </tr>
-                                        <tr>
-                                            <td> (add more as needed) </td>
-                                            <td> yes, if more needed </td>
-                                            <td> as needed </td>
-                                            <td> as needed </td>
+                                            <td> fluorescent </td>
+                                            <td> Immunocytochemistry and immunofluorescence </td>
+                                            <td> Immunoassay, electrochemiluminescence </td>
                                         </tr>
                                         <tr>
                                             <td> Reader (Instrument Model) </td>
                                             <td> If applicable and known, yes </td>
                                             <td> Tecan M1000 </td>
+                                            <td> Image Express Ultra </td>
                                             <td> MESO QUICKPLEX SQ 120 instrument </td>
                                         </tr>
                                         <tr>
                                             <td> Reader (Instrument Manufacturer) </td>
                                             <td> If applicable and known, yes </td>
                                             <td> Tecan </td>
+                                            <td> Molecular Devices </td>
                                             <td> MSD  </td>
                                         </tr>
                                         <tr>
                                             <td> Kit Manufacturer (Assay Supplier) </td>
                                             <td> If applicable, yes </td>
                                             <td> Sigma-Aldrich </td>
+                                            <td> na </td>
                                             <td> MSD (V-Plex) / R&D Systems (Quantikine) </td>
                                         </tr>
                                         <tr>
                                             <td> Kit Catalog # </td>
                                             <td> If applicable, yes </td>
                                             <td> FD10S </td>
-                                            <td> nan </td>
+                                            <td> na </td>
+                                            <td> na </td>
                                         </tr>
                                         <tr>
-                                            <td> Measurement Type </td>
-                                            <td> yes </td>
-                                            <td> fluorescent </td>
-                                            <td> Immunoassay, electrochemiluminescence </td>
-                                        </tr>
-                                        <tr>
-                                            <td> SOP (provide file and/or hyperlink) </td>
-                                            <td> yes </td>
+                                            <td> SOP/Protocol (file type dependent on database features to be used) </td>
+                                            <td> yes  (provide file and/or hyperlink) </td>
                                             <td> https://www.sigmaaldrich.com/catalog/product/sigma/fd10s?lang=en&region=US </td>
+                                            <td> https://www.moleculardevices.com/sites/default/files/en/assets/data-sheets/dd/img/imagexpress-ultra-system.pdf </td>
                                             <td> https://www.mesoscale.com/en/products/v-plex-cytokine-panel-1-human-kit-k15050d/ </td>
                                         </tr>
                                         <tr>
@@ -799,6 +815,77 @@
                                             <td> no </td>
                                             <td>   </td>
                                             <td>   </td>
+                                            <td>   </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Stain/Label Name </td>
+                                            <td> yes, if used </td>
+                                            <td>   </td>
+                                            <td> HO-1 (Heme Oxygenase-1) </td>
+                                            <td>   </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Stain/Label Supplier </td>
+                                            <td> yes, if used </td>
+                                            <td>   </td>
+                                            <td> Abcam, Inc </td>
+                                            <td>   </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Stain/Label Product ID (Supplier's ID) </td>
+                                            <td> yes, if used </td>
+                                            <td>   </td>
+                                            <td> Ab13248 </td>
+                                            <td>   </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Stain/Label Name </td>
+                                            <td> yes, if used </td>
+                                            <td>   </td>
+                                            <td> OAT4 (organic anion transporter-4) </td>
+                                            <td>   </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Stain/Label Supplier </td>
+                                            <td> yes, if used </td>
+                                            <td>   </td>
+                                            <td> Abcam, Inc </td>
+                                            <td>   </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Stain/Label Product ID (Supplier's ID) </td>
+                                            <td> yes, if used </td>
+                                            <td>   </td>
+                                            <td> Ab76385 </td>
+                                            <td>   </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Stain/Label Name </td>
+                                            <td> yes, if used </td>
+                                            <td>   </td>
+                                            <td> Hoechst 33342 </td>
+                                            <td>   </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Stain/Label Supplier </td>
+                                            <td> yes, if used </td>
+                                            <td>   </td>
+                                            <td> Invitrogen </td>
+                                            <td>   </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Stain/Label Product ID (Supplier's ID) </td>
+                                            <td> yes, if used </td>
+                                            <td>   </td>
+                                            <td> H3570 </td>
+                                            <td>   </td>
+                                        </tr>
+                                        <tr>
+                                            <td> (add more Stain groups as needed) </td>
+                                            <td> yes, if more needed </td>
+                                            <td> as needed </td>
+                                            <td> as needed </td>
+                                            <td> as needed </td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -807,7 +894,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
 
@@ -841,7 +927,7 @@
                         <div id="cellsampleseditor" class="editorsubtainer">
                             <ul class="list-group">
                                 <li class="list-group-item background3">
-                                To have a new <b>Cell Sample</b> added to the MPS Database, provide the information shown in the table.
+                                To have a new <b>Cell Sample</b> added to the MPS Database, compile the information shown in the table and contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Cell Sample to MPS Database").
                                     <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
                                     <thead>
                                         <tr class="active">
@@ -892,9 +978,9 @@
                                         <tr>
                                             <td> Receipt Date </td>
                                             <td> yes </td>
-                                            <td> 2017-08-01 00:00:00 </td>
-                                            <td> 2017-08-01 00:00:00 </td>
-                                            <td> 2017-08-01 00:00:00 </td>
+                                            <td> 42948 </td>
+                                            <td> 42948 </td>
+                                            <td> 42948 </td>
                                         </tr>
                                         <tr>
                                             <td> Cell Supplier/Source </td>
@@ -918,6 +1004,13 @@
                                             <td> 376.01.04.01.03 </td>
                                         </tr>
                                         <tr>
+                                            <td> Cell Passage </td>
+                                            <td> no </td>
+                                            <td>   </td>
+                                            <td>   </td>
+                                            <td>   </td>
+                                        </tr>
+                                        <tr>
                                             <td> Supplier Notes </td>
                                             <td> no </td>
                                             <td>   </td>
@@ -927,7 +1020,7 @@
                                         <tr>
                                             <td> Isolation Date </td>
                                             <td> no </td>
-                                            <td> 2016-06-05 00:00:00 </td>
+                                            <td> 42526 </td>
                                             <td>   </td>
                                             <td>   </td>
                                         </tr>
@@ -997,26 +1090,40 @@
                                         <tr>
                                             <td> Biosensor Name </td>
                                             <td> yes, if used </td>
+                                            <td> Example Biosensor Name </td>
+                                            <td>   </td>
+                                            <td>   </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Biosensor Manufacturer </td>
+                                            <td> yes, if known </td>
                                             <td>   </td>
                                             <td>   </td>
                                             <td>   </td>
                                         </tr>
                                         <tr>
-                                            <td> Biosensor supplier </td>
+                                            <td> Biosensor Supplier </td>
                                             <td> yes, if used </td>
-                                            <td>   </td>
+                                            <td> Example Biosensor Supplier </td>
                                             <td>   </td>
                                             <td>   </td>
                                         </tr>
                                         <tr>
-                                            <td> Biosensor product ID (supplier's ID) </td>
+                                            <td> Biosensor Product ID (Supplier's ID) </td>
                                             <td> yes, if used </td>
+                                            <td> 123456789 </td>
+                                            <td>   </td>
+                                            <td>   </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Biosensor Lot </td>
+                                            <td> no </td>
                                             <td>   </td>
                                             <td>   </td>
                                             <td>   </td>
                                         </tr>
                                         <tr>
-                                            <td> Biosensor Lot/Batch </td>
+                                            <td> Biosensor Batch </td>
                                             <td> no </td>
                                             <td>   </td>
                                             <td>   </td>
@@ -1043,7 +1150,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
 
@@ -1063,7 +1169,8 @@
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>If a <b>Compound</b> is missing from the list, provide the <b>Compound</b> name and the ChEMBL ID to an <b>MPS Database</b> Administrator </li>
+                                        <li>If a <b>Compound</b> is missing from the list and you have been granted permission to add compounds, add the compound by entering the ChEMBL ID and clicking the Retrieve button </li>
+                                        <li>If a <b>Compound</b> is missing from the list and you do not have permission to add compounds, provide the <b>Compound</b> name and the ChEMBL ID to an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Compound to MPS Database")</li>
                                     </ul>
                                 </li>
                             </ul>
@@ -1102,8 +1209,8 @@
                         <div id="deviceseditor" class="editorsubtainer">
                             <ul class="list-group">
                                 <li class="list-group-item background3">
-                                To have a new <b>Device</b> added to the MPS Database, provide the information shown in the table.
-                                   <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                To have a Device added to the MPS Database, compile the information shown in the table and contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Device to MPS Database").
+                                    <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
                                     <thead>
                                         <tr class="active">
                                         <th> Description </th>
@@ -1118,22 +1225,27 @@
                                             <td> Neurovascular Unit </td>
                                         </tr>
                                         <tr>
-                                            <td> Device type (plate, microchip) </td>
+                                            <td> Device short cross-reference (if used in other files/tabs) </td>
+                                            <td> if used, yes </td>
+                                            <td> NVU </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Device Type {pick one: plate, microchip} </td>
                                             <td> yes </td>
                                             <td> microchip </td>
                                         </tr>
                                         <tr>
-                                            <td> Device manufacturer </td>
+                                            <td> Device Manufacturer </td>
                                             <td> yes </td>
                                             <td> Vanderbilt </td>
                                         </tr>
                                         <tr>
-                                            <td> Device catalogue number </td>
+                                            <td> Device Catalogue Number or Version </td>
                                             <td> no </td>
                                             <td> 353VIIBRE Neurovascular Unit and Bubble Trap 072 </td>
                                         </tr>
                                         <tr>
-                                            <td> Device barcode </td>
+                                            <td> Device Barcode </td>
                                             <td> no </td>
                                             <td> none </td>
                                         </tr>
@@ -1143,7 +1255,7 @@
                                             <td> Vascular </td>
                                         </tr>
                                         <tr>
-                                            <td> Device Chamber 1 Volume (µL) </td>
+                                            <td> Device Chamber 1 Volume (microliters) </td>
                                             <td> yes </td>
                                             <td> 2.91 </td>
                                         </tr>
@@ -1153,42 +1265,42 @@
                                             <td> Brain </td>
                                         </tr>
                                         <tr>
-                                            <td> Device Chamber 2 Volume (µL) </td>
+                                            <td> Device Chamber 2 Volume (microliters) </td>
                                             <td> yes, if 2 chambers </td>
                                             <td> 17.5 </td>
                                         </tr>
                                         <tr>
-                                            <td> (add more chambers as needed) </td>
+                                            <td> (add more chamber groups as needed) </td>
                                             <td> yes, if more chambers </td>
                                             <td> add when needed </td>
                                         </tr>
                                         <tr>
-                                            <td> Total Volume Device (µL) </td>
+                                            <td> Total Volume Device (microliters) </td>
                                             <td> no </td>
                                             <td> 20.41 </td>
                                         </tr>
                                         <tr>
-                                            <td> Device width (millimeters) </td>
+                                            <td> Device Width (millimeters) </td>
                                             <td> no </td>
                                             <td> 50 </td>
                                         </tr>
                                         <tr>
-                                            <td> Device length (millimeters) </td>
+                                            <td> Device Length (millimeters) </td>
                                             <td> no </td>
                                             <td> 75 </td>
                                         </tr>
                                         <tr>
-                                            <td> Device thickness (millimeters) </td>
+                                            <td> Device Thickness (millimeters) </td>
                                             <td> no </td>
                                             <td> 4.5-5.5 </td>
                                         </tr>
                                         <tr>
-                                            <td> Substrate material </td>
+                                            <td> Substrate Material </td>
                                             <td> no </td>
                                             <td> PDMS </td>
                                         </tr>
                                         <tr>
-                                            <td> Substrate thickness  (millimeters) </td>
+                                            <td> Substrate Thickness  (millimeters) </td>
                                             <td> no </td>
                                             <td> 3.5-4.5 </td>
                                         </tr>
@@ -1199,12 +1311,12 @@
                                         </tr>
                                         <tr>
                                             <td> Layout # Rows </td>
-                                            <td> no </td>
+                                            <td> yes, for plate based models </td>
                                             <td>   </td>
                                         </tr>
                                         <tr>
                                             <td> Layout # Columns </td>
-                                            <td> no </td>
+                                            <td> yes, for plate based models </td>
                                             <td>   </td>
                                         </tr>
                                         <tr>
@@ -1221,6 +1333,11 @@
                                             <td> Device Notes </td>
                                             <td> no </td>
                                             <td> QR Symbol -> NVU Chip, SOP: Whatman Nuclepore 0.2um PC Tygon 1/16" CMB002-CMB004 2016_20_10-07 Clayton Britt </td>
+                                        </tr>
+                                        <tr>
+                                            <td> References Relating to Device </td>
+                                            <td> no </td>
+                                            <td>    </td>
                                         </tr>
                                         <tr>
                                             <td> Device Image </td>
@@ -1257,7 +1374,7 @@
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>To have a new <b>Disease</b> added, contact an <b>MPS Database</b> Administrator </li>
+                                        <li>To have a new <b>Disease</b> added, contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Disease to MPS Database") </li>
                                     </ul>
                                 </li>
                             </ul>
@@ -1281,7 +1398,7 @@
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>To have a new <b>Location</b> added, contact an <b>MPS Database</b> Administrator </li>
+                                        <li>To have a new <b>Location</b> added, prepare a description of the location (including the MPS Model(s) that would utilize the location) and contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Location to MPS Database")   </li>
                                     </ul>
                                 </li>
                             </ul>
@@ -1307,7 +1424,6 @@
                                 <li><br>Notes
                                     <ul class="filled-circle">
                                         <li>In the <b>Models</b> list, click on the active links to learn more about the <b>Center</b> or the <b>Device</b> </li>
-                                        <li>To have a new <b>Model</b> added, contact an <b>MPS Database</b> Administrator </li>
                                     </ul>
                                 </li>
                             </ul>
@@ -1321,7 +1437,7 @@
                         <div id="mpsmodelseditor" class="editorsubtainer">
                             <ul class="list-group">
                                 <li class="list-group-item background3">
-                                To have a new <b>MPS Model</b> added to the MPS Database, provide the information shown in the table.
+                                To have a new <b>MPS Model</b> added to the MPS Database, compile the information shown in the table and contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add MPS Model to MPS Database").
                                     <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
                                     <thead>
                                         <tr class="active">
@@ -1342,7 +1458,7 @@
                                             <td> Vanderbilt Institute for Integrative Biosystems Research and Education </td>
                                         </tr>
                                         <tr>
-                                            <td> Base Model Name </td>
+                                            <td> Base Model Name (example: the base model of 'SQL-SAL 1.0' and 'SQL-SAL 1.5' is 'Liver (UPDDI)') </td>
                                             <td> yes (use "one-off" if applicable) </td>
                                             <td> Blood-Brain Barrier (NVU) </td>
                                         </tr>
@@ -1357,17 +1473,17 @@
                                             <td> Neurovascular Unit </td>
                                         </tr>
                                         <tr>
-                                            <td> Model Type {pick one: Static-2D, Static-3D, Fluidic-2D, Fluidic-3D} </td>
+                                            <td> Model Type {pick one: Static-2D, Static-3D, Fluidic-2D, Fluidic-3D, Other} </td>
                                             <td> yes </td>
                                             <td> Fluidic-3D </td>
                                         </tr>
                                         <tr>
-                                            <td> Disease {pick one: healthy, NAFLD, Ewing sarcoma} </td>
+                                            <td> Disease {list all that apply: healthy, NAFLD, Ewing sarcoma, etc.} </td>
                                             <td> if applicable, yes </td>
                                             <td> healthy </td>
                                         </tr>
                                         <tr>
-                                            <td> Disease Trigger {pick one: healthy, induced by compound, added diseased cells} </td>
+                                            <td> Disease Trigger {list all that apply: healthy, induced by compound, added diseased cells} </td>
                                             <td> if applicable, yes </td>
                                             <td> healthy </td>
                                         </tr>
@@ -1392,9 +1508,19 @@
                                             <td> Effluent-Brain </td>
                                         </tr>
                                         <tr>
+                                            <td> Applicable To {list all that apply: assay sampling, imaging, cell addition, cell removal, compound addition, media addition, media removal, setting} </td>
+                                            <td> yes </td>
+                                            <td> media removal, assay sampling </td>
+                                        </tr>
+                                        <tr>
                                             <td> Location </td>
                                             <td> yes </td>
                                             <td> Effluent-Vascular </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Applicable To </td>
+                                            <td> yes </td>
+                                            <td> media removal, assay sampling </td>
                                         </tr>
                                         <tr>
                                             <td> Location </td>
@@ -1402,9 +1528,19 @@
                                             <td> Influent-Vascular </td>
                                         </tr>
                                         <tr>
+                                            <td> Applicable To </td>
+                                            <td> yes </td>
+                                            <td> media addition, compound addition </td>
+                                        </tr>
+                                        <tr>
                                             <td> Location </td>
                                             <td> yes </td>
                                             <td> Brain </td>
+                                        </tr>
+                                        <tr>
+                                            <td> Applicable To </td>
+                                            <td> yes </td>
+                                            <td> imaging, cell addition, cell removal </td>
                                         </tr>
                                         <tr>
                                             <td> Location </td>
@@ -1412,9 +1548,19 @@
                                             <td> Vascular </td>
                                         </tr>
                                         <tr>
-                                            <td> (add more as needed) </td>
+                                            <td> Applicable To </td>
+                                            <td> yes </td>
+                                            <td> imaging, cell addition, cell removal </td>
+                                        </tr>
+                                        <tr>
+                                            <td> (add more Location groups as needed) </td>
                                             <td> yes, if more </td>
                                             <td> add when needed </td>
+                                        </tr>
+                                        <tr>
+                                            <td> SOP/Protocol (file type dependent on database features to be used) </td>
+                                            <td> no </td>
+                                            <td> provide file </td>
                                         </tr>
                                         <tr>
                                             <td> MPS Model Image </td>
@@ -1451,7 +1597,7 @@
                                     <ul class="filled-circle">
                                         <li>This will only work for <b>Studies</b> that are accessible to you</li>
                                         <li>A method allowing all users to see the complete list of settings is in development</li>
-                                        <li>To have a new <b>Setting</b> added, contact an <b>MPS Database</b> Administrator </li>
+                                        <li>To have a new <b>Setting</b> added, prepare a description of the setting (including the MPS Model(s) that would utilize the setting) and contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Setting to MPS Database" </li>
                                     </ul>
                                 </li>
                             </ul>
@@ -1475,7 +1621,7 @@
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>To have a new <b>Unit</b> added, contact an <b>MPS Database</b> Administrator </li>
+                                        <li>To have a new <b>Unit</b> added, contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Unit to MPS Database")   </li>
                                     </ul>
                                 </li>
                             </ul>
@@ -2227,17 +2373,112 @@
         <div id="studies_editor">
             <button class="collapsible1">Adding Assay Data Step 1 - Add/Edit Study </button>
             <div class="content1">
+
+                <button class="collapsible3">See Helpful Information for New Data Providers (Reviewing/Adding Study Components and the SCD3 Workbook) </button>
+                <div class="content3">
+                    <div id="scd3notes" class="editorsubtainer">
+                        <ul class="list-group">
+                            <li class="list-group-item background3">
+                                <ul class="list-unstyled">
+                                    <li>Data and metadata collected for inclusion in the MPS Database are categorized based on when and how they are incorporated into the database. These categories are: <br>
+                                        <ul class="filled-circle">
+                                            <li> Study Context – information about the MPS Models, assays, compounds, and cells used in the study (these become options in the study component lists) </li>
+                                            <li> Study Description – the study level details (start date, purpose, methods, and description of the results) </li>
+                                            <li> Study Design – the chips level details (when and what cells, treatments, media, and settings were added to each MPS model) </li>
+                                            <li> Study Data – the resulting measured values, images, and videos </li>
+                                        </ul>
+                                    </li>
+                                    <li><br>It should be noted that there is some overlap between these categories, for example, some study design information will likely be included in the model protocol. </li>
+                                    <li><br>The Study Description, Study Design, and Study Data can be added directly to the database by a data provider (a registered user who has been granted permission to add study data to the database). Adding new components to the study component lists requires special permission that is not typically granted to data providers. </li>
+                                    <li><br>To learn how to review Study Components and request new components be added, click on the link to the component
+                                    <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                    <thead>
+                                        <tr class="active">
+                                        <th> Link in Help </th>
+                                        <th> Link in Database </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td> <a href="#assaymts">Assays (Methods/Kits) </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/assays/methods/#" target="_blank" >See List of Methods/Kits in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#assaymts">Assays (Targets/Analytes) </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/assays/targets/#" target="_blank" >See List of Targets/Analytes in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#cellsamples">Cell Samples </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/cellsamples/cellsample/" target="_blank" >See List of Cell Samples in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#chemicallist">Compounds </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/compounds/" target="_blank" >See List of Compounds in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#devices">Devices </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/microdevices/device/" target="_blank" >See List of Devices in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#diseaselist">Diseases </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/diseases/" target="_blank" >See List of Diseases in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#mpslocations">Location of MPS Models </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/assays/locations/" target="_blank" >See List of Locations in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#mpsmodels">Models </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/microdevices/model/" target="_blank" >See List of MPS Models in Database</a> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#settings">Settings </a> </td>
+                                            <td> No list available - see link in HELP for instructions on viewing Settings </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <a href="#physicalunits">Units </a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/assays/units/" target="_blank" >See List of Units in Database</a> </td>
+                                        </tr>
+                                    </tbody>
+                                    </table>
+                                    </li>
+                                    <li><br>Notes
+                                        <ul class="filled-circle">
+                                            <li> The MPS Database Center has prepared an Excel file (the SCD3 Workbook) that describes <b>Study</b> data and metadata stored in the MPS Database </li>
+                                            <li> To download the latest version of the SCD3 Workbook, <a href="/media/excel_templates/SCD3Workbook.xlsx">click here</a></li>
+                                            <li> We are here to help - send email to MPSHELP@pitt.edu with subject line "Help with the SCD3 Workbook" </li>
+                                            <li> The optimal data contribution workflow
+                                                <ul class="open-circle">
+                                                    <li>Data Provider registers as database user and notifies MPS Database Center that they wish to contribute data  </li>
+                                                    <li>MPS Database Center makes a Data Group for the Data Provider, adds the Data Provider to the Group, and notifies the Data Provider </li>
+                                                    <li>Data Provider reviews study component lists and identifies if/what new components need added to the database </li>
+                                                    <li>Data Provider downloads SCD3 Workbook and completes the Study Context tabs for needed new components </li>
+                                                    <li>Data Provider submits completed Study Context tabs to the MPS Database Center </li>
+                                                    <li>MPS Database Center adds needed components and notifies Data Provider </li>
+                                                    <li>Data Provider reviews the SCD3 Workbook and gathers/prepares information </li>
+                                                    <li>Data Provider creates a study and enters the Study Description information directly into the MPS Database via the MPS-GUI </li>
+                                                    <li>Data Provider creates a Matrix, adds Items to the Matrix, and adds all appropriate information to each Item directly in the MPS Database via the MPS-GUI </li>
+                                                    <li>Data Provider prepares and uploads MIF-C-assay data directly in the MPS Database via the MPS-GUI </li>
+                                                    <li>If providing videos/images, Data Provider prepares the MIF-C-image file and submits it, along with the media files to the MPS Database Center (via shared box)  </li>
+                                                    <li>Data Provider reviews and signs off a study </li>
+                                                </ul>
+                                            </li>
+                                            <li> Assistance is available – email MPSHELP@pitt.edu with "HELP with Providing Data" in the subject line
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+
                 <div id="studieseditor" class="editorsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
                                 <li>To Add/Edit a <b>Study</b>
                                     <ul class="filled-circle">
-                                        <li>Check to make sure that all needed components are available in the database <a href="#component_section">Study Components</a>
-                                        <ul class="open-circle">
-                                            <li>To have a new component added, contact an <b>MPS Database</b> Administrator  </li>
-                                        </ul>
-                                        </li>
                                         <li>Click on the <b>Add Study</b> button or the <b>View/Edit</b> button next to the <b>Study</b> of interest to be routed to the <b>Study Matrices and Items</b> list page </li>
                                         <li>Click on the <b>Edit This Study</b> button and add/edit the required information
                                             <ul class="open-circle">
@@ -3633,7 +3874,7 @@ Results: add a summary of the study results. </td>
                                             <td> MIF-C-i </td>
                                             <td> yes </td>
                                             <td> yes </td>
-                                            <td> The file name of the image that will be provided to UPDDI via a drop box or exteral storage device. The naming of the file is up to the data provider, but a descriptive naming protocol is highly recommended. </td>
+                                            <td> The file name of the image that will be provided to the MPS Database Center via a drop box or exteral storage device. The naming of the file is up to the data provider, but a descriptive naming protocol is highly recommended. </td>
                                             <td> na </td>
                                             <td> Tamu_PT_UW_d24h0m0_C00039_S01_W5.tif </td>
                                         </tr>
@@ -4051,6 +4292,52 @@ Results: add a summary of the study results. </td>
 
         <h1 class="sub2-bars"> Controlling User Access </h1>
 
+        <div id="add_groups_admin">
+            <button class="collapsible1">Adding New Data Groups</button>
+            <div class="content1">
+                <div id="addgroupsadmin" class="adminsubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <ul class="list-unstyled">
+                                <li> A <b>Group</b> is actually a trio of groups. The following is an example for <b>Data Group Rusyn_TAMU</b>
+                                    <ul class="filled-circle">
+                                        <li> <b>Rusyn_TAMU</b> - this is the editor group, sometimes referred to as the group proper </li>
+                                        <li> <b>Rusyn_TAMU Admin</b> - admins can edit and sign off (or acknowledge for TCD groups) studies</li>
+                                        <li> <b>Rusyn_TAMU Viewer</b> - can view studies prior to sign off (or acknowledgement for TCD groups) </li>
+                                    </ul>
+                                </li>
+                                <li>To create and prepare a new <b>Group</b>
+                                    <ul class="filled-circle">
+                                        <li>Go to the MPS Database admin (https://mps.csb.pitt.edu/admin/) </li>
+                                        <li>Go to the MPS Authentication and Authorization Section</li>
+                                        <li>Click on Groups and scroll down to review how groups are named</li>
+                                        <li>Click on the ADD GROUP button on the top right side</li>
+                                        <li>Give the group a name (for example: my_group) </li>
+                                        <li>Click the Save and add another button </li>
+                                        <li>Give the group a name (for example: my_group Admin) </li>
+                                        <li>Click the Save and add another button </li>
+                                        <li>Give the group a name (for example: my_group Viewer) </li>
+                                        <li>Click the SAVE button </li>
+                                        <li>Return to the admin home page (https://mps.csb.pitt.edu/admin/) </li>
+                                        <li>Go to the MPS CENTERS AND MODELS Section </li>
+                                        <li>Scroll to find the Center with which the new group will be associated </li>
+                                        <li>Click on the center Name to select the center </li>
+                                        <li>Scroll down to the Groups section and add the new group (the group proper) to the center </li>
+                                        <li>Scroll down and click the SAVE button </li>
+                                    </ul>
+                                </li>
+                                <li><br>Notes
+                                    <ul class="filled-circle">
+                                        <li> It is very easy to forget to attach the group proper to a center. If you forget, you will not be able to use the group. </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <div id="study_groups_admin">
             <button class="collapsible1">Assigning Groups to Studies</button>
             <div class="content1">
@@ -4085,7 +4372,6 @@ Results: add a summary of the study results. </td>
                 </div>
             </div>
         </div>
-
 
         <div id="user_groups_admin">
             <button class="collapsible1">Assigning Users To Groups (Data Group, Stakeholder Group, Access Group)</button>

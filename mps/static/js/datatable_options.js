@@ -80,7 +80,7 @@ $(document).ready(function () {
     });
 
     // Indicates that floating headers need to be refreshed when a toggle-hide-button is clicked
-    $(document).on('click', '.toggle-hide-button', function() {
+    $(document).on('click', '.toggle-hide-button, .toggle_sidebar_button', function() {
         // Recalculate responsive and fixed headers
         setTimeout(function() {
             $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();

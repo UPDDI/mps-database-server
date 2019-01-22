@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+
+{% block load_js %}
+    <script src="{% static "assays/chart_display.js" %}"></script>
+    <script src="{% static "assays/assaystudyset_data_plots.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li class="active">Data Plots</li>
+{% endblock %}
+
+{% block sidebar %}
+    {% include 'assays/grouping_filtering.html' with charts='true' %}
+{% endblock %}
+
+{% block content %}
+<div class="row padded-row text-center padded-bottom large-padding-top">
+    {% if user.id == object.created_by_id %}
+    <a href="/assays/assaystudyset/{{ object.id}}/update" type="button" class="btn btn-xlarge btn-primary text-center submit-button" id="download_submit">
+        <span class="glyphicon glyphicon glyphicon-pencil" aria-hidden="true"></span>
+        Update
+    </a>
+    {% endif %}
+    <a href="/assays/assaystudyset/{{ object.id}}/reproducibility" type="button" class="btn btn-xlarge btn-primary text-center submit-button" id="repro_submit">
+        <span class="glyphicon glyphicon glyphicon-random" aria-hidden="true"></span>
+        Show Reproducibility
+    </a>
+    <a href="/assays/assaystudyset/{{ object.id}}/data" type="button" class="btn btn-xlarge btn-info text-center submit-button" id="download_submit">
+        <span class="glyphicon glyphicon glyphicon-download-alt" aria-hidden="true"></span>
+        Download
+    </a>
+
+    <div class="well large-margin-top">
+    <div class="form-group row">
+        <div class="col-md-8">
+            <input class="form-control" type="text" id="id_current_url_input" value="">
+        </div>
+
+        {# Note deprecated #}
+        <div class="col-md-4">
+            <button id="id_copy_url_button" class="btn btn-info">
+                <span class="glyphicon glyphicon glyphicon glyphicon-copy" aria-hidden="true"></span>
+                Copy URL to Clipboard
+            </button>
+        </div>
+    </div>
+    </div>
+</div>
+
+{% comment %} {% include 'assays/grouping_filtering.html' %}
+
+{% include 'assays/chart_options.html' with chart_prefix="charts" chart_title="Selected Data" %} {% endcomment %}
+
+{# Note indicating no data to display initially #}
+<div id="charts" class="padded-bottom">
+    No data to display
+</div>
+
+{% include 'assays/group_table.html' %}
+{% endblock %}

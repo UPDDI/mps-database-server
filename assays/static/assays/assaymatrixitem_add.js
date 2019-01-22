@@ -124,7 +124,7 @@ $(document).ready(function() {
     //         dynamic_excluded_new = {};
     //     }
     //
-    //     var dynamic_excluded = $.extend({}, dynamic_excluded_current, dynamic_excluded_new);
+    //     var dynamic_excluded = $.extend(true, {}, dynamic_excluded_current, dynamic_excluded_new);
     //
     //     var data = {
     //         call: 'validate_individual_chip_file',
@@ -456,7 +456,7 @@ $(document).ready(function() {
     };
 
     function plot_existing_data() {
-        var dynamic_excluded = $.extend({}, dynamic_excluded_current, dynamic_excluded_new);
+        var dynamic_excluded = $.extend(true, {}, dynamic_excluded_current, dynamic_excluded_new);
 
         var data = {
             call: 'fetch_data_points',
@@ -487,7 +487,9 @@ $(document).ready(function() {
                 window.spinner.stop();
 
                 window.CHARTS.prepare_side_by_side_charts(json, charts_name);
-                window.CHARTS.make_charts(json, charts_name, changes_to_chart_options);
+                // TODO TODO TODO FIX FIX FIX
+                // window.CHARTS.make_charts(json, charts_name, changes_to_chart_options);
+                window.CHARTS.make_charts(json, charts_name);
                 // Recalculate responsive and fixed headers
                 $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
                 $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();

@@ -2,6 +2,17 @@
 
 // Global variable for grouping
 window.GROUPING = {
+    // Refresh wrapper runs refresh_function under certain criteria
+    refresh_wrapper: function(manual_refresh) {
+        if (!window.GROUPING.refresh_function) {
+            console.log('Error refreshing');
+        }
+        else {
+            if (manual_refresh || !document.getElementById("id_manually_refresh").checked) {
+                window.GROUPING.refresh_function();
+            }
+        }
+    },
     // Starts null
     refresh_function: null,
     // Starts null
@@ -23,6 +34,8 @@ $(document).ready(function () {
     // Probably doesn't need to be global
     window.GROUPING.group_criteria = {};
     var grouping_checkbox_selector = $('.grouping-checkbox');
+
+    var post_filter_spawn_selector = $('.post-filter-spawn');
 
     // Iterate over matching placeholders and add correct icons
     var treatment_icon = $('<span>')
@@ -46,6 +59,36 @@ $(document).ready(function () {
     $('[data-group-type="trellis"]').each(function() {
         $(this).append(trellis_icon.clone());
     });
+
+    var toggle_sidebar_button = $('.toggle_sidebar_button');
+
+    // Contrived: Show the toggle sidebar button
+    toggle_sidebar_button.removeClass('hidden');
+
+    // Gray out filters with nothing in them
+    window.GROUPING.set_grouping_filtering = function(new_post_filter) {
+        if (window.GROUPING.full_post_filter === null) {
+            window.GROUPING.full_post_filter = JSON.parse(JSON.stringify(new_post_filter));
+            window.GROUPING.current_post_filter = JSON.parse(JSON.stringify(new_post_filter));
+
+            post_filter_spawn_selector.each(function() {
+                // Current parent model
+                current_parent_model = $(this).attr('data-parent-model');
+                // Current filter
+                current_filter = $(this).attr('data-filter-relation');
+
+                // PLEASE NOTE: TECHNICALLY SHOULD BE PROP
+                if (!new_post_filter || !new_post_filter[current_parent_model] || !new_post_filter[current_parent_model][current_filter] || new_post_filter[current_parent_model][current_filter].length < 2) {
+                    $(this).attr('disabled', 'disabled');
+                    $(this).removeClass('btn-info');
+                }
+                else {
+                    $(this).removeAttr('disabled');
+                    $(this).addClass('btn-info');
+                }
+            });
+        }
+    }
 
     // Semi-arbitrary at the moment
     window.GROUPING.get_grouping_filtering = function() {
@@ -93,8 +136,12 @@ $(document).ready(function () {
             {
                 text: 'Apply',
                 click: function() {
-                    window.GROUPING.current_post_filter[current_parent_model][current_filter] = $.extend({}, filter_buffer);
+                    window.GROUPING.current_post_filter[current_parent_model][current_filter] = $.extend(true, {}, filter_buffer);
                     filter_buffer = {};
+
+                    // Refresh on apply
+                    window.GROUPING.refresh_wrapper();
+
                     $(this).dialog("close");
                 }
             },
@@ -112,7 +159,7 @@ $(document).ready(function () {
 
     // Triggers for spawning filters
     // TODO REVISE THIS TERRIBLE SELECTOR
-    $('.post-filter-spawn').click(function() {
+    post_filter_spawn_selector.click(function() {
         // Parent row
         var current_title = $(this).parent().parent().find('td').eq(2).html();
 
@@ -130,7 +177,7 @@ $(document).ready(function () {
             current_post_filter_data = window.GROUPING.current_post_filter[current_parent_model][current_filter];
 
             // Initially set buffer to current
-            filter_buffer = $.extend({}, current_post_filter_data);
+            filter_buffer = $.extend(true, {}, current_post_filter_data);
 
             // Clear current contents
             if (filter_data_table) {
@@ -188,10 +235,6 @@ $(document).ready(function () {
                     { "className": "dt-center", "targets": 0}
                 ]
             });
-
-            // Swap positions of filter and length selection; clarify filter
-            $('.dataTables_filter').css('float', 'left').prop('title', 'Separate terms with a space to search multiple fields');
-            $('.dataTables_length').css('float', 'right');
 
             filter_popup.dialog('open');
         }
@@ -273,11 +316,48 @@ $(document).ready(function () {
     });
 
     $('#refresh_plots').click(function() {
-        if (!window.GROUPING.refresh_function) {
-            console.log('Error refreshing');
+        window.GROUPING.refresh_function();
+    });
+
+    // Setup triggers
+    // Sloppy: Checks for all sidebar inputs and selects
+    $('#sidebar').find('input, select').change(function() {
+        // Odd, perhaps innapropriate!
+        window.GROUPING.refresh_wrapper();
+    });
+
+    toggle_sidebar_button.click(function() {
+         $('#sidebar').toggleClass('active');
+         $('#page').toggleClass('pushed');
+    });
+
+    $(window).resize(function() {
+        if($(window).width() > 768) {
+             $('#page').addClass('pushed');
+             $('#sidebar').addClass('active');
         }
         else {
-            window.GROUPING.refresh_function();
+            $('#page').removeClass('pushed');
+            $('#sidebar').removeClass('active');
         }
+
+        // Adjust datatables
+        setTimeout(function() {
+            $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+        }, 250);
     });
+
+    if($(window).width() > 768) {
+        $('#page').addClass('pushed');
+        $('#sidebar').addClass('active');
+
+        setTimeout(function() {
+            $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+        }, 250);
+    }
+
+    // EXPERIMENTAL
+    // IF THERE IS A SIDEBAR, GET RID OF CONTAINER CLASS IN BREADCRUMBS AND FOOTER
+    $('#content').removeClass('container').addClass('fluid-container');
+    $('#footer').removeClass('container').addClass('fluid-container');
 });

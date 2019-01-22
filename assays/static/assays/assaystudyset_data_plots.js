@@ -1,36 +1,25 @@
+// TODO NOT DRY
 $(document).ready(function() {
     // Load core chart package
     google.charts.load('current', {'packages':['corechart']});
     // Set the callback
-    google.charts.setOnLoadCallback(get_readouts);
+    google.charts.setOnLoadCallback(show_plots);
 
-    window.CHARTS.call = 'fetch_data_points';
-
-    window.GROUPING.refresh_function = get_readouts;
-
-    var charts = $('#charts');
-    var study_id = Math.floor(window.location.href.split('/')[5]);
-
-    window.CHARTS.study_id = study_id;
-
-    // Name for the charts for binding events etc
     var charts_name = 'charts';
 
-    // Datatable for assays
-    $('#assay_table').DataTable( {
-        dom: 'B<"row">lfrtip',
-        fixedHeader: {headerOffset: 50},
-        responsive: true,
-        "iDisplayLength": 10,
-        // Initially sort on target (ascending)
-        "order": [ 0, "asc" ]
-    });
+    // TODO TODO TODO
+    window.GROUPING.refresh_function = show_plots;
 
-    function get_readouts() {
+    var study_set_id = Math.floor(window.location.href.split('/')[5]);
+
+    function show_plots() {
+        current_context = 'plots';
+
         var data = {
             // TODO TODO TODO CHANGE CALL
-            call: window.CHARTS.call,
-            study: study_id,
+            call: 'fetch_data_points_from_study_set',
+            intention: 'charting',
+            study_set_id: study_set_id,
             criteria: JSON.stringify(window.GROUPING.get_grouping_filtering()),
             post_filter: JSON.stringify(window.GROUPING.current_post_filter),
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
@@ -70,13 +59,19 @@ $(document).ready(function() {
         });
     }
 
-    $('#exportinclude_all').change(function() {
-        var export_button = $('#export_button');
-        if ($(this).prop('checked')) {
-            export_button.attr('href', export_button.attr('href') + '?include_all=true');
-        }
-        else {
-            export_button.attr('href', export_button.attr('href').split('?')[0]);
-        }
-    }).trigger('change');
+    // Setup triggers
+    $('#' + charts_name + 'chart_options').find('input').change(function() {
+        show_plots();
+    });
+
+    // On load
+    $(document).ready(function() {
+        document.getElementById('id_current_url_input').value = window.location.href
+    });
+
+    // On click of copy to URL button (DEPRECATED)
+    $('#id_copy_url_button').click(function() {
+        var current_url = document.getElementById('id_current_url_input'); current_url.select();
+        document.execCommand('copy');
+    });
 });
