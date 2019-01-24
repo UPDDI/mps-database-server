@@ -85,6 +85,13 @@
                     Standard Deviation
                 </label>
             </div>
+            <div>
+                {# TODO FIX STYLING #}
+                {% comment %} <label> {% endcomment %}
+                    # of Deviations/Errors
+                {% comment %} </label> {% endcomment %}
+                <input type="number" class="form-control" style="width: 50px; display: inline;" name="number_for_interval" id="number_for_interval" value="1">
+            </div>
             <div class="radio">
                 <label class="radio-inline">
                     <input type="radio" name="interval_type" id="iqr_select" value="iqr">
@@ -146,6 +153,75 @@
         </div>
     </li>
 </ul>
+
+{# TODO TO BE HIDDEN #}
+<div id="specific_graph_properties_container">
+<h3 class="text-center">
+    <u>Specific Graph Properties</u>
+</h3>
+
+<ul class="list-unstyled components padded-bottom" id="specific_graph_properties_table">
+<li>
+{% comment %} <legend>Legend</legend> {% endcomment %}
+    <a href="#legend" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
+        Legend
+    </a>
+      <div class="collapse well" id="legend">
+          <div>
+              <label>Legend Position</label>
+              <select class="form-control">
+              </select>
+          </div>
+      </div>
+</li>
+
+{% comment %} <legend>X-Axis</legend> {% endcomment %}
+
+<li>
+    <a href="#x_axis" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
+        X-Axis
+    </a>
+
+    <div class="collapse well" id="x_axis">
+        <label>Range</label>
+        <input type="number" class="form-control" style="width: 50px; display: inline;">
+        <span class="glyphicon glyphicon-chevron-right"></span>
+        <input type="number" class="form-control" style="width: 50px; display: inline;">
+    </div>
+</li>
+
+{% comment %} <legend>Y-Axis</legend> {% endcomment %}
+
+<li>
+    <a href="#y_axis" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
+        Y-Axis
+    </a>
+
+    <div class="collapse well" id="y_axis">
+        <label>Range</label>
+        <input type="number" class="form-control" style="width: 50px; display: inline;">
+        <span class="glyphicon glyphicon-chevron-right"></span>
+        <input type="number" class="form-control" style="width: 50px; display: inline;">
+    </div>
+</li>
+
+{% comment %} <legend>Markers</legend> {% endcomment %}
+
+<li>
+    <a href="#scatter_plot" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
+        Scatter Plot Options
+    </a>
+
+    <div class="collapse well" id="scatter_plot">
+        <label>
+            Show Point Marker
+            <input class="big-checkbox" type="checkbox" style="margin-left: 30px;">
+        </label>
+    </div>
+</li>
+
+</ul>
+</div>
 
 <div class="row text-center padded-bottom">
     <a role="button" class="btn btn-warning btn-lg show_hide_plots">Show/Hide Plots</a>

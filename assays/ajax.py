@@ -899,11 +899,13 @@ def get_item_groups(study, criteria, matrix_items=None):
 
 # TODO TODO TODO MAKE SURE STUDY NO LONGER REQUIRED
 # TODO TODO TODO  CLEAN UP
+# TODO WHY ARE THERE SO MANY PARAMS??
 def get_data_points_for_charting(
         raw_data,
         key,
         mean_type,
         interval_type,
+        number_for_interval,
         percent_control,
         include_all,
         truncate_negative,
@@ -1054,6 +1056,14 @@ def get_data_points_for_charting(
                 x for x in post_filter.get('matrix_item', {}).get(current_filter, [])
             ] for current_filter in post_filter.get('matrix_item', {}) if current_filter.startswith('assaysetupcompound__')
         }
+
+    # Process number_for_interval
+    try:
+        number_for_interval = float(number_for_interval)
+    # EVIL
+    except:
+        # Default to 1
+        number_for_interval = 1
 
     for raw in raw_data:
         value = raw.value
@@ -1242,13 +1252,14 @@ def get_data_points_for_charting(
 
                             # If standard deviation
                             if interval_type == 'std':
-                                interval = np.std(values)
+                                interval = np.std(values) * number_for_interval
                             # IQR
                             elif interval_type == 'iqr':
+                                # NOTE THAT THIS IS NOT MULTIPLIED BY number_for_interval
                                 interval = iqr(values)
                             # Standard error if not std
                             else:
-                                interval = np.std(values) / len(values) ** 0.5
+                                interval = np.std(values) / len(values) ** 0.5 * number_for_interval
 
                             average_interval_study_id = (
                                 average,
@@ -1499,6 +1510,7 @@ def fetch_data_points(request):
         request.POST.get('key', ''),
         request.POST.get('mean_type', ''),
         request.POST.get('interval_type', ''),
+        request.POST.get('number_for_interval', ''),
         request.POST.get('percent_control', ''),
         request.POST.get('include_all', ''),
         request.POST.get('truncate_negative', ''),
@@ -1554,6 +1566,7 @@ def validate_data_file(request):
     include_all = request.POST.get('include_all', '')
     truncate_negative = request.POST.get('truncate_negative', '')
     dynamic_quality = json.loads(request.POST.get('dynamic_quality', '{}'))
+    number_for_interval = request.POST.get('number_for_interval', ''),
 
     this_study = AssayStudy.objects.get(pk=int(study))
 
@@ -1574,6 +1587,7 @@ def validate_data_file(request):
             key,
             mean_type,
             interval_type,
+            number_for_interval,
             percent_control,
             include_all,
             truncate_negative,
@@ -2683,6 +2697,7 @@ def fetch_data_points_from_filters(request):
                 request.POST.get('key', ''),
                 request.POST.get('mean_type', ''),
                 request.POST.get('interval_type', ''),
+                request.POST.get('number_for_interval', ''),
                 request.POST.get('percent_control', ''),
                 request.POST.get('include_all', ''),
                 request.POST.get('truncate_negative', ''),

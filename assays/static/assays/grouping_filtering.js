@@ -321,7 +321,11 @@ $(document).ready(function () {
 
     // Setup triggers
     // Sloppy: Checks for all sidebar inputs and selects
-    $('#sidebar').find('input, select').change(function() {
+    // EVEN WORSE: INCLUDES SPECIAL EXCEPTIONS
+    $('#sidebar')
+        .find('input, select')
+        .not('#arithmetic_select, #geometric_select, #median_select')
+        .change(function() {
         // Odd, perhaps innapropriate!
         window.GROUPING.refresh_wrapper();
     });

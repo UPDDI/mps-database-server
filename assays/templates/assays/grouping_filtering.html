@@ -749,7 +749,6 @@
 </ul>
 </div>
 {% endif %}
-
 </nav>
 
 <div hidden id="filter_popup" title="X">
@@ -795,6 +794,13 @@
     {# How best to organize options? #}
     {# For the moment, just show butons for each type #}
     <div id="individual_plot_popup_options_section">
+
+      <div class="alert alert-info" role="info">
+          <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+          <span class="sr-only">Info:</span>
+          Please see the sidebar for more options
+      </div>
+
     <div class="row padded-bottom well">
       <div class="col-sm-4">
       <div class="fancy-checkbox table-filter padded-bottom" align="left">
@@ -860,18 +866,20 @@
         {# PLEASE NOTE CONTRIVANCE #}
         {% comment %} <div class="chart-container" id="individual_plot_popup_plot_container"> {% endcomment %}
         {# Inline style of width prevents glitch where in width changes on hover events #}
-        <div class="chart-container" id="popup_0" style="width: 500px; float: left; min-height: 400px;">
+        <div class="chart-container" id="popup_0" style="min-width: 750px; float: left; min-height: 400px;">
         </div>
 
         {# Options section #}
+        {# Never mind on the options section being here #}
+        {% comment %}
         <div class="well" style="width: 275px; float: left;">
             {# Legend position is tricky... especially with the options on the side #}
-            {% comment %} <legend>Legend</legend> {% endcomment %}
-            {% comment %} <div>
+            <legend>Legend</legend>
+            <div>
                 Legend Position
                 <select class="form-control">
                 </select>
-            </div> {% endcomment %}
+            </div>
 
             <div>
                 <label>Legend By</label>
@@ -879,14 +887,14 @@
                 </select>
             </div>
 
-            {% comment %} <legend>X-Axis</legend> {% endcomment %}
+            <legend>X-Axis</legend>
 
             <div>
                 <label>X-Axis Range</label>
                 <input style="width: 50px;"> <span class="glyphicon glyphicon-chevron-right"></span> <input style="width: 50px;">
             </div>
 
-            {% comment %} <legend>Y-Axis</legend> {% endcomment %}
+            <legend>Y-Axis</legend>
 
             <div class="padded-bottom">
                 <label>Y-Axis Range</label>
@@ -894,9 +902,9 @@
             </div>
 
             {# Deferred #}
-            {% comment %} <legend>Filtering</legend> {% endcomment %}
+            <legend>Filtering</legend>
 
-            {% comment %} <legend>Markers</legend> {% endcomment %}
+            <legend>Markers</legend>
 
             <div class="padded-bottom">
                 <label>
@@ -905,13 +913,13 @@
                 </label>
             </div>
 
-            {% comment %} <legend>Error By</legend> {% endcomment %}
+            <legend>Error By</legend>
             <div>
                 <label id="aggregation_type">Error Bar Standard Deviations</label>
                 <input>
             </div>
 
-            {% comment %} <legend>Time Unit</legend> {% endcomment %}
+            <legend>Time Unit</legend>
 
             <div>
                 <label>Time Unit</label>
@@ -924,6 +932,7 @@
 
             <div style="padding-bottom: 100px;">
         </div>
+        {% endcomment %}
     </div>
 </div>
 

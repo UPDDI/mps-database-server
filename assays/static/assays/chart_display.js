@@ -557,7 +557,12 @@ $(document).ready(function () {
         //$.each($('#' + charts + 'chart_options').find('input'), function() {
         // Object extraneous as there is only one option set now
         $('#charting_options_tables').find('input').each(function() {
+            // For radio and checkboxes
             if (this.checked) {
+                options[this.name] = this.value;
+            }
+            // For numeric
+            else if (this.type === 'number') {
                 options[this.name] = this.value;
             }
         });
@@ -973,10 +978,15 @@ $(document).ready(function () {
     };
 
     // Setup triggers
-    $('#charting_options_tables').find('input, select').change(function() {
-        // Odd, perhaps innapropriate!
-        window.GROUPING.refresh_wrapper();
-    });
+    // EXCLUDES SPECIAL TRIGGERS (SLOPPY)
+    // NOTE: THIS IS DONE IN GROUPING FILTERING NOW (AVOID DOUBLE)
+    // $('#charting_options_tables')
+    //     .find('input, select')
+    //     .not('#arithmetic_select, #geometric_select, #median_select')
+    //     .change(function() {
+    //         // Odd, perhaps innapropriate!
+    //         window.GROUPING.refresh_wrapper();
+    // });
 
     // TODO TODO TODO NOT DRY
     $(document).on('click', '.chart-filter-checkbox', function() {
@@ -1036,4 +1046,51 @@ $(document).ready(function () {
         current_chart_id = Math.floor($(this).attr('id').split('_')[1]);
         individual_plot_popup.dialog('open');
     });
+
+    // THESE ARE SPECIAL TRIGGERS TO PREVENT SELECTING MEDIAN AND STE/STD
+    // ALSO PREVENTS SELECTING MEAN AND IQR
+    // ALSO THE SELECTORS ARE NOT SO GOOD
+    var iqr_selector = $('#iqr_select');
+    var std_selector = $('#std_select');
+    var ste_selector = $('#ste_select');
+
+    $('#arithmetic_select, #geometric_select').change(function() {
+        // Enable proper options
+        std_selector.removeAttr('disabled');
+        ste_selector.removeAttr('disabled');
+
+        // At the end, see if iqr is selected, if so then default to ste
+        // (mean and iqr are forbidden together)
+        if (iqr_selector.prop('checked')) {
+            ste_selector.trigger('click');
+        }
+        else {
+            // Odd, perhaps innapropriate!
+            window.GROUPING.refresh_wrapper();
+        }
+
+        // Forbid iqr
+        iqr_selector.attr('disabled', 'disabled');
+    });
+
+    $('#median_select').change(function() {
+        // Enable proper options
+        iqr_selector.removeAttr('disabled');
+
+        // At the end, see if iqr is selected, if so then default to ste
+        // (mean and iqr are forbidden together)
+        if (std_selector.prop('checked') || ste_selector.prop('checked')) {
+            iqr_selector.trigger('click');
+        }
+        else {
+            // Odd, perhaps innapropriate!
+            window.GROUPING.refresh_wrapper();
+        }
+
+        // Forbid std and ste
+        std_selector.attr('disabled', 'disabled');
+        ste_selector.attr('disabled', 'disabled');
+    });
+
+    iqr_selector.attr('disabled', 'disabled');
 });
