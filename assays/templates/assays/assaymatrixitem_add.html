@@ -2,8 +2,13 @@
 {% load static %}
 {% load custom_filters %}
 
+{% block extra_head %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+
 {% block load_js %}
     {# <script src="{% static "js/inline_add.js" %}"></script>#}
+    <script src="{% static "assays/grouping_filtering.js" %}"></script>
     <script src="{% static "js/datepicker.js" %}"></script>
     <script src="{% static "js/enter_override.js" %}"></script>
     <script src="{% static "assays/compound_instances.js" %}"></script>
@@ -12,10 +17,6 @@
     <script src="{% static "assays/organ_model_filter.js" %}"></script>
     <script src="{% static "assays/assaymatrixitem_add.js" %}"></script>
     <script src="{% static "js/flag.js" %}"></script>
-{% endblock %}
-
-{% block extra_head %}
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 {% endblock %}
 
 {% block breadcrumbs %}

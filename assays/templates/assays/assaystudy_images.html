@@ -1,10 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block load_js %}
-    <script src="{% static "assays/image_interface.js" %}"></script>
-{% endblock %}
-
 {% block extra_head %}
     <script>
         var metadata_list = JSON.parse("{{ metadata|escapejs|safe }}");
@@ -12,6 +8,10 @@
         var tableCols = JSON.parse("{{ tableCols|escapejs|safe }}");
         var tableData = JSON.parse("{{ tableData|escapejs|safe }}");
     </script>
+{% endblock %}
+
+{% block load_js %}
+    <script src="{% static "assays/image_interface.js" %}"></script>
 {% endblock %}
 
 {% block breadcrumbs %}

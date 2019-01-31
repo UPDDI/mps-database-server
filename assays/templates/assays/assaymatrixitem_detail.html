@@ -2,13 +2,14 @@
 {% load static %}
 {% load humanize %}
 
-{% block load_js %}
-    <script src="{% static "assays/chart_display.js" %}"></script>
-    <script src="{% static "assays/assaymatrixitem_add.js" %}"></script>
-{% endblock %}
-
 {% block extra_head %}
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+
+{% block load_js %}
+    <script src="{% static "assays/grouping_filtering.js" %}"></script>
+    <script src="{% static "assays/chart_display.js" %}"></script>
+    <script src="{% static "assays/assaymatrixitem_add.js" %}"></script>
 {% endblock %}
 
 {% block breadcrumbs %}
