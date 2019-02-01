@@ -88,6 +88,13 @@ $(document).ready(function() {
             document.getElementById("spinner")
         );
 
+        // // Center spinner
+        // $(".spinner").position({
+        //     my: "center",
+        //     at: "center",
+        //     of: "#piechart"
+        // });
+
         $.ajax({
             url: "/assays_ajax/",
             type: "POST",
@@ -422,6 +429,7 @@ $(document).ready(function() {
     var initial_norm = $('#initial_norm').prop('checked') ? 1 : 0;
 
     var status_column_index = 14;
+    var icc_column_index = 12;
 
     //  Pie chart options etc.
     var na_options = {
@@ -517,6 +525,15 @@ $(document).ready(function() {
         window.spinner.spin(
             document.getElementById("spinner")
         );
+
+        // Center spinner
+        // TODO NOT a satisfactory solution.
+        // Displaces on resize, or if page is still "expanding" when center of #piechart check is made.
+        $(".spinner").position({
+            my: "center",
+            at: "center",
+            of: "#piechart"
+        });
 
         var columns = [
             {
@@ -664,7 +681,13 @@ $(document).ready(function() {
                     value_unit_index = json.header_keys.data.indexOf('Value Unit');
 
                     // Piechart info
-                    if (summary_pie === '0,0,0'){
+                    var pie_all_zero = summary_pie.every(function(x){
+                        if (!x){
+                            return true;
+                        }
+                        return false;
+                    })
+                    if (pie_all_zero){
                         pie_chart = new google.visualization.PieChart(document.getElementById('piechart'));
                         pie_chart.draw(na_data, na_options);
                     } else {
@@ -714,7 +737,7 @@ $(document).ready(function() {
                     }
                 }}
             ],
-            "order": [[status_column_index, 'desc'], [ 1, "asc" ]],
+            "order": [[status_column_index, 'desc'], [icc_column_index, 'desc']],
             // Column visibility toggle would displace, hence new means of coloring.
             // "createdRow": function(row, data, dataIndex) {
             //     if (data[8][0] === "E") {
@@ -744,6 +767,12 @@ $(document).ready(function() {
                 // Swap positions of filter and length selection; clarify filter
                 $('.dataTables_filter').css('float', 'left').prop('title', 'Separate terms with a space to search multiple fields');
                 $('.dataTables_length').css('float', 'right');
+
+                // Stopgap: Remove compound column if no compound criteria selected
+                if (!window.GROUPING.get_grouping_filtering()['compound'] || window.GROUPING.get_grouping_filtering()['compound'].indexOf('compound_instance.compound_id') === -1) {
+                    // Note magic number
+                    repro_table.column(5).visible(false);
+                }
             },
             drawCallback: function () {
                 // Make sure tooltips displayed properly
@@ -1424,7 +1453,7 @@ $(document).ready(function() {
                     } else {
                         color = "Grey";
                     }
-                    content = "&emsp;Reproducibility Status: <em style='padding:2px; background-color: " + color + "'><a style='color: #333;' href='"+ repro_url +"' target='_blank'>" + json[x] + "</a></em>";
+                    content = "&emsp;Reproducibility Status: <em style='padding:2px; background-color: " + color + "'><a style='color: #333;' href='" + repro_url + "' target='_blank'>" + json[x] + "</a></em>";
                     $(studies_anchors[x]).after(content);
                 }
             },

@@ -28,6 +28,8 @@ $(document).ready(function () {
 
     var gas_table = null;
 
+    var repro_info_table_display = $('#repro_info_table_display');
+
     function escapeHtml(html) {
         return $('<div>').text(html).html();
     }
@@ -62,24 +64,26 @@ $(document).ready(function () {
                 var $clone = $elem.clone( true ).removeAttr('id').addClass('repro-'+group).appendTo("#clone-container");
                 $clone.removeClass('hidden');
                 mad_list[group]['columns'].unshift("Time");
-                $clone.find('#repro-title').text('Set ' + group);
-                $clone.find('#selection-parameters').html(build_selection_parameters(studyID, organModel, targetAnalyte, methodKit, sampleLocation, compoundTreatments, valueUnit));
-                $clone.find('#selection-parameters').find('td, th').css('padding','8px 10px');
-                $clone.find('#chip-rep-rep-ind').html(buildCV_ICC(data[5],data[6]));
-                $clone.find('#chip-rep-rep-ind').find('td, th').css('padding','8px 10px');
-                $clone.find('#chart1').attr('id', 'chart1-'+group);
-                $clone.find('#chart2').attr('id', 'chart2-'+group);
-                $clone.find('#mad-score-label').html($clone.find('#mad-score-label').html() + make_escaped_tooltip(mad_tooltip));
-                $clone.find('#med-comp-label').html($clone.find('#med-comp-label').html() + make_escaped_tooltip(comp_tooltip));
+                $clone.find('[data-id=repro-title]').text('Set ' + group);
+                $clone.find('[data-id=selection-parameters]').html(build_selection_parameters(studyID, organModel, targetAnalyte, methodKit, sampleLocation, compoundTreatments, valueUnit));
+                $clone.find('[data-id=selection-parameters]').find('td, th').css('padding','8px 10px');
+                $clone.find('[data-id=chip-rep-rep-ind]').html(buildCV_ICC(data[5],data[6]));
+                $clone.find('[data-id=chip-rep-rep-ind]').find('td, th').css('padding','8px 10px');
+                $clone.find('[data-id=chart1]').attr('id', 'chart1-'+group);
+                $clone.find('[data-id=chart2]').attr('id', 'chart2-'+group);
+                $clone.find('[data-id=mad-score-label]').html($clone.find('[data-id=mad-score-label]').html() + make_escaped_tooltip(mad_tooltip));
+                $clone.find('[data-id=med-comp-label]').html($clone.find('[data-id=med-comp-label]').html() + make_escaped_tooltip(comp_tooltip));
+                var color;
                 if (icc_status[0] === 'E'){
-                    $clone.find('#repro-status').html('<em>'+icc_status+'</em>').css("background-color", "#74ff5b");
+                    color = "#74ff5b";
                 } else if (icc_status[0] === 'A'){
-                    $clone.find('#repro-status').html('<em>'+icc_status+'</em>').css("background-color", "#fcfa8d");
+                    color = "#fcfa8d";
                 } else if (icc_status[0] === 'P'){
-                    $clone.find('#repro-status').html('<em>'+icc_status+'</em>').css("background-color", "#ff7863");
+                    color = "#ff7863";
                 } else {
-                    $clone.find('#repro-status').html('<em>'+icc_status+'</em><small style="color: black;"><span data-toggle="tooltip" title="'+data[14]+'" class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></small>').css("background-color", "Grey");
+                    color = "Grey";
                 }
+                $clone.find('[data-id=repro-status]').html('<em style="padding: 2px; background-color:' + color + '">' + icc_status + '</em><small style="color: #333;"><span data-toggle="tooltip" title="'+data[14]+'" class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></small>');
 
                 // More than 6 rows, scrollY 270px, else 100%
                 var mad_scroll_y = "100%";
@@ -95,7 +99,7 @@ $(document).ready(function () {
                     }
                 }
 
-                var mad_score_matrix = $clone.find('#mad-score-matrix').DataTable({
+                var mad_score_matrix = $clone.find('[data-id=mad-score-matrix]').DataTable({
                     columns: mad_columns(group),
                     data: mad_list[group]['data'],
                     searching: false,
@@ -107,7 +111,7 @@ $(document).ready(function () {
                     scrollX: "100%"
                 });
 
-                var median_comparisons_table = $clone.find('#chip-comp-med').DataTable({
+                var median_comparisons_table = $clone.find('[data-id=chip-comp-med]').DataTable({
                     columns: [
                         { title: "Chip ID", data: '0' },
                         { title: "ICC Absolute Agreement", data: '1' },
@@ -129,7 +133,7 @@ $(document).ready(function () {
         });
     }
 
-    var studyID = $( "#selection-parameters" ).find(".studyId").text();
+    var studyID = $( "[data-id=selection-parameters]" ).find(".studyId").text();
 
     // Activates Bootstrap tooltips
     $('[data-toggle="tooltip"]').tooltip({container:"body", html: true});
@@ -141,11 +145,11 @@ $(document).ready(function () {
         var current_repro = $('.repro-' + number);
         if (checkbox.is(':checked')) {
             current_repro.removeClass('hidden');
-            current_repro.find('#chip-comp-med, #mad-score-matrix').find('table').DataTable().fixedHeader.enable();
+            current_repro.find('[data-id=chip-comp-med], [data-id=mad-score-matrix]').find('table').DataTable().fixedHeader.enable();
             draw_charts(number);
         } else {
             current_repro.addClass('hidden');
-            current_repro.find('#chip-comp-med, #mad-score-matrix').find('table').DataTable().fixedHeader.disable();
+            current_repro.find('[data-id=chip-comp-med], [data-id=mad-score-matrix]').find('table').DataTable().fixedHeader.disable();
         }
         // Activates Bootstrap tooltips
         $('[data-toggle="tooltip"]').tooltip({container:"body", html: true});
@@ -165,6 +169,15 @@ $(document).ready(function () {
         window.spinner.spin(
             document.getElementById("spinner")
         );
+
+        // Center spinner
+        // TODO NOT a satisfactory solution.
+        // Displaces on resize, or if page is still "expanding" when center of #piechart check is made.
+        $(".spinner").position({
+            my: "center",
+            at: "center",
+            of: "#piechart"
+        });
 
         if (gas_table) {
             gas_table.clear();
@@ -564,7 +577,7 @@ $(document).ready(function () {
     function build_selection_parameters(studyId, organModel, targetAnalyte, methodKit, sampleLocation, compoundTreatments, valueUnit){
         var content = ''
         if (targetAnalyte) {
-            content += '<tr><th><h4><strong>Target/Analyte</strong></h4></th><td id="target-analyte-value"><h4><strong>'+targetAnalyte+'</strong></h4></td></tr>'
+            content += '<tr><th><strong style="font-size: 16px;">Target/Analyte</strong></th><td><strong style="font-size: 16px;">'+targetAnalyte+'</strong></td></tr>'
         }
         if (studyId) {
             content += '<tr><th>Study ID</th><td>'+studyId+'</td></tr>'
@@ -582,7 +595,7 @@ $(document).ready(function () {
             content += '<tr><th>Compound Treatment(s)</th><td>'+compoundTreatments+'</td></tr>'
         }
         if (valueUnit) {
-            content += '<tr><th>Value Unit</th><td id="value-unit">'+valueUnit+'</td></tr>'
+            content += '<tr><th>Value Unit</th><td>'+valueUnit+'</td></tr>'
         }
         return content;
     }
@@ -600,6 +613,25 @@ $(document).ready(function () {
             var obj = { 'title' : value };
             columns.push(obj);
         });
-        return columns
+        return columns;
     }
+
+    $(document).on('mouseover', '.repro-set-info', function() {
+        var current_position = $(this).offset();
+
+        var current_top = current_position.top + 20;
+        var current_left = current_position.left - 100;
+
+        var current_group = Math.floor($(this).html());
+        var current_section = $('.repro-' + current_group);
+        var current_table = current_section.find('[data-id=selection-parameters]');
+        var clone_table = current_table.parent().html();
+        repro_info_table_display.html(clone_table)
+            .show()
+            .css({top: current_top, left: current_left, position:'absolute'});
+    });
+
+    $(document).on('mouseout', '.repro-set-info', function() {
+        repro_info_table_display.hide();
+    });
 });

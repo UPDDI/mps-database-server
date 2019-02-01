@@ -42,9 +42,8 @@
         {% include 'assays/grouping_filtering.html' with intra_flag="1" %}
     </div> {% endcomment %}
 {% endblock %}
-<br>
 {% block fluid-content %}
-    <br><div class="text-center"><strong>Reproducibility Breakdown</strong><br><small>(Hover for Details)</small></div>
+    <div class="text-center large-padding-top"><strong>Reproducibility Breakdown</strong><br><small>(Hover for Details)</small></p></div>
     <div id="piechart" class="text-center" style="width: 250px; height: 250px; margin: auto; display: block;">Loading...</div>
 
     <div class="row padded-row">
@@ -67,71 +66,74 @@
     <div class="row padded-row">
         <div class="col-xs-12">
         <label>Replica Set Table</label>
-        <table id='gas-table' class="display table-bordered" cellspacing="0" width="100%">
+        <table id='gas-table' class="display table-bordered" width="100%">
 
         </table>
         </div>
     </div>
 
-    <br><hr><br>
+    <hr>
     <div id='clone-container'>
 
     </div>
 
     <div id='repro-data' class='container hidden'>
         <div class='row'>
-            <div class='col-xs-12'><h2 id='repro-title' class='text-center'></h2></div>
+            <div class='col-xs-12'><h2 data-id='repro-title' class='text-center'></h2></div>
         </div>
-        <br>
         <div class='row' style='text-align: left;'>
             <div class='col-md-12'>
-                <h3>Reproducibility Status: <span id='repro-status'></span></h3>
+                <h3>Reproducibility Status: <span data-id='repro-status'></span></h3>
+            </div>
+        </div>
+        <div class='row padded-bottom'>
+            <div class='col-md-6'>
+                <div class="padded-bottom">
+                    <label>Selection Parameters</label>
+                    <table data-id='selection-parameters' class="table table-striped table-condensed table-bordered bg-white">
+                        <tr><th>Study ID</th><td class='studyId'>{{ object }}</td></tr>
+                    </table>
+                </div>
+                <div>
+                    <label>Chip Replicates Reproducibility Indices</label>
+                    <table data-id='chip-rep-rep-ind' class="table table-striped table-condensed table-bordered bg-white">
+
+                    </table>
+                </div>
+            </div>
+            <div class='col-md-6'>
+                <div data-id='chart1'>
+
+                </div>
+                <div data-id='chart2'>
+
+                </div>
             </div>
         </div>
         <div class='row'>
             <div class='col-md-6'>
-                <label>Selection Parameters</label>
-                <table id='selection-parameters' class='table-bordered table-striped'>
-                    <tr><th>Study ID</th><td class='studyId'>{{ object }}</td></tr>
-                </table>
-                <br>
-                <label>Chip Replicates Reproducibility Indices</label>
-                <table id='chip-rep-rep-ind' class='table-hover table-striped table-bordered'>
-
-                </table>
-            </div>
-            <div class='col-md-6'>
-                <div id='chart1'>
-
-                </div>
-                <div id='chart2'>
-
-                </div>
-            </div>
-        </div>
-        <br><br>
-        <div class='row'>
-            <div class='col-md-6'>
-                <label id='mad-score-label'>Chip MAD Scores of Assay Target/Analyte Measurements </label>
+                <label data-id='mad-score-label'>Chip MAD Scores of Assay Target/Analyte Measurements </label>
                 <div style="display: inline-block; max-height: 300px; max-width: 100%;">
-                <table id='mad-score-matrix' class='table-hover table-striped table-bordered pull-left spawned-datatable'>
+                    <table data-id='mad-score-matrix' class='table-hover table-striped table-bordered pull-left spawned-datatable'>
 
                 </table>
                 </div>
             </div>
             <div class='col-md-6'>
-                <label id='med-comp-label'>Compare with the Median of the Chip Observations </label>
+                <label data-id='med-comp-label'>Compare with the Median of the Chip Observations </label>
                 <div style="display: inline-block; max-height: 300px; max-width: 100%;">
-                <table id='chip-comp-med' class='table-hover table-striped table-bordered pull-left spawned-datatable'>
+                    <table data-id='chip-comp-med' class='table-hover table-striped table-bordered pull-left spawned-datatable'>
 
                 </table>
                 </div>
             </div>
         </div>
-        <br>
-        <div id='overflow' class='row'>
+        <div data-id='overflow' class='row'>
 
         </div>
-        <br><hr><br>
+        <hr class="padding-top padding-bottom">
+    </div>
+    <div hidden id="repro_info_table_display" class="container hidden-print bg-warning ui-dialog">
+
     </div>
 {% endblock %}
