@@ -432,6 +432,9 @@ $(document).ready(function () {
         if (use_dose_response.prop('checked')) {
             options.ajax_data.key = 'dose';
         }
+        else {
+            options.ajax_data.key = window.CHARTS.global_options.ajax_data.key;
+        }
 
         data = $.extend(data, options.ajax_data);
 
