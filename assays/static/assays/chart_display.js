@@ -267,6 +267,8 @@ $(document).ready(function () {
     // var individual_plot_popup_plot_container = $('#individual_plot_popup_plot_container');
     var individual_plot_popup_plot_container = $('#popup_0');
 
+    var specific_graph_properties_container = $('#specific_graph_properties_container');
+
     function refresh_preview() {
         // Kill events
         destroy_events('popup');
@@ -304,7 +306,7 @@ $(document).ready(function () {
 
                 // Remove bg-info from sidebar stuff
                 $('#charting_sidebar_section').removeClass('bg-info');
-                $('#specific_graph_properties_container').hide('slow');
+                // specific_graph_properties_container.hide('slow');
 
                 apply_options_to_sidebar(window.CHARTS.global_options.ajax_data, false);
             },
@@ -318,7 +320,7 @@ $(document).ready(function () {
 
                 // Add bg-info from sidebar stuff
                 $('#charting_sidebar_section').addClass('bg-info');
-                $('#specific_graph_properties_container').show('slow');
+                // specific_graph_properties_container.show('slow');
 
                 // Apply options to sidebar
                 apply_options_to_sidebar(all_options['charts'][current_chart_id].ajax_data, true);
