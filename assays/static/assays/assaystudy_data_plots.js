@@ -19,9 +19,10 @@ $(document).ready(function() {
         $(this).attr('href', initial_href + '?' + get_for_href);
     });
 
-    function show_plots() {
-        current_context = 'plots';
+    window.CHARTS.call = 'fetch_data_points_from_filters';
+    window.CHARTS.filters = filters;
 
+    function show_plots() {
         var data = {
             // TODO TODO TODO CHANGE CALL
             call: 'fetch_data_points_from_filters',
@@ -32,7 +33,8 @@ $(document).ready(function() {
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
         };
 
-        var options = window.CHARTS.prepare_chart_options(charts_name);
+        window.CHARTS.global_options = window.CHARTS.prepare_chart_options();
+        var options = window.CHARTS.global_options.ajax_data;
 
         data = $.extend(data, options);
 
@@ -40,6 +42,13 @@ $(document).ready(function() {
         window.spinner.spin(
             document.getElementById("spinner")
         );
+
+        // // Center spinner
+        // $(".spinner").position({
+        //     my: "center",
+        //     at: "center",
+        //     of: "#piechart"
+        // });
 
         $.ajax({
             url: "/assays_ajax/",
@@ -72,9 +81,4 @@ $(document).ready(function() {
             }
         });
     }
-
-    // Setup triggers
-    $('#' + charts_name + 'chart_options').find('input').change(function() {
-        show_plots();
-    });
 });

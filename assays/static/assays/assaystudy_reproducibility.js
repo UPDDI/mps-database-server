@@ -574,6 +574,7 @@ $(document).ready(function () {
         return !all_null;
     }
 
+    // TODO INFLEXIBLE
     function build_selection_parameters(studyId, organModel, targetAnalyte, methodKit, sampleLocation, compoundTreatments, valueUnit){
         var content = ''
         if (targetAnalyte) {

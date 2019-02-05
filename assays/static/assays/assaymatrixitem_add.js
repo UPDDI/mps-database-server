@@ -29,6 +29,9 @@ $(document).ready(function() {
     var matrix_item_id = get_matrix_item();
     var study_id = get_study_id();
 
+    window.CHARTS.call = 'fetch_data_points';
+    window.CHARTS.matrix_item_id = matrix_item_id;
+
     // Name for the charts for binding events etc
     var charts_name = 'charts';
 
@@ -135,7 +138,7 @@ $(document).ready(function() {
     //         include_table: include_table
     //     };
     //
-    //     var options = window.CHARTS.prepare_chart_options(charts_name);
+    //     window.CHARTS.global_options = window.CHARTS.prepare_chart_options();
     //
     //     data = $.extend(data, options);
     //
@@ -468,7 +471,8 @@ $(document).ready(function() {
             dynamic_excluded: JSON.stringify(dynamic_excluded)
         };
 
-        var options = window.CHARTS.prepare_chart_options(charts_name);
+        window.CHARTS.global_options = window.CHARTS.prepare_chart_options();
+        var options = window.CHARTS.global_options.ajax_data;
 
         data = $.extend(data, options);
 
@@ -552,11 +556,6 @@ $(document).ready(function() {
     // Refresh on change in overwrite option NEED REPLCATE TO BE ACCURATE
     $('#id_overwrite_option').change(function() {
         refresh_table_and_charts();
-    });
-
-    // Setup triggers
-    $('#' + charts_name + 'chart_options').find('input').change(function() {
-        refresh_chart_only();
     });
 
     // Handling Device flow

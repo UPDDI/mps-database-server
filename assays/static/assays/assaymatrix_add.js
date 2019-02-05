@@ -1163,6 +1163,9 @@ $(document).ready(function () {
 
         window.GROUPING.refresh_function = get_readouts;
 
+        window.CHARTS.call = 'fetch_data_points';
+        window.CHARTS.matrix_id = matrix_id;
+
         function get_readouts() {
             var data = {
                 // TODO TODO TODO CHANGE CALL
@@ -1173,7 +1176,8 @@ $(document).ready(function () {
                 csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
             };
 
-            var options = window.CHARTS.prepare_chart_options(charts_name);
+            window.CHARTS.global_options = window.CHARTS.prepare_chart_options();
+            var options = window.CHARTS.global_options.ajax_data;
 
             data = $.extend(data, options);
 
@@ -1206,10 +1210,5 @@ $(document).ready(function () {
                 }
             });
         }
-
-        // Setup triggers
-        $('#' + charts_name + 'chart_options').find('input').change(function() {
-            get_readouts();
-        });
     }
 });

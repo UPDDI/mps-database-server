@@ -7,6 +7,7 @@
 
 {% block load_js %}
     <script src="{% static "assays/grouping_filtering.js" %}"></script>
+    <script src="{% static "assays/repro_triggers.js" %}"></script>
     <script src="{% static "assays/assay_interstudy_reproducibility.js" %}"></script>
 {% endblock %}
 
@@ -15,7 +16,7 @@
 {% endblock %}
 
 {% block sidebar %}
-    {% include 'assays/grouping_filtering.html' %}
+    {% include 'assays/grouping_filtering.html' with repro='true' %}
 {% endblock %}
 
 {% block fluid-content %}
@@ -34,12 +35,10 @@
     </a>
 </div>
 
-{# <div class="container" id="grouping_filtering"> #}
-    {# {% include 'assays/grouping_filtering.html' %} #}
-{# </div> #}
+{% include 'assays/sidebar_extras.html' %}
 
-{# TODO TODO TODO NEED GROUPING  AND FILTERING STUFF HERE TOO #}
-{# <div class="container"> #}
+{# NEEDS TO BE MOVED #}
+{% comment %} <div class="container">
 <div class="well">
     {# TODO TODO TODO #}
     <div class="row form-group">
@@ -65,7 +64,7 @@
     </div>
     </div>
 </div>
-{# </div> #}
+</div> {% endcomment %}
 
 <div class="row padded-row">
     <br><div class="text-center"><strong>Reproducibility Breakdown</strong><br><small>(Hover for Details)</small></div>

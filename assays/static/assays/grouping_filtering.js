@@ -322,30 +322,13 @@ $(document).ready(function () {
         window.GROUPING.refresh_function();
     });
 
-    // Setup triggers
-    // Sloppy: Checks for all sidebar inputs and selects
-    // EVEN WORSE: INCLUDES SPECIAL EXCEPTIONS
-    // $('#sidebar')
-    //     .find('input, select')
-    //     .not('#arithmetic_select, #geometric_select, #median_select')
-    //     .change(function() {
-    //         // Odd, and even more innapropriate
-    //         // PLEASE REFACTOR ASAP
-    //         if (window.CHARTS) {
-    //             window.CHARTS.global_options.ajax_data = $.extend(true, {}, window.CHARTS.prepare_chart_options('charts'));
-    //         }
-    //
-    //         // Odd, perhaps innapropriate!
-    //         window.GROUPING.refresh_wrapper();
-    //     });
-
     toggle_sidebar_button.click(function() {
          $('#sidebar').toggleClass('active');
          $('#page').toggleClass('pushed');
     });
 
     $(window).resize(function() {
-        if($(window).width() > 768) {
+        if ($(window).width() > 768) {
              $('#page').addClass('pushed');
              $('#sidebar').addClass('active');
         }

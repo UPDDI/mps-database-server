@@ -2486,8 +2486,8 @@ class AssayImage(models.Model):
     # Stored in minutes
     time = models.FloatField()
     # Possibly used later, who knows
-    assay_plate_id = models.CharField(max_length=40, default='N/A')
-    assay_well_id = models.CharField(max_length=40, default='N/A')
+    assay_plate_id = models.CharField(max_length=255, default='N/A')
+    assay_well_id = models.CharField(max_length=255, default='N/A')
     # PLEASE NOTE THAT I USE TARGET AND METHOD SEPARATE FROM ASSAY INSTANCE
     method = models.ForeignKey(AssayMethod)
     target = models.ForeignKey(AssayTarget)
@@ -2495,7 +2495,7 @@ class AssayImage(models.Model):
     subtarget = models.ForeignKey(AssaySubtarget)
     sample_location = models.ForeignKey(AssaySampleLocation)
     notes = models.CharField(max_length=500, default='')
-    replicate = models.CharField(max_length=40, default='')
+    replicate = models.CharField(max_length=255, default='')
     setting = models.ForeignKey(AssayImageSetting)
 
     def get_metadata(self):

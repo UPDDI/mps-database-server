@@ -12,6 +12,7 @@
 
 {% block load_js %}
     <script src="{% static "assays/grouping_filtering.js" %}"></script>
+    <script src="{% static "assays/repro_triggers.js" %}"></script>
     <script src="{% static "assays/assaystudy_reproducibility.js" %}"></script>
     <script src="{% static "assays/chart_display.js" %}"></script>
 {% endblock %}
@@ -23,11 +24,11 @@
 {% endblock %}
 
 {% block sidebar %}
-    {% include 'assays/grouping_filtering.html' %}
+    {% include 'assays/grouping_filtering.html' with repro='true' %}
 {% endblock %}
 
-{% block content %}
-    <div class="well">
+{% block fluid-content %}
+    <div class="well padded-bottom large-padding-top">
         <div class="row text-center">
             <h1>
                 {{ object }}
@@ -38,11 +39,8 @@
         </div>
     </div>
 
-    {% comment %} <div class="container" id="grouping_filtering">
-        {% include 'assays/grouping_filtering.html' with intra_flag="1" %}
-    </div> {% endcomment %}
-{% endblock %}
-{% block fluid-content %}
+    {% include 'assays/sidebar_extras.html' %}
+
     <div class="text-center large-padding-top"><strong>Reproducibility Breakdown</strong><br><small>(Hover for Details)</small></p></div>
     <div id="piechart" class="text-center" style="width: 250px; height: 250px; margin: auto; display: block;">Loading...</div>
 
@@ -131,8 +129,11 @@
         <div data-id='overflow' class='row'>
 
         </div>
-        <hr class="padding-top padding-bottom">
     </div>
+
+    {# Just a spacer (and yes, inline styles are ugly)#}
+    <div style="padding-bottom: 250px;"></div>
+
     <div hidden id="repro_info_table_display" class="container hidden-print bg-warning ui-dialog">
 
     </div>

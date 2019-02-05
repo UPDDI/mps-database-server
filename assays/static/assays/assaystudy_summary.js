@@ -4,13 +4,12 @@ $(document).ready(function() {
     // Set the callback
     google.charts.setOnLoadCallback(get_readouts);
 
-    window.CHARTS.call = 'fetch_data_points';
-
     window.GROUPING.refresh_function = get_readouts;
 
     var charts = $('#charts');
     var study_id = Math.floor(window.location.href.split('/')[5]);
 
+    window.CHARTS.call = 'fetch_data_points';
     window.CHARTS.study_id = study_id;
 
     // Name for the charts for binding events etc
@@ -36,7 +35,9 @@ $(document).ready(function() {
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
         };
 
-        var options = window.CHARTS.prepare_chart_options(charts_name);
+        // ODD
+        window.CHARTS.global_options = window.CHARTS.prepare_chart_options();
+        var options = window.CHARTS.global_options.ajax_data;
 
         data = $.extend(data, options);
 

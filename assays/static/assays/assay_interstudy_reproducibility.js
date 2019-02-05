@@ -7,6 +7,17 @@ $(document).ready(function() {
     // TODO TODO TODO
     window.GROUPING.refresh_function = show_repro;
 
+    // Filters acquired naively from GET
+    var filters = decodeURIComponent(window.location.search.split('?filters=')[1]);
+    // Change the hrefs to include the filters
+    var submit_buttons_selector = $('.submit-button');
+    submit_buttons_selector.each(function() {
+        var current_download_href = $(this).attr('href');
+        var initial_href = current_download_href.split('?')[0];
+        var get_for_href = 'filters=' + filters;
+        $(this).attr('href', initial_href + '?' + get_for_href);
+    });
+
     // TODO TODO TODO REPRO STUFF
     // TODO: UGLY
     var cv_tooltip = "The CV is calculated for each time point and the value reported is the max CV across time points, or the CV if a single time point is present.  The reproducibility status is excellent if Max CV/CV < 5% (Excellent (CV)), acceptable if Max CV/CV < 15% (Acceptable (CV)), and poor if CV > 15% for a single time point (Poor (CV))";
@@ -70,6 +81,7 @@ $(document).ready(function() {
     var initial_norm = $('#initial_norm').prop('checked') ? 1 : 0;
 
     var status_column_index = 14;
+    var icc_column_index = 12;
 
     //  Pie chart options etc.
     var na_options = {
@@ -108,30 +120,12 @@ $(document).ready(function() {
 
     var pie_chart = null;
 
-    // Filters acquired naively from GET
-    var filters = decodeURIComponent(window.location.search.split('?filters=')[1]);
-    // Change the hrefs to include the filters
-    var submit_buttons_selector = $('.submit-button');
-    submit_buttons_selector.each(function() {
-        var current_download_href = $(this).attr('href');
-        var initial_href = current_download_href.split('?')[0];
-        var get_for_href = 'filters=' + filters;
-        $(this).attr('href', initial_href + '?' + get_for_href);
-    });
-
     function show_repro() {
-        // Clear anything in extra_info
-        area_to_copy_to.empty();
-
         // Set na_data
         na_data = google.visualization.arrayToDataTable([
             ['Status', 'Count'],
             ['No Matching Records Found', 1]
         ]);
-
-        $('#filter').hide();
-        $('#inter_repro').show();
-        $('#grouping_filtering').show();
 
         inter_level = $('#inter_level_by_center').prop('checked') ? 1 : 0;
         max_interpolation_size = $('#max_interpolation_size').val();
@@ -141,7 +135,8 @@ $(document).ready(function() {
         loadingPie();
 
         // Special check to see whether to default to studies (only one center selected)
-        if (Object.keys(JSON.parse(filters)['groups']).length === 1) {
+        var filters_parsed = JSON.parse(filters);
+        if (Object.keys(filters_parsed['groups']).length === 1) {
             $('#inter_level_by_center').prop('checked', false);
             $('#inter_level_by_study').prop('checked', true);
             inter_level = 0;
@@ -166,6 +161,15 @@ $(document).ready(function() {
         window.spinner.spin(
             document.getElementById("spinner")
         );
+
+        // Center spinner
+        // TODO NOT a satisfactory solution.
+        // Displaces on resize, or if page is still "expanding" when center of #piechart check is made.
+        $(".spinner").position({
+            my: "center",
+            at: "center",
+            of: "#piechart"
+        });
 
         var columns = [
             {
@@ -222,7 +226,7 @@ $(document).ready(function() {
                 width: '20%'
             },
             {
-                title: "MPS Models",
+                title: "Organ Models",
                 "render": function (data, type, row) {
                     return data_group_to_organ_models[row[0]].join('<br>');
                 }
@@ -304,6 +308,7 @@ $(document).ready(function() {
                     data_groups = json.data_groups;
                     header_keys = json.header_keys;
                     treatment_groups = json.treatment_groups;
+                    sets_intra_points = json.sets_intra_points;
 
                     data_group_to_studies = json.data_group_to_studies;
                     data_group_to_sample_locations = json.data_group_to_sample_locations;
@@ -332,6 +337,7 @@ $(document).ready(function() {
                         pie_chart.draw(pie_data, pie_options);
                     }
 
+                    // post_filter setup
                     window.GROUPING.set_grouping_filtering(json.post_filter);
 
                     return repro_table_data_best;
@@ -367,7 +373,7 @@ $(document).ready(function() {
                     }
                 }}
             ],
-            "order": [[status_column_index, 'desc'], [ 1, "asc" ]],
+            "order": [[status_column_index, 'desc'], [icc_column_index, 'desc']],
             // Column visibility toggle would displace, hence new means of coloring.
             // "createdRow": function(row, data, dataIndex) {
             //     if (data[8][0] === "E") {
@@ -389,12 +395,6 @@ $(document).ready(function() {
             deferRender: true,
             destroy: true,
             initComplete: function () {
-                // Stopgap: Remove compound column if no compound criteria selected
-                if (!window.GROUPING.get_grouping_filtering()['compound'] || window.GROUPING.get_grouping_filtering()['compound'].indexOf('compound_instance.compound_id') === -1) {
-                    // Note magic number
-                    repro_table.column(5).visible(false);
-                }
-
                 // TODO TODO TODO
                 // Draw necessary sections below
                 draw_subsections();
@@ -403,6 +403,12 @@ $(document).ready(function() {
                 // Swap positions of filter and length selection; clarify filter
                 $('.dataTables_filter').css('float', 'left').prop('title', 'Separate terms with a space to search multiple fields');
                 $('.dataTables_length').css('float', 'right');
+
+                // Stopgap: Remove compound column if no compound criteria selected
+                if (!window.GROUPING.get_grouping_filtering()['compound'] || window.GROUPING.get_grouping_filtering()['compound'].indexOf('compound_instance.compound_id') === -1) {
+                    // Note magic number
+                    repro_table.column(5).visible(false);
+                }
             },
             drawCallback: function () {
                 // Make sure tooltips displayed properly
@@ -419,7 +425,7 @@ $(document).ready(function() {
             });
             order_info(set_order);
         });
-    };
+    }
 
     // This function filters the dataTable rows
     $.fn.dataTableExt.afnFiltering.push(function(oSettings, aData, iDataIndex) {
@@ -907,7 +913,7 @@ $(document).ready(function() {
         var current_repro = $('.repro-' + number);
         if (checkbox.is(':checked')) {
             current_repro.removeClass('hidden');
-
+            intra_in_inter(number);
             draw_charts(number);
         } else {
             current_repro.addClass('hidden')
@@ -940,6 +946,30 @@ $(document).ready(function() {
             $('#expanded_data .repro-'+orderList[i]).appendTo('#expanded_data');
         }
     }
+    // TODO TODO TODO END REPRO STUFF
+
+    // TODO, THESE TRIGGERS SHOULD BE BASED ON THE ANCHOR, NOT BUTTON CLICKS
+    // function get_grouping_filtering() {
+    //     // THIS IS A CRUDE WAY TO TEST THE GROUPING
+    //     // Reset the criteria
+    //     group_criteria = {};
+    //     grouping_checkbox_selector.each(function() {
+    //         if (this.checked) {
+    //             if (!group_criteria[$(this).attr('data-group-relation')]) {
+    //                 group_criteria[$(this).attr('data-group-relation')] = [];
+    //             }
+    //             group_criteria[$(this).attr('data-group-relation')].push(
+    //                 $(this).attr('data-group')
+    //             );
+    //         }
+    //     });
+    // }
+
+    // Setup triggers
+    // Now handled in grouping_filtering
+    // $('#' + charts_name + 'chart_options').find('input').change(function() {
+    //     show_plots();
+    // });
 
     // Piecharts
     function loadingPie(){
@@ -956,9 +986,51 @@ $(document).ready(function() {
                 color: 'white',
                 bold: true,
                 fontSize: 12
-            }
+            },
         };
         var chart = new google.visualization.PieChart(document.getElementById('piechart'));
         chart.draw(loading_data, loading_options);
+    }
+
+    // Intra-Repro in Inter-Repro
+    function intra_in_inter(number) {
+        var repro_element = $('.repro-' + number);
+        var studies_cell = $(repro_element).find('[data-id=data-table] tr:last td');
+        var studies_anchors = $(studies_cell).find('a');
+        var studies_raw = studies_cell.html().split('<br>');
+        var datapoints = [];
+        for (i=0; i<studies_raw.length; i++) {
+            datapoints.push(sets_intra_points[number][studies_raw[i].substring(studies_raw[i].indexOf("\">")+2).split("<")[0]]);
+        }
+        $.ajax({
+            url: "/assays_ajax/",
+            type: "POST",
+            dataType: "json",
+            data: {
+                call: 'intra_repro_in_inter',
+                csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
+                datapoints: JSON.stringify(datapoints)
+            },
+            success: function (json) {
+                var content, color, repro_url;
+                for (x=0; x<studies_anchors.length; x++) {
+                    repro_url = $(studies_anchors[x]).attr("href") + "reproducibility/";
+                    if (json[x][0] === 'E') {
+                        color = "#74ff5b";
+                    } else if (json[x][0] === 'A') {
+                        color = "#fcfa8d";
+                    } else if (json[x][0] === 'P') {
+                        color = "#ff7863";
+                    } else {
+                        color = "Grey";
+                    }
+                    content = "&emsp;Reproducibility Status: <em style='padding:2px; background-color: " + color + "'><a style='color: #333;' href='" + repro_url + "' target='_blank'>" + json[x] + "</a></em>";
+                    $(studies_anchors[x]).after(content);
+                }
+            },
+            error: function (xhr, errmsg, err) {
+                console.log(xhr.status + ": " + xhr.responseText);
+            }
+        });
     }
 });

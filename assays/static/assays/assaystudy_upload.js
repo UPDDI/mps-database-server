@@ -20,6 +20,9 @@ $(document).ready(function () {
 
     var study_id = Math.floor(window.location.href.split('/')[5]);
 
+    window.CHARTS.call = 'fetch_data_points';
+    window.CHARTS.study_id = study_id;
+
     // Not currently used
     function get_readouts() {
         var charts_name = 'current_charts';
@@ -32,7 +35,8 @@ $(document).ready(function () {
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
         };
 
-        var options = window.CHARTS.prepare_chart_options(charts_name);
+        window.CHARTS.global_options = window.CHARTS.prepare_chart_options();
+        var options = window.CHARTS.global_options.ajax_data;
 
         data = $.extend(data, options);
 
@@ -80,7 +84,8 @@ $(document).ready(function () {
         //    include_table: include_table
         };
 
-        var options = window.CHARTS.prepare_chart_options(charts_name);
+        window.CHARTS.global_options = window.CHARTS.prepare_chart_options();
+        var options = window.CHARTS.global_options.ajax_data;
 
         data = $.extend(data, options);
 
