@@ -2637,3 +2637,25 @@ class AssayImage(models.Model):
 
     def __unicode__(self):
         return u'{}'.format(self.file_name)
+
+
+class AssayReference(models.Model):
+    pubmed_id = models.CharField(max_length=10)
+    title = models.CharField(max_length=255, default='')
+    authors = models.CharField(max_length=255, default='')
+    abstract = models.CharField(max_length=4000, default='')
+    publication = models.CharField(max_length=255, default='')
+    doi = models.CharField(max_length=100, default='')
+
+    def get_metadata(self):
+        return {
+            'pubmed_id': self.pubmed_id,
+            'title': self.title,
+            'authors': self.authors,
+            'abstract': self.abstract,
+            'publication': self.publication,
+            'doi': self.doi,
+        }
+
+    def __unicode__(self):
+        return u'{}'.format(self.pubmed_id)

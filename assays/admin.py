@@ -42,7 +42,8 @@ from assays.models import (
     AssayImage,
     AssayImageSetting,
     AssaySetting,
-    AssaySubtarget
+    AssaySubtarget,
+    AssayReference
 )
 from microdevices.models import MicrophysiologyCenter
 # from compounds.models import Compound
@@ -2943,3 +2944,10 @@ class AssaySubtargetAdmin(ImportExportModelAdmin):
     search_fields = ('name', 'description')
 
 admin.site.register(AssaySubtarget, AssaySubtargetAdmin)
+
+
+class AssayReferenceAdmin(ImportExportModelAdmin):
+    model = AssayReference
+    search_fields = ('pubmed_id', 'title', 'authors')
+
+admin.site.register(AssayReference, AssayReferenceAdmin)

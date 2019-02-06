@@ -29,7 +29,8 @@ from assays.views import (
     AssayPhysicalUnitsList,
     AssaySampleLocationList,
     GraphingReproducibilityFilterView,
-    AssayDataFromFilters
+    AssayDataFromFilters,
+    AssayReferenceList
 )
 import assays.ajax
 
@@ -138,6 +139,9 @@ urlpatterns = [
 
     # Data from filters
     url(r'^assays/data_from_filters/$', AssayDataFromFilters.as_view(), name='data-from-filters'),
+
+    # References
+    url(r'^assays/references/$', AssayReferenceList.as_view(), name='assay-reference-list'),
 
     # Ajax
     url(r'^assays_ajax/$', assays.ajax.ajax),

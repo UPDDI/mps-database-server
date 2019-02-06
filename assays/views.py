@@ -32,7 +32,8 @@ from assays.models import (
     AssayStudySupportingData,
     # Deprecated, just in case
     AssayRun,
-    AssayDataUpload
+    AssayDataUpload,
+    AssayReference
 )
 from assays.forms import (
     AssayStudyConfigurationForm,
@@ -1899,3 +1900,8 @@ class AssayDataFromFilters(LoginRequiredMixin, TemplateView):
         # Return nothing otherwise
         else:
             return HttpResponse('', content_type='text/plain')
+
+
+class AssayReferenceList(ListView):
+    model = AssayReference
+    template_name = 'assays/assayreference_list.html'
