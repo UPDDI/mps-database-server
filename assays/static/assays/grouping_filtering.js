@@ -243,6 +243,9 @@ $(document).ready(function () {
         if (current_parent_model && current_filter) {
             var checkbox_index = $(checkbox).attr('data-table-index');
 
+            // Visibly make checked
+            $(checkbox).prop('checked', add_or_remove);
+
             if (add_or_remove) {
                 $(checkbox).attr('checked', 'checked');
 

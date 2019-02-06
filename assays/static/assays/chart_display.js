@@ -1170,16 +1170,28 @@ $(document).ready(function () {
     };
 
     // TODO TODO TODO NOT DRY
-    $(document).on('click', '.chart-filter-checkbox', function() {
-        var current_index = $(this).attr('data-table-index');
-        chart_filter_buffer[$(this).val()] = $(this).prop('checked');
+    function modify_chart_checkbox(checkbox, add_or_remove) {
+        var current_index = $(checkbox).attr('data-table-index');
 
-        if ($(this).prop('checked')) {
+        // Visibly make checked
+        $(checkbox).prop('checked', add_or_remove);
+
+        if ($(checkbox).prop('checked')) {
+            $(checkbox).attr('checked', 'checked');
+
             show_hide_plots_data_table.data()[current_index][0] = show_hide_plots_data_table.data()[current_index][0].replace('>', ' checked="checked">');
         }
         else {
+            $(checkbox).removeAttr('checked');
+
             show_hide_plots_data_table.data()[current_index][0] = show_hide_plots_data_table.data()[current_index][0].replace(' checked="checked">', '>');
         }
+
+        chart_filter_buffer[$(checkbox).val()] = $(checkbox).prop('checked');
+    }
+
+    $(document).on('click', '.chart-filter-checkbox', function() {
+        modify_chart_checkbox(this, $(this).prop('checked'));
     });
 
     // Triggers for select all
@@ -1187,10 +1199,7 @@ $(document).ready(function () {
         show_hide_plots_data_table.page.len(-1).draw();
 
         $('.chart-filter-checkbox').each(function() {
-            $(this)
-                .prop('checked', false)
-                .attr('checked', false)
-                .trigger('click');
+            modify_chart_checkbox(this, true);
         });
 
         show_hide_plots_data_table.order([[1, 'asc']]);
@@ -1202,10 +1211,7 @@ $(document).ready(function () {
         show_hide_plots_data_table.page.len(-1).draw();
 
         $('.chart-filter-checkbox').each(function() {
-            $(this)
-                .prop('checked', true)
-                .attr('checked', true)
-                .trigger('click');
+            modify_chart_checkbox(this, false);
         });
 
         show_hide_plots_data_table.order([[1, 'asc']]);
