@@ -11,19 +11,6 @@ $(document).ready(function () {
     overwrite_confirm.dialog({
         height:250,
         modal: true,
-        closeOnEscape: true,
-        autoOpen: false,
-        // buttons: {
-        // Submit: function() {
-        //     // Submit the form if so
-        //     overwrite_was_confirmed = true;
-        //     $('#submit').trigger('click');
-        //     $('form').disable();
-        //     },
-        // Cancel: function() {
-        //     $(this).dialog("close");
-        //     }
-        // },
         buttons: [
         {
             text: 'Overwrite',
@@ -46,12 +33,12 @@ $(document).ready(function () {
             }
         }],
         close: function() {
-            $('body').removeClass('stop-scrolling');
+            $.ui.dialog.prototype.options.close();
             all_submits.removeAttr("disabled");
         },
         open: function() {
             // var dialog_submit_button = $('#overwrite_confirm_submit_button');
-            $('body').addClass('stop-scrolling');
+            $.ui.dialog.prototype.options.open();
             // dialog_submit_button.button('disable');
             //
             // setTimeout(function() {

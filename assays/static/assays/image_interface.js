@@ -410,7 +410,7 @@ $(document).ready(function () {
     $(".ui-dialog").find(".ui-widget-header").css('background', 'linear-gradient(#111111, #333333)').css('color', 'white');
 
     // "Close" and "Download" buttons as Bootstrap buttons
-    $(".ui-dialog").find(".ui-button-text-only").addClass('btn btn-primary').removeClass('ui-state-default');
+    // $(".ui-dialog").find(".ui-button-text-only").addClass('btn btn-primary').removeClass('ui-state-default');
 
     // Change caption font-size
     $(".caption").css('font-size', '13px');

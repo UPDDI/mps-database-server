@@ -175,8 +175,8 @@ $(document).ready(function () {
         },
         tracking: {
             is_default: true,
+            use_dose_response: false,
             // A little too odd
-            // use_dose_response: false,
             // use_percent_control: false,
             time_conversion: 1,
             chart_type: 'scatter',
@@ -197,15 +197,10 @@ $(document).ready(function () {
         show_hide_plots_popup.dialog({
             // Causes problems on small devices
             width: 825,
-            closeOnEscape: true,
-            autoOpen: false,
             close: function () {
                 // Purge the buffer
                 chart_filter_buffer = {};
-                $('body').removeClass('stop-scrolling');
-            },
-            open: function () {
-                $('body').addClass('stop-scrolling');
+                $.ui.dialog.prototype.options.close();
             },
             buttons: [
             {
@@ -298,20 +293,20 @@ $(document).ready(function () {
         individual_plot_popup.dialog({
             // Causes problems on small devices
             width: 825,
-            closeOnEscape: true,
-            autoOpen: false,
             close: function () {
-                $('body').removeClass('stop-scrolling');
+                $.ui.dialog.prototype.options.close();
+
                 side_bar_global = true;
 
                 // Remove bg-info from sidebar stuff
                 $('#charting_sidebar_section').removeClass('bg-info');
                 // specific_graph_properties_container.hide('slow');
 
-                apply_options_to_sidebar(window.CHARTS.global_options.ajax_data, false);
+                apply_options_to_sidebar(window.CHARTS.global_options, false);
             },
             open: function () {
-                $('body').addClass('stop-scrolling');
+                $.ui.dialog.prototype.options.open();
+
                 individual_plot_popup_options_section.show('slow');
                 individual_plot_popup_plot_section.hide('slow');
                 // Plot needs to be visible for you to, you know, see it here
@@ -323,7 +318,7 @@ $(document).ready(function () {
                 // specific_graph_properties_container.show('slow');
 
                 // Apply options to sidebar
-                apply_options_to_sidebar(all_options['charts'][current_chart_id].ajax_data, true);
+                apply_options_to_sidebar(all_options['charts'][current_chart_id], true);
             },
             buttons: [
             {
@@ -429,14 +424,13 @@ $(document).ready(function () {
         // NOTE THAT FALSE IS ACTUALY AN EMPTY STRING
         options.ajax_data.percent_control = use_percent_control.prop('checked') ? true : '';
 
-        if (use_dose_response.prop('checked')) {
-            options.ajax_data.key = 'dose';
-        }
-        else {
-            options.ajax_data.key = window.CHARTS.global_options.ajax_data.key;
-        }
+        data = $.extend(true, data, options.ajax_data);
 
-        data = $.extend(data, options.ajax_data);
+        options.tracking.use_dose_response = use_dose_response.prop('checked');
+
+        if (options.tracking.use_dose_response) {
+            data.key = 'dose';
+        }
 
         // Show spinner
         window.spinner.spin(
@@ -745,7 +739,7 @@ $(document).ready(function () {
 
     // TODO I NEED THIS FUNCTION TO MAKE SURE THAT THE SIDEBAR MATCHES THE POPUP/GLOBAL
     function apply_options_to_sidebar(options, popup) {
-        $.each(options, function(field_name, value) {
+        $.each(options.ajax_data, function(field_name, value) {
             var current = $('input[name="' + field_name + '"][value="' + value + '"]');
             if (current[0]) {
                 // Note that this does not trigger change
@@ -764,16 +758,10 @@ $(document).ready(function () {
 
         // TODO YOU ALSO NEED TO MAKE SURE THE POPUP IS CHANGED (percent control etc.)
         if (popup) {
-            if (options.key === 'dose') {
-                $('#plot_graph_by').find('input, select').attr('disabled', 'disabled');
-            }
             // PLEASE NOTE THAT IT IS EMPTY STRING, NOT FALSE
-            use_percent_control.prop('checked', options.percent_control ? true : '');
+            use_percent_control.prop('checked', options.ajax_data.percent_control ? true : '');
             // Check if using dose
-            use_dose_response.prop('checked', options.key === 'dose');
-        }
-        else {
-            $('#plot_graph_by').find('input, select').removeAttr('disabled');
+            use_dose_response.prop('checked', options.tracking.use_dose_response);
         }
 
         // Make sure proper options are greyed out

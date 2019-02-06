@@ -125,15 +125,10 @@ $(document).ready(function () {
     if (filter_popup) {
         filter_popup.dialog({
             width: 825,
-            closeOnEscape: true,
-            autoOpen: false,
             close: function () {
                 // Purge the buffer
                 filter_buffer = {};
-                $('body').removeClass('stop-scrolling');
-            },
-            open: function () {
-                $('body').addClass('stop-scrolling');
+                $.ui.dialog.prototype.options.close();
             },
             buttons: [
             {

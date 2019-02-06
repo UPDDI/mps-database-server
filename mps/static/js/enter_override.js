@@ -26,8 +26,6 @@ $(document).ready(function () {
     dialogConfirm.dialog({
         height:250,
         modal: true,
-        closeOnEscape: true,
-        autoOpen: false,
         buttons: [
         {
             text: 'Submit',
@@ -42,13 +40,8 @@ $(document).ready(function () {
                $(this).dialog("close");
             }
         }],
-        close: function() {
-            $('body').removeClass('stop-scrolling');
-        },
         open: function() {
-            $('body').addClass('stop-scrolling');
-            // Blur to prevent double enter accidental accepts
-            // $('.ui-dialog :button').blur();
+            $.ui.dialog.prototype.options.open();
 
             // Default to cancel
             $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane button:eq(1)').focus();

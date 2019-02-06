@@ -63,14 +63,6 @@ $(document).ready(function () {
     dialog.dialog({
         width: 825,
         height: 500,
-        closeOnEscape: true,
-        autoOpen: false,
-        close: function() {
-            $('body').removeClass('stop-scrolling');
-        },
-        open: function() {
-            $('body').addClass('stop-scrolling');
-        }
     });
     dialog.removeProp('hidden');
 

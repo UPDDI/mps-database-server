@@ -67,9 +67,6 @@ $(document).ready(function() {
         height:600,
         width:450,
         modal: true,
-        closeOnEscape: true,
-        autoOpen: false,
-
         buttons: [
         {
             text: 'Yes',
@@ -86,12 +83,9 @@ $(document).ready(function() {
                $(this).dialog("close");
             }
         }],
-        close: function() {
-            $('body').removeClass('stop-scrolling');
-        },
         open: function() {
             get_warning();
-            $('body').addClass('stop-scrolling');
+            $.ui.dialog.prototype.options.open();
         }
     });
     sign_off_confirm.removeProp('hidden');
