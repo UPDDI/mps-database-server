@@ -32,6 +32,9 @@ $(document).ready(function() {
         'interpolated': '“Interpolated” graph displays the average of selected Target/Analyte’s measurements aggregated by centers or studies against time by interpolating the data points which timely consistent measurement(s) is(are) missing from a center/study. Four interpolation methods are applied for filling missing points, which are “nearest”, “linear spline”,” quadratic spline” and “cubic spline”. The overlapped data against time from one of four interpolation methods which has highest ICC value is depicted as a graph . The inter reproducibility results from all four interpolation methods are displayed in the table above the graphs.'
     };
 
+    // Array of completed Intra-in-Inter sets so as to prevent repetition
+    var dynamic_repro_completed = [];
+
     // BAD NOT DRY
     function escapeHtml(html) {
         return $('<div>').text(html).html();
@@ -134,6 +137,9 @@ $(document).ready(function() {
         // Loading Piechart
         loadingPie();
 
+        // Reset dynamic Intra-in-Inter array
+        dynamic_repro_completed = [];
+
         // Special check to see whether to default to studies (only one center selected)
         var filters_parsed = JSON.parse(filters);
         if (Object.keys(filters_parsed['groups']).length === 1) {
@@ -156,6 +162,7 @@ $(document).ready(function() {
 
         // Prevents some issues with spawning another table
         $('#repro_table').empty();
+        $('#expanded_data').empty();
 
         // Show spinner
         window.spinner.spin(
@@ -913,7 +920,9 @@ $(document).ready(function() {
         var current_repro = $('.repro-' + number);
         if (checkbox.is(':checked')) {
             current_repro.removeClass('hidden');
-            intra_in_inter(number);
+            if (dynamic_repro_completed.indexOf(number) === -1){
+                intra_in_inter(number);
+            }
             draw_charts(number);
         } else {
             current_repro.addClass('hidden')
@@ -994,13 +1003,19 @@ $(document).ready(function() {
 
     // Intra-Repro in Inter-Repro
     function intra_in_inter(number) {
+        // Ensure we don't repeat ourselves
+        dynamic_repro_completed.push(number);
+
         var repro_element = $('.repro-' + number);
         var studies_cell = $(repro_element).find('[data-id=data-table] tr:last td');
-        var studies_anchors = $(studies_cell).find('a');
-        var studies_raw = studies_cell.html().split('<br>');
+        var studies_anchors = $(studies_cell).find('[data-anchor=study]');
+        var studies_raw = [];
         var datapoints = [];
+        for (i=0; i<studies_anchors.length; i++) {
+            studies_raw.push($(studies_anchors[i]).text());
+        }
         for (i=0; i<studies_raw.length; i++) {
-            datapoints.push(sets_intra_points[number][studies_raw[i].substring(studies_raw[i].indexOf("\">")+2).split("<")[0]]);
+            datapoints.push(sets_intra_points[number][studies_raw[i]]);
         }
         $.ajax({
             url: "/assays_ajax/",

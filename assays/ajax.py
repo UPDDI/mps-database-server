@@ -2966,7 +2966,7 @@ def get_inter_study_reproducibility(
         data_group_to_studies.setdefault(
             current_group, {}
         ).update({
-            u'<a href="{}" target="_blank">{} ({})</a>'.format(point.study.get_absolute_url(), point.study.name, point.study.group.name): point.study.name
+            u'<a data-anchor="study" href="{}" target="_blank">{} ({})</a>'.format(point.study.get_absolute_url(), point.study.name, point.study.group.name): point.study.name
         })
 
         data_group_to_sample_locations.setdefault(
