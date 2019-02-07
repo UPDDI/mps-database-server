@@ -158,6 +158,9 @@ $(document).ready(function() {
         if (repro_table) {
             repro_table.clear();
             repro_table.destroy();
+
+            // KILL ALL LINGERING HEADERS
+            $('.fixedHeader-locked').remove()
         }
 
         // Prevents some issues with spawning another table

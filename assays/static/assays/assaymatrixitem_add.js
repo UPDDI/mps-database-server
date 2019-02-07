@@ -422,6 +422,9 @@ $(document).ready(function() {
         // Clear old (if present)
         current_data_table_selector.DataTable().destroy();
 
+        // KILL ALL LINGERING HEADERS
+        $('.fixedHeader-locked').remove()
+
         // Make the datatable
         current_data_table = current_data_table_selector.DataTable({
             dom: 'B<"row">frti',

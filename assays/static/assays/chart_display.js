@@ -794,6 +794,9 @@ $(document).ready(function () {
         if (show_hide_plots_data_table) {
             show_hide_plots_data_table.clear();
             show_hide_plots_data_table.destroy();
+
+            // KILL ALL LINGERING HEADERS
+            $('.fixedHeader-locked').remove()
         }
 
         show_hide_plots_body.empty();
@@ -926,6 +929,9 @@ $(document).ready(function () {
         if (treatment_group_data_table) {
             treatment_group_table.DataTable().clear();
             treatment_group_table.DataTable().destroy();
+
+            // KILL ALL LINGERING HEADERS
+            $('.fixedHeader-locked').remove()
         }
 
         treatment_group_display.empty();

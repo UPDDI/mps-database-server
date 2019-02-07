@@ -181,6 +181,9 @@ $(document).ready(function () {
             if (filter_data_table) {
                 filter_table.DataTable().clear();
                 filter_table.DataTable().destroy();
+
+                // KILL ALL LINGERING HEADERS
+                $('.fixedHeader-locked').remove()
             }
 
             filter_body.empty();

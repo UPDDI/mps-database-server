@@ -182,6 +182,9 @@ $(document).ready(function () {
         if (gas_table) {
             gas_table.clear();
             gas_table.destroy();
+
+            // KILL ALL LINGERING HEADERS
+            $('.fixedHeader-locked').remove()
         }
 
         $('#gas-table').find('body').empty();
