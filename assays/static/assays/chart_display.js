@@ -430,6 +430,8 @@ $(document).ready(function () {
 
         if (options.tracking.use_dose_response) {
             data.key = 'dose';
+            // Change hAxis title
+            options.hAxis.title = 'Dose (µM)';
         }
 
         // Show spinner
@@ -523,7 +525,9 @@ $(document).ready(function () {
         // REVISE TIME AS NECESSARY
         $.each(assay_data, function(assay_index, row) {
             if (assay_index) {
-                row[0] *= options.tracking.time_conversion;
+                if (!options.tracking.use_dose_response) {
+                    row[0] *= options.tracking.time_conversion;
+                }
             }
             else {
                 row[0] = options.hAxis.title;
@@ -708,16 +712,7 @@ $(document).ready(function () {
         // CRUDE: Perform time unit conversions
         // GLOBALLY APPLYING THIS WILL CONFILICT WITH THE INDIVIDUAL CHART CHANGES (possibly)
         // TODO TODO TODO MUST BE MOVED
-        if (document.getElementById('id_chart_option_time_unit').value != 'Day') {
-            if (document.getElementById('id_chart_option_time_unit').value == 'Hour') {
-                time_conversion = 24;
-                // time_label = 'Time (Hours)';
-            }
-            else {
-                time_conversion = 1440;
-                // time_label = 'Time (Minutes)';
-            }
-        }
+        time_conversion = Math.floor($('#id_chart_option_time_unit').val());
 
         time_label = conversion_to_label[time_conversion];
 
@@ -755,6 +750,9 @@ $(document).ready(function () {
                 }
             }
         });
+
+        // SPECIAL EXCEPTION FOR TIMEUNIT
+        $('#id_chart_option_time_unit').find('option[value="' + options.tracking.time_conversion + '"]').prop('selected', true);
 
         // TODO YOU ALSO NEED TO MAKE SURE THE POPUP IS CHANGED (percent control etc.)
         if (popup) {
@@ -1241,14 +1239,15 @@ $(document).ready(function () {
     });
 
     // TRIGGER CONTEXT MENU ON LONG PRESS
+    // ATTEMPT TO TRIGGER ON TOUCH EVENTS AS WELL
     var long_press_timer;
-    $(document).on('mousedown', '.chart-container', function() {
+    $(document).on('mousedown touchstart', '.chart-container', function() {
         var chart = this;
         long_press_timer = setTimeout(function() {
             create_popup_for_individual_plot(chart);
         }, 1500);
     });
-    $(document).on('mouseup mouseleave', '.chart-container', function() {
+    $(document).on('mouseup mouseleave touchend touchcancel', '.chart-container', function() {
         clearTimeout(long_press_timer);
     });
 
