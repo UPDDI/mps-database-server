@@ -184,7 +184,7 @@ $(document).ready(function () {
             gas_table.destroy();
 
             // KILL ALL LINGERING HEADERS
-            $('.fixedHeader-locked').remove()
+            $('.fixedHeader-locked').remove();
         }
 
         $('#gas-table').find('body').empty();

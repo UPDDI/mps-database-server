@@ -183,7 +183,7 @@ $(document).ready(function () {
                 filter_table.DataTable().destroy();
 
                 // KILL ALL LINGERING HEADERS
-                $('.fixedHeader-locked').remove()
+                $('.fixedHeader-locked').remove();
             }
 
             filter_body.empty();

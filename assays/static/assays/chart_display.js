@@ -264,6 +264,7 @@ $(document).ready(function () {
 
     var specific_graph_properties_container = $('#specific_graph_properties_container');
 
+    // TODO NEED TO DEAL GRACEFULLY WITH REFRESH TODO
     function refresh_preview() {
         // Kill events
         destroy_events('popup');
@@ -287,6 +288,11 @@ $(document).ready(function () {
         all_options['popup'][0] = window.CHARTS.prepare_chart_options();
 
         get_individual_chart('popup', individual_plot_popup_plot_container[0], all_options['popup'][0]);
+
+        $('#back_to_options_button').show('slow');
+
+        // Change button text
+        $('#view_preview_button').find('.ui-button-text').text('Refresh');
     }
 
     if (individual_plot_popup[0]) {
@@ -317,13 +323,19 @@ $(document).ready(function () {
                 $('#charting_sidebar_section').addClass('bg-info');
                 // specific_graph_properties_container.show('slow');
 
+                $('#back_to_options_button').hide();
+
                 // Apply options to sidebar
                 apply_options_to_sidebar(all_options['charts'][current_chart_id], true);
+
+                // Change button text
+                $('#view_preview_button').find('.ui-button-text').text('View Preview');
             },
             buttons: [
             {
                 // text: 'Make Popup Plot',
                 text: 'View Preview',
+                id: 'view_preview_button',
                 click: refresh_preview
             },
             {
@@ -364,6 +376,34 @@ $(document).ready(function () {
                     // create_events('charts', false);
 
                     $(this).dialog("close");
+                }
+            },
+            {
+                text: 'Back to Options',
+                id: 'back_to_options_button',
+                click: function() {
+                    // NOTE NOT DRY
+                    individual_plot_popup_options_section.show('slow');
+                    individual_plot_popup_plot_section.hide('slow');
+
+                    $('#back_to_options_button').hide('slow');
+
+                    $('#view_preview_button').find('.ui-button-text').text('View Preview');
+                }
+            },
+            {
+                text: 'Revert to Default',
+                id: 'revert_to_default_button',
+                click: function() {
+                    use_dose_response.prop('checked', false);
+                    use_percent_control.prop('checked', false);
+
+                    apply_options_to_sidebar(window.CHARTS.global_options, false);
+
+                    // Apply to the preview if the preview is up
+                    if ($('#back_to_options_button').is(':visible')) {
+                        refresh_preview();
+                    }
                 }
             },
             {
@@ -796,7 +836,7 @@ $(document).ready(function () {
             show_hide_plots_data_table.destroy();
 
             // KILL ALL LINGERING HEADERS
-            $('.fixedHeader-locked').remove()
+            $('.fixedHeader-locked').remove();
         }
 
         show_hide_plots_body.empty();
@@ -931,7 +971,7 @@ $(document).ready(function () {
             treatment_group_table.DataTable().destroy();
 
             // KILL ALL LINGERING HEADERS
-            $('.fixedHeader-locked').remove()
+            $('.fixedHeader-locked').remove();
         }
 
         treatment_group_display.empty();

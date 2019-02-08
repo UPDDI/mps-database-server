@@ -160,7 +160,7 @@ $(document).ready(function() {
             repro_table.destroy();
 
             // KILL ALL LINGERING HEADERS
-            $('.fixedHeader-locked').remove()
+            $('.fixedHeader-locked').remove();
         }
 
         // Prevents some issues with spawning another table

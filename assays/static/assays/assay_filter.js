@@ -115,7 +115,7 @@ $(document).ready(function() {
                     current_table.DataTable().destroy();
 
                     // KILL ALL LINGERING HEADERS
-                    $('.fixedHeader-locked').remove()
+                    $('.fixedHeader-locked').remove();
 
                     current_body.empty();
 
