@@ -708,7 +708,7 @@ class AssayStudyData(StudyViewerMixin, DetailView):
 
             # For specifically text
             response = HttpResponse(data, content_type='text/csv')
-            response['Content-Disposition'] = 'attachment;filename=' + unicode(self.object) + '.csv'
+            response['Content-Disposition'] = 'attachment;filename="' + unicode(self.object) + '.csv"'
 
             return response
         # Return nothing otherwise
