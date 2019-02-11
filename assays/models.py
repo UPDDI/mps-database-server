@@ -1928,12 +1928,14 @@ class AssayMatrixItem(FlaggableModel):
 
         return '\n'.join(set(compounds))
 
+    # SPAGHETTI CODE
     def quick_dic(self, criteria=None):
         if not criteria:
             criteria = {}
         dic = {
             # 'device': self.device.name,
             'Study': self.get_hyperlinked_study(),
+            'Matrix': self.get_hyperlinked_matrix(),
             'MPS Model': self.get_hyperlinked_model_or_device(),
             'Compounds': self.stringify_compounds(criteria.get('compound', None)),
             'Cells': self.stringify_cells(criteria.get('cell', None)),
@@ -1946,17 +1948,21 @@ class AssayMatrixItem(FlaggableModel):
         }
         return dic
 
+    # TODO THESE ARE NOT DRY
     def get_hyperlinked_name(self):
-        return '<a target="_blank" href="{0}">{1}</a>'.format(self.get_absolute_url(), self.name)
+        return u'<a target="_blank" href="{0}">{1}</a>'.format(self.get_absolute_url(), self.name)
 
     def get_hyperlinked_model_or_device(self):
         if not self.organ_model:
-            return '<a target="_blank" href="{0}">{1} (No Organ Model)</a>'.format(self.device.get_absolute_url(), self.device.name)
+            return u'<a target="_blank" href="{0}">{1} (No Organ Model)</a>'.format(self.device.get_absolute_url(), self.device.name)
         else:
-            return '<a target="_blank" href="{0}">{1}</a>'.format(self.organ_model.get_absolute_url(), self.organ_model.name)
+            return u'<a target="_blank" href="{0}">{1}</a>'.format(self.organ_model.get_absolute_url(), self.organ_model.name)
 
     def get_hyperlinked_study(self):
-        return '<a target="_blank" href="{0}">{1}</a>'.format(self.study.get_absolute_url(), self.study.name)
+        return u'<a target="_blank" href="{0}">{1}</a>'.format(self.study.get_absolute_url(), self.study.name)
+
+    def get_hyperlinked_matrix(self):
+        return u'<a target="_blank" href="{0}">{1}</a>'.format(self.matrix.get_absolute_url(), self.matrix.name)
 
     # TODO TODO TODO CHANGE
     def get_absolute_url(self):

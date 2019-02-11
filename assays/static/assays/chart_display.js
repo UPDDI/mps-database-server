@@ -231,9 +231,13 @@ $(document).ready(function () {
     var min_height = 400;
 
     // Conversion dictionary
+    // TERRIBLE, SPAGHETTI CODE
+    // TERRIBLE, SPAGHETTI CODE
+    // TERRIBLE, SPAGHETTI CODE
     var headers = {
         // 'device': 'Device',
         'Study': 'Study',
+        'Matrix': 'Matrix',
         'MPS Model': 'MPS Model',
         'Cells': 'Cells Added',
         'Compounds': 'Compound Treatment',
