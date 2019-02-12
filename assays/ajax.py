@@ -1256,6 +1256,7 @@ def get_data_points_for_charting(
                                 average = values[0]
 
                             # If standard deviation
+                            # NOTE: ONLY STANDARD DEVIATION IS AFFECTED BY number_for_interval
                             if interval_type == 'std':
                                 interval = np.std(values) * number_for_interval
                             # IQR
@@ -1264,7 +1265,7 @@ def get_data_points_for_charting(
                                 interval = iqr(values)
                             # Standard error if not std
                             else:
-                                interval = np.std(values) / len(values) ** 0.5 * number_for_interval
+                                interval = np.std(values) / len(values) ** 0.5
 
                             average_interval_study_id = (
                                 average,

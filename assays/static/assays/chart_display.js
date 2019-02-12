@@ -181,7 +181,10 @@ $(document).ready(function () {
             time_conversion: 1,
             chart_type: 'scatter',
             tooltip_type: 'datum',
-            revised_unit: null
+            revised_unit: null,
+            // Log scale
+            use_x_log: false,
+            use_y_log: false
         },
         ajax_data: {
             key: 'device',
@@ -261,6 +264,10 @@ $(document).ready(function () {
     var use_percent_control = $('#use_percent_control');
     var use_dose_response = $('#use_dose_response');
 
+    // Log scale
+    var use_x_log = $('#use_x_log');
+    var use_y_log = $('#use_y_log');
+
     var individual_plot_popup_options_section = $('#individual_plot_popup_options_section');
     var individual_plot_popup_plot_section = $('#individual_plot_popup_plot_section');
     // var individual_plot_popup_plot_container = $('#individual_plot_popup_plot_container');
@@ -316,6 +323,12 @@ $(document).ready(function () {
             },
             open: function () {
                 $.ui.dialog.prototype.options.open();
+
+                // Change title
+                var full_name = current_chart_name.split('\n');
+                var new_title = full_name[0] + ' (' + full_name[1] + ')';
+
+                $(this).dialog('option', 'title', new_title);
 
                 individual_plot_popup_options_section.show('slow');
                 individual_plot_popup_plot_section.hide('slow');
@@ -401,6 +414,9 @@ $(document).ready(function () {
                 click: function() {
                     use_dose_response.prop('checked', false);
                     use_percent_control.prop('checked', false);
+                    // CRUDE
+                    use_x_log.prop('checked', false);
+                    use_y_log.prop('checked', false);
 
                     apply_options_to_sidebar(window.CHARTS.global_options, false);
 
@@ -476,6 +492,17 @@ $(document).ready(function () {
             data.key = 'dose';
             // Change hAxis title
             options.hAxis.title = 'Dose (µM)';
+        }
+
+        // Log scale doesn't affect ajax data, but may as well put it here
+        options.tracking.use_x_log = use_x_log.prop('checked');
+        if (options.tracking.use_x_log) {
+            options.hAxis.scaleType = 'log';
+        }
+
+        options.tracking.use_y_log = use_y_log.prop('checked');
+        if (options.tracking.use_y_log) {
+            options.vAxis.scaleType = 'log';
         }
 
         // Show spinner
@@ -804,6 +831,10 @@ $(document).ready(function () {
             use_percent_control.prop('checked', options.ajax_data.percent_control ? true : '');
             // Check if using dose
             use_dose_response.prop('checked', options.tracking.use_dose_response);
+
+            // Check logs
+            use_x_log.prop('checked', options.tracking.use_x_log);
+            use_y_log.prop('checked', options.tracking.use_y_log);
         }
 
         // Make sure proper options are greyed out
@@ -1308,6 +1339,8 @@ $(document).ready(function () {
     var std_selector = $('#std_select');
     var ste_selector = $('#ste_select');
 
+    var number_for_interval_selector = $('#number_for_interval');
+
     // TODO TODO TODO IDIOTIC PLEASE FIX ASAP
     function restrict_error_bar_options(refresh) {
         if ($('#arithmetic_select').prop('checked') || $('#geometric_select').prop('checked')) {
@@ -1345,15 +1378,26 @@ $(document).ready(function () {
             std_selector.attr('disabled', 'disabled');
             ste_selector.attr('disabled', 'disabled');
         }
+
+        // Disable number for interval if not std
+        if (!std_selector.prop('checked')) {
+            number_for_interval_selector.attr('disabled', 'disabled');
+        }
+        else {
+            number_for_interval_selector.removeAttr('disabled');
+        }
     }
 
-    $('#arithmetic_select, #geometric_select, #median_select').change(function() {
+    $('#arithmetic_select, #geometric_select, #median_select, #std_select, #ste_select').change(function() {
         restrict_error_bar_options(true);
     });
 
     // Initially, just block iqr for now
     // SLOPPY: PLEASE NOTE PLEASE NOTE
     iqr_selector.attr('disabled', 'disabled');
+
+    // SLOPPY: PLEASE NOTE
+    number_for_interval_selector.attr('disabled', 'disabled');
 
     // Set up triggers all other triggers
     function trigger_refresh() {
@@ -1375,6 +1419,6 @@ $(document).ready(function () {
     $('#sidebar')
         .find('input, select')
         // Exceptions to refresh (manually done elsewhere)
-        .not('#arithmetic_select, #geometric_select, #median_select')
+        .not('#arithmetic_select, #geometric_select, #median_select, #std_select, #ste_select')
         .change(trigger_refresh);
 });

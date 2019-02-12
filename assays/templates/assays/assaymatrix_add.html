@@ -978,13 +978,15 @@
 
     {# {% include 'assays/chart_options.html' with chart_prefix="charts" chart_title="Current Data" % #}
 
-    {# Note indicating no data to display initially #}
+
     <div class="well">
         <button type="button" class="btn btn-primary toggle_sidebar_button">
             Toggle Sidebar
         </button>
         <a role="button" class="btn btn-warning show_hide_plots">Show/Hide Plots</a>
     </div>
+
+    {# Note indicating no data to display initially #}
     <div id="charts" class="padded-bottom">
         No data to display
     </div>

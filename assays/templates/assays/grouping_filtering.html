@@ -802,7 +802,8 @@
           Please see the sidebar for more options (options in light blue apply to this specific plot)
       </div>
 
-    <div class="row padded-bottom well">
+    <div class="padded-bottom well">
+      <div class="row">
       <div class="col-sm-4">
       <div class="fancy-checkbox table-filter padded-bottom" align="left">
           <input class="visibility-checkbox" type="checkbox" name="plot_is_visible" id="plot_is_visible" checked/>
@@ -845,6 +846,40 @@
                     Dose-Response
                 </label>
             </div>
+        </div>
+        </div>
+        </div>
+
+        <div class="row">
+        <div class="col-sm-4">
+          <div class="fancy-checkbox table-filter padded-bottom" align="left">
+              <input class="visibility-checkbox" type="checkbox" name="use_x_log" id="use_x_log"/>
+              <div class="btn-group">
+                  <label for="use_x_log" class="btn btn-default">
+                      <span class="glyphicon glyphicon-ok"></span>
+                      <span> </span>
+                  </label>
+                  <label for="use_x_log" class="btn btn-default active">
+                      X-axis Log Scale
+                  </label>
+              </div>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="fancy-checkbox table-filter padded-bottom" align="left">
+              <input class="visibility-checkbox" type="checkbox" name="use_y_log" id="use_y_log"/>
+              <div class="btn-group">
+                  <label for="use_y_log" class="btn btn-default">
+                      <span class="glyphicon glyphicon-ok"></span>
+                      <span> </span>
+                  </label>
+                  <label for="use_y_log" class="btn btn-default active">
+                      Y-axis Log Scale
+                  </label>
+              </div>
+          </div>
+        </div>
+        <div class="col-sm-4">
         </div>
         </div>
     </div>
