@@ -137,6 +137,16 @@ $(document).ready(function () {
                     window.GROUPING.current_post_filter[current_parent_model][current_filter] = $.extend(true, {}, filter_buffer);
                     filter_buffer = {};
 
+                    // Change color if necessary
+                    var current_filter_button = $('button[data-parent-model="'+ current_parent_model + '"][data-filter-relation="' + current_filter + '"]');
+
+                    if (Object.keys(window.GROUPING.current_post_filter[current_parent_model][current_filter]).length !== Object.keys(window.GROUPING.full_post_filter[current_parent_model][current_filter]).length) {
+                        current_filter_button.addClass('btn-warning');
+                    }
+                    else {
+                        current_filter_button.removeClass('btn-warning');
+                    }
+
                     // Refresh on apply
                     window.GROUPING.refresh_wrapper();
 
