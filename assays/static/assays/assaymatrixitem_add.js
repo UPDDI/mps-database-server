@@ -85,6 +85,10 @@ $(document).ready(function() {
         return current_id;
     }
 
+    // PROCESS GET PARAMS INITIALLY
+    window.GROUPING.process_get_params();
+    window.GROUPING.generate_get_params();
+
     function get_readout() {
         if (matrix_item_id) {
             // Get the table
@@ -469,7 +473,7 @@ $(document).ready(function() {
             study: study_id,
             matrix_item: matrix_item_id,
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
-            criteria: JSON.stringify(window.GROUPING.get_grouping_filtering()),
+            criteria: JSON.stringify(window.GROUPING.group_criteria),
             post_filter: JSON.stringify(window.GROUPING.current_post_filter),
             dynamic_excluded: JSON.stringify(dynamic_excluded)
         };

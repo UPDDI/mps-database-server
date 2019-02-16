@@ -66,13 +66,14 @@
                     {# None #}
                 {# </label> #}
             {# </div> #}
-        </div>
+        {% comment %} </div>
     </li>
     <li>
         <a href="#error_bar_by" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
             Error Bar By
         </a>
-        <div class="collapse well" id="error_bar_by">
+        <div class="collapse well" id="error_bar_by"> {% endcomment %}
+        <div class="well">
             <div class="radio">
                 <label class="radio-inline">
                     <input type="radio" name="interval_type" id="ste_select" value="ste" checked>
@@ -98,6 +99,7 @@
                     Interquartile Range
                 </label>
             </div>
+        </div>
         </div>
     </li>
     <li>

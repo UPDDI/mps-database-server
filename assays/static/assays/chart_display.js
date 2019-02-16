@@ -467,11 +467,11 @@ $(document).ready(function () {
             // TODO TODO TODO NEED TO GET
             study: window.CHARTS.study_id,
             // TODO TODO TODO MIGHT BE USING A FILTER
-            filters: window.CHARTS.filters,
+            filters: JSON.stringify(window.GROUPING.filters),
             // TODO MATRIX AND MATRIX ITEM
             matrix: window.CHARTS.matrix_id,
             matrix_item: window.CHARTS.matrix_item_id,
-            criteria: JSON.stringify(window.GROUPING.get_grouping_filtering()),
+            criteria: JSON.stringify(window.GROUPING.group_criteria),
             post_filter: JSON.stringify(individual_post_filter),
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
         };
@@ -497,12 +497,12 @@ $(document).ready(function () {
         // Log scale doesn't affect ajax data, but may as well put it here
         options.tracking.use_x_log = use_x_log.prop('checked');
         if (options.tracking.use_x_log) {
-            options.hAxis.scaleType = 'log';
+            options.hAxis.scaleType = 'mirrorLog';
         }
 
         options.tracking.use_y_log = use_y_log.prop('checked');
         if (options.tracking.use_y_log) {
-            options.vAxis.scaleType = 'log';
+            options.vAxis.scaleType = 'mirrorLog';
         }
 
         // Show spinner
@@ -665,9 +665,28 @@ $(document).ready(function () {
         var chart = null;
 
         var num_colors = 0;
+        var truncated_at_index = null;
 
         $.each(assay_data[0].slice(1), function(index, value) {
-            if (value.indexOf('     ~@i1') === -1) {
+            if (value.indexOf('     ~@i') === -1) {
+                // NOTE TRUNCATE PAST 40 COLORS
+                if (num_colors >= 40) {
+                    truncated_at_index = index;
+
+                    if (assay_data[0][index + 1].indexOf('     ~@i') !== -1) {
+                        truncated_at_index += 2;
+                    }
+
+                    $.each(assay_data, function(row_index, current_row) {
+                        assay_data[row_index] = current_row.slice(0, truncated_at_index + 1);
+                    });
+
+                    // Indicate truncated in title?
+                    options.title = options.title + ' {TRUNCATED}';
+
+                    return false;
+                }
+
                 num_colors++;
             }
         });
@@ -675,7 +694,7 @@ $(document).ready(function () {
         var data = google.visualization.arrayToDataTable(assay_data);
 
         // Line chart if more than two time points and less than 101 colors
-        if (assay_data.length > 3 && num_colors < 101) {
+        if (assay_data.length > 3) {
             chart = new google.visualization.LineChart(chart_selector);
 
             // Change the options
@@ -685,15 +704,15 @@ $(document).ready(function () {
                 min: current_min_x - 0.1 * current_x_range
             };
         }
-        // Nothing if more than 100 colors
-        else if (num_colors > 100) {
-            chart_selector.innerHTML = '<div class="alert alert-danger" role="alert">' +
-                '<span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>' +
-                '<span class="sr-only">Danger:</span>' +
-                ' <strong>' + assay + ' ' + unit + '</strong>' +
-                '<br>This plot has too many data points, please try filtering.' +
-            '</div>'
-        }
+        // No longer totally remove, just truncate instead
+        // else if (num_colors > 100) {
+        //     chart_selector.innerHTML = '<div class="alert alert-danger" role="alert">' +
+        //         '<span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>' +
+        //         '<span class="sr-only">Danger:</span>' +
+        //         ' <strong>' + assay + ' ' + unit + '</strong>' +
+        //         '<br>This plot has too many data points, please try filtering.' +
+        //     '</div>'
+        // }
         // Bar chart if only one time point
         else if (assay_data.length > 1) {
             // Crude...

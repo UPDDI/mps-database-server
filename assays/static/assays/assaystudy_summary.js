@@ -25,12 +25,16 @@ $(document).ready(function() {
         "order": [ 0, "asc" ]
     });
 
+    // PROCESS GET PARAMS INITIALLY
+    window.GROUPING.process_get_params();
+    window.GROUPING.generate_get_params();
+
     function get_readouts() {
         var data = {
             // TODO TODO TODO CHANGE CALL
             call: window.CHARTS.call,
             study: study_id,
-            criteria: JSON.stringify(window.GROUPING.get_grouping_filtering()),
+            criteria: JSON.stringify(window.GROUPING.group_criteria),
             post_filter: JSON.stringify(window.GROUPING.current_post_filter),
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
         };

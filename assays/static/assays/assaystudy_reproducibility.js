@@ -163,6 +163,10 @@ $(document).ready(function () {
         }
     }
 
+    // PROCESS GET PARAMS INITIALLY
+    window.GROUPING.process_get_params();
+    window.GROUPING.generate_get_params();
+
     // Piecharts
     function load_repro() {
         // Show spinner
@@ -292,7 +296,7 @@ $(document).ready(function () {
                 url: '/assays_ajax/',
                 data: {
                     call: 'fetch_assay_study_reproducibility',
-                    criteria: JSON.stringify(window.GROUPING.get_grouping_filtering()),
+                    criteria: JSON.stringify(window.GROUPING.group_criteria),
                     post_filter: JSON.stringify(window.GROUPING.current_post_filter),
                     csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
                     study: study_id

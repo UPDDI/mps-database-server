@@ -7,17 +7,6 @@ $(document).ready(function() {
     // TODO TODO TODO
     window.GROUPING.refresh_function = show_repro;
 
-    // Filters acquired naively from GET
-    var filters = decodeURIComponent(window.location.search.split('?filters=')[1]);
-    // Change the hrefs to include the filters
-    var submit_buttons_selector = $('.submit-button');
-    submit_buttons_selector.each(function() {
-        var current_download_href = $(this).attr('href');
-        var initial_href = current_download_href.split('?')[0];
-        var get_for_href = 'filters=' + filters;
-        $(this).attr('href', initial_href + '?' + get_for_href);
-    });
-
     // TODO TODO TODO REPRO STUFF
     // TODO: UGLY
     var cv_tooltip = "The CV is calculated for each time point and the value reported is the max CV across time points, or the CV if a single time point is present.  The reproducibility status is excellent if Max CV/CV < 5% (Excellent (CV)), acceptable if Max CV/CV < 15% (Acceptable (CV)), and poor if CV > 15% for a single time point (Poor (CV))";
@@ -123,6 +112,10 @@ $(document).ready(function() {
 
     var pie_chart = null;
 
+    // PROCESS GET PARAMS INITIALLY
+    window.GROUPING.process_get_params();
+    window.GROUPING.generate_get_params();
+
     function show_repro() {
         // Set na_data
         na_data = google.visualization.arrayToDataTable([
@@ -141,8 +134,7 @@ $(document).ready(function() {
         dynamic_repro_completed = [];
 
         // Special check to see whether to default to studies (only one center selected)
-        var filters_parsed = JSON.parse(filters);
-        if (Object.keys(filters_parsed['groups']).length === 1) {
+        if (Object.keys(window.GROUPING.filters['groups']).length === 1) {
             $('#inter_level_by_center').prop('checked', false);
             $('#inter_level_by_study').prop('checked', true);
             inter_level = 0;
@@ -287,8 +279,8 @@ $(document).ready(function() {
                     // TODO TODO TODO THIS DEPENDS ON THE INTERFACE
                     call: 'fetch_data_points_from_filters',
                     intention: 'inter_repro',
-                    filters: filters,
-                    criteria: JSON.stringify(window.GROUPING.get_grouping_filtering()),
+                    filters: JSON.stringify(window.GROUPING.filters),
+                    criteria: JSON.stringify(window.GROUPING.group_criteria),
                     post_filter: JSON.stringify(window.GROUPING.current_post_filter),
                     inter_level: inter_level,
                     max_interpolation_size: max_interpolation_size,

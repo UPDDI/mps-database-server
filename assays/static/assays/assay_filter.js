@@ -1,25 +1,5 @@
 $(document).ready(function() {
-    var filters = {
-        'organ_models': {},
-        'groups': {},
-        'compounds': {},
-        'targets': {}
-    };
-
-    // see if there are filters from GET parameters
-    var get_filters = decodeURIComponent(window.location.search.split('?filters=')[1]);
-    if (get_filters && get_filters !== 'undefined') {
-        filters = JSON.parse(get_filters);
-    }
-
     var first_run = true;
-
-    var ordered_filters = [
-        'organ_models',
-        'groups',
-        'targets',
-        'compounds'
-    ];
 
     var filter_empty_messages = {
         'organ_models': 'Please Select at Least One MPS Model.',
@@ -36,7 +16,22 @@ $(document).ready(function() {
 
     var treatment_group_table = $('#treatment_group_table');
 
+    // Default all empty
+    window.GROUPING.filters = {
+        'organ_models': {},
+        'groups': {},
+        'compounds': {},
+        'targets': {}
+    };
+
+    // PROCESS GET PARAMS INITIALLY
+    window.GROUPING.process_get_params();
+    // window.GROUPING.generate_get_params();
+
     function refresh_filters(parent_filter) {
+        // Need to refresh get params every refresh
+        window.GROUPING.generate_get_params();
+
         number_of_points_container_selector.removeClass('text-success text-danger');
         number_of_points_container_selector.addClass('text-warning');
         number_of_points_selector.html('Calculating, Please Wait');
@@ -45,14 +40,6 @@ $(document).ready(function() {
         // $('.filter-checkbox').attr('disabled', 'disabled');
         $('.filter-table').addClass('gray-out');
 
-        // Change the hrefs to include the filters
-        submit_buttons_selector.each(function() {
-            var current_download_href = $(this).attr('href');
-            var initial_href = current_download_href.split('?')[0];
-            var get_for_href = 'filters=' + JSON.stringify(filters);
-            $(this).attr('href', initial_href + '?' + get_for_href);
-        });
-
         $.ajax({
             url: "/assays_ajax/",
             type: "POST",
@@ -60,7 +47,7 @@ $(document).ready(function() {
             data: {
                 call: 'fetch_pre_submission_filters',
                 csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
-                filters: JSON.stringify(filters)
+                filters: JSON.stringify(window.GROUPING.filters)
             },
             success: function (json) {
                 number_of_points_selector.html(json.number_of_points);
@@ -87,8 +74,8 @@ $(document).ready(function() {
                 // Hide initially
                 make_more_selections_message_selector.hide();
 
-                $.each(ordered_filters, function (index, filter) {
-                    if (_.isEmpty(filters[filter])) {
+                $.each(window.GROUPING.ordered_filters, function (index, filter) {
+                    if (_.isEmpty(window.GROUPING.filters[filter])) {
                         make_more_selections_message_selector.html(filter_empty_messages[filter]);
                         make_more_selections_message_selector.show();
                         submit_buttons_selector.attr('disabled', 'disabled');
@@ -104,7 +91,7 @@ $(document).ready(function() {
 
                     // Do not refresh MPS Model if you don't have to
                     // Crude, obviously
-                    if (filter === 'organ_models' && !first_run && _.keys(filters['organ_models']).length) {
+                    if (filter === 'organ_models' && !first_run && _.keys(window.GROUPING.filters['organ_models']).length) {
                         return true;
                     }
 
@@ -119,7 +106,7 @@ $(document).ready(function() {
 
                     current_body.empty();
 
-                    var initial_filter = filters[filter];
+                    var initial_filter = window.GROUPING.filters[filter];
                     var current_filter = {};
 
                     var rows_to_add = [];
@@ -141,7 +128,7 @@ $(document).ready(function() {
                     });
 
                     // Swap to new filter
-                    filters[filter] = current_filter;
+                    window.GROUPING.filters[filter] = current_filter;
 
                     current_body.html(rows_to_add.join(''));
 
@@ -240,7 +227,7 @@ $(document).ready(function() {
         $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
 
         current_table.find('.filter-checkbox').each(function() {
-            modify_checkbox(current_data_table, this, true, filters);
+            modify_checkbox(current_data_table, this, true, window.GROUPING.filters);
         });
 
         current_data_table.order([[1, 'asc']]);
@@ -264,7 +251,7 @@ $(document).ready(function() {
         $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
 
         current_table.find('.filter-checkbox').each(function() {
-            modify_checkbox(current_data_table, this, false, filters);
+            modify_checkbox(current_data_table, this, false, window.GROUPING.filters);
         });
 
         current_data_table.order([[1, 'asc']]);
@@ -279,7 +266,7 @@ $(document).ready(function() {
     $(document).on('change', '.filter-checkbox', function() {
         var current_table = $(this).parent().parent().parent().parent().DataTable();
 
-        modify_checkbox(current_table, this, $(this).prop('checked'), filters);
+        modify_checkbox(current_table, this, $(this).prop('checked'), window.GROUPING.filters);
         refresh_filters($(this).attr('data-filter'));
     });
 
