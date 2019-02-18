@@ -30,7 +30,7 @@ $(document).ready(function() {
 
     function refresh_filters(parent_filter) {
         // Need to refresh get params every refresh
-        window.GROUPING.generate_get_params();
+        window.GROUPING.modify_filters_param();
 
         number_of_points_container_selector.removeClass('text-success text-danger');
         number_of_points_container_selector.addClass('text-warning');

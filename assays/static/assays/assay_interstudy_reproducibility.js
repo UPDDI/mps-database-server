@@ -114,9 +114,58 @@ $(document).ready(function() {
 
     // PROCESS GET PARAMS INITIALLY
     window.GROUPING.process_get_params();
-    window.GROUPING.generate_get_params();
+    // window.GROUPING.generate_get_params();
+
+    // TO DEAL WITH INITIAL POST FILTER, SHOULD IT EXIST
+    var first_run = true;
 
     function show_repro() {
+        // STUPID: CONTRIVED: BAD
+        if (first_run && $.urlParam('p')) {
+            var data = {
+                // TODO TODO TODO CHANGE CALL
+                call: 'fetch_data_points_from_filters',
+                intention: 'charting',
+                filters: JSON.stringify(window.GROUPING.filters),
+                criteria: JSON.stringify(window.GROUPING.group_criteria),
+                post_filter: JSON.stringify(window.GROUPING.current_post_filter),
+                csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
+                // CONTRIVED
+                key: 'device'
+            };
+
+            // Show spinner
+            window.spinner.spin(
+                document.getElementById("spinner")
+            );
+
+            // STUPID CONTRIVED BAD
+            $.ajax({
+                url: "/assays_ajax/",
+                type: "POST",
+                dataType: "json",
+                data: data,
+                success: function (json) {
+                    first_run = false;
+
+                    // Stop spinner
+                    window.spinner.stop();
+
+                    window.GROUPING.set_grouping_filtering(json.post_filter);
+                    window.GROUPING.process_get_params();
+                    window.GROUPING.refresh_wrapper();
+                },
+                error: function (xhr, errmsg, err) {
+                    first_run = false;
+
+                    // Stop spinner
+                    window.spinner.stop();
+
+                    console.log(xhr.status + ": " + xhr.responseText);
+                }
+            });
+        }
+
         // Set na_data
         na_data = google.visualization.arrayToDataTable([
             ['Status', 'Count'],
@@ -272,6 +321,7 @@ $(document).ready(function() {
             }
         ];
 
+        if (!first_run || !$.urlParam('p')) {
         repro_table = $('#repro_table').DataTable({
             ajax: {
                 url: '/assays_ajax/',
@@ -407,7 +457,7 @@ $(document).ready(function() {
                 $('.dataTables_length').css('float', 'right');
 
                 // Stopgap: Remove compound column if no compound criteria selected
-                if (!window.GROUPING.get_grouping_filtering()['compound'] || window.GROUPING.get_grouping_filtering()['compound'].indexOf('compound_instance.compound_id') === -1) {
+                if (!window.GROUPING.group_criteria['compound'] || window.GROUPING.group_criteria['compound'].indexOf('compound_instance.compound_id') === -1) {
                     // Note magic number
                     repro_table.column(5).visible(false);
                 }
@@ -427,6 +477,7 @@ $(document).ready(function() {
             });
             order_info(set_order);
         });
+        }
     }
 
     // This function filters the dataTable rows

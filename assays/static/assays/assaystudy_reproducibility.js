@@ -165,7 +165,7 @@ $(document).ready(function () {
 
     // PROCESS GET PARAMS INITIALLY
     window.GROUPING.process_get_params();
-    window.GROUPING.generate_get_params();
+    // window.GROUPING.generate_get_params();
 
     // Piecharts
     function load_repro() {
@@ -423,7 +423,7 @@ $(document).ready(function () {
                 draw_tables();
 
                 // Stopgap: Remove compound column if no compound criteria selected
-                if (!window.GROUPING.get_grouping_filtering()['compound'] || window.GROUPING.get_grouping_filtering()['compound'].indexOf('compound_instance.compound_id') === -1) {
+                if (!window.GROUPING.group_criteria['compound'] || window.GROUPING.group_criteria['compound'].indexOf('compound_instance.compound_id') === -1) {
                     // Note magic number
                     gas_table.column(4).visible(false);
                 }

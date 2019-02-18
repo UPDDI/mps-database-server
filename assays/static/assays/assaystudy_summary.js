@@ -27,7 +27,7 @@ $(document).ready(function() {
 
     // PROCESS GET PARAMS INITIALLY
     window.GROUPING.process_get_params();
-    window.GROUPING.generate_get_params();
+    // window.GROUPING.generate_get_params();
 
     function get_readouts() {
         var data = {

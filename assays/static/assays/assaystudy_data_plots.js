@@ -13,7 +13,10 @@ $(document).ready(function() {
 
     // PROCESS GET PARAMS INITIALLY
     window.GROUPING.process_get_params();
-    window.GROUPING.generate_get_params();
+    // window.GROUPING.generate_get_params();
+
+    // TO DEAL WITH INITIAL POST FILTER, SHOULD IT EXIST
+    var first_run = true;
 
     function show_plots() {
         var data = {
@@ -52,21 +55,25 @@ $(document).ready(function() {
                 // Stop spinner
                 window.spinner.stop();
 
-                $('#results').show();
-                $('#filter').hide();
-                $('#grouping_filtering').show();
+                if (first_run && $.urlParam('p')) {
+                    first_run = false;
 
-                // HIDE THE DATATABLE HEADERS HERE
-                $('.filter-table').hide();
+                    window.GROUPING.set_grouping_filtering(json.post_filter);
+                    window.GROUPING.process_get_params();
+                    window.GROUPING.refresh_wrapper();
+                }
+                else {
+                    window.CHARTS.prepare_side_by_side_charts(json, charts_name);
+                    window.CHARTS.make_charts(json, charts_name);
 
-                window.CHARTS.prepare_side_by_side_charts(json, charts_name);
-                window.CHARTS.make_charts(json, charts_name);
-
-                // Recalculate responsive and fixed headers
-                $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
-                $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+                    // Recalculate responsive and fixed headers
+                    $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
+                    $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+                }
             },
             error: function (xhr, errmsg, err) {
+                first_run = false;
+
                 // Stop spinner
                 window.spinner.stop();
 

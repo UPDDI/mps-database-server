@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    $('#sidebar')
+    $('#repro_options_tables')
         .find('input, select')
         .change(function() {
             // Odd, perhaps innapropriate!

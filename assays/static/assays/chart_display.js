@@ -1437,7 +1437,7 @@ $(document).ready(function () {
         }
     }
 
-    $('#sidebar')
+    $('#charting_sidebar_section')
         .find('input, select')
         // Exceptions to refresh (manually done elsewhere)
         .not('#arithmetic_select, #geometric_select, #median_select, #std_select, #ste_select')

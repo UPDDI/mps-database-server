@@ -25,7 +25,7 @@ $(document).ready(function () {
 
     // PROCESS GET PARAMS INITIALLY
     window.GROUPING.process_get_params();
-    window.GROUPING.generate_get_params();
+    // window.GROUPING.generate_get_params();
 
     // Not currently used
     function get_readouts() {
