@@ -978,13 +978,7 @@
 
     {# {% include 'assays/chart_options.html' with chart_prefix="charts" chart_title="Current Data" % #}
 
-
-    <div class="well">
-        <button type="button" class="btn btn-primary toggle_sidebar_button">
-            Toggle Sidebar
-        </button>
-        <a role="button" class="btn btn-warning show_hide_plots">Show/Hide Plots</a>
-    </div>
+    {% include 'assays/sidebar_extras.html' with show_hide="true" %}
 
     {# Note indicating no data to display initially #}
     <div id="charts" class="padded-bottom">
