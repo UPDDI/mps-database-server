@@ -1160,6 +1160,7 @@ $(document).ready(function () {
 
         // Name for the charts for binding events etc
         var charts_name = 'charts';
+        var first_run = true;
 
         window.GROUPING.refresh_function = get_readouts;
 
@@ -1200,13 +1201,20 @@ $(document).ready(function () {
                     window.spinner.stop();
 
                     window.CHARTS.prepare_side_by_side_charts(json, charts_name);
-                    window.CHARTS.make_charts(json, charts_name);
+                    window.CHARTS.make_charts(json, charts_name, first_run);
 
                     // Recalculate responsive and fixed headers
                     $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
                     $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+
+                    first_run = false;
                 },
                 error: function (xhr, errmsg, err) {
+                    first_run = false;
+
+                    // GET RID OF SIDEBAR
+                    $('.toggle_sidebar_button').first().trigger('click');
+
                     // Stop spinner
                     window.spinner.stop();
 
@@ -1214,5 +1222,9 @@ $(document).ready(function () {
                 }
             });
         }
+    }
+    else {
+        // GET RID OF SIDEBAR INITIALLY
+        $('.toggle_sidebar_button').first().trigger('click');
     }
 });

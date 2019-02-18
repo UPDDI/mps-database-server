@@ -1211,7 +1211,7 @@ $(document).ready(function () {
     }
 
     // PLEASE NOTE THAT THIS WILL WIPE ALL INDIVIDUAL EDITS
-    window.CHARTS.make_charts = function(json, charts) {
+    window.CHARTS.make_charts = function(json, charts, hide_sidebar) {
         // post_filter setup
         window.GROUPING.set_grouping_filtering(json.post_filter);
 
@@ -1267,6 +1267,11 @@ $(document).ready(function () {
         window.CHARTS.display_treatment_groups(json.treatment_groups, json.header_keys);
 
         create_events('charts');
+
+        if (hide_sidebar) {
+            // GET RID OF SIDEBAR
+            $('.toggle_sidebar_button').first().trigger('click');
+        }
     };
 
     // TODO TODO TODO NOT DRY
@@ -1332,6 +1337,12 @@ $(document).ready(function () {
         current_chart_id = Math.floor($(chart).attr('id').split('_')[1]);
         // Contrived
         // current_chart_options = all_options['charts'][current_chart_id];
+
+        // Open sidebar if it is closed
+        if (!$('#sidebar').hasClass('active')) {
+            $('.toggle_sidebar_button').first().trigger('click');
+        }
+
         individual_plot_popup.dialog('open');
     }
 

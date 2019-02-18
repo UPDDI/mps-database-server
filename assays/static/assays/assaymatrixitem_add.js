@@ -29,6 +29,8 @@ $(document).ready(function() {
     var matrix_item_id = get_matrix_item();
     var study_id = get_study_id();
 
+    var first_run = true;
+
     window.CHARTS.call = 'fetch_data_points';
     window.CHARTS.matrix_item_id = matrix_item_id;
 
@@ -500,12 +502,19 @@ $(document).ready(function() {
                 window.CHARTS.prepare_side_by_side_charts(json, charts_name);
                 // TODO TODO TODO FIX FIX FIX
                 // window.CHARTS.make_charts(json, charts_name, changes_to_chart_options);
-                window.CHARTS.make_charts(json, charts_name);
+                window.CHARTS.make_charts(json, charts_name, first_run);
                 // Recalculate responsive and fixed headers
                 $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
                 $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+
+                first_run = false;
             },
             error: function (xhr, errmsg, err) {
+                first_run = false;
+
+                // GET RID OF SIDEBAR
+                $('.toggle_sidebar_button').first().trigger('click');
+
                 // Stop spinner
                 window.spinner.stop();
 
