@@ -698,11 +698,13 @@ $(document).ready(function () {
             chart = new google.visualization.LineChart(chart_selector);
 
             // Change the options
-            options.hAxis.viewWindowMode = 'explicit';
-            options.hAxis.viewWindow = {
-                max: current_max_x + 0.1 * current_x_range,
-                min: current_min_x - 0.1 * current_x_range
-            };
+            if (!options.hAxis.scaleType === 'mirrorLog') {
+                options.hAxis.viewWindowMode = 'explicit';
+                options.hAxis.viewWindow = {
+                    max: current_max_x + 0.1 * current_x_range,
+                    min: current_min_x - 0.1 * current_x_range
+                };
+            }
         }
         // No longer totally remove, just truncate instead
         // else if (num_colors > 100) {
