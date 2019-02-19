@@ -1248,10 +1248,10 @@ def get_data_points_for_charting(
                                         return {'errors': 'Geometric mean could not be calculated (probably due to negative values), please use an arithmetic mean instead.'}
                                 # Median
                                 elif mean_type == 'median':
-                                    average = np.mean(values)
+                                    average = np.median(values)
                                 # If arithmetic mean
                                 else:
-                                    average = np.average(values)
+                                    average = np.mean(values)
                             else:
                                 average = values[0]
 
