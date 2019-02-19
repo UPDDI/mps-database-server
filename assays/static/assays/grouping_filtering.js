@@ -150,7 +150,7 @@ $(document).ready(function () {
                 'targets': {}
             };
 
-            raw_filters = raw_filters.split(';');
+            raw_filters = raw_filters.split('+');
 
             $.each(window.GROUPING.ordered_filters, function(index, current_filter) {
                 $.each(raw_filters[index].split(','), function(id_index, current_id) {
@@ -202,7 +202,7 @@ $(document).ready(function () {
             window.GROUPING.post_filter_param = 'p=' + $.urlParam('p');
         }
         if (raw_post_filter && window.GROUPING.full_post_filter) {
-            var current_post_filter = raw_post_filter.split(';');
+            var current_post_filter = raw_post_filter.split('+');
 
             // For every post-filter in order of where it appears in the page
             post_filter_spawn_selector.each(function(index) {
@@ -272,13 +272,13 @@ $(document).ready(function () {
             var default_params = [];
 
             for (var i=0; i < post_filter_spawn_selector.length; i++) {
-                default_params.push(';');
+                default_params.push('+');
             }
 
-            window.GROUPING.post_filter_param = 'p=' + default_params.join(';');
+            window.GROUPING.post_filter_param = 'p=' + default_params.join('+');
         }
 
-        var post_filter_strings = window.GROUPING.post_filter_param.split('=')[1].split(';');
+        var post_filter_strings = window.GROUPING.post_filter_param.split('=')[1].split('+');
 
         var current_post_filter = [];
 
@@ -299,7 +299,7 @@ $(document).ready(function () {
         // Add to main
         post_filter_strings[current_filter_index] = current_post_filter.join(',');
 
-        window.GROUPING.post_filter_param = 'p=' + post_filter_strings.join(';');
+        window.GROUPING.post_filter_param = 'p=' + post_filter_strings.join('+');
 
         window.GROUPING.refresh_get_params();
     };
@@ -350,7 +350,7 @@ $(document).ready(function () {
                 filter_string.push(curent_filter_string.join(','));
             });
 
-            window.GROUPING.filters_param = 'f=' + filter_string.join(';');
+            window.GROUPING.filters_param = 'f=' + filter_string.join('+');
         }
 
         window.GROUPING.refresh_get_params();
@@ -373,7 +373,7 @@ $(document).ready(function () {
                 filter_string.push(curent_filter_string.join(','));
             });
 
-            window.GROUPING.filters_param = 'f=' + filter_string.join(';');
+            window.GROUPING.filters_param = 'f=' + filter_string.join('+');
 
             string_to_append.push(window.GROUPING.filters_param);
         }
@@ -430,7 +430,7 @@ $(document).ready(function () {
                 post_filter_string.push(current_post_filter.join(','));
             });
 
-            window.GROUPING.post_filter_param = 'p=' + post_filter_string.join(';');
+            window.GROUPING.post_filter_param = 'p=' + post_filter_string.join('+');
 
             string_to_append.push(window.GROUPING.post_filter_param);
         }
@@ -560,7 +560,7 @@ $(document).ready(function () {
 
                     if (obj_name) {
                         obj_name += '';
-                        obj_name = obj_name.replace('~@|', ' ')
+                        obj_name = obj_name.replace('~@|', ' ');
                     }
 
                     // WARNING: NAIVE REPLACE

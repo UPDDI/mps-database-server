@@ -1792,8 +1792,12 @@ class AssayDataFromFilters(TemplateView):
         data = None
 
         # TODO TODO TODO NOT DRY
-        if self.request.GET.get('filters', None):
-            current_filters = json.loads(self.request.GET.get('filters', '{}'))
+        if self.request.GET.get('f', None):
+            filter_params = self.request.GET.get('f', '    ')
+
+            # PLEASE NOTE THAT + GETS INTERPRETED AS A SPACE (' ')
+            current_filters = filter_params.split(' ')
+
             accessible_studies = get_user_accessible_studies(self.request.user)
 
             # Notice exclusion of missing organ model
@@ -1807,8 +1811,8 @@ class AssayDataFromFilters(TemplateView):
                 # 'assaydatapoint_set__study_assay__target'
             )
 
-            if current_filters.get('organ_models', []):
-                organ_model_ids = [int(id) for id in current_filters.get('organ_models', []) if id]
+            if len(current_filters) and current_filters[0]:
+                organ_model_ids = [int(id) for id in current_filters[0].split(',') if id]
 
                 matrix_items = matrix_items.filter(
                     organ_model_id__in=organ_model_ids
@@ -1826,8 +1830,8 @@ class AssayDataFromFilters(TemplateView):
                 'assaydatapoint_set__study_assay__target'
             )
 
-            if current_filters.get('groups', []):
-                group_ids = [int(id) for id in current_filters.get('groups', []) if id]
+            if len(current_filters) > 1 and current_filters[1]:
+                group_ids = [int(id) for id in current_filters[1].split(',') if id]
                 accessible_studies = accessible_studies.filter(group_id__in=group_ids)
 
                 matrix_items = matrix_items.filter(
@@ -1836,11 +1840,11 @@ class AssayDataFromFilters(TemplateView):
             else:
                 matrix_items = AssayMatrixItem.objects.none()
 
-            if current_filters.get('compounds', []):
-                compound_ids = [int(id) for id in current_filters.get('compounds', []) if id]
+            if len(current_filters) > 3 and current_filters[3]:
+                compound_ids = [int(id) for id in current_filters[3].split(',') if id]
 
                 # See whether to include no compounds
-                if '0' in current_filters.get('compounds', []):
+                if 0 in compound_ids:
                     matrix_items = matrix_items.filter(
                         assaysetupcompound__compound_instance__compound_id__in=compound_ids
                     ) | matrix_items.filter(assaysetupcompound__isnull=True)
@@ -1852,8 +1856,8 @@ class AssayDataFromFilters(TemplateView):
             else:
                 matrix_items = AssayMatrixItem.objects.none()
 
-            if current_filters.get('targets', []):
-                target_ids = [int(id) for id in current_filters.get('targets', []) if id]
+            if len(current_filters) > 2 and current_filters[2]:
+                target_ids = [int(id) for id in current_filters[2].split(',') if id]
 
                 matrix_items = matrix_items.filter(
                     assaydatapoint__study_assay__target_id__in=target_ids
