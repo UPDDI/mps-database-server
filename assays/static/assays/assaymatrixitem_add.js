@@ -512,9 +512,6 @@ $(document).ready(function() {
             error: function (xhr, errmsg, err) {
                 first_run = false;
 
-                // GET RID OF SIDEBAR
-                $('.toggle_sidebar_button').first().trigger('click');
-
                 // Stop spinner
                 window.spinner.stop();
 
