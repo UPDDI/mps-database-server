@@ -222,16 +222,24 @@
 </nav>
 
 <div class="offset-help-navbar">
+    <div id="intro_section" class="container">
+        <div id="elavatordescription">
+        <br>The <b>Microphysiology Systems (MPS) Database</b> combines the loading, storage, and sharing of experimentally derived assay data and data curated from external reference sources with visualization and analysis tools to provide a powerful platform for designing experimental studies and performing computational modeling.
+        <br>
+        </div>
+    </div>
 
     <div id="recentupgrades_section" class="container">
-
         <h1 class="sub1-bars"> What's New in the MPS Database </h1>
-
         <div id="recentupgrades">
             <button class="collapsible1">Summary of Recent Updates</button>
             <div class="content1">
                 <div id="recentupgradesviewer" class="viewersubtainer">
                     <ul class="list-group">
+                        <li class="list-group-item"> <b><em>Enhanced Options for Overriding the Built-in Grouping/Filtering, Plotting, and Reproducibility Analysis of Assay Data</em></b> - A left-sidebar offers a wide variety of options for dynamically changing data aggregation grouping and filtering. The sidebar can be toggled on and off to allow flexible use of screen space. An option to manually refresh data aggregation has been provided to allow users to make multiple changes without waiting for the refresh after each change. Filter buttons are now highlighted when active. The sidebars are targeted to the displayed feature (i.e. the options for the reproducibility plots are different than the options for the study summary plots), and new options for customizing individual plots have been added.
+                            For more information on the intra-study feature, <a href="#intrastudy">click here</a>.
+                            For more information on the inter-study feature, <a href="#interstudy">click here</a>.
+                        </li>
                         <li class="list-group-item"> <b><em>Integrated Reproducibility Analysis</em></b> - An intra- and inter-study reproducibility analysis tool is now available in the <b>MPS database</b>. The inter-study tool can be accessed through the <b>Data Analysis</b> icon or tab. This tool offers the user a wide range of options for grouping and filtering data prior to performing graphing and/or reproducibility analysis. The intra-study tool can be accessed through the <b>Study Summary</b> page of the MPS-GUI.
                             For more information on the intra-study feature, <a href="#intrastudy">click here</a>.
                             For more information on the inter-study feature, <a href="#interstudy">click here</a>.
@@ -1646,13 +1654,13 @@
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
-                                <li><b>Intra-Study Analysis</b> features are accessed from within an individual study
+                                <li>The <b>Intra-Study Analysis</b> features listed below are accessed from within an individual study
                                     <ul class="filled-circle">
-                                        <li>Plotting/Graphing <b>Assay</b> Data (can be accessed in three ways)
+                                        <li>Plotting/Graphing <b>Assay</b> Data, by default, can be accessed
                                             <ul class="open-circle">
-                                                <li>Pre-filtered to items in a <b>Study</b> when viewed on the <b>Study Summary</b> page </li>
-                                                <li>Pre-filtered to items in a <b>Matrix</b> when viewed on the <b>Matrix Setup and Data</b> page </li>
-                                                <li>Pre-filtered to an individual <b>Matrix Item</b> when viewed on the <b>Item Setup and Data </b> page </li>
+                                                <li>Pre-filtered to items in a <b>Study</b> (when viewed on the <b>Study Summary</b> page) </li>
+                                                <li>Pre-filtered to items in a <b>Matrix</b> (when viewed on the <b>Matrix Setup and Data</b> page) </li>
+                                                <li>Pre-filtered to an individual <b>Matrix Item</b> (when viewed on the <b>Item Setup and Data </b> page) </li>
                                             </ul>
                                         </li>
                                         <li>Performing reproducibility analysis on <b>Assay</b> Data associated to the <b>Study</b> </li>
@@ -1665,7 +1673,7 @@
                     </ul>
 
                     <div id="studies">
-                        <button class="collapsible2"> Built-in Default Grouping/Filtering by Study  </button>
+                        <button class="collapsible2"> Using Built-in Default Grouping/Filtering by Study  </button>
                         <div class="content2">
                             <div id="studiesviewer" class="viewersubtainer">
                                 <ul class="list-group">
@@ -1687,7 +1695,7 @@
                                                     </li>
                                                     <li>Option 2 - Click on the <b>View Reproducibility</b> button - to see results of intra-study reproducibility analysis
                                                         <ul class="open-circle">
-                                                            <li>Click to put a check in the <b>Show Details</b> box to see details and visualizations </li>
+                                                            <li>In the results table, click to put a check in the <b>Show Details</b> box to see details and visualizations </li>
                                                             <li>Scroll down to see the visualizations </li>
                                                             <li>For more information on overriding default grouping and filtering, <a href="#groupingfiltering">click here</a> </li>
                                                             <li>For more information on plotting options, <a href="#plottingoptions">click here</a> </li>
@@ -1733,9 +1741,9 @@
                                                     <li>To see <b>Matrix</b> level annotations, hover over the <span class="glyphicon glyphicon-flag" aria-hidden="true"></span> in the <b>Review</b> column (optional) </li>
                                                     <li>Click on the <b>View/Edit</b> button next to the <b>Matrix</b> of interest
                                                         <ul class="open-circle">
-                                                            <li>To review settings - click on the <b>Show Settings</b> button (non-compound treatments/conditions/settings) </li>
-                                                            <li>To review compounds added - click on the <b>Show Compounds</b> button  </li>
-                                                            <li>To review cells added - click on the <b>Show Cells</b> button </li>
+                                                            <li>To toggle settings (Show/Hide) - click on the <b>Show Settings</b> button (non-compound treatments/conditions/settings) </li>
+                                                            <li>To toggle compounds added (Show/Hide) - click on the <b>Show Compounds</b> button  </li>
+                                                            <li>To toggle cells added (Show/Hide) - click on the <b>Show Cells</b> button </li>
                                                         </ul>
                                                     </li>
                                                     <li>Scroll down the page to review matrix data
@@ -1771,7 +1779,7 @@
                                                     <li>Scroll down the page to review matrix item details and data
                                                         <ul class="open-circle">
                                                             <li>For more information on overriding default grouping and filtering, <a href="#groupingfiltering">click here</a> </li>
-                                                            <li>For more information on plotting options, <a href="#plottingoptions">click here</a> </li>
+                                                            <li>For more information on overriding default plotting options, <a href="#plottingoptions">click here</a> </li>
                                                         </ul>
                                                     </li>
                                                 </ul>
@@ -1803,7 +1811,7 @@
                                     <ul class="filled-circle">
                                         <li>Check <b>at least</b> one box in each list
                                             <ul class="open-circle">
-                                                <li>Notice how checking and unchecking boxes changes the assay data point count </li>
+                                                <li>Notice how checking and unchecking boxes changes the Number of Points (assay data points) selected for inclusion </li>
                                             </ul>
                                         </li>
                                         <li>Option 1 - Click on the <b>Show Plots</b> button - to view plots
@@ -1815,10 +1823,11 @@
                                         </li>
                                         <li>Option 2 - Click on the <b>Show Reproducibility</b> button - to see results of inter-study reproducibility analysis
                                             <ul class="open-circle">
-                                                <li>Click to put a check in the <b>Show Details</b> box to see details and visualizations </li>
+                                                <li>In the results table, click to put a check in the <b>Show Details</b> box to see details and visualizations </li>
                                                 <li>Scroll down to see the visualizations </li>
                                                 <li>For more information on overriding default grouping and filtering, <a href="#groupingfiltering">click here</a> </li>
-                                                <li>For more information on plotting options, <a href="#plottingoptions">click here</a> </li>
+                                                <li>For more information on overiding default plotting options, <a href="#plottingoptions">click here</a> </li>
+                                                <li>For more information on overiding default reproducibility property options, <a href="#reproducibilityoptions">click here</a> </li>
                                             </ul>
                                         </li>
                                         <li>Option 3 - Click on the <b>Download</b> button - to download selected data  </li>
@@ -1838,17 +1847,30 @@
                     <ul class="list-group">
                         <li class="list-group-item background3">
                             <ul class="list-unstyled">
-                                <li>To override the built-in default <b>Grouping/Filtering</b>, wherever the <b>Grouping/Filtering</b> section is displayed
+                                <li>Customized grouping and filtering is available in the database via a "Sidebar" where data are available for review
                                     <ul class="filled-circle">
-                                        <li>Click on the filter symbol next to a metadata/data tag to limit selected data based on data associated with the tag </li>
-                                        <li>Click on the group box next to a metadata/data tag to include (checked) or omit (unchecked) data associated with the tag in determining how data are grouped </li>
+                                        <li>If hidden, click the <b>Toggle Sidebar</b> button to show the sidebar</li>
+                                        <li>Click on the parameter menus (Study Parameters, Cell Parameters, Compound Parameters, Setting Parameters) to see options</li>
+                                        <li>To filter - click on the filter symbol
+                                            <ul class="open-circle">
+                                            <li>To select data, check the box next to the data </li>
+                                            <li>To omit data, uncheck the box next to the data </li>
+                                            </ul>
+                                        </li>
+                                        <li>To group - check/uncheck the box in the Group column
+                                            <ul class="open-circle">
+                                            <li>Check the box to include parameter in grouping </li>
+                                            <li>Uncheck the box to remove parameter from grouping </li>
+                                            </ul>
+                                        </li>
                                         <li>REPEAT for all attributes to override </li>
-                                        <li>Click on the <b>Refresh</b> button to apply changes </li>
                                     </ul>
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>Changing groups and filters changes the why <b>Matrix Items</b> are grouped into rows in the Group table/list provided below the plots </li>
+                                        <li>Changing groups and filters changes the way <b>Matrix Items</b> are grouped into rows in the Group table/list provided below the plots </li>
+                                        <li>In general, increasing the number of parameters selected for grouping will increase the number of data groups in the summary data aggregation tables
+                                        <li>By default, the screen will automatically refresh, to refresh manually, check the <b>Manually Refresh</b> box, make the desired changes, then click on the <b>Refresh</b> button to apply changes </li>
                                     </ul>
                                 </li>
                             </ul>
@@ -1859,28 +1881,78 @@
         </div>
 
         <div id="plottingoptions">
-            <button class="collapsible3">Exploring Plotting/Graphing Options </button>
+            <button class="collapsible3">Overriding Plotting/Graphing Options </button>
             <div class="content3">
                 <div id="plottingoptionsviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item background3">
                             <ul class="list-unstyled">
-                                <li>To change the <b>Plotting/Graphing</b>, wherever the <b>Data</b> section is displayed, select from the options provided
+                                <li>General graph customization is available via a "Sidebar" where graphs are displayed
                                     <ul class="filled-circle">
-                                        <li>By Chip, By Group, By Dose-Response - changes legend and averaging from chip (Matrix Item) to group (as selected in the grouping/filtering) to dose-response </li>
-                                        <li>Arithmetic Mean or Geometrix Mean - indicates the method of averaging</li>
-                                        <li>Standard Error or Standard Deviation - indicates method used to show error bars </li>
-                                        <li>Tooltips for each Data Point or for Entire Time Point - changes what is displayed when hovering over a data point
-                                        <li>Convert to Percent of Control - changes plots to percent control
+                                        <li>If hidden, click the <b>Toggle Sidebar</b> button to show the sidebar </li>
+                                        <li>Click on the property menus (Plot Graph By, Data Aggregation, Tooltip Display, Data Display, Time Unit) to see options </li>
+                                        <li>To change the <b>General Graph Properties</b>, click on the menu of the property of interest
                                             <ul class="open-circle">
-                                                <li>When box is checked, assays and time points without associated controls are removed and the y-axis units are changed to percent control </li>
-                                                <li>To work correctly, chips must be categorized as either compound or control, and control chips must be present in the study (and/or the matrix) </li>
+                                                <li>Plot Graph By - select By Chips (Matrix Item), By Group, or By Compound to indicate additional aggregation grouping </li>
+                                                <li>Data Aggregation - select Arithmetic Mean, Geometric Mean, or Median (additional options available based on selection)</li>
+                                                <li>Tooltip Display - select Each Data Point or Entire Time Point (when hovering over a point on a graph) </li>
+                                                <li>Data Display - option to select Include Excluded Data and/or treat Negative Values as 0 </li>
+                                                <li>Time Unit - select Day, Hour, or Minute for time unit of X-axis</li>
                                             </ul>
                                         </li>
-                                        <li>Include Excluded Data - check to include data that were marked for exclusion by the Data Provider </li>
-                                        <li>Treat Negative Values as Zero - values stored as <0 will be displayed as 0 in plots </li>
-                                        <li>Log Scale X-Axis - changes x-axis to log scale </li>
-                                        <li>Log Scale Y-Axis - changes y-axis to log scale </li>
+                                    </ul>
+                                </li>
+                                <li><br>Individualized graphing options are available via a graph popup where graphs are displayed
+                                    <ul class="filled-circle">
+                                        <li>Right-click on an individual graph (on touch screen - press and hold one finger while tapping with another)
+                                        <li>Select the desired individualized graph options
+                                            <ul class="open-circle">
+                                                <li>Show Plot - if uncheck and apply, graph will not be displayed on main page</li>
+                                                <li>Graph as Percent Control - when box is checked, assays and time points without associated controls are removed and the y-axis units are changed to percent control </li>
+                                                <li>Graphs as Dose-Response - changes X-axis from time to dose </li>
+                                                <li>Transform X-axis to Log Scale - transforms X-axis </li>
+                                                <li>Transform Y-axis to Log Scale - transforms Y-axis</li>
+                                            </ul>
+                                        </li>
+                                        <li>Click to <b>View Preview</b></li>
+                                        <li>Make changes to the general graph customization features as desired (optional)</li>
+                                        <li>Click <b>Apply to Plot</b> to apply changes, <b>Revert to Default</b> to remove graph specific customization, or <b>Cancel</b> to go back to the last applied version
+                                    </ul>
+                                </li>
+                                <li><br>Notes
+                                    <ul class="filled-circle">
+                                        <li>By default, the screen will automatically refresh, to refresh manually, check the <b>Manually Refresh</b> box, make the desired changes, then click on the <b>Refresh</b> button to apply changes </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="reproducibilityoptions">
+            <button class="collapsible3">Overriding Reproducibility Options </button>
+            <div class="content3">
+                <div id="plottingoptionsviewer" class="viewersubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item background3">
+                            <ul class="list-unstyled">
+                                <li>Customized properties for reproducibility analysis are available in the database via a "Sidebar" on the inter-study reproducibility analysis page
+                                    <ul class="filled-circle">
+                                        <li>If hidden, click the <b>Toggle Sidebar</b> button to show the sidebar
+                                        <li>Make desired selections in the sidebar
+                                            <ul class="open-circle">
+                                            <li>Reproducibility Comparison within Selected Data Sets - By Center (Center to Center) or By Study (Study to Study)</li>
+                                            <li>Normalize by Median - helpful if trends are similar but values are on different scales </li>
+                                            <li>Maximum Interpolation Size - maximum number of data points that can be interpolated, between experimental measurements, to allow for comparison within selected data sets, center to center or study to study (shown as stars on the reproducibility plots)</li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li><br>Notes
+                                    <ul class="filled-circle">
+                                        <li>By default, the screen will automatically refresh, to refresh manually, check the <b>Manually Refresh</b> box, make the desired changes, then click on the <b>Refresh</b> button to apply changes </li>
                                     </ul>
                                 </li>
                             </ul>
