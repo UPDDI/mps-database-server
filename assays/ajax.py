@@ -741,6 +741,9 @@ def get_control_data(
                                         return {
                                             'errors': 'Geometric mean could not be calculated (probably due to negative values), please use an arithmetic mean instead.'
                                         }
+                                # Median
+                                elif mean_type == 'median':
+                                    average = np.median(values)
                                 # If arithmetic mean
                                 else:
                                     average = np.average(values)

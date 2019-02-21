@@ -1073,7 +1073,7 @@ $(document).ready(function() {
                 datapoints: JSON.stringify(datapoints)
             },
             success: function (json) {
-                var content, color, repro_url;
+                var content, color, repro_url, extra_link_url;
                 for (x=0; x<studies_anchors.length; x++) {
                     repro_url = $(studies_anchors[x]).attr("href") + "reproducibility/";
                     if (json[x][0] === 'E') {
@@ -1085,7 +1085,8 @@ $(document).ready(function() {
                     } else {
                         color = "Grey";
                     }
-                    content = "&emsp;Reproducibility Status: <em style='padding:2px; background-color: " + color + "'><a style='color: #333;' href='" + repro_url + "' target='_blank'>" + json[x] + "</a></em>";
+                    extra_link_url = '<a target="_blank" href="' + repro_url + '"><span class="glyphicon glyphicon-link"></span></a>'
+                    content = "&emsp;Reproducibility Status: <em style='padding:2px; background-color: " + color + "'><a style='color: #333;' href='" + repro_url + "' target='_blank'>" + json[x] + "</a></em>" + extra_link_url;
                     $(studies_anchors[x]).after(content);
                 }
             },

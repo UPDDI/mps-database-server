@@ -319,10 +319,25 @@ $(document).ready(function () {
                 $('#charting_sidebar_section').removeClass('bg-info');
                 // specific_graph_properties_container.hide('slow');
 
+                // GET RID OF THE OVERLAY
+                $('#full_page_overlay').remove();
+
                 apply_options_to_sidebar(window.CHARTS.global_options, false);
             },
             open: function () {
                 $.ui.dialog.prototype.options.open();
+
+                var overlay_to_inject = $('<div>')
+                    .attr('id', 'full_page_overlay')
+                    .css('width', '100%')
+                    .css('height', '100%')
+                    .css('z-index', '999')
+                    .css('position', 'fixed')
+                    .css('left', '0')
+                    .css('top', '0')
+                    .css('background-color', '#3333');
+
+                $('#page').append(overlay_to_inject);
 
                 // Change title
                 var full_name = current_chart_name.split('\n');
@@ -1219,7 +1234,10 @@ $(document).ready(function () {
     // PLEASE NOTE THAT THIS WILL WIPE ALL INDIVIDUAL EDITS
     window.CHARTS.make_charts = function(json, charts, hide_sidebar) {
         // post_filter setup
-        window.GROUPING.set_grouping_filtering(json.post_filter);
+        // NOTE: MAY HAVE SIDE EFFECTS...
+        if (json.post_filter) {
+            window.GROUPING.set_grouping_filtering(json.post_filter);
+        }
 
         // Remove triggers
         destroy_events(charts);
@@ -1353,20 +1371,20 @@ $(document).ready(function () {
     }
 
     // CONTEXT MENU
-    $(document).on('contextmenu', '.chart-container', function() {
+    $(document).on('contextmenu.chart_context', '.chart-container', function() {
         create_popup_for_individual_plot(this);
     });
 
     // TRIGGER CONTEXT MENU ON LONG PRESS
     // ATTEMPT TO TRIGGER ON TOUCH EVENTS AS WELL
     var long_press_timer;
-    $(document).on('mousedown touchstart', '.chart-container', function() {
+    $(document).on('mousedown.chart_context touchstart.chart_context', '.chart-container', function() {
         var chart = this;
         long_press_timer = setTimeout(function() {
             create_popup_for_individual_plot(chart);
         }, 1500);
     });
-    $(document).on('mouseup mouseleave touchend touchcancel', '.chart-container', function() {
+    $(document).on('mouseup.chart_context mouseleave.chart_context touchend.chart_context touchcancel.chart_context', '.chart-container', function() {
         clearTimeout(long_press_timer);
     });
 

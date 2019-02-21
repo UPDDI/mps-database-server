@@ -75,7 +75,7 @@ $(document).ready(function() {
         });
     }
 
-    $('#exportinclude_all').change(function() {
+    $('#include_all').change(function() {
         var export_button = $('#export_button');
         if ($(this).prop('checked')) {
             export_button.attr('href', export_button.attr('href') + '?include_all=true');

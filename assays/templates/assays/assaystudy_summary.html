@@ -35,7 +35,7 @@
             <a href="{{ object.get_images_url }}" class="btn btn-primary" role="button">View Images</a>
             <a id="export_button" href="/assays/assaystudy/{{ object.id }}/data/" class="btn btn-info" role="button">Download Data</a>
             <label class="radio-inline">
-                <input type="checkbox" name="exportinclude_all" id="exportinclude_all" onclick="$('#chartsinclude_all').prop('checked', $(this).prop('checked'));"/>
+                <input type="checkbox" name="exportinclude_all" id="exportinclude_all" onclick="$('#include_all').prop('checked', $(this).prop('checked'));"/>
                 <strong>Include Excluded Data</strong>
             </label>
         </div>

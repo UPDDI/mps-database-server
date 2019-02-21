@@ -548,7 +548,7 @@ $(document).ready(function() {
 
     function toggle_excluded() {
         // Stop gap: magic string
-        var include_all = $('#chartsinclude_all').prop('checked');
+        var include_all = $('#include_all').prop('checked');
 
         if (include_all) {
             $('.initially-excluded').show();

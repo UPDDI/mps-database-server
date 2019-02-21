@@ -5,7 +5,7 @@ $(document).ready(function () {
     // Load core chart package
     google.charts.load('current', {'packages':['corechart']});
     // Set the callback
-    google.charts.setOnLoadCallback(get_readouts);
+    // google.charts.setOnLoadCallback(get_readouts);
 
     window.GROUPING.refresh_function = refresh_current;
 
@@ -20,11 +20,11 @@ $(document).ready(function () {
 
     var study_id = Math.floor(window.location.href.split('/')[5]);
 
-    window.CHARTS.call = 'fetch_data_points';
+    window.CHARTS.call = 'validate_data_file';
     window.CHARTS.study_id = study_id;
 
     // PROCESS GET PARAMS INITIALLY
-    window.GROUPING.process_get_params();
+    // window.GROUPING.process_get_params();
     // window.GROUPING.generate_get_params();
 
     // Not currently used
@@ -144,6 +144,9 @@ $(document).ready(function () {
 
                         window.CHARTS.prepare_side_by_side_charts(json.readout_data, charts_name);
                         window.CHARTS.make_charts(json.readout_data, charts_name);
+
+                        // CRUDE: SIMPLY UNBIND ALL CHART CONTAINER EVENTS
+                        $(document).off('.chart_context');
                     }
                 },
                 error: function (xhr, errmsg, err) {
@@ -165,6 +168,10 @@ $(document).ready(function () {
     $('#id_bulk_file').change(function() {
         validate_bulk_file();
     });
+
+    // NOTE: FOR NOW FILTERING WILL BE FORBIDDEN
+    // CRUDE: JUST DISABLE THE BUTTONS
+    $('.post-filter-spawn').html('X').attr('disabled', 'disabled');
 
     // NOTE MAGIC STRING HERE
     // Commented out for now, will just have preview (not current data to avoid ambiguity with only one sidebar)
