@@ -105,7 +105,7 @@ $(document).ready(function() {
                 },
                 {
                     'visible': false,
-                    'targets': [7, 8, 12]
+                    'targets': [7, 8, 12, 14]
                 },
                 {
                     'className': 'none',

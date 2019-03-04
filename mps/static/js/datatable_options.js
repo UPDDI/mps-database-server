@@ -12,7 +12,7 @@ $(document).ready(function () {
     $.urlParam = function(name) {
         var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
         if (results == null) {
-           return null;
+           return '';
         }
         return decodeURI(results[1]) || '';
     };
@@ -93,7 +93,7 @@ $(document).ready(function () {
     $(document).on('click', '.toggle-hide-button, .toggle_sidebar_button', function() {
         // Recalculate responsive and fixed headers
         setTimeout(function() {
-            $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
+            // $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
             $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
         }, 1000);
     });

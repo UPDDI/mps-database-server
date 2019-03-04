@@ -83,7 +83,15 @@ $(document).ready(function () {
                 } else {
                     color = "Grey";
                 }
-                $clone.find('[data-id=repro-status]').html('<em style="padding: 2px; background-color:' + color + '">' + icc_status + '</em><small style="color: #333;"><span data-toggle="tooltip" title="'+data[14]+'" class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></small>');
+
+                var repro_status = '<em style="padding: 2px; background-color:' + color + '">' + icc_status + '</em>';
+
+                // Only add a note if necessary
+                if (data[11]) {
+                    repro_status += '<small style="color: #333;"><span data-toggle="tooltip" title="' + data[11] + '" class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></small>';
+                }
+
+                $clone.find('[data-id=repro-status]').html(repro_status);
 
                 // More than 6 rows, scrollY 270px, else 100%
                 var mad_scroll_y = "100%";
@@ -299,7 +307,12 @@ $(document).ready(function () {
                     criteria: JSON.stringify(window.GROUPING.group_criteria),
                     post_filter: JSON.stringify(window.GROUPING.current_post_filter),
                     csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
-                    study: study_id
+                    study: study_id,
+                    item_ids: JSON.stringify($.urlParam('i').split('+')),
+                    target_id: $.urlParam('t'),
+                    unit_id: $.urlParam('u'),
+                    sample_location_id: $.urlParam('s'),
+                    method_id: $.urlParam('m'),
                 },
                 type: 'POST',
                 dataSrc: function(json) {

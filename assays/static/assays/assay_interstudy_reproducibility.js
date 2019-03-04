@@ -1074,8 +1074,90 @@ $(document).ready(function() {
             },
             success: function (json) {
                 var content, color, repro_url, extra_link_url;
+                var criteria_string = window.GROUPING.group_criteria_param;
+                // TECHNICALLY THIS INCLUDES MORE THAN IS NECESSARY
+                var items_string = 'i=' + treatment_groups[data_groups[number][data_groups[number].length - 1]]['item_ids'].join('+');
+
+                // STUPID WAY TO GET TARGET AND UNIT FROM POST FILTER
+                // STUPID
+                // Target should always be first
+                var target_name = data_groups[number][0];
+                var target_id = '';
+
+                // Get the target_id from the name
+                $.each(window.GROUPING.full_post_filter['assay']['target_id__in'], function(current_id, current_name) {
+                    if (current_name === target_name) {
+                        target_id = current_id;
+                        return false;
+                    }
+                });
+
+                var target_string = 't=' + target_id;
+
+                var unit_name = data_groups[number][value_unit_index];
+                var unit_id = '';
+
+                // Get the unit_id from the name
+                $.each(window.GROUPING.full_post_filter['assay']['unit_id__in'], function(current_id, current_name) {
+                    if (current_name === unit_name) {
+                        unit_id = current_id;
+                        return false;
+                    }
+                });
+
+                var unit_string = 'u=' + unit_id;
+
+                // SLOPPY: NOT ROBUST
+                var sample_location_string = '';
+                var method_string = '';
+
+                var sample_location_name = data_group_to_sample_locations[number].join('');
+                var sample_location_id = '';
+
+                // Get the sample_location from the name
+                // ONLY IF CRITERIA INCLUDES SAMPLE LOCATION
+                if (window.GROUPING.group_criteria.special.indexOf('sample_location') !== -1) {
+                    $.each(window.GROUPING.full_post_filter['data_point']['sample_location_id__in'], function(current_id, current_name) {
+                        if (current_name === sample_location_name) {
+                            sample_location_id = current_id;
+                            return false;
+                        }
+                    });
+                }
+
+                if (sample_location_id) {
+                    sample_location_string = 's=' + sample_location_id;
+                }
+
+                var method_name = data_groups[number][header_keys.data.indexOf('Method')];
+                var method_id = null;
+
+                // Get the sample_location from the name
+                // ONLY IF CRITERIA INCLUDES SAMPLE LOCATION
+                if (window.GROUPING.group_criteria.special.indexOf('method') !== -1) {
+                    $.each(window.GROUPING.full_post_filter['assay']['method_id__in'], function(current_id, current_name) {
+                        if (current_name === method_name) {
+                            method_id = current_id;
+                            return false;
+                        }
+                    });
+                }
+
+                if (method_id) {
+                    method_string = 'm=' + method_id;
+                }
+
+                var param_string_to_add = [
+                    criteria_string,
+                    items_string,
+                    target_string,
+                    unit_string,
+                    sample_location_string,
+                    method_string
+                ].join('&');
+
                 for (x=0; x<studies_anchors.length; x++) {
-                    repro_url = $(studies_anchors[x]).attr("href") + "reproducibility/";
+                    repro_url = $(studies_anchors[x]).attr("href") + "reproducibility/?" + param_string_to_add;
                     if (json[x][0] === 'E') {
                         color = "#74ff5b";
                     } else if (json[x][0] === 'A') {

@@ -1411,7 +1411,7 @@ class AssayTarget(LockableModel):
     alt_name = models.CharField(max_length=1000, blank=True, default='')
 
     def __unicode__(self):
-        return u'{0} ({1})'.format(self.name, self.short_name)
+        return u'{0}'.format(self.name)
 
 
 class AssaySubtarget(models.Model):
@@ -1929,6 +1929,7 @@ class AssayMatrixItem(FlaggableModel):
         return '\n'.join(set(compounds))
 
     # SPAGHETTI CODE
+    # TERRIBLE, BLOATED
     def quick_dic(self, criteria=None):
         if not criteria:
             criteria = {}
@@ -1944,7 +1945,8 @@ class AssayMatrixItem(FlaggableModel):
                 'compound_instance.compound_id': True,
                 'concentration': True
             }),
-            'Items with Same Treatment': []
+            'Items with Same Treatment': [],
+            'item_ids': []
         }
         return dic
 

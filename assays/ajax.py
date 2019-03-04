@@ -831,6 +831,9 @@ def get_item_groups(study, criteria, matrix_items=None):
         current_representative.get('Items with Same Treatment').append(
             setup.get_hyperlinked_name()
         )
+        current_representative.get('item_ids').append(
+            setup.id
+        )
         current_representative.setdefault('names for items', []).append(
             setup.name
         )
@@ -1634,12 +1637,36 @@ def fetch_assay_study_reproducibility(request):
     post_filter = json.loads(request.POST.get('post_filter', '{}'))
     criteria = json.loads(request.POST.get('criteria', '{}'))
 
+    item_id_filter = json.loads(request.POST.get('item_ids', '[]'))
+    target_id_filter = request.POST.get('target_id', '')
+    unit_id_filter = request.POST.get('unit_id', '')
+    sample_location_id_filter = request.POST.get('sample_location_id', '')
+    method_id_filter = request.POST.get('method_id', '')
+
     # If chip data
     matrix_items = AssayMatrixItem.objects.filter(
         study_id=study.id
     )
 
+    # If a filter was passed
+    if item_id_filter:
+        item_id_filter = [int(x) for x in item_id_filter]
+        matrix_items = matrix_items.filter(id__in=item_id_filter)
+
     assays = AssayStudyAssay.objects.filter(study_id=study.id)
+
+    if target_id_filter:
+        assays = assays.filter(
+            target_id=int(target_id_filter),
+            unit__base_unit_id=int(unit_id_filter)
+        ) | assays.filter(
+            target_id=int(target_id_filter),
+            unit_id=int(unit_id_filter)
+        )
+
+    if method_id_filter:
+        assays = assays.filter(method_id=method_id_filter)
+
     data_points = AssayDataPoint.objects.filter(
         study_id=study.id
     ).prefetch_related(
@@ -1658,6 +1685,9 @@ def fetch_assay_study_reproducibility(request):
         value__isnull=False
     )
 
+    if sample_location_id_filter:
+        data_points = data_points.filter(sample_location_id=sample_location_id_filter)
+
     if not post_filter:
         assays = assays.prefetch_related(
             'target',
@@ -1665,6 +1695,15 @@ def fetch_assay_study_reproducibility(request):
         )
 
         post_filter = acquire_post_filter(studies, assays, matrix_items, data_points)
+
+        if item_id_filter or target_id_filter:
+            studies, assays, matrix_items, data_points = apply_post_filter(
+                post_filter, studies, assays, matrix_items, data_points
+            )
+            # DUMB BUT EXPEDIENT
+            # TODO REVISE
+            # WHY DO I DO THIS? BECAUSE APPLYING FILTER DESTROYS PARTS OF THE POST FILTER
+            post_filter = acquire_post_filter(studies, assays, matrix_items, data_points)
     else:
         studies, assays, matrix_items, data_points = apply_post_filter(
             post_filter, studies, assays, matrix_items, data_points
@@ -2108,7 +2147,8 @@ def acquire_post_filter(studies, assays, matrix_items, data_points):
     assays = assays.prefetch_related(
         'target',
         'method',
-        'unit'
+        # SLOPPY
+        'unit__base_unit'
     )
 
     for assay in assays:
@@ -2132,6 +2172,13 @@ def acquire_post_filter(studies, assays, matrix_items, data_points):
         ).update({
             assay.unit.id: assay.unit.unit
         })
+        # EVEN TRICKIER
+        if assay.unit.base_unit_id:
+            current.setdefault(
+                'unit_id__in', {}
+            ).update({
+                assay.unit.base_unit_id: assay.unit.base_unit.unit
+            })
 
     # Contrived: Add no compounds
     post_filter.setdefault('matrix_item', {}).setdefault(
@@ -2390,6 +2437,9 @@ def acquire_post_filter(studies, assays, matrix_items, data_points):
         # ).update({
         #     data_point.time: data_point.time
         # })
+
+    # STUPID, EXPEDIENT
+    post_filter = json.loads(json.dumps(post_filter))
 
     return post_filter
 
@@ -3350,6 +3400,10 @@ def intra_repro_in_inter(request):
                         content_type='application/json')
 
 
+def fetch_post_filter(request):
+    pass
+
+
 def study_viewer_validation(request):
     study = None
     if request.POST.get('study', ''):
@@ -3424,6 +3478,9 @@ switch = {
     'fetch_data_points_from_study_set': {
         'call': fetch_data_points_from_study_set
     },
+    'fetch_post_filter': {
+        'call': fetch_post_filter
+    }
 }
 
 
