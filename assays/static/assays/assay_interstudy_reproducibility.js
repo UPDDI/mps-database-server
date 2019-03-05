@@ -1116,7 +1116,7 @@ $(document).ready(function() {
 
                 // Get the sample_location from the name
                 // ONLY IF CRITERIA INCLUDES SAMPLE LOCATION
-                if (window.GROUPING.group_criteria.special.indexOf('sample_location') !== -1) {
+                if (!window.GROUPING.group_criteria.special || window.GROUPING.group_criteria.special.indexOf('sample_location') !== -1) {
                     $.each(window.GROUPING.full_post_filter['data_point']['sample_location_id__in'], function(current_id, current_name) {
                         if (current_name === sample_location_name) {
                             sample_location_id = current_id;
@@ -1134,7 +1134,7 @@ $(document).ready(function() {
 
                 // Get the sample_location from the name
                 // ONLY IF CRITERIA INCLUDES SAMPLE LOCATION
-                if (window.GROUPING.group_criteria.special.indexOf('method') !== -1) {
+                if (!window.GROUPING.group_criteria.special || window.GROUPING.group_criteria.special.indexOf('method') !== -1) {
                     $.each(window.GROUPING.full_post_filter['assay']['method_id__in'], function(current_id, current_name) {
                         if (current_name === method_name) {
                             method_id = current_id;
