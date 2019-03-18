@@ -30,7 +30,9 @@ from assays.views import (
     AssaySampleLocationList,
     GraphingReproducibilityFilterView,
     AssayDataFromFilters,
-    AssayReferenceList
+    AssayReferenceList,
+    AssayReferenceAdd,
+    AssayReferenceUpdate
 )
 import assays.ajax
 
@@ -142,6 +144,8 @@ urlpatterns = [
 
     # References
     url(r'^assays/references/$', AssayReferenceList.as_view(), name='assay-reference-list'),
+    url(r'^assays/references/add/$', AssayReferenceAdd.as_view(), name='assay-reference-add'),
+    url(r'^assays/references/(?P<pk>[0-9]+)/update/$', AssayReferenceUpdate.as_view(), name='assay-reference-update'),
 
     # Ajax
     url(r'^assays_ajax/$', assays.ajax.ajax),

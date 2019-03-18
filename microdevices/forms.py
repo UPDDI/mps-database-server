@@ -7,7 +7,9 @@ from .models import (
     OrganModelLocation,
     OrganModelProtocol,
     MicrophysiologyCenter,
-    GroupDeferral
+    GroupDeferral,
+    OrganModelReference,
+    MicrodeviceReference
 )
 from assays.models import AssayMatrixItem, AssaySampleLocation
 from diseases.models import Disease
@@ -129,6 +131,20 @@ OrganModelProtocolFormsetFactory = inlineformset_factory(
     widgets={
         'version': forms.TextInput(attrs={'size': 10})
     }
+)
+
+OrganModelReferenceFormSetFactory = inlineformset_factory(
+    OrganModel,
+    OrganModelReference,
+    extra=1,
+    exclude=[]
+)
+
+MicrodeviceReferenceFormSetFactory = inlineformset_factory(
+    Microdevice,
+    MicrodeviceReference,
+    extra=1,
+    exclude=[]
 )
 
 

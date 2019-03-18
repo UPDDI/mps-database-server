@@ -58,7 +58,7 @@ $(document).ready(function () {
 
     $(document).on('click', '.cellsample-selector', function() {
         var cell_sample_id = $(this).attr('data-cell-sample-id');
-        cell_sample_id_selector.prop('value', cell_sample_id);
+        cell_sample_id_selector.val(cell_sample_id);
         var cell_sample_name = this.attributes["name"].value;
         cell_sample_label_selector.text(cell_sample_name);
         $('#dialog').dialog('close');

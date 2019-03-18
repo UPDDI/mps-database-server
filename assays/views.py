@@ -41,6 +41,7 @@ from assays.forms import (
     AssayStudyForm,
     AssayStudySupportingDataFormSetFactory,
     AssayStudyAssayFormSetFactory,
+    AssayStudyReferenceFormSetFactory,
     AssayMatrixForm,
     AssayMatrixItemFullForm,
     AssayMatrixItemFormSetFactory,
@@ -53,7 +54,8 @@ from assays.forms import (
     AssayStudySignOffForm,
     AssayStudyStakeholderFormSetFactory,
     AssayStudyDataUploadForm,
-    AssayStudyModelFormSet
+    AssayStudyModelFormSet,
+    AssayReferenceForm,
 )
 from microdevices.models import MicrophysiologyCenter
 from django import forms
@@ -488,9 +490,14 @@ class AssayStudyAdd(OneGroupRequiredMixin, CreateView):
                 context['study_assay_formset'] = AssayStudyAssayFormSetFactory(self.request.POST)
             if 'supporting_data_formset' not in context:
                 context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(self.request.POST, self.request.FILES)
+            if 'reference_formset' not in context:
+                context['reference_formset'] = AssayStudyReferenceFormSetFactory(self.request.POST)
         else:
             context['study_assay_formset'] = AssayStudyAssayFormSetFactory()
             context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory()
+            context['reference_formset'] = AssayStudyReferenceFormSetFactory()
+
+        context['reference_queryset'] = AssayReference.objects.all()
 
         return context
 
@@ -504,8 +511,12 @@ class AssayStudyAdd(OneGroupRequiredMixin, CreateView):
             self.request.FILES,
             instance=form.instance
         )
-        if form.is_valid() and study_assay_formset.is_valid() and supporting_data_formset.is_valid():
-            save_forms_with_tracking(self, form, formset=[study_assay_formset, supporting_data_formset], update=False)
+        reference_formset = AssayStudyReferenceFormSetFactory(
+            self.request.POST,
+            instance=form.instance
+        )
+        if form.is_valid() and study_assay_formset.is_valid() and supporting_data_formset.is_valid() and reference_formset.is_valid():
+            save_forms_with_tracking(self, form, formset=[study_assay_formset, supporting_data_formset, reference_formset], update=False)
             return redirect(
                 self.object.get_absolute_url()
             )
@@ -514,7 +525,8 @@ class AssayStudyAdd(OneGroupRequiredMixin, CreateView):
                 self.get_context_data(
                     form=form,
                     study_assay_formset=study_assay_formset,
-                    supporting_data_formset=supporting_data_formset
+                    supporting_data_formset=supporting_data_formset,
+                    reference_formset=reference_formset
                 )
             )
 
@@ -545,10 +557,14 @@ class AssayStudyUpdate(ObjectGroupRequiredMixin, UpdateView):
                 context['study_assay_formset'] = AssayStudyAssayFormSetFactory(self.request.POST, instance=self.object)
             if 'supporting_data_formset' not in context:
                 context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(self.request.POST, self.request.FILES, instance=self.object)
+            if 'reference_formset' not in context:
+                context['reference_formset'] = AssayStudyReferenceFormSetFactory(self.request.POST)
         else:
             context['study_assay_formset'] = AssayStudyAssayFormSetFactory(instance=self.object)
             context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(instance=self.object)
+            context['reference_formset'] = AssayStudyReferenceFormSetFactory(instance=self.object)
 
+        context['reference_queryset'] = AssayReference.objects.all()
         context['update'] = True
 
         return context
@@ -563,10 +579,13 @@ class AssayStudyUpdate(ObjectGroupRequiredMixin, UpdateView):
             self.request.FILES,
             instance=form.instance
         )
-
+        reference_formset = AssayStudyReferenceFormSetFactory(
+            self.request.POST,
+            instance=form.instance
+        )
         # TODO TODO TODO TODO
-        if form.is_valid() and study_assay_formset.is_valid() and supporting_data_formset.is_valid():
-            save_forms_with_tracking(self, form, formset=[study_assay_formset, supporting_data_formset], update=True)
+        if form.is_valid() and study_assay_formset.is_valid() and supporting_data_formset.is_valid() and reference_formset.is_valid():
+            save_forms_with_tracking(self, form, formset=[study_assay_formset, supporting_data_formset, reference_formset], update=True)
 
             return redirect(
                 self.object.get_absolute_url()
@@ -576,7 +595,8 @@ class AssayStudyUpdate(ObjectGroupRequiredMixin, UpdateView):
                 self.get_context_data(
                     form=form,
                     study_assay_formset=study_assay_formset,
-                    supporting_data_formset=supporting_data_formset
+                    supporting_data_formset=supporting_data_formset,
+                    reference_formset=reference_formset
                 )
             )
 
@@ -1905,3 +1925,34 @@ class AssayDataFromFilters(LoginRequiredMixin, TemplateView):
 class AssayReferenceList(ListView):
     model = AssayReference
     template_name = 'assays/assayreference_list.html'
+
+
+class AssayReferenceAdd(OneGroupRequiredMixin, CreateView):
+    model = AssayReference
+    template_name = 'assays/assayreference_add.html'
+    form_class = AssayReferenceForm
+
+    def form_valid(self, form):
+        if form.is_valid():
+            save_forms_with_tracking(self, form, formset=[], update=False)
+            return redirect(self.object.get_post_submission_url())
+        else:
+            return self.render_to_response(self.get_context_data(form=form))
+
+
+class AssayReferenceUpdate(OneGroupRequiredMixin, UpdateView):
+    model = AssayReference
+    template_name = 'assays/assayreference_add.html'
+    form_class = AssayReferenceForm
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayReferenceUpdate, self).get_context_data(**kwargs)
+        context['update'] = True
+        return context
+
+    def form_valid(self, form):
+        if form.is_valid():
+            save_forms_with_tracking(self, form, formset=[], update=True)
+            return redirect(self.object.get_post_submission_url())
+        else:
+            return self.render_to_response(self.get_context_data(form=form))

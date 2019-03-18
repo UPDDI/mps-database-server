@@ -43,7 +43,8 @@ from assays.models import (
     AssayImageSetting,
     AssaySetting,
     AssaySubtarget,
-    AssayReference
+    AssayReference,
+    AssayStudyReference
 )
 from microdevices.models import MicrophysiologyCenter
 # from compounds.models import Compound
@@ -2377,6 +2378,13 @@ class AssayStudyStakeholderInline(admin.TabularInline):
         return super(AssayStudyStakeholderInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
 
+class AssayStudyReferenceInline(admin.TabularInline):
+    """Inline for Studies"""
+    model = AssayStudyReference
+    exclude = []
+    extra = 1
+
+
 # TODO REMAKE FOR ASSAY STUDY
 class AssayStudyAdmin(LockableAdmin):
     """Admin for Studies"""
@@ -2445,7 +2453,7 @@ class AssayStudyAdmin(LockableAdmin):
         ),
     )
 
-    inlines = [AssayStudyStakeholderInline, AssayStudyAssayInline, AssayStudySupportingDataInline]
+    inlines = [AssayStudyStakeholderInline, AssayStudyAssayInline, AssayStudySupportingDataInline, AssayStudyReferenceInline]
 
     def get_queryset(self, request):
         qs = super(AssayStudyAdmin, self).get_queryset(request)

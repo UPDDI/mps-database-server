@@ -9,7 +9,9 @@ from .models import (
     OrganModel,
     ValidatedAssay,
     OrganModelProtocol,
-    GroupDeferral
+    GroupDeferral,
+    OrganModelReference,
+    MicrodeviceReference
 )
 from.forms import MicrophysiologyCenterForm, GroupDeferralForm
 from django.core.urlresolvers import resolve
@@ -95,6 +97,13 @@ class ManufacturerAdmin(LockableAdmin):
     manufacturer_site.allow_tags = True
 
 admin.site.register(Manufacturer, ManufacturerAdmin)
+
+
+class MicrodeviceReferenceInline(admin.TabularInline):
+    """Inline for Microdevices"""
+    model = MicrodeviceReference
+    exclude = []
+    extra = 1
 
 
 class MicrodeviceAdmin(LockableAdmin):
@@ -195,7 +204,7 @@ class MicrodeviceAdmin(LockableAdmin):
         ),
     )
     actions = ['update_fields']
-
+    inlines = [MicrodeviceReferenceInline]
     readonly_fields = (
         'device_image_display', 'device_cross_section_image_display',
     )
@@ -240,6 +249,13 @@ class ValidatedAssayInline(admin.TabularInline):
 
     class Media(object):
         css = {"all": ("css/hide_admin_original.css",)}
+
+
+class OrganModelReferenceInline(admin.TabularInline):
+    """Inline for MPS Models"""
+    model = OrganModelReference
+    exclude = []
+    extra = 1
 
 
 class OrganModelAdmin(LockableAdmin):
@@ -304,7 +320,7 @@ class OrganModelAdmin(LockableAdmin):
 
     actions = ['update_fields']
     save_on_top = True
-    inlines = [ValidatedAssayInline, OrganModelProtocolInline]
+    inlines = [ValidatedAssayInline, OrganModelProtocolInline, OrganModelReferenceInline]
 
 admin.site.register(OrganModel, OrganModelAdmin)
 

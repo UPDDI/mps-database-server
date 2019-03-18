@@ -8,6 +8,7 @@
     <script src="{% static "js/flag.js" %}"></script>
     {# <script src="{% static "js/inline_add.js" %}"></script>#}
     <script src="{% static "assays/assaystudy_add.js" %}"></script>
+    <script src="{% static "assays/reference_selection.js" %}"></script>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -324,5 +325,7 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {% include 'add_reference.html' %}
 </form>
 {% endblock %}
