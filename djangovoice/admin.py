@@ -8,7 +8,7 @@ class SlugFieldAdmin(admin.ModelAdmin):
 
 class FeedbackAdmin(admin.ModelAdmin):
     list_display = [
-        '__unicode__', 'type', 'status', 'duplicate', 'anonymous', 'private',
+        '__str__', 'type', 'status', 'duplicate', 'anonymous', 'private',
         'user', 'email']
     list_filter = ['type', 'status', 'anonymous', 'private']
     list_editable = ['type', 'status', 'anonymous', 'private']

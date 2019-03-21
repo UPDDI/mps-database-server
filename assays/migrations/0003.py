@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 from django.conf import settings
@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('result', models.CharField(default=b'1', max_length=8, verbose_name=b'Pos/Neg?', choices=[(b'0', b'Negative'), (b'1', b'Positive'), (b'x', b'Failed')])),
                 ('severity', models.CharField(default=b'-1', choices=[(b'-1', b'UNKNOWN'), (b'0', b'NEGATIVE'), (b'1', b'+'), (b'2', b'+ +'), (b'3', b'+ + +'), (b'4', b'+ + + +'), (b'5', b'+ + + + +')], max_length=5, blank=True, null=True, verbose_name=b'Severity')),
                 ('value', models.FloatField(null=True, blank=True)),
-                ('assay_name', models.ForeignKey(verbose_name=b'Assay', to='assays.AssayChipReadoutAssay')),
+                ('assay_name', models.ForeignKey(verbose_name=b'Assay', to='assays.AssayChipReadoutAssay', on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -41,11 +41,11 @@ class Migration(migrations.Migration):
                 ('restricted', models.BooleanField(default=True, help_text=b'Check box to restrict to selected group')),
                 ('flagged', models.BooleanField(default=False, help_text=b'Check box to flag for review')),
                 ('reason_for_flag', models.CharField(help_text=b'Reason for why this entry was flagged', max_length=300, null=True, blank=True)),
-                ('chip_readout', models.ForeignKey(verbose_name=b'Chip Readout', to='assays.AssayChipReadout')),
-                ('created_by', models.ForeignKey(related_name='assaychiptestresult_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('group', models.ForeignKey(help_text=b'Bind to a group', to='auth.Group')),
-                ('modified_by', models.ForeignKey(related_name='assaychiptestresult_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('signed_off_by', models.ForeignKey(related_name='assaychiptestresult_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('chip_readout', models.ForeignKey(verbose_name=b'Chip Readout', to='assays.AssayChipReadout', on_delete=models.CASCADE)),
+                ('created_by', models.ForeignKey(related_name='assaychiptestresult_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('group', models.ForeignKey(help_text=b'Bind to a group', to='auth.Group', on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='assaychiptestresult_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('signed_off_by', models.ForeignKey(related_name='assaychiptestresult_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'Chip Result',
@@ -82,9 +82,9 @@ class Migration(migrations.Migration):
                 ('notes', models.CharField(max_length=2048, null=True, blank=True)),
                 ('scientist', models.CharField(max_length=100, null=True, blank=True)),
                 ('file', models.FileField(upload_to=b'csv', null=True, verbose_name=b'Data File', blank=True)),
-                ('created_by', models.ForeignKey(related_name='assayplatereadout_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('group', models.ForeignKey(help_text=b'Bind to a group', to='auth.Group')),
-                ('modified_by', models.ForeignKey(related_name='assayplatereadout_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('created_by', models.ForeignKey(related_name='assayplatereadout_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('group', models.ForeignKey(help_text=b'Bind to a group', to='auth.Group', on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='assayplatereadout_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'Plate Readout',
@@ -96,10 +96,10 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('feature', models.CharField(max_length=150)),
-                ('assay_id', models.ForeignKey(verbose_name=b'Assay', to='assays.AssayModel', null=True)),
-                ('reader_id', models.ForeignKey(verbose_name=b'Reader', to='assays.AssayReader')),
-                ('readout_id', models.ForeignKey(verbose_name=b'Readout', to='assays.AssayPlateReadout')),
-                ('readout_unit', models.ForeignKey(to='assays.ReadoutUnit')),
+                ('assay_id', models.ForeignKey(verbose_name=b'Assay', to='assays.AssayModel', null=True, on_delete=models.CASCADE)),
+                ('reader_id', models.ForeignKey(verbose_name=b'Reader', to='assays.AssayReader', on_delete=models.CASCADE)),
+                ('readout_id', models.ForeignKey(verbose_name=b'Readout', to='assays.AssayPlateReadout', on_delete=models.CASCADE)),
+                ('readout_unit', models.ForeignKey(to='assays.ReadoutUnit', on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -112,11 +112,11 @@ class Migration(migrations.Migration):
                 ('result', models.CharField(default=b'1', max_length=8, verbose_name=b'Result', choices=[(b'0', b'Negative'), (b'1', b'Positive'), (b'x', b'Failed')])),
                 ('severity', models.CharField(default=b'-1', choices=[(b'-1', b'UNKNOWN'), (b'0', b'NEGATIVE'), (b'1', b'+'), (b'2', b'+ +'), (b'3', b'+ + +'), (b'4', b'+ + + +'), (b'5', b'+ + + + +')], max_length=5, blank=True, null=True, verbose_name=b'Severity')),
                 ('value', models.FloatField(null=True, blank=True)),
-                ('assay_name', models.ForeignKey(verbose_name=b'Assay', to='assays.AssayPlateReadoutAssay')),
-                ('assay_result', models.ForeignKey(to='assays.AssayPlateTestResult')),
-                ('result_function', models.ForeignKey(verbose_name=b'Function', blank=True, to='assays.AssayResultFunction', null=True)),
-                ('result_type', models.ForeignKey(verbose_name=b'Measure', blank=True, to='assays.AssayResultType', null=True)),
-                ('test_unit', models.ForeignKey(blank=True, to='assays.PhysicalUnits', null=True)),
+                ('assay_name', models.ForeignKey(verbose_name=b'Assay', to='assays.AssayPlateReadoutAssay', on_delete=models.CASCADE)),
+                ('assay_result', models.ForeignKey(to='assays.AssayPlateTestResult', on_delete=models.CASCADE)),
+                ('result_function', models.ForeignKey(verbose_name=b'Function', blank=True, to='assays.AssayResultFunction', null=True, on_delete=models.CASCADE)),
+                ('result_type', models.ForeignKey(verbose_name=b'Measure', blank=True, to='assays.AssayResultType', null=True, on_delete=models.CASCADE)),
+                ('test_unit', models.ForeignKey(blank=True, to='assays.PhysicalUnits', null=True, on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -139,12 +139,12 @@ class Migration(migrations.Migration):
                 ('notebook', models.CharField(max_length=256, null=True, blank=True)),
                 ('notebook_page', models.IntegerField(null=True, blank=True)),
                 ('notes', models.CharField(max_length=2048, null=True, blank=True)),
-                ('assay_layout', models.ForeignKey(verbose_name=b'Assay Layout', to='assays.AssayLayout')),
-                ('assay_run_id', models.ForeignKey(verbose_name=b'Study', to='assays.AssayRun')),
-                ('created_by', models.ForeignKey(related_name='assayplatesetup_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('group', models.ForeignKey(help_text=b'Bind to a group', to='auth.Group')),
-                ('modified_by', models.ForeignKey(related_name='assayplatesetup_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('signed_off_by', models.ForeignKey(related_name='assayplatesetup_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('assay_layout', models.ForeignKey(verbose_name=b'Assay Layout', to='assays.AssayLayout', on_delete=models.CASCADE)),
+                ('assay_run_id', models.ForeignKey(verbose_name=b'Study', to='assays.AssayRun', on_delete=models.CASCADE)),
+                ('created_by', models.ForeignKey(related_name='assayplatesetup_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('group', models.ForeignKey(help_text=b'Bind to a group', to='auth.Group', on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='assayplatesetup_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('signed_off_by', models.ForeignKey(related_name='assayplatesetup_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'Plate Setup',
@@ -158,9 +158,9 @@ class Migration(migrations.Migration):
                 ('concentration', models.FloatField(default=0)),
                 ('row', models.CharField(max_length=25)),
                 ('column', models.CharField(max_length=25)),
-                ('assay_layout', models.ForeignKey(to='assays.AssayLayout')),
-                ('compound', models.ForeignKey(to='compounds.Compound')),
-                ('concentration_unit', models.ForeignKey(to='assays.PhysicalUnits')),
+                ('assay_layout', models.ForeignKey(to='assays.AssayLayout', on_delete=models.CASCADE)),
+                ('compound', models.ForeignKey(to='compounds.Compound', on_delete=models.CASCADE)),
+                ('concentration_unit', models.ForeignKey(to='assays.PhysicalUnits', on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -173,7 +173,7 @@ class Migration(migrations.Migration):
                 ('label', models.CharField(max_length=150)),
                 ('row', models.CharField(max_length=25)),
                 ('column', models.CharField(max_length=25)),
-                ('assay_layout', models.ForeignKey(to='assays.AssayLayout')),
+                ('assay_layout', models.ForeignKey(to='assays.AssayLayout', on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -186,7 +186,7 @@ class Migration(migrations.Migration):
                 ('timepoint', models.FloatField(default=0)),
                 ('row', models.CharField(max_length=25)),
                 ('column', models.CharField(max_length=25)),
-                ('assay_layout', models.ForeignKey(to='assays.AssayLayout')),
+                ('assay_layout', models.ForeignKey(to='assays.AssayLayout', on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -338,61 +338,61 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='assayplatereadout',
             name='setup',
-            field=models.ForeignKey(to='assays.AssayPlateSetup'),
+            field=models.ForeignKey(to='assays.AssayPlateSetup', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='assayplatereadout',
             name='signed_off_by',
-            field=models.ForeignKey(related_name='assayplatereadout_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True),
+            field=models.ForeignKey(related_name='assayplatereadout_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='assayplatereadout',
             name='timeunit',
-            field=models.ForeignKey(default=23, to='assays.PhysicalUnits'),
+            field=models.ForeignKey(default=23, to='assays.PhysicalUnits', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='assayplatecells',
             name='assay_plate',
-            field=models.ForeignKey(to='assays.AssayPlateSetup'),
+            field=models.ForeignKey(to='assays.AssayPlateSetup', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='assayplatecells',
             name='cell_biosensor',
-            field=models.ForeignKey(blank=True, to='cellsamples.Biosensor', null=True),
+            field=models.ForeignKey(blank=True, to='cellsamples.Biosensor', null=True, on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='assayplatecells',
             name='cell_sample',
-            field=models.ForeignKey(to='cellsamples.CellSample'),
+            field=models.ForeignKey(to='cellsamples.CellSample', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='assaychipresult',
             name='assay_result',
-            field=models.ForeignKey(to='assays.AssayChipTestResult'),
+            field=models.ForeignKey(to='assays.AssayChipTestResult', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='assaychipresult',
             name='result_function',
-            field=models.ForeignKey(verbose_name=b'Function', blank=True, to='assays.AssayResultFunction', null=True),
+            field=models.ForeignKey(verbose_name=b'Function', blank=True, to='assays.AssayResultFunction', null=True, on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='assaychipresult',
             name='result_type',
-            field=models.ForeignKey(verbose_name=b'Measure', blank=True, to='assays.AssayResultType', null=True),
+            field=models.ForeignKey(verbose_name=b'Measure', blank=True, to='assays.AssayResultType', null=True, on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='assaychipresult',
             name='test_unit',
-            field=models.ForeignKey(blank=True, to='assays.PhysicalUnits', null=True),
+            field=models.ForeignKey(blank=True, to='assays.PhysicalUnits', null=True, on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AlterModelOptions(
@@ -446,7 +446,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='assaylayout',
             name='device',
-            field=models.ForeignKey(default=1, to='microdevices.Microdevice'),
+            field=models.ForeignKey(default=1, to='microdevices.Microdevice', on_delete=models.CASCADE),
             preserve_default=False,
         ),
         migrations.AddField(
@@ -458,7 +458,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='assaylayout',
             name='group',
-            field=models.ForeignKey(default=1, to='auth.Group', help_text=b'Bind to a group'),
+            field=models.ForeignKey(default=1, to='auth.Group', help_text=b'Bind to a group', on_delete=models.CASCADE),
             preserve_default=False,
         ),
         migrations.AddField(
@@ -482,13 +482,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='assayplatetestresult',
             name='group',
-            field=models.ForeignKey(default=1, to='auth.Group', help_text=b'Bind to a group'),
+            field=models.ForeignKey(default=1, to='auth.Group', help_text=b'Bind to a group', on_delete=models.CASCADE),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='assayplatetestresult',
             name='readout',
-            field=models.ForeignKey(default=1, verbose_name=b'Plate ID/ Barcode', to='assays.AssayPlateReadout'),
+            field=models.ForeignKey(default=1, verbose_name=b'Plate ID/ Barcode', to='assays.AssayPlateReadout', on_delete=models.CASCADE),
             preserve_default=False,
         ),
         migrations.AddField(
@@ -506,19 +506,19 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='assayreadout',
             name='assay',
-            field=models.ForeignKey(default=1, to='assays.AssayPlateReadoutAssay'),
+            field=models.ForeignKey(default=1, to='assays.AssayPlateReadoutAssay', on_delete=models.CASCADE),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='assaywell',
             name='assay_layout',
-            field=models.ForeignKey(default=1, to='assays.AssayLayout'),
+            field=models.ForeignKey(default=1, to='assays.AssayLayout', on_delete=models.CASCADE),
             preserve_default=False,
         ),
         migrations.AlterField(
             model_name='assaychipreadout',
             name='timeunit',
-            field=models.ForeignKey(default=23, to='assays.PhysicalUnits'),
+            field=models.ForeignKey(default=23, to='assays.PhysicalUnits', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AlterField(
@@ -530,13 +530,13 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='assaychipsetup',
             name='assay_run_id',
-            field=models.ForeignKey(verbose_name=b'Study', to='assays.AssayRun'),
+            field=models.ForeignKey(verbose_name=b'Study', to='assays.AssayRun', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AlterField(
             model_name='assayreadout',
             name='assay_device_readout',
-            field=models.ForeignKey(to='assays.AssayPlateReadout'),
+            field=models.ForeignKey(to='assays.AssayPlateReadout', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.DeleteModel(

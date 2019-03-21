@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import migrations, models
 
@@ -68,11 +68,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='organmodellocation',
             name='organ_model',
-            field=models.ForeignKey(to='microdevices.OrganModel'),
+            field=models.ForeignKey(to='microdevices.OrganModel', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='organmodellocation',
             name='sample_location',
-            field=models.ForeignKey(to='assays.AssaySampleLocation'),
+            field=models.ForeignKey(to='assays.AssaySampleLocation', on_delete=models.CASCADE),
         ),
     ]

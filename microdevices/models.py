@@ -41,7 +41,7 @@ class MicrophysiologyCenter(LockableModel):
         help_text='***PLEASE DO NOT INCLUDE "Admin" OR "Viewer": ONLY SELECT THE BASE GROUP (ie "Taylor_MPS" NOT "Taylor_MPS Admin")***<br>'
     )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -54,7 +54,7 @@ class Manufacturer(LockableModel):
     contact_person = models.CharField(max_length=250, blank=True, default='')
     website = models.URLField(blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -67,9 +67,9 @@ class Microdevice(LockableModel):
     # device_name = models.CharField(max_length=200, unique=True)
     name = models.CharField(max_length=200, unique=True)
 
-    organ = models.ForeignKey('cellsamples.Organ', blank=True, null=True)
-    center = models.ForeignKey(MicrophysiologyCenter, blank=True, null=True)
-    manufacturer = models.ForeignKey(Manufacturer, null=True, blank=True)
+    organ = models.ForeignKey('cellsamples.Organ', blank=True, null=True, on_delete=models.CASCADE)
+    center = models.ForeignKey(MicrophysiologyCenter, blank=True, null=True, on_delete=models.CASCADE)
+    manufacturer = models.ForeignKey(Manufacturer, null=True, blank=True, on_delete=models.CASCADE)
     barcode = models.CharField(
         max_length=200, verbose_name='version/ catalog#', default='', blank=True)
 
@@ -141,7 +141,7 @@ class Microdevice(LockableModel):
 
     references = models.CharField(max_length=2000, blank=True, default='')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def get_absolute_url(self):
@@ -159,11 +159,11 @@ class OrganModel(LockableModel):
 
     # model_name = models.CharField(max_length=200, unique=True)
     name = models.CharField(max_length=200, unique=True)
-    organ = models.ForeignKey('cellsamples.Organ')
-    disease = models.ForeignKey('diseases.Disease', null=True, blank=True)
+    organ = models.ForeignKey('cellsamples.Organ', on_delete=models.CASCADE)
+    disease = models.ForeignKey('diseases.Disease', null=True, blank=True, on_delete=models.CASCADE)
     # Centers are now required
-    center = models.ForeignKey(MicrophysiologyCenter)
-    device = models.ForeignKey(Microdevice)
+    center = models.ForeignKey(MicrophysiologyCenter, on_delete=models.CASCADE)
+    device = models.ForeignKey(Microdevice, on_delete=models.CASCADE)
     description = models.CharField(max_length=4000, default='', blank=True)
 
     model_image = models.ImageField(upload_to='models', null=True, blank=True)
@@ -171,7 +171,7 @@ class OrganModel(LockableModel):
     # "Base Model" represents the "parent" of the model in question
     # While the default is not listed here, please note that it is in fact the instance in question
     # ie unspecified base_models point back to the same entry
-    base_model = models.ForeignKey('microdevices.OrganModel', null=True, blank=True)
+    base_model = models.ForeignKey('microdevices.OrganModel', null=True, blank=True, on_delete=models.CASCADE)
     # Alternative name, especially for filters
     alt_name = models.CharField(max_length=1000, blank=True, default='')
 
@@ -217,7 +217,7 @@ class OrganModel(LockableModel):
 
     references = models.CharField(max_length=2000, blank=True, default='')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def get_absolute_url(self):
@@ -233,8 +233,8 @@ class OrganModel(LockableModel):
 class ValidatedAssay(models.Model):
     """Validated Assays show which assays have been approved for a particular Organ Model"""
     # Validated assays for an organ model used in inline
-    organ_model = models.ForeignKey(OrganModel, verbose_name='Organ Model')
-    assay = models.ForeignKey('assays.AssayModel', verbose_name='Assay Model')
+    organ_model = models.ForeignKey(OrganModel, verbose_name='Organ Model', on_delete=models.CASCADE)
+    assay = models.ForeignKey('assays.AssayModel', verbose_name='Assay Model', on_delete=models.CASCADE)
 
 
 class OrganModelProtocol(models.Model):
@@ -246,18 +246,18 @@ class OrganModelProtocol(models.Model):
     class Meta(object):
         unique_together = [('version', 'organ_model')]
 
-    organ_model = models.ForeignKey(OrganModel, verbose_name='Organ Model')
+    organ_model = models.ForeignKey(OrganModel, verbose_name='Organ Model', on_delete=models.CASCADE)
     # Uhh... this should probably just be "name"...
     version = models.CharField(max_length=20)
     file = models.FileField(upload_to='protocols', verbose_name='Protocol File')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.version
 
 
 class GroupDeferral(TrackableModel):
     """This indicates the status of a group and whether they have deferred their ability to approve studies"""
-    group = models.ForeignKey(Group)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
     notes = models.CharField(max_length=1024)
     approval_file = models.FileField(
         null=True,
@@ -268,15 +268,15 @@ class GroupDeferral(TrackableModel):
 
 class OrganModelLocation(models.Model):
     """This is an inline for models that permits us to list relevant sample locations"""
-    sample_location = models.ForeignKey('assays.AssaySampleLocation')
+    sample_location = models.ForeignKey('assays.AssaySampleLocation', on_delete=models.CASCADE)
     notes = models.CharField(max_length=1024)
-    organ_model = models.ForeignKey(OrganModel)
+    organ_model = models.ForeignKey(OrganModel, on_delete=models.CASCADE)
 
 
 # REMOVED FOR NOW
 # class MicrodeviceSublayout(models.Model):
 #     """Describes a the layout of sections for a device"""
-#     device = models.ForeignKey(Microdevice)
+#     device = models.ForeignKey(Microdevice, on_delete=models.CASCADE)
 #
 #     number_of_rows = models.IntegerField()
 #     number_of_columns = models.IntegerField()
@@ -284,7 +284,7 @@ class OrganModelLocation(models.Model):
 #
 # class MicrodeviceSection(models.Model):
 #     """Describes a section of a device, for instance if a device has to compartments (apical and basal)"""
-#     device_sublayout = models.ForeignKey(MicrodeviceSublayout)
+#     device_sublayout = models.ForeignKey(MicrodeviceSublayout, on_delete=models.CASCADE)
 #
 #     row_index = models.IntegerField()
 #     column_index = models.IntegerField()
@@ -295,5 +295,5 @@ class OrganModelLocation(models.Model):
 #
 #     # VOLUME UNITS TOO?
 #
-#     def __unicode__(self):
+#     def __str__(self):
 #         return self.name

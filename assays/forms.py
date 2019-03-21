@@ -98,7 +98,7 @@ class ModelFormStripWhiteSpace(BootstrapForm):
     """Strips the whitespace from char and text fields"""
     def clean(self):
         cd = self.cleaned_data
-        for field_name, field in self.fields.items():
+        for field_name, field in list(self.fields.items()):
             if isinstance(field, forms.CharField):
                 if self.fields[field_name].required and not cd.get(field_name, None):
                     self.add_error(field_name, "This is a required field.")
@@ -112,7 +112,7 @@ class ModelFormSplitTime(BootstrapForm):
     def __init__(self, *args, **kwargs):
         super(ModelFormSplitTime, self).__init__(*args, **kwargs)
 
-        for time_unit in TIME_CONVERSIONS.keys():
+        for time_unit in list(TIME_CONVERSIONS.keys()):
             if self.fields.get('addition_time', None):
                 # Create fields for Days, Hours, Minutes
                 self.fields['addition_time_' + time_unit] = forms.FloatField(
@@ -136,7 +136,7 @@ class ModelFormSplitTime(BootstrapForm):
             addition_time_in_minutes_remaining = getattr(self.instance, 'addition_time', 0)
             if not addition_time_in_minutes_remaining:
                 addition_time_in_minutes_remaining = 0
-            for time_unit, conversion in TIME_CONVERSIONS.items():
+            for time_unit, conversion in list(TIME_CONVERSIONS.items()):
                 initial_time_for_current_field = int(addition_time_in_minutes_remaining / conversion)
                 if initial_time_for_current_field:
                     self.fields['addition_time_' + time_unit].initial = initial_time_for_current_field
@@ -150,7 +150,7 @@ class ModelFormSplitTime(BootstrapForm):
             duration_in_minutes_remaining = getattr(self.instance, 'duration', 0)
             if not duration_in_minutes_remaining:
                 duration_in_minutes_remaining = 0
-            for time_unit, conversion in TIME_CONVERSIONS.items():
+            for time_unit, conversion in list(TIME_CONVERSIONS.items()):
                 initial_time_for_current_field = int(duration_in_minutes_remaining / conversion)
                 if initial_time_for_current_field:
                     self.fields['duration_' + time_unit].initial = initial_time_for_current_field
@@ -167,7 +167,7 @@ class ModelFormSplitTime(BootstrapForm):
                 'addition_time': 0,
                 'duration': 0
             })
-            for time_unit, conversion in TIME_CONVERSIONS.items():
+            for time_unit, conversion in list(TIME_CONVERSIONS.items()):
                 cleaned_data.update({
                     'addition_time': cleaned_data.get('addition_time') + cleaned_data.get('addition_time_' + time_unit,
                                                                                           0) * conversion,
@@ -203,7 +203,7 @@ class BaseModelFormSetForcedUniqueness(BaseModelFormSet):
             seen_data = set()
             for form in valid_forms:
                 # PLEASE NOTE: SPECIAL EXCEPTION FOR FORMS WITH NO ID TO AVOID TRIGGERING ID DUPLICATE
-                if unique_check == (u'id',) and not form.cleaned_data.get('id', ''):
+                if unique_check == ('id',) and not form.cleaned_data.get('id', ''):
                     # IN POOR TASTE, BUT EXPEDIENT
                     continue
 
@@ -298,7 +298,7 @@ class DicModelChoiceField(forms.Field):
 
     def valid_value(self, value):
         "Check to see if the provided value is a valid choice"
-        if unicode(value.id) in self.dic.get(self.name):
+        if str(value.id) in self.dic.get(self.name):
             return True
         return False
 
@@ -365,17 +365,17 @@ def stringify_excel_value(value):
     This also converts floats to integers when possible
     """
     # If the value is just a string literal, return it
-    if type(value) == str or type(value) == unicode:
-        return unicode(value)
+    if type(value) == str or type(value) == str:
+        return str(value)
     else:
         try:
             # If the value can be an integer, make it into one
             if int(value) == float(value):
-                return unicode(int(value))
+                return str(int(value))
             else:
-                return unicode(float(value))
+                return str(float(value))
         except:
-            return unicode(value)
+            return str(value)
 
 
 class AssayStudyAssayInlineFormSet(BaseInlineFormSet):
@@ -541,7 +541,7 @@ class AssayMatrixForm(SignOffMixin, BootstrapForm):
             'setting'
         )
 
-        for time_unit in TIME_CONVERSIONS.keys():
+        for time_unit in list(TIME_CONVERSIONS.keys()):
             for current_section in sections_with_times:
                 # Create fields for Days, Hours, Minutes
                 self.fields[current_section + '_addition_time_' + time_unit] = forms.FloatField(
@@ -862,7 +862,7 @@ class AssaySetupCompoundFormSet(BaseModelFormSetForcedUniqueness):
 
             addition_time = 0
             duration = 0
-            for time_unit, conversion in TIME_CONVERSIONS.items():
+            for time_unit, conversion in list(TIME_CONVERSIONS.items()):
                 addition_time += current_data.get('addition_time_' + time_unit, 0) * conversion
                 duration += current_data.get('duration_' + time_unit, 0) * conversion
 
@@ -1076,7 +1076,7 @@ class AssaySetupCompoundInlineFormSet(BaseInlineFormSet):
 
             addition_time = 0
             duration = 0
-            for time_unit, conversion in TIME_CONVERSIONS.items():
+            for time_unit, conversion in list(TIME_CONVERSIONS.items()):
                 addition_time += current_data.get('addition_time_' + time_unit, 0) * conversion
                 duration += current_data.get('duration_' + time_unit, 0) * conversion
 
@@ -1223,7 +1223,7 @@ class AssaySetupSettingFormSet(BaseModelFormSetForcedUniqueness):
 
     def _construct_form(self, i, **kwargs):
         form = super(AssaySetupSettingFormSet, self)._construct_form(i, **kwargs)
-        for time_unit in TIME_CONVERSIONS.keys():
+        for time_unit in list(TIME_CONVERSIONS.keys()):
             # Create fields for Days, Hours, Minutes
             form.fields['addition_time_' + time_unit] = forms.FloatField(initial=0)
             form.fields['duration_' + time_unit] = forms.FloatField(initial=0)
@@ -1234,7 +1234,7 @@ class AssaySetupSettingFormSet(BaseModelFormSetForcedUniqueness):
         if form.instance.addition_time:
             # Fill additional time
             addition_time_in_minutes_remaining = form.instance.addition_time
-            for time_unit, conversion in TIME_CONVERSIONS.items():
+            for time_unit, conversion in list(TIME_CONVERSIONS.items()):
                 initial_time_for_current_field = int(addition_time_in_minutes_remaining / conversion)
                 if initial_time_for_current_field:
                     form.fields['addition_time_' + time_unit].initial = initial_time_for_current_field
@@ -1246,7 +1246,7 @@ class AssaySetupSettingFormSet(BaseModelFormSetForcedUniqueness):
         if form.instance.duration:
             # Fill duration
             duration_in_minutes_remaining = form.instance.duration
-            for time_unit, conversion in TIME_CONVERSIONS.items():
+            for time_unit, conversion in list(TIME_CONVERSIONS.items()):
                 initial_time_for_current_field = int(duration_in_minutes_remaining / conversion)
                 if initial_time_for_current_field:
                     form.fields['duration_' + time_unit].initial = initial_time_for_current_field

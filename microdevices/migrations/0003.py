@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 
@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('version', models.CharField(max_length=20)),
                 ('file', models.FileField(upload_to=b'protocols', verbose_name=b'Protocol File')),
-                ('organ_model', models.ForeignKey(verbose_name=b'Organ Model', to='microdevices.OrganModel')),
+                ('organ_model', models.ForeignKey(verbose_name=b'Organ Model', to='microdevices.OrganModel', on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='organmodel',
             name='device',
-            field=models.ForeignKey(to='microdevices.Microdevice'),
+            field=models.ForeignKey(to='microdevices.Microdevice', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.RemoveField(

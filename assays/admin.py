@@ -2455,8 +2455,8 @@ class AssayStudyAdmin(LockableAdmin):
         return qs
 
     def stakeholder_display(self, obj):
-        contents = u''
-        trigger = u''
+        contents = ''
+        trigger = ''
         queryset = obj.assaystudystakeholder_set.all()
         count = queryset.count()
         released = True
@@ -2466,38 +2466,38 @@ class AssayStudyAdmin(LockableAdmin):
             for stakeholder in queryset.order_by('group__name'):
                 if not stakeholder.signed_off_by:
                     released = False
-                stakes.append(u'{0} Approved?: {1}'.format(stakeholder.group.name, stakeholder.signed_off_by))
+                stakes.append('{0} Approved?: {1}'.format(stakeholder.group.name, stakeholder.signed_off_by))
 
-            contents = u'<br>'.join(stakes)
+            contents = '<br>'.join(stakes)
 
             if released:
                 released = 'Approved!'
             else:
                 released = ''
 
-            trigger = u'<a href="javascript:void(0)" onclick=$("#stakes_{0}").toggle()>Show/Hide Stakeholders ({1}) {2}</a>'.format(
+            trigger = '<a href="javascript:void(0)" onclick=$("#stakes_{0}").toggle()>Show/Hide Stakeholders ({1}) {2}</a>'.format(
                 obj.pk, count, released
             )
-        return u'{0}<div hidden id="stakes_{1}">{2}</div>'.format(trigger, obj.pk, contents)
+        return '{0}<div hidden id="stakes_{1}">{2}</div>'.format(trigger, obj.pk, contents)
 
     stakeholder_display.allow_tags = True
 
     def access_group_display(self, obj):
-        contents = u''
-        trigger = u''
+        contents = ''
+        trigger = ''
         queryset = obj.access_groups.all()
         count = queryset.count()
 
         if count:
-            contents = u'<br>'.join(
+            contents = '<br>'.join(
                 [
                     group.name for group in queryset.order_by('name')
                 ]
             )
-            trigger = u'<a href="javascript:void(0)" onclick=$("#access_{0}").toggle()>Show/Hide Access Groups ({1})</a>'.format(
+            trigger = '<a href="javascript:void(0)" onclick=$("#access_{0}").toggle()>Show/Hide Access Groups ({1})</a>'.format(
                 obj.pk, count
             )
-        return u'{0}<div hidden id="access_{1}">{2}</div>'.format(trigger, obj.pk, contents)
+        return '{0}<div hidden id="access_{1}">{2}</div>'.format(trigger, obj.pk, contents)
 
     access_group_display.allow_tags = True
 
@@ -2635,7 +2635,7 @@ class AssayStudyAdmin(LockableAdmin):
                     study=obj
                 ).prefetch_related('group').values_list('group__name', flat=True)
             }
-            initial_groups = stakeholder_viewer_groups.keys()
+            initial_groups = list(stakeholder_viewer_groups.keys())
 
             for group in initial_groups:
                 stakeholder_viewer_groups.update({
@@ -2805,7 +2805,7 @@ class AssayStudyAdmin(LockableAdmin):
                     group_id__in=initial_required_stakeholder_group_ids
                 ).prefetch_related('group').values_list('group__name', flat=True)
             }
-            initial_groups = stakeholder_viewer_groups.keys()
+            initial_groups = list(stakeholder_viewer_groups.keys())
 
             for group in initial_groups:
                 stakeholder_viewer_groups.update({

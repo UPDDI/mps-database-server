@@ -14,7 +14,7 @@ import django.views
 import mps.management
 
 # For registration
-from registration.backends.hmac.views import ActivationView, RegistrationView
+from django_registration.views import ActivationView, RegistrationView
 from django.contrib.auth import views as auth_views
 
 from django.conf.urls.static import static
@@ -48,13 +48,13 @@ urlpatterns = [
     url(r'^accounts/loggedin/$', mps.views.loggedin, name='auth_loggedin'),
     url(
         r'^password_change/$',
-        django.contrib.auth.views.password_change,
+        auth_views.PasswordChangeView,
         {'template_name': 'password_change.html'},
         name='password_change'
     ),
     url(
         r'^password_change_done/$',
-        django.contrib.auth.views.password_change_done,
+        auth_views.PasswordChangeDoneView,
         {'template_name': 'password_change_done.html'},
         name="password_change_done"
     ),
@@ -99,7 +99,7 @@ urlpatterns = [
     # Password Reset
     url(
         r'^password/reset/$',
-        auth_views.password_reset,
+        auth_views.PasswordResetView,
         {
             'post_reset_redirect': 'auth_password_reset_done',
             'email_template_name': 'registration/password_reset_email.txt',
@@ -110,18 +110,18 @@ urlpatterns = [
     url(
         r'^password/reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/'
         r'(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-        auth_views.password_reset_confirm,
+        auth_views.PasswordResetConfirmView,
         {'post_reset_redirect': 'auth_password_reset_complete'},
         name='auth_password_reset_confirm'
     ),
     url(
         r'^password/reset/complete/$',
-        auth_views.password_reset_complete,
+        auth_views.PasswordResetCompleteView,
         name='auth_password_reset_complete'
     ),
     url(
         r'^password/reset/done/$',
-        auth_views.password_reset_done,
+        auth_views.PasswordResetDoneView,
         name='auth_password_reset_done'
     ),
 
@@ -166,7 +166,7 @@ urlpatterns = [
         r'^admin/doc/',
         include('django.contrib.admindocs.urls')
     ),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
 
     url(r'^webhook$', mps.management.webhook),
     url(r'^database$', mps.management.database),
@@ -176,7 +176,7 @@ urlpatterns = [
     #     django.views.static.serve,
     #     {'document_root': settings.MEDIA_ROOT}
     # ),
-    url(r'^__debug__/', include(debug_toolbar.urls)),
+    url('__debug__/', include(debug_toolbar.urls)),
 ]
 
 # Note that the URL path can be whatever you want, but you must include

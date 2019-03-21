@@ -121,10 +121,10 @@ class CompoundAdmin(LockableAdmin):
     def image_display(self, obj):
         if obj.chemblid:
             url = (
-                u'https://www.ebi.ac.uk/chembldb/compound/'
+                'https://www.ebi.ac.uk/chembldb/compound/'
                 'displayimage/' + obj.chemblid)
-            print '<img src="%s">' % \
-                url
+            print(('<img src="%s">' % \
+                url))
             return '<img src="%s">' % \
                 url
         return ''

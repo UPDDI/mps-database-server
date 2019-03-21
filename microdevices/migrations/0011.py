@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import migrations, models
 from django.conf import settings
@@ -23,10 +23,10 @@ class Migration(migrations.Migration):
                 ('signed_off_date', models.DateTimeField(null=True, blank=True)),
                 ('notes', models.CharField(max_length=1024)),
                 ('approval_file', models.FileField(null=True, upload_to=b'deferral', blank=True)),
-                ('created_by', models.ForeignKey(related_name='groupdeferral_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('group', models.ForeignKey(to='auth.Group')),
-                ('modified_by', models.ForeignKey(related_name='groupdeferral_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('signed_off_by', models.ForeignKey(related_name='groupdeferral_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('created_by', models.ForeignKey(related_name='groupdeferral_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('group', models.ForeignKey(to='auth.Group', on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='groupdeferral_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('signed_off_by', models.ForeignKey(related_name='groupdeferral_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,

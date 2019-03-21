@@ -2,7 +2,7 @@ from compounds.models import Compound
 from bioactivities.models import PubChemBioactivity, Target, Assay
 
 from bs4 import BeautifulSoup
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import requests
 import ujson as json
 
@@ -43,19 +43,19 @@ def get_chembl_target(target):
         for index in range(len(rows)):
             contents = rows[index].text
 
-            if contents == u'Target ID':
+            if contents == 'Target ID':
                 chemblid = rows[index+1].text.strip()
 
-            elif contents == u'Target Type':
+            elif contents == 'Target Type':
                 target_type = rows[index+1].text.strip()
 
-            elif contents == u'Preferred Name':
+            elif contents == 'Preferred Name':
                 name = rows[index+1].text.strip()
 
-            elif contents == u'Synonyms':
+            elif contents == 'Synonyms':
                 synonyms = rows[index+1].text.strip()
 
-            elif contents == u'Organism':
+            elif contents == 'Organism':
                 organism = rows[index+1].text.strip()
 
         data.update({
@@ -66,7 +66,7 @@ def get_chembl_target(target):
             'synonyms': synonyms,
         })
     except:
-        print 'Failed target {}'.format(target)
+        print(('Failed target {}'.format(target)))
 
     return data
 
@@ -113,7 +113,7 @@ def get_chembl_assay(assay):
                     new_target = Target.objects.create(**target_data)
                     data.update({'target_id': new_target.id})
                 except:
-                    print 'Failed creating target {}'.format(target)
+                    print(('Failed creating target {}'.format(target)))
             else:
                 existing_assay = existing[0]
                 data.update({'target_id': existing_assay.id})
@@ -128,8 +128,8 @@ def get_chembl_assay(assay):
             'strain': strain,
         })
     except Exception as e:
-        print 'Failed assay {}'.format(assay)
-        print e
+        print(('Failed assay {}'.format(assay)))
+        print(e)
 
     return data
 
@@ -149,7 +149,7 @@ def get_pubchem_target(target):
                 # Get URL of target organism for scrape
                 url = "http://togows.dbcls.jp/entry/protein/{}/organism".format(target)
                 # Make the http request
-                response = urllib.urlopen(url)
+                response = urllib.request.urlopen(url)
                 # Get the webpage as text
                 data = response.read()
 
@@ -158,7 +158,7 @@ def get_pubchem_target(target):
                 # Get URL of target definition for scrape
                 url = "http://togows.dbcls.jp/entry/protein/{}/definition".format(target)
                 # Make the http request
-                response  = urllib.urlopen(url)
+                response  = urllib.request.urlopen(url)
                 # Get the webpage as text
                 data = response.read()
 
@@ -197,7 +197,7 @@ def get_pubchem_target(target):
                 target_model = Target.objects.create(locked=True, **entry)
                 final_target = target_model
 
-                print "Error processing target:", target
+                print(("Error processing target:", target))
 
     return final_target
 
@@ -207,7 +207,7 @@ def get_cid(param, string):
     Acquires PubChem CID if compound does not currently have a CID associated with it
     """
     url = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/{}/{}/json'.format(param, string)
-    response = urllib.urlopen(url)
+    response = urllib.request.urlopen(url)
     data = json.loads(response.read())
 
     data = data.get('PC_Compounds', '[{}]')
@@ -227,7 +227,7 @@ def get_bioactivities(cid):
     # or the inchikey does not exist to begin with
     # Likewise, using the name can cause collisions between similar names (eg. ZIMELDINE AND ZIMELDINE HYDROCHLORIDE)
     url = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{}/assaysummary/json'.format(cid)
-    response = urllib.urlopen(url)
+    response = urllib.request.urlopen(url)
     data = json.loads(response.read())
 
     data = data.get('Table', '')
@@ -281,7 +281,7 @@ def get_bioactivities(cid):
 
             for assay in flat_assays:
                 assay_url = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/assay/aid/{}/summary/json'.format(assay)
-                assay_response = urllib.urlopen(assay_url)
+                assay_response = urllib.request.urlopen(assay_url)
                 assay_data = json.loads(assay_response.read())
                 assay_data = assay_data.get('AssaySummaries').get('AssaySummary')
 
@@ -329,9 +329,9 @@ def get_bioactivities(cid):
                             'name': name,
                             'description': description,
                             'organism': organism,
-                            'chemblid': u'',
-                            'assay_type': u'U',
-                            'journal': u'strain',
+                            'chemblid': '',
+                            'assay_type': 'U',
+                            'journal': 'strain',
                         }
 
                         # If this is NOT a ChEMBL assay, then also get the target and add it
@@ -424,17 +424,17 @@ def run():
                         # print "Success!"
                         success += 1
                     except:
-                        print "Failed bioactivity..."
+                        print("Failed bioactivity...")
                         fail_bioactivity += 1
         else:
-            print "Failed compound: {}...".format(compound.name)
+            print(("Failed compound: {}...".format(compound.name)))
             fail_compound += 1
 
-    print("Compound Failures:{}".format(fail_compound))
-    print("Bioactivity Failures:{}".format(fail_bioactivity))
-    print("Success:{}".format(success))
+    print(("Compound Failures:{}".format(fail_compound)))
+    print(("Bioactivity Failures:{}".format(fail_bioactivity)))
+    print(("Success:{}".format(success)))
 
-    print "Cleaning up activity names..."
+    print("Cleaning up activity names...")
 
     delete_from_activity_name('-Replicate_1')
     delete_from_activity_name('um_Run1')
@@ -446,7 +446,7 @@ def run():
 
     purify_activity_name('IC50')
 
-    print 'Cleaning up assays and targets...'
+    print('Cleaning up assays and targets...')
 
     # TODO NEEDS REVISIONS
     # Check failures
@@ -474,8 +474,8 @@ def run():
                     updates += 1
                 except Exception as e:
                     failed_updates += 1
-                    print 'Failed updating assay {}'.format(assay.source_id)
-                    print e
+                    print(('Failed updating assay {}'.format(assay.source_id)))
+                    print(e)
             # Update the chembl assay with pubchem data then delete the old assay
             else:
                 try:
@@ -495,24 +495,24 @@ def run():
                     replaces += 1
                 except Exception as e:
                     failed_replaces += 1
-                    print 'Failed replacing assay {}'.format(assay.source_id)
-                    print e
+                    print(('Failed replacing assay {}'.format(assay.source_id)))
+                    print(e)
         else:
-            print 'Scrape for {} failed'.format(assay.source_id)
+            print(('Scrape for {} failed'.format(assay.source_id)))
 
-    print 'Failed updates:', failed_updates
-    print 'Failed replaces:', failed_replaces
+    print(('Failed updates:', failed_updates))
+    print(('Failed replaces:', failed_replaces))
 
-    print 'Successful updates:', updates
-    print 'Successful replaces:', replaces
+    print(('Successful updates:', updates))
+    print(('Successful replaces:', replaces))
 
     if initial_bio == PubChemBioactivity.objects.all().count():
-        print 'Bio number has not changed.'
+        print('Bio number has not changed.')
 
     else:
-        print '!!!!! Bio number has changed !!!!!'
+        print('!!!!! Bio number has changed !!!!!')
 
-    print 'Normalizing values'
+    print('Normalizing values')
 
     bio_types = {bio.activity_name: True for bio in PubChemBioactivity.objects.all()}
 
@@ -538,18 +538,18 @@ def run():
                             normalized_value=bio_value[index]
                         )
                     except:
-                        print 'Update of bioactivity {} failed'.format(pk)
+                        print(('Update of bioactivity {} failed'.format(pk)))
 
-    print 'Adding SINGLE PROTEIN to NCBI target entries'
+    print('Adding SINGLE PROTEIN to NCBI target entries')
 
-    no_type = Target.objects.filter(target_type=u'')
+    no_type = Target.objects.filter(target_type='')
 
-    for target in no_type.exclude(GI=u''):
+    for target in no_type.exclude(GI=''):
         target.target_type = 'SINGLE PROTEIN'
         target.save()
 
     # Flag questionable entries
-    print 'Flagging questionable entries...'
+    print('Flagging questionable entries...')
 
     all_pubchem = PubChemBioactivity.objects.all().prefetch_related('compound', 'assay__target')
 
@@ -598,7 +598,7 @@ def run():
                                 # Flag data validity for "Out of Range"
                                 this_bio.data_validity = 'R'
                                 this_bio.save()
-                                print bio_pk[index], bio_value[index], 'vs', bio_median
+                                print((bio_pk[index], bio_value[index], 'vs', bio_median))
                                 #print pubchem_id
                                 #print 'https://pubchem.ncbi.nlm.nih.gov/bioassay/' + pubchem_id
                                 total += 1
@@ -613,8 +613,8 @@ def run():
                                         total += 1
                                     this_bio.data_validity = 'T'
                                     this_bio.save()
-                                    print bio_pk[error_index], bio_value[error_index], 'thousand fold'
+                                    print((bio_pk[error_index], bio_value[error_index], 'thousand fold'))
 
-    print total
+    print(total)
 
-    print 'Finished'
+    print('Finished')

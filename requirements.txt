@@ -1,70 +1,103 @@
-matplotlib
+# Not used yet
+# matplotlib
+uwsgi
 django-uwsgi-cache
 networkx
 Django==1.11.20
 Jinja2
 Markdown
 MarkupSafe
+# Images
 pillow
-PyYAML
+# Syntax highlighting
 Pygments
-SOAPpy
-#As of Django 1.7, South is deprecated
-#South
+# Documentation
 Sphinx
+# File path convenience
 Unipath
-astroid
+# PEP8 adherence
 autopep8
 beautifulsoup4
+# Wrapper for various database access
 bioservices
 closure-linter
+# Code coverage
 coverage
 django-debug-toolbar
 django-extensions
-django-filebrowser
+# Convenience for queryset filters
 django-filter
-django-grappelli
 django-pipeline
 django-compressor
-djangorestframework
+# Not used yet
+# djangorestframework
 docutils
+# Used by bioservices
 easydev
+# Style guide enforcement
 flake8
 flakeplus
-fpconst
+# Floating point convenience
+# fpconst
+# Async
 futures
+# Debugging
 ipdb
+# Useful IDE
 ipython
+# Debugging etc.
 logilab-common
+# Code checking
 mccabe
-numpy
-pandas
-# Deprecated, use pycodestyle instead
-# pep8
+# Managed in conda
+# numpy
+# pandas
+# Style checking
 pycodestyle
+# Profiling
 profilehooks
+# Connect to postgres
 psycopg2
+# Functions for Boolean satisfiability problem
 pycosat
+# Style
 pyflakes
+# Style
 pylint
+# Date manipulation
 python-dateutil
+# Automates production of manual pages
 python-gflags
+# Handling mime-types
 python-mimeparse
+# Time zones
 pytz
-pyzmq
+# Asynchronous messaging with ZeroMQ
+# pyzmq
+# Refactoring library
 rope
+# Helper for rope
 ropemode
-scipy
+# Managed in conda
+# scipy
+# Compatibility library
 six
+# SQL parser
 sqlparse
+# Statistical profiling
 statprof
-suds
-wsgiref
+# suds
+# Validation support for WSGI
+# wsgiref
+# Parsing for web services
 wstools
+# Admin import export
 django-import-export
+# Simple captchas
 django-simple-captcha
+# Keep old-style comments
 django-contrib-comments
-#Using whoosh for now, may switch to a more sophisticated search engine later
+# Using whoosh for now, may switch to a more sophisticated search engine later
 whoosh
 django-haystack
 # Ultrajson appears to outperform its competitors
@@ -78,4 +111,5 @@ chardet
 # Alternative html parser used in conjunction with BeautifulSoup
 html5lib
 urllib3
+# Registration
 django-registration

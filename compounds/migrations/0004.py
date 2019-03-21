@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import migrations, models
 
@@ -145,6 +145,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='compoundtarget',
             name='compound',
-            field=models.ForeignKey(to='compounds.Compound'),
+            field=models.ForeignKey(to='compounds.Compound', on_delete=models.CASCADE),
         ),
     ]

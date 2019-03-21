@@ -1,5 +1,5 @@
 from django import template
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 register = template.Library()
 
@@ -14,7 +14,7 @@ def is_up_voted_by(object, user):
     """
     If user is up voted given object, it returns True.
     """
-    if user.is_authenticated():
+    if user.is_authenticated:
         return bool(object.votes.filter(voter=user, value=1).count())
     else:
         return False
@@ -25,7 +25,7 @@ def is_down_voted_by(object, user):
     """
     If user is down voted given object, it returns True.
     """
-    if user.is_authenticated():
+    if user.is_authenticated:
         return bool(object.votes.filter(voter=user, value=-1).count())
     else:
         return False

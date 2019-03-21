@@ -40,7 +40,7 @@ def chembl_compound(chemblid):
     chembl = get_chembl_handle()
     data = chembl.get_compounds_by_chemblId(str(chemblid))['compound']
     return {
-        FIELDS[key]: value for key, value in data.items()
+        FIELDS[key]: value for key, value in list(data.items())
         if key in FIELDS
     }
 
@@ -220,32 +220,32 @@ class Compound(LockableModel):
     class Meta(object):
         ordering = ('name',)
 
-    def __unicode__(self):
-        return u'{0}'.format(self.name)
+    def __str__(self):
+        return '{0}'.format(self.name)
 
     def chembl_link(self):
         if self.chemblid:
-            return (u'<a href="https://www.ebi.ac.uk/chembl/compound/inspect/'
+            return ('<a href="https://www.ebi.ac.uk/chembl/compound/inspect/'
                     '{0}" target="_blank">{0}</a>').format(self.chemblid)
         else:
-            return u''
+            return ''
 
     chembl_link.allow_tags = True
     chembl_link.short_description = 'ChEMBL ID'
 
     def thumb_src(self):
         if self.chemblid:
-            return (u'https://www.ebi.ac.uk/chembldb/compound/'
+            return ('https://www.ebi.ac.uk/chembldb/compound/'
                     'displayimage/' + self.chemblid)
         else:
-            return u''
+            return ''
 
     def thumb(self):
         url = self.thumb_src()
         if url:
-            return u'<img src="{}" />'.format(url)
+            return '<img src="{}" />'.format(url)
         else:
-            return u''
+            return ''
 
     thumb.allow_tags = True
     thumb.short_description = 'Thumbnail'
@@ -253,16 +253,16 @@ class Compound(LockableModel):
     def image(self):
         url = self.image_src()
         if url:
-            return u'<img src="{}" />'.format(url)
+            return '<img src="{}" />'.format(url)
         else:
-            return u''
+            return ''
 
     def image_src(self):
         if self.chemblid:
-            return (u'https://www.ebi.ac.uk/chembldb/compound/'
+            return ('https://www.ebi.ac.uk/chembldb/compound/'
                     'displayimage_large/' + self.chemblid)
         else:
-            return u''
+            return ''
 
     image.allow_tags = True
     image.short_description = 'Image'
@@ -283,8 +283,8 @@ class SummaryType(LockableModel):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=500, default='')
 
-    def __unicode__(self):
-        return unicode(self.name)
+    def __str__(self):
+        return str(self.name)
 
 
 # TODO THIS MODEL IS DEPRECATED
@@ -295,8 +295,8 @@ class PropertyType(LockableModel):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=500, default='')
 
-    def __unicode__(self):
-        return unicode(self.name)
+    def __str__(self):
+        return str(self.name)
 
 
 # TODO THIS MODEL IS DEPRECATED
@@ -308,13 +308,13 @@ class CompoundSummary(models.Model):
         verbose_name = 'Compound Summary'
         verbose_name_plural = 'Compound Summaries'
 
-    compound = models.ForeignKey(Compound)
-    summary_type = models.ForeignKey(SummaryType)
+    compound = models.ForeignKey(Compound, on_delete=models.CASCADE)
+    summary_type = models.ForeignKey(SummaryType, on_delete=models.CASCADE)
     summary = models.CharField(max_length=500)
     source = models.CharField(max_length=250)
 
-    def __unicode__(self):
-        return unicode(self.summary)
+    def __str__(self):
+        return str(self.summary)
 
 
 # TODO THIS MODEL IS DEPRECATED
@@ -326,21 +326,21 @@ class CompoundProperty(models.Model):
         verbose_name = 'Compound Property'
         verbose_name_plural = 'Compound Properties'
 
-    compound = models.ForeignKey(Compound)
-    property_type = models.ForeignKey(PropertyType)
+    compound = models.ForeignKey(Compound, on_delete=models.CASCADE)
+    property_type = models.ForeignKey(PropertyType, on_delete=models.CASCADE)
     # After some amount of debate, it was decided a float field should be sufficient for out purposes
     value = models.FloatField()
     source = models.CharField(max_length=250)
 
-    def __unicode__(self):
-        return unicode(self.value)
+    def __str__(self):
+        return str(self.value)
 
 
 # Should these be treated separately from bioactivity targets?
 # Whatever the case, the following information was requested:
 class CompoundTarget(models.Model):
     # Must link back to a compound
-    compound = models.ForeignKey(Compound)
+    compound = models.ForeignKey(Compound, on_delete=models.CASCADE)
 
     name = models.CharField(max_length=150)
     # May not be present
@@ -356,8 +356,8 @@ class CompoundSupplier(LockableModel):
     """Compound suppliers so that we can track where compounds come from"""
     name = models.CharField(max_length=255, unique=True)
 
-    def __unicode__(self):
-        return unicode(self.name)
+    def __str__(self):
+        return str(self.name)
 
 
 # TODO Add uniqueness contraints
@@ -366,17 +366,17 @@ class CompoundInstance(LockableModel):
     class Meta(object):
         unique_together = [('compound', 'supplier', 'lot', 'receipt_date')]
 
-    compound = models.ForeignKey(Compound)
+    compound = models.ForeignKey(Compound, on_delete=models.CASCADE)
     # Required, though N/A should be an option
-    supplier = models.ForeignKey(CompoundSupplier, blank=True)
+    supplier = models.ForeignKey(CompoundSupplier, blank=True, on_delete=models.CASCADE)
     # Required, though N/A should be an option
     # It is possible that the lot_number will not be solely numeric
     lot = models.CharField(max_length=255)
     # Receipt date
     receipt_date = models.DateField(null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         items = [
-            unicode(self.compound), unicode(self.supplier), unicode(self.lot), unicode(self.receipt_date)
+            str(self.compound), str(self.supplier), str(self.lot), str(self.receipt_date)
         ]
-        return u' '.join(items)
+        return ' '.join(items)

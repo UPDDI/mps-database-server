@@ -1,5 +1,5 @@
 from django.contrib.sites.models import Site
-from settings import BRAND_VIEW
+from .settings import BRAND_VIEW
 
 
 def get_voice_extra_context():

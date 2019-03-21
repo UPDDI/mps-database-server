@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import migrations, models
 from django.conf import settings
@@ -23,9 +23,9 @@ class Migration(migrations.Migration):
                 ('concentration', models.FloatField()),
                 ('addition_time', models.FloatField(blank=True)),
                 ('duration', models.FloatField(blank=True)),
-                ('chip_setup', models.ForeignKey(blank=True, to='assays.AssayChipSetup', null=True)),
-                ('compound_instance', models.ForeignKey(blank=True, to='compounds.CompoundInstance', null=True)),
-                ('concentration_unit', models.ForeignKey(verbose_name=b'Concentration Unit', to='assays.PhysicalUnits')),
+                ('chip_setup', models.ForeignKey(blank=True, to='assays.AssayChipSetup', null=True, on_delete=models.CASCADE)),
+                ('compound_instance', models.ForeignKey(blank=True, to='compounds.CompoundInstance', null=True, on_delete=models.CASCADE)),
+                ('concentration_unit', models.ForeignKey(verbose_name=b'Concentration Unit', to='assays.PhysicalUnits', on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -41,11 +41,11 @@ class Migration(migrations.Migration):
                 ('reason_for_flag', models.CharField(default=b'', help_text=b'Reason for why this entry was flagged', max_length=300, blank=True)),
                 ('file_location', models.URLField(null=True, blank=True)),
                 ('chip_readout', models.ManyToManyField(to='assays.AssayChipReadout')),
-                ('created_by', models.ForeignKey(related_name='assaydataupload_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('group', models.ForeignKey(help_text=b'Bind to a group', to='auth.Group')),
-                ('modified_by', models.ForeignKey(related_name='assaydataupload_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('created_by', models.ForeignKey(related_name='assaydataupload_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('group', models.ForeignKey(help_text=b'Bind to a group', to='auth.Group', on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='assaydataupload_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
                 ('plate_readout', models.ManyToManyField(to='assays.AssayPlateReadout')),
-                ('signed_off_by', models.ForeignKey(related_name='assaydataupload_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('signed_off_by', models.ForeignKey(related_name='assaydataupload_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -62,9 +62,9 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(unique=True, max_length=255)),
                 ('code', models.CharField(unique=True, max_length=10)),
                 ('description', models.CharField(max_length=2000)),
-                ('created_by', models.ForeignKey(related_name='assayqualityindicator_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('modified_by', models.ForeignKey(related_name='assayqualityindicator_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('signed_off_by', models.ForeignKey(related_name='assayqualityindicator_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('created_by', models.ForeignKey(related_name='assayqualityindicator_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='assayqualityindicator_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('signed_off_by', models.ForeignKey(related_name='assayqualityindicator_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -103,7 +103,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='assaywellcompound',
             name='compound',
-            field=models.ForeignKey(blank=True, to='compounds.Compound', null=True),
+            field=models.ForeignKey(blank=True, to='compounds.Compound', null=True, on_delete=models.CASCADE),
         ),
         migrations.AlterField(
             model_name='assaywellcompound',
@@ -113,7 +113,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='assaywellcompound',
             name='concentration_unit',
-            field=models.ForeignKey(blank=True, to='assays.PhysicalUnits', null=True),
+            field=models.ForeignKey(blank=True, to='assays.PhysicalUnits', null=True, on_delete=models.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='assaychipreadoutassay',
@@ -122,12 +122,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='assaydataupload',
             name='study',
-            field=models.ForeignKey(to='assays.AssayRun'),
+            field=models.ForeignKey(to='assays.AssayRun', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='assaywellcompound',
             name='assay_compound_instance',
-            field=models.ForeignKey(blank=True, to='assays.AssayCompoundInstance', null=True),
+            field=models.ForeignKey(blank=True, to='assays.AssayCompoundInstance', null=True, on_delete=models.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='assaycompoundinstance',

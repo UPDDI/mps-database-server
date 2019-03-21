@@ -24,7 +24,7 @@ class FeedbackForm(forms.ModelForm):
             field.widget.attrs.update({'class': 'input-block-level'})
 
         # change form fields for user authentication status:
-        if self.user is not None and self.user.is_authenticated():
+        if self.user is not None and self.user.is_authenticated:
             deleted_fields = ['email']
         else:
             deleted_fields = ['anonymous', 'private']
@@ -33,7 +33,7 @@ class FeedbackForm(forms.ModelForm):
             del self.fields[field_name]
 
         # add tabindex attribute to fields:
-        for index, field in enumerate(self.fields.values(), 1):
+        for index, field in enumerate(list(self.fields.values()), 1):
             field.widget.attrs.update({'tabindex': index})
 
     def clean(self):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 from django.conf import settings
@@ -176,9 +176,9 @@ class Migration(migrations.Migration):
                 ('test_name', models.CharField(max_length=40, verbose_name=b'Organ Function Test')),
                 ('test_unit', models.CharField(max_length=40, null=True, blank=True)),
                 ('description', models.CharField(max_length=400, null=True, blank=True)),
-                ('created_by', models.ForeignKey(related_name='test_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('modified_by', models.ForeignKey(related_name='test_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('organ', models.ForeignKey(blank=True, to='cellsamples.Organ', null=True)),
+                ('created_by', models.ForeignKey(related_name='test_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='test_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('organ', models.ForeignKey(blank=True, to='cellsamples.Organ', null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('test_name', 'organ', 'test_type'),
@@ -195,11 +195,11 @@ class Migration(migrations.Migration):
                 ('percent_min', models.FloatField(null=True, verbose_name=b'Min Affected (% Population)', blank=True)),
                 ('percent_max', models.FloatField(null=True, verbose_name=b'Max Affected (% Population)', blank=True)),
                 ('value', models.FloatField(null=True, blank=True)),
-                ('descriptor', models.ForeignKey(blank=True, to='drugtrials.ResultDescriptor', null=True)),
-                ('drug_trial', models.ForeignKey(to='drugtrials.DrugTrial')),
-                ('test_name', models.ForeignKey(verbose_name=b'Test', blank=True, to='drugtrials.Test', null=True)),
-                ('time_units', models.ForeignKey(blank=True, to='assays.TimeUnits', null=True)),
-                ('value_units', models.ForeignKey(blank=True, to='assays.PhysicalUnits', null=True)),
+                ('descriptor', models.ForeignKey(blank=True, to='drugtrials.ResultDescriptor', null=True, on_delete=models.CASCADE)),
+                ('drug_trial', models.ForeignKey(to='drugtrials.DrugTrial', on_delete=models.CASCADE)),
+                ('test_name', models.ForeignKey(verbose_name=b'Test', blank=True, to='drugtrials.Test', null=True, on_delete=models.CASCADE)),
+                ('time_units', models.ForeignKey(blank=True, to='assays.TimeUnits', null=True, on_delete=models.CASCADE)),
+                ('value_units', models.ForeignKey(blank=True, to='assays.PhysicalUnits', null=True, on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -215,9 +215,9 @@ class Migration(migrations.Migration):
                 ('locked', models.BooleanField(default=False, help_text=b'Check the box and save to lock the entry. Uncheck and save to enable editing.')),
                 ('test_type', models.CharField(unique=True, max_length=60)),
                 ('description', models.CharField(max_length=200, null=True, blank=True)),
-                ('created_by', models.ForeignKey(related_name='testtype_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('modified_by', models.ForeignKey(related_name='testtype_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('signed_off_by', models.ForeignKey(related_name='testtype_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('created_by', models.ForeignKey(related_name='testtype_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='testtype_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('signed_off_by', models.ForeignKey(related_name='testtype_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('test_type',),
@@ -235,9 +235,9 @@ class Migration(migrations.Migration):
                 ('source_name', models.CharField(unique=True, max_length=40)),
                 ('source_website', models.URLField(null=True, blank=True)),
                 ('description', models.CharField(max_length=400, null=True, blank=True)),
-                ('created_by', models.ForeignKey(related_name='trialsource_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('modified_by', models.ForeignKey(related_name='trialsource_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('signed_off_by', models.ForeignKey(related_name='trialsource_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('created_by', models.ForeignKey(related_name='trialsource_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='trialsource_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('signed_off_by', models.ForeignKey(related_name='trialsource_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('source_name',),

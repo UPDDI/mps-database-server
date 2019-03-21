@@ -26,12 +26,12 @@ class ConfigurableWhooshBackend(WhooshSearchBackend):
 
         # Inefficient but flexible way of changing schema
         # Please note that the generator is called 'items()' not 'fields()'
-        for field_name, field_class in old_schema.items():
+        for field_name, field_class in list(old_schema.items()):
             if type(field_class) != NGRAM:
                 new_mapping[field_name] = field_class
 
         # Find and reset ngram
-        for field_name, field_class in fields.items():
+        for field_name, field_class in list(fields.items()):
             if field_class.field_type == 'ngram':
                 new_mapping[field_class.index_fieldname] = NGRAM(
                     minsize=1,
@@ -69,7 +69,7 @@ class LoggingBackend(django.core.mail.backends.console.EmailBackend):
     def send_messages(self, email_messages):
         try:
             for msg in email_messages:
-                logger.info(u"Sending message '%s' to recipients: %s", msg.subject, msg.to)
+                logger.info("Sending message '%s' to recipients: %s", msg.subject, msg.to)
         except:
             logger.exception("Problem logging recipients, ignoring")
 

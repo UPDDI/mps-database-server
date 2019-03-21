@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 from django.conf import settings
@@ -28,9 +28,9 @@ class Migration(migrations.Migration):
                 ('journal', models.TextField(null=True, blank=True)),
                 ('strain', models.TextField(null=True, blank=True)),
                 ('last_update', models.DateField(help_text=b'Last time when activities associated with the assay were updated.', null=True, blank=True)),
-                ('created_by', models.ForeignKey(related_name='assay_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('modified_by', models.ForeignKey(related_name='assay_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('signed_off_by', models.ForeignKey(related_name='assay_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('created_by', models.ForeignKey(related_name='assay_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='assay_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('signed_off_by', models.ForeignKey(related_name='assay_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('chemblid',),
@@ -57,12 +57,12 @@ class Migration(migrations.Migration):
                 ('reference', models.TextField(null=True, blank=True)),
                 ('name_in_reference', models.TextField(null=True, blank=True)),
                 ('chembl_assay_type', models.TextField(default=b'', null=True, blank=True)),
-                ('assay', models.ForeignKey(to='bioactivities.Assay')),
-                ('compound', models.ForeignKey(related_name='bioactivity_compound', to='compounds.Compound')),
-                ('created_by', models.ForeignKey(related_name='bioactivity_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('modified_by', models.ForeignKey(related_name='bioactivity_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('parent_compound', models.ForeignKey(related_name='bioactivity_parent', to='compounds.Compound')),
-                ('signed_off_by', models.ForeignKey(related_name='bioactivity_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('assay', models.ForeignKey(to='bioactivities.Assay', on_delete=models.CASCADE)),
+                ('compound', models.ForeignKey(related_name='bioactivity_compound', to='compounds.Compound', on_delete=models.CASCADE)),
+                ('created_by', models.ForeignKey(related_name='bioactivity_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='bioactivity_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('parent_compound', models.ForeignKey(related_name='bioactivity_parent', to='compounds.Compound', on_delete=models.CASCADE)),
+                ('signed_off_by', models.ForeignKey(related_name='bioactivity_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('compound', 'bioactivity_type'),
@@ -85,9 +85,9 @@ class Migration(migrations.Migration):
                 ('standard_name', models.TextField(default=b'')),
                 ('description', models.TextField(default=b'')),
                 ('standard_unit', models.TextField(default=b'')),
-                ('created_by', models.ForeignKey(related_name='bioactivitytype_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('modified_by', models.ForeignKey(related_name='bioactivitytype_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('signed_off_by', models.ForeignKey(related_name='bioactivitytype_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('created_by', models.ForeignKey(related_name='bioactivitytype_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='bioactivitytype_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('signed_off_by', models.ForeignKey(related_name='bioactivitytype_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('chembl_bioactivity', 'chembl_unit'),
@@ -107,10 +107,10 @@ class Migration(migrations.Migration):
                 ('source', models.TextField(default=b'', null=True, blank=True)),
                 ('activity_name', models.TextField(default=b'', verbose_name=b'Activity Name')),
                 ('assay_name', models.TextField(default=b'', null=True, verbose_name=b'Assay Name', blank=True)),
-                ('compound', models.ForeignKey(to='compounds.Compound')),
-                ('created_by', models.ForeignKey(related_name='pubchembioactivity_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('modified_by', models.ForeignKey(related_name='pubchembioactivity_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('signed_off_by', models.ForeignKey(related_name='pubchembioactivity_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('compound', models.ForeignKey(to='compounds.Compound', on_delete=models.CASCADE)),
+                ('created_by', models.ForeignKey(related_name='pubchembioactivity_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='pubchembioactivity_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('signed_off_by', models.ForeignKey(related_name='pubchembioactivity_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -128,9 +128,9 @@ class Migration(migrations.Migration):
                 ('name', models.TextField(default=b'', help_text=b'Preferred target name.')),
                 ('organism', models.TextField(default=b'')),
                 ('GI', models.TextField(verbose_name=b'NCBI GI')),
-                ('created_by', models.ForeignKey(related_name='pubchemtarget_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('modified_by', models.ForeignKey(related_name='pubchemtarget_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('signed_off_by', models.ForeignKey(related_name='pubchemtarget_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('created_by', models.ForeignKey(related_name='pubchemtarget_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='pubchemtarget_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('signed_off_by', models.ForeignKey(related_name='pubchemtarget_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -154,9 +154,9 @@ class Migration(migrations.Migration):
                 ('uniprot_accession', models.TextField(null=True, blank=True)),
                 ('target_type', models.TextField(null=True, blank=True)),
                 ('last_update', models.DateField(help_text=b'Last time when activities associated with the target were updated.', null=True, blank=True)),
-                ('created_by', models.ForeignKey(related_name='target_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('modified_by', models.ForeignKey(related_name='target_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('signed_off_by', models.ForeignKey(related_name='target_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('created_by', models.ForeignKey(related_name='target_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='target_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('signed_off_by', models.ForeignKey(related_name='target_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('name',),
@@ -166,13 +166,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='pubchembioactivity',
             name='target',
-            field=models.ForeignKey(default=None, blank=True, to='bioactivities.PubChemTarget', null=True, verbose_name=b'Target'),
+            field=models.ForeignKey(default=None, blank=True, to='bioactivities.PubChemTarget', null=True, verbose_name=b'Target', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='bioactivity',
             name='target',
-            field=models.ForeignKey(to='bioactivities.Target'),
+            field=models.ForeignKey(to='bioactivities.Target', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(

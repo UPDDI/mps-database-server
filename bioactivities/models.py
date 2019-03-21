@@ -29,7 +29,7 @@ def chembl_target(chemblid):
 
     data = CHEMBL.get_target_by_chemblId(str(chemblid))['target']
 
-    return {FIELDS[key]: value for key, value in data.items()
+    return {FIELDS[key]: value for key, value in list(data.items())
             if key in FIELDS}
 
 
@@ -43,7 +43,7 @@ def chembl_assay(chemblid):
 
     data = CHEMBL.get_assays_by_chemblId(str(chemblid))['assay']
 
-    return {FIELDS[key]: value for key, value in data.items()
+    return {FIELDS[key]: value for key, value in list(data.items())
             if key in FIELDS}
 
 
@@ -81,17 +81,17 @@ class Target(LockableModel):
     class Meta(object):
         ordering = ('name', )
 
-    def __unicode__(self):
+    def __str__(self):
 
         return self.name
 
     def chembl_link(self):
 
         if self.chemblid:
-            return (u'<a href="https://www.ebi.ac.uk/chembl/target/inspect/'
+            return ('<a href="https://www.ebi.ac.uk/chembl/target/inspect/'
                     '{0}" target="_blank">{0}</a>').format(self.chemblid)
         else:
-            return u''
+            return ''
 
     chembl_link.allow_tags = True
     chembl_link.short_description = 'ChEMBL ID'
@@ -121,7 +121,7 @@ class Assay(LockableModel):
     source_id = models.TextField(default='', blank=True)
     name = models.TextField(default='', blank=True, verbose_name="Assay Name")
 
-    target = models.ForeignKey('Target', default=None, verbose_name="Target", null=True, blank=True)
+    target = models.ForeignKey('Target', default=None, verbose_name="Target", null=True, blank=True, on_delete=models.CASCADE)
 
     last_update = models.DateField(blank=True, null=True,
                                    help_text="Last time when activities "
@@ -131,17 +131,17 @@ class Assay(LockableModel):
     class Meta(object):
         ordering = ('chemblid', )
 
-    def __unicode__(self):
+    def __str__(self):
 
         return self.chemblid
 
     def chembl_link(self):
 
         if self.chemblid:
-            return (u'<a href="https://www.ebi.ac.uk/chembl/assay/inspect/'
+            return ('<a href="https://www.ebi.ac.uk/chembl/assay/inspect/'
                     '{0}" target="_blank">{0}</a>').format(self.chemblid)
         else:
-            return u''
+            return ''
 
     chembl_link.allow_tags = True
     chembl_link.short_description = 'ChEMBL ID'
@@ -156,14 +156,20 @@ class Bioactivity(LockableModel):
         unique_together = ('assay', 'target', 'compound')
         ordering = ('compound', 'bioactivity_type',)
 
-    assay = models.ForeignKey(Assay)
-    compound = models.ForeignKey('compounds.Compound',
-                                 related_name='bioactivity_compound')
-    parent_compound = models.ForeignKey('compounds.Compound',
-                                        related_name='bioactivity_parent')
+    assay = models.ForeignKey(Assay, on_delete=models.CASCADE)
+    compound = models.ForeignKey(
+        'compounds.Compound',
+        related_name='bioactivity_compound',
+        on_delete=models.CASCADE
+    )
+    parent_compound = models.ForeignKey(
+        'compounds.Compound',
+        related_name='bioactivity_parent',
+        on_delete=models.CASCADE
+    )
 
     # TODO NOTE THAT THIS TARGET IS MORE ACCURATE THAN ASSAY TARGET FOR CHEMBL
-    target = models.ForeignKey(Target)
+    target = models.ForeignKey(Target, on_delete=models.CASCADE)
     target_confidence = models.IntegerField(blank=True, null=True)
 
     bioactivity_type = models.TextField(verbose_name="name", default='', blank=True)
@@ -201,8 +207,8 @@ class Bioactivity(LockableModel):
     def organism(self):
         return self.target.organism
 
-    def __unicode__(self):
-        return u'{}: {} {}'.format(
+    def __str__(self):
+        return '{}: {} {}'.format(
             self.compound,
             self.bioactivity_type,
             self.target.name
@@ -224,21 +230,21 @@ class BioactivityType(LockableModel):
     description = models.TextField(default='', blank=True)
     standard_unit = models.TextField(default='', blank=True)
 
-    def __unicode__(self):
-        return unicode(self.standard_name)
+    def __str__(self):
+        return str(self.standard_name)
 
 
 class PubChemBioactivity(LockableModel):
     """A Bioactivity from PubChem (Bioactivity is from ChEMBL)"""
     # TextFields and CharFields have no performace benefits over eachother, but may want to use CharFields for clarity
-    assay = models.ForeignKey('Assay', blank=True, null=True)
+    assay = models.ForeignKey('Assay', blank=True, null=True, on_delete=models.CASCADE)
 
     # It makes sense just to add the PubChem CID to the compound then just use a FK
     #compound_id = models.TextField(verbose_name="Compound ID")
-    compound = models.ForeignKey('compounds.Compound')
+    compound = models.ForeignKey('compounds.Compound', on_delete=models.CASCADE)
 
     # TODO SHOULD PULL TARGET FROM ASSAY IF THIS IS NONE (IF TO BE KEPT)
-    target = models.ForeignKey('Target', verbose_name="Target", null=True, blank=True)
+    target = models.ForeignKey('Target', verbose_name="Target", null=True, blank=True, on_delete=models.CASCADE)
 
     # Value is required
     value = models.FloatField(verbose_name="Value (uM)")
@@ -291,8 +297,8 @@ class PubChemTarget(LockableModel):
     # Organism is not always listed: not required
     organism = models.TextField(default='', blank=True)
 
-    def __unicode__(self):
-        return unicode(self.name)
+    def __str__(self):
+        return str(self.name)
 
 
 # DEPRECATED
@@ -311,5 +317,5 @@ class PubChemAssay(LockableModel):
 
     description = models.TextField(default='', blank=True)
 
-    def __unicode__(self):
-        return unicode(self.aid)
+    def __str__(self):
+        return str(self.aid)

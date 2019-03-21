@@ -44,7 +44,7 @@ def vote(request, model, object_id, value):
     Likes or dislikes an item.
     """
     # You're not authenticated
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         return HttpResponse(status=401)
     try:
         value = int(value)

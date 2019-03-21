@@ -75,7 +75,7 @@ def run(days=180):
 
             try:
                 for act in acts['bioactivities']:
-                    act = {FIELDS[key]: value for key, value in act.items() if key in FIELDS}
+                    act = {FIELDS[key]: value for key, value in list(act.items()) if key in FIELDS}
 
                     tid, aid, cid, pid = (
                         act['target'], act['assay'], act['compound'], act['parent_compound']
@@ -95,7 +95,7 @@ def run(days=180):
 
                             for target in parent_compound_targets:
                                 CompoundTarget.objects.create(compound=parent, **target)
-                            print "Added Compound:", parent.name
+                            print(("Added Compound:", parent.name))
                         except ValueError:
                             error += 1
                             continue
@@ -132,24 +132,24 @@ def run(days=180):
                         except ValueError:
                             error += 1
                         except Exception as err:
-                            for key, val in act.items():
+                            for key, val in list(act.items()):
                                 if isinstance(val, str):
-                                    print('{}: ({}) {}'.format(key, len(val), val))
+                                    print(('{}: ({}) {}'.format(key, len(val), val)))
                             raise err
                         else:
                             count += 1
                     else:
                         skip += 1
             except:
-                print "An error occured:", compound.name, acts
+                print(("An error occured:", compound.name, acts))
 
             compound.last_update = datetime.date.today()
             compound.save()
 
-    print('{} bioactivities were added, {} were found in the database, and '
-          '{} failed due to value errors.'.format(count, skip, error))
+    print(('{} bioactivities were added, {} were found in the database, and '
+          '{} failed due to value errors.'.format(count, skip, error)))
 
-    print 'Updating bioactivity units...'
+    print('Updating bioactivity units...')
     cursor = connection.cursor()
 
     cursor.execute(
@@ -180,9 +180,9 @@ def run(days=180):
         '''
     )
 
-    print 'Units updated'
+    print('Units updated')
 
-    print 'Normalizing values'
+    print('Normalizing values')
 
     bio_types = {bio.standard_name: True for bio in Bioactivity.objects.all()}
 
@@ -209,10 +209,10 @@ def run(days=180):
                             normalized_value=bio_value[index]
                         )
                     except:
-                        print 'Update of bioactivity {} failed'.format(pk)
+                        print(('Update of bioactivity {} failed'.format(pk)))
 
     # Flag questionable entries
-    print 'Flagging questionable entries...'
+    print('Flagging questionable entries...')
 
     # Remove old flags in case they have become outdated (medians change and so on)
     Bioactivity.objects.all().update(data_validity='')
@@ -266,7 +266,7 @@ def run(days=180):
                                 # Flag data validity for "Out of Range"
                                 this_bio.data_validity = 'R'
                                 this_bio.save()
-                                print bio_pk[index], bio_value[index], 'vs', bio_median
+                                print((bio_pk[index], bio_value[index], 'vs', bio_median))
                                 total += 1
 
                         # Check for possible transcription errors (1000-fold error mistaking uM for nM)
@@ -279,9 +279,9 @@ def run(days=180):
                                         total += 1
                                     this_bio.data_validity = 'T'
                                     this_bio.save()
-                                    print bio_pk[error_index], bio_value[error_index], 'thousand fold'
+                                    print((bio_pk[error_index], bio_value[error_index], 'thousand fold'))
 
-    print total
+    print(total)
 
 # A second run is useful to catch newly added compounds,
 # but just calling run is somewhat inefficient (it would run through every compound again)

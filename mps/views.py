@@ -58,12 +58,12 @@ def search(request):
         return HttpResponseRedirect('/')
 
     if app == 'Global':
-        return HttpResponseRedirect(u'/search?q={}'.format(search_term))
+        return HttpResponseRedirect('/search?q={}'.format(search_term))
 
     elif app == 'Bioactivities':
         search_term = [(term + '=' + bioactivities.get(term)) for term in bioactivities if bioactivities.get(term)]
         search_term = '&'.join(search_term)
-        return HttpResponseRedirect(u'/bioactivities/?{}'.format(search_term))
+        return HttpResponseRedirect('/bioactivities/?{}'.format(search_term))
 
     # If, for whatever reason, invalid data is entered, just return to the home page
     else:
@@ -82,7 +82,7 @@ def get_search_queryset_with_permissions(request):
             if group.name.replace(ADMIN_SUFFIX, '').replace(VIEWER_SUFFIX, '') in groups_with_center_full
         }
 
-        for group in user_groups.keys():
+        for group in list(user_groups.keys()):
             sqs = sqs | SearchQuerySet().filter(permissions=group)
 
     return sqs

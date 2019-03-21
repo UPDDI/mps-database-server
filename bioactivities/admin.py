@@ -19,6 +19,8 @@ from .models import (
 from bioactivities.forms import AssayForm
 from bioactivities.forms import TargetsForm
 
+# TODO TODO TODO allow_tags attribute has been removed
+
 
 class TargetAdmin(LockableAdmin):
     """Admin for Bioactivity Target"""
@@ -294,12 +296,12 @@ class BioactivityAdmin(LockableAdmin):
     def bioactivity_display(self, obj):
 
         if obj.compound.chemblid:
-            url = (u'https://www.ebi.ac.uk/chembldb/compound/'
+            url = ('https://www.ebi.ac.uk/chembldb/compound/'
                    'displayimage/' + obj.compound.chemblid)
             return '<img src="%s">' % \
                 url
         else:
-            return u''
+            return ''
 
     bioactivity_display.allow_tags = True
     bioactivity_display.short_description = 'Structure'

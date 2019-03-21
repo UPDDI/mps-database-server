@@ -17,6 +17,7 @@ import numpy as np
 from compounds.models import Compound
 from .models import Bioactivity, PubChemBioactivity #, Assay
 from drugtrials.models import FindingResult
+from functools import reduce
 
 # POTENTIALLY TOO MEMORY CONSUMING; BE CAUTIOUS
 # Only uncomment this if requested
@@ -48,7 +49,7 @@ def generate_record_frequency_data(query):
 
     result_list = []
 
-    for key, value in result.iteritems():
+    for key, value in list(result.items()):
         result_list.append([key, value])
 
     return result_list
@@ -64,7 +65,7 @@ def get_compound_frequency_data(query):
 
     for element in query:
         # TODO CRUDE; REQUIRES REVISION
-        element = '|'.join([unicode(item) for item in element])
+        element = '|'.join([str(item) for item in element])
         if element:
             if element in result:
                 frequency = result.get(element)
@@ -75,7 +76,7 @@ def get_compound_frequency_data(query):
 
     result_list = []
 
-    for key, value in result.iteritems():
+    for key, value in list(result.items()):
         result_list.append([key, value])
 
     return result_list
@@ -827,10 +828,11 @@ def heatmap(request):
         pass
 
     # generate a unique full path for data and rows and columns information
+    data_hash = str(len([name for name in os.listdir(os.path.join(MEDIA_ROOT, 'heatmap')) if os.path.isfile(name)]))
 
-    data_hash = hashlib.sha512(
-        str(rearranged_data)
-    ).hexdigest()[:10]
+    # data_hash = hashlib.sha512(
+    #     str(rearranged_data)
+    # ).hexdigest()[:10]
 
     fullpath_without_extension = os.path.join(
         MEDIA_ROOT,
@@ -903,8 +905,9 @@ def heatmap(request):
             for compound in valid_compounds:
                 values.append(initial_dic[compound][bioactivity])
             # Get median from list after excluding all None values
-            median = np.median(np.array([value for value in values if value is not None]))
-            maximum = max(values)
+            non_null_values = np.array([value for value in values if value is not None])
+            median = np.median(non_null_values)
+            maximum = np.max(non_null_values)
 
             # Avoid anomalies by arbitrarily putting median to 10% when max == median
             if median == maximum:
@@ -1094,8 +1097,9 @@ def cluster(request):
             for compound in valid_compounds:
                 values.append(initial_dic[compound][bioactivity])
             # Get median from list after excluding all None values
-            median = np.median(np.array([value for value in values if value is not None]))
-            maximum = max(values)
+            non_null_values = np.array([value for value in values if value is not None])
+            median = np.median(non_null_values)
+            maximum = np.max(non_null_values)
 
             # Avoid anomalies by arbitrarily putting median to 10% when max == median
             if median == maximum:
@@ -1116,7 +1120,7 @@ def cluster(request):
              'ro3_passes']
 
     # list of dics of compounds (creating this prevents excessive calls to the database
-    compound_data = Compound.objects.filter(name__in=valid_compounds).values()
+    compound_data = list(Compound.objects.filter(name__in=valid_compounds).values())
 
     # Update values for chemical properties (if chemical_properties)
     if chemical_properties:
@@ -1127,8 +1131,9 @@ def cluster(request):
                 # This is a rather inefficient means of acquiring data
                 values.append(compound.get(prop, None))
             # Get median from list after excluding all None values
-            median = np.median(np.array([value for value in values if value is not None]))
-            maximum = max(values)
+            non_null_values = np.array([value for value in values if value is not None])
+            median = np.median(non_null_values)
+            maximum = np.max(non_null_values)
 
             # Avoid anomalies by arbitrarily putting median to 10% when max == median
             if median == maximum:
@@ -1157,7 +1162,7 @@ def cluster(request):
 
     # Create dictionary for labeling nodes by their IDs
     labels = list(df['compounds'])
-    id2name = dict(zip(range(len(labels)), labels))
+    id2name = dict(list(zip(list(range(len(labels))), labels)))
 
     # Create a nested dictionary from the ClusterNode's returned by SciPy
     def add_node(node, parent):
@@ -1307,14 +1312,14 @@ def table(request):
                 target = bioactivity.assay.target.name
                 organism = bioactivity.assay.target.organism
             else:
-                target = u''
+                target = ''
                 organism = bioactivity.assay.organism
         else:
             if bioactivity.target:
                 target = bioactivity.target.name
                 organism = bioactivity.target.organism
             else:
-                target = u''
+                target = ''
                 organism = bioactivity.assay.organism
 
         chemblid = bioactivity.assay.chemblid
@@ -1323,8 +1328,8 @@ def table(request):
         if pubchem:
             activity_name = bioactivity.activity_name
             standardized_value = bioactivity.value
-            operator = u''
-            standardized_units = u''
+            operator = ''
+            standardized_units = ''
         else:
             activity_name = bioactivity.standard_name
             standardized_value = bioactivity.standardized_value

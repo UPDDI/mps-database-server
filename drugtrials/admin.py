@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.contrib.admin.widgets import AdminURLFieldWidget
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
-from django.utils.text import force_text
+from django.utils.encoding import force_text
 from django.db.models import URLField
 from django.utils.safestring import mark_safe
 
@@ -43,19 +43,19 @@ class URLFieldWidget(AdminURLFieldWidget):
         # u'.value)" />' \
 
         html = \
-            u'<div style="width: 55em; height: 4em;">' \
-            u'<div>' \
-            u'{0}' \
-            u'</div>' \
-            u'<div style="float: right; z-index: 10;' \
-            u' margin-top: -3em; margin-right: -25em;">' \
-            u'<button type="button" onclick="window.open(document.getElementById(\'{1}\').value, \'_newtab\');" ' \
-            u'>Open Link in New Tab</button>' \
-            u'<button type="button" onclick="window.open(document.getElementById(\'{1}\').value, \'win\', ' \
-            u'\'toolbars=0,width=800,height=800,left=200,top=200,scrollbars=1,resizable=1\');" ' \
-            u'>Open Link in New Window</button>' \
-            u'</div>' \
-            u'</div>'.format(widget, attrs['id'])
+            '<div style="width: 55em; height: 4em;">' \
+            '<div>' \
+            '{0}' \
+            '</div>' \
+            '<div style="float: right; z-index: 10;' \
+            ' margin-top: -3em; margin-right: -25em;">' \
+            '<button type="button" onclick="window.open(document.getElementById(\'{1}\').value, \'_newtab\');" ' \
+            '>Open Link in New Tab</button>' \
+            '<button type="button" onclick="window.open(document.getElementById(\'{1}\').value, \'win\', ' \
+            '\'toolbars=0,width=800,height=800,left=200,top=200,scrollbars=1,resizable=1\');" ' \
+            '>Open Link in New Window</button>' \
+            '</div>' \
+            '</div>'.format(widget, attrs['id'])
 
         return mark_safe(html)
 
@@ -214,12 +214,12 @@ class DrugTrialAdmin(LockableAdmin):
     def drug_display(self, obj):
 
         if obj.compound.chemblid:
-            url = (u'https://www.ebi.ac.uk/chembldb/compound/'
+            url = ('https://www.ebi.ac.uk/chembldb/compound/'
                    'displayimage/' + obj.compound.chemblid)
             return '<img src="%s">' % \
                 url
         else:
-            return u''
+            return ''
 
     drug_display.allow_tags = True
     drug_display.short_description = 'Structure'

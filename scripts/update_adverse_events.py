@@ -7,7 +7,7 @@ import ujson as json
 
 from mps.settings import PROJECT_ROOT
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import urllib3
 import certifi
 
@@ -43,7 +43,7 @@ blacklist = {
 
 def get_label_field(generic_name, field):
     # WILL NEED TO CHANGE WITH PYTHON 3
-    generic_name = urllib.quote_plus(generic_name)
+    generic_name = urllib.parse.quote_plus(generic_name)
 
     try:
         # Arbitrary limit of 100 might not be sufficient to ensure grabbing the correct entry
@@ -67,10 +67,10 @@ def get_label_field(generic_name, field):
 
 def get_event_frequency(generic_name, organs):
     # WILL NEED TO CHANGE WITH PYTHON 3
-    generic_name = urllib.quote_plus(generic_name)
+    generic_name = urllib.parse.quote_plus(generic_name)
 
     # Reset organ highest and count
-    for key, organ in organs.items():
+    for key, organ in list(organs.items()):
         organ.update({'highest': 0})
         organ.update({'events': 0})
 
@@ -92,7 +92,7 @@ def get_event_frequency(generic_name, organs):
 
             first_in_organ = False
 
-            for key, organ in organs.items():
+            for key, organ in list(organs.items()):
                 organ_terms = organ.get('terms')
                 organ_highest = organ.get('highest')
                 organ_events = organ.get('events')
@@ -117,7 +117,7 @@ def get_event_frequency(generic_name, organs):
 
             found_in_organ = False
 
-            for key, organ in organs.items():
+            for key, organ in list(organs.items()):
                 organ_terms = organ.get('terms')
                 organ_highest = organ.get('highest')
                 organ_events = organ.get('events')
@@ -194,7 +194,7 @@ def run():
     # liver = {}
     # liver_file = open('/home/developer/github/mps-database-server/scripts/Liver.tsv', 'r')
 
-    for key, organ in organs.items():
+    for key, organ in list(organs.items()):
         organ_file = open(organ.get('file'))
         for line in organ_file:
             line = line.strip().split('\t')
@@ -206,10 +206,10 @@ def run():
     CompoundAdverseEvent.objects.all().delete()
 
     for compound in Compound.objects.all():
-        print compound
+        print(compound)
         # TODO CHANGE TO ACCOMODATE ALL ORGANS
         events = get_event_frequency(compound.name, organs)
-        print len(events)
+        print((len(events)))
         time.sleep(0.2)
 
         if events:
@@ -231,7 +231,7 @@ def run():
                 try:
                     adverse_event_model = AdverseEvent.objects.get(event=adverse_event)
 
-                    for key, organ in organs.items():
+                    for key, organ in list(organs.items()):
                         organ_model = organ.get('model')
                         organ_terms = organ.get('terms')
                         if adverse_event in organ_terms:
@@ -240,7 +240,7 @@ def run():
 
                 # if adverse_event does not exist
                 except:
-                    for key, organ in organs.items():
+                    for key, organ in list(organs.items()):
                         organ_model = organ.get('model')
                         organ_terms = organ.get('terms')
                         if adverse_event in organ_terms:
@@ -261,9 +261,9 @@ def run():
                     adverse_event_model.save()
                     # print "Success!"
                 except:
-                    print "Fail..."
+                    print("Fail...")
 
-    print "Finished Adverse Events"
+    print("Finished Adverse Events")
 
     time.sleep(30)
 
@@ -289,13 +289,13 @@ def run():
                     compound.black_box = True
                     compound.nonclinical_toxicology = nonclinical_toxicology
                     compound.save()
-                    print "Black Box Warning found"
+                    print("Black Box Warning found")
 
                 elif warning:
                     compound.warnings = warning[0]
                     compound.nonclinical_toxicology = nonclinical_toxicology
                     compound.save()
-                    print "Warning found"
+                    print("Warning found")
 
                 else:
                     warnings_and_precautions = get_label_field(compound.compound.name, 'warnings_and_precautions')
@@ -306,6 +306,6 @@ def run():
                     compound.warnings = warnings_and_precautions
                     compound.nonclinical_toxicology = nonclinical_toxicology
                     compound.save()
-                    print "Attempted to find warning in warnings_and precautions"
+                    print("Attempted to find warning in warnings_and precautions")
             except:
-                print "An error occurred"
+                print("An error occurred")

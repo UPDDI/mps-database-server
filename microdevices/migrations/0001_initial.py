@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 from django.conf import settings
@@ -26,9 +26,9 @@ class Migration(migrations.Migration):
                 ('manufacturer_name', models.CharField(max_length=100)),
                 ('contact_person', models.CharField(max_length=250, null=True, blank=True)),
                 ('Manufacturer_website', models.URLField(null=True, blank=True)),
-                ('created_by', models.ForeignKey(related_name='manufacturer_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('modified_by', models.ForeignKey(related_name='manufacturer_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('signed_off_by', models.ForeignKey(related_name='manufacturer_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('created_by', models.ForeignKey(related_name='manufacturer_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='manufacturer_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('signed_off_by', models.ForeignKey(related_name='manufacturer_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('manufacturer_name',),
@@ -75,10 +75,10 @@ class Migration(migrations.Migration):
                 ('description', models.CharField(max_length=400, null=True, blank=True)),
                 ('contact_person', models.CharField(max_length=250, null=True, blank=True)),
                 ('center_website', models.URLField(null=True, blank=True)),
-                ('created_by', models.ForeignKey(related_name='microphysiologycenter_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('created_by', models.ForeignKey(related_name='microphysiologycenter_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
                 ('groups', models.ManyToManyField(to='auth.Group')),
-                ('modified_by', models.ForeignKey(related_name='microphysiologycenter_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('signed_off_by', models.ForeignKey(related_name='microphysiologycenter_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('modified_by', models.ForeignKey(related_name='microphysiologycenter_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('signed_off_by', models.ForeignKey(related_name='microphysiologycenter_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('center_name',),
@@ -96,12 +96,12 @@ class Migration(migrations.Migration):
                 ('model_name', models.CharField(max_length=200)),
                 ('description', models.CharField(max_length=400, null=True, blank=True)),
                 ('protocol', models.FileField(help_text=b'File detailing the protocols for this model', upload_to=b'protocols', null=True, verbose_name=b'Protocol File', blank=True)),
-                ('center', models.ForeignKey(blank=True, to='microdevices.MicrophysiologyCenter', null=True)),
-                ('created_by', models.ForeignKey(related_name='organmodel_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('device', models.ForeignKey(blank=True, to='microdevices.Microdevice', null=True)),
-                ('modified_by', models.ForeignKey(related_name='organmodel_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('organ', models.ForeignKey(to='cellsamples.Organ')),
-                ('signed_off_by', models.ForeignKey(related_name='organmodel_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('center', models.ForeignKey(blank=True, to='microdevices.MicrophysiologyCenter', null=True, on_delete=models.CASCADE)),
+                ('created_by', models.ForeignKey(related_name='organmodel_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('device', models.ForeignKey(blank=True, to='microdevices.Microdevice', null=True, on_delete=models.CASCADE)),
+                ('modified_by', models.ForeignKey(related_name='organmodel_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('organ', models.ForeignKey(to='cellsamples.Organ', on_delete=models.CASCADE)),
+                ('signed_off_by', models.ForeignKey(related_name='organmodel_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('model_name', 'organ'),
@@ -112,8 +112,8 @@ class Migration(migrations.Migration):
             name='ValidatedAssay',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('assay', models.ForeignKey(verbose_name=b'Assay Model', to='assays.AssayModel')),
-                ('organ_model', models.ForeignKey(verbose_name=b'Organ Model', to='microdevices.OrganModel')),
+                ('assay', models.ForeignKey(verbose_name=b'Assay Model', to='assays.AssayModel', on_delete=models.CASCADE)),
+                ('organ_model', models.ForeignKey(verbose_name=b'Organ Model', to='microdevices.OrganModel', on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -122,37 +122,37 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='microdevice',
             name='center',
-            field=models.ForeignKey(blank=True, to='microdevices.MicrophysiologyCenter', null=True),
+            field=models.ForeignKey(blank=True, to='microdevices.MicrophysiologyCenter', null=True, on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='microdevice',
             name='created_by',
-            field=models.ForeignKey(related_name='microdevice_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True),
+            field=models.ForeignKey(related_name='microdevice_created_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='microdevice',
             name='manufacturer',
-            field=models.ForeignKey(blank=True, to='microdevices.Manufacturer', null=True),
+            field=models.ForeignKey(blank=True, to='microdevices.Manufacturer', null=True, on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='microdevice',
             name='modified_by',
-            field=models.ForeignKey(related_name='microdevice_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True),
+            field=models.ForeignKey(related_name='microdevice_modified_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='microdevice',
             name='organ',
-            field=models.ForeignKey(blank=True, to='cellsamples.Organ', null=True),
+            field=models.ForeignKey(blank=True, to='cellsamples.Organ', null=True, on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='microdevice',
             name='signed_off_by',
-            field=models.ForeignKey(related_name='microdevice_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True),
+            field=models.ForeignKey(related_name='microdevice_signed_off_by', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE),
             preserve_default=True,
         ),
     ]

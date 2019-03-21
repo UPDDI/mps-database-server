@@ -12,7 +12,7 @@ from .models import (
     GroupDeferral
 )
 from.forms import MicrophysiologyCenterForm, GroupDeferralForm
-from django.core.urlresolvers import resolve
+from django.urls import resolve
 from django.db.models.fields.files import FieldFile
 
 
@@ -209,7 +209,7 @@ class MicrodeviceAdmin(LockableAdmin):
             original_obj = obj._meta.concrete_model.objects.get(id=original_pk)
 
             # Iterate through all it's properties
-            for prop, value in vars(original_obj).iteritems():
+            for prop, value in list(vars(original_obj).items()):
                 # if the property is an Image (don't forget to import ImageFieldFile!)
                 if isinstance(getattr(original_obj, prop), FieldFile):
                     # Copy it!

@@ -40,21 +40,21 @@ def fetch_adverse_events_data(request):
 
     # A serializer would probably better serve us here...
     for ae in ae_data:
-        project = u''
+        project = ''
 
         if ae.get('compound__compound__tctc'):
-            project += u'TCTC'
+            project += 'TCTC'
 
         if ae.get('compound__compound__epa'):
-            project += u'EPA'
+            project += 'EPA'
 
         if ae.get('compound__compound__mps'):
-            project += u'MPS'
+            project += 'MPS'
 
         if not project:
-            project = u'Unassigned'
+            project = 'Unassigned'
 
-        organ_name = u''
+        organ_name = ''
 
         if ae.get('event__organ__organ_name'):
             organ_name = ae.get('event__organ__organ_name')
@@ -64,14 +64,14 @@ def fetch_adverse_events_data(request):
         if ae.get('compound__black_box'):
             black_box_warning = True
 
-        normalized_reports = u''
-        estimated_usage = u''
+        normalized_reports = ''
+        estimated_usage = ''
 
         if ae.get('compound__estimated_usage'):
-            normalized_reports = u'{:,.2f}'.format(
+            normalized_reports = '{:,.2f}'.format(
                 float(ae.get('frequency')) / ae.get('compound__estimated_usage') * 10000
             )
-            estimated_usage = u'{:,}'.format(ae.get('compound__estimated_usage'))
+            estimated_usage = '{:,}'.format(ae.get('compound__estimated_usage'))
 
         data.append(
             {
@@ -84,7 +84,7 @@ def fetch_adverse_events_data(request):
                     'lower': cgi.escape(ae.get('event__event').lower()),
                     'name': cgi.escape(ae.get('event__event'))
                 },
-                'number_of_reports': u'{:,}'.format(
+                'number_of_reports': '{:,}'.format(
                     ae.get('frequency')
                 ),
                 'normalized_reports': normalized_reports,
@@ -124,19 +124,19 @@ def fetch_aggregate_ae_by_compound(request):
     data = []
 
     for compound in compounds:
-        estimated_usage = u''
+        estimated_usage = ''
 
         if compound.estimated_usage:
-            estimated_usage = u'{:,}'.format(compound.estimated_usage)
+            estimated_usage = '{:,}'.format(compound.estimated_usage)
 
-        checkbox = u'<input class="checkbox big-checkbox compound" type="checkbox" value="{}">'.format(compound.compound.name)
+        checkbox = '<input class="checkbox big-checkbox compound" type="checkbox" value="{}">'.format(compound.compound.name)
 
         data.append({
             # 'checkbox': cgi.escape(compound.compound.name),
             'checkbox': cgi.escape(checkbox),
             'compound': compound.compound.name,
             'estimated_usage': estimated_usage,
-            'frequency': u'{:,}'.format(sum(compound_frequency.get(compound.id, [0])))
+            'frequency': '{:,}'.format(sum(compound_frequency.get(compound.id, [0])))
         })
 
     all_data = {
@@ -164,12 +164,12 @@ def fetch_aggregate_ae_by_event(request):
 
     for adverse_event in adverse_events:
         frequency = sum(adverse_event_frequency.get(adverse_event.id, [0]))
-        organ_name = u''
+        organ_name = ''
 
         if adverse_event.organ:
             organ_name = adverse_event.organ.organ_name
 
-        checkbox = u'<input class="checkbox big-checkbox adverse-event" type="checkbox" value="{}">'.format(adverse_event.event)
+        checkbox = '<input class="checkbox big-checkbox adverse-event" type="checkbox" value="{}">'.format(adverse_event.event)
 
         if frequency:
             data.append({
@@ -177,7 +177,7 @@ def fetch_aggregate_ae_by_event(request):
                 'checkbox': cgi.escape(checkbox),
                 'event': adverse_event.event,
                 'organ': organ_name,
-                'frequency': u'{:,}'.format(frequency)
+                'frequency': '{:,}'.format(frequency)
             })
 
     all_data = {

@@ -113,6 +113,8 @@ import pytz
 # TODO ^ Update Views should be refactored soon
 # NOTE THAT YOU NEED TO MODIFY INLINES HERE, NOT IN FORMS
 
+# TODO TODO TODO render_to_response is DEPRECATED: USE render INSTEAD
+
 
 def add_study_fields_to_form(self, form, add_study=False):
     """Adds study, group, and restricted to a form
@@ -707,7 +709,7 @@ class AssayStudyData(StudyViewerMixin, DetailView):
 
             # For specifically text
             response = HttpResponse(data, content_type='text/csv')
-            response['Content-Disposition'] = 'attachment;filename="' + unicode(self.object) + '.csv"'
+            response['Content-Disposition'] = 'attachment;filename="' + str(self.object) + '.csv"'
 
             return response
         # Return nothing otherwise
@@ -874,7 +876,7 @@ class AssayStudySignOff(UpdateView):
                         study=self.object
                     ).prefetch_related('group').values_list('group__name', flat=True)
                 }
-                initial_groups = stakeholder_viewer_groups.keys()
+                initial_groups = list(stakeholder_viewer_groups.keys())
 
                 for group in initial_groups:
                     stakeholder_viewer_groups.update({
@@ -1067,7 +1069,7 @@ class AssayStudyDataUpload(ObjectGroupRequiredMixin, UpdateView):
                 )
 
                 # Contrived method for marking data
-                for key, value in form.data.iteritems():
+                for key, value in list(form.data.items()):
                     if key.startswith('data_upload_'):
                         current_id = key.replace('data_upload_', '', 1)
                         current_value = value
@@ -1569,10 +1571,10 @@ class AssayMatrixItemUpdate(StudyGroupMixin, UpdateView):
             try:
                 data_point_ids_to_update_raw = json.loads(form.data.get('dynamic_exclusion', '{}'))
                 data_point_ids_to_mark_excluded = [
-                    int(id) for id, value in data_point_ids_to_update_raw.items() if value
+                    int(id) for id, value in list(data_point_ids_to_update_raw.items()) if value
                 ]
                 data_point_ids_to_mark_included = [
-                    int(id) for id, value in data_point_ids_to_update_raw.items() if not value
+                    int(id) for id, value in list(data_point_ids_to_update_raw.items()) if not value
                 ]
                 if data_point_ids_to_mark_excluded:
                     AssayDataPoint.objects.filter(

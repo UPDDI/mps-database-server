@@ -98,7 +98,7 @@ def get_chembl_compound_data(chemblid):
     """Returns a dictionary of ChEMBL data given a chemblid"""
     data = {}
 
-    url = u'https://www.ebi.ac.uk/chembl/api/data/molecule/{}.json'.format(chemblid)
+    url = 'https://www.ebi.ac.uk/chembl/api/data/molecule/{}.json'.format(chemblid)
     response = requests.get(url)
     initial_data = json.loads(response.text)
 
@@ -148,7 +148,7 @@ def get_chembl_compound_data(chemblid):
         # Get medchem alerts
         medchem_alerts = False
         # Get URL of target for scrape
-        url = u"https://www.ebi.ac.uk/chembl/compound/structural_alerts/{}".format(chemblid)
+        url = "https://www.ebi.ac.uk/chembl/compound/structural_alerts/{}".format(chemblid)
         # Make the http request
         response = requests.get(url)
         # Get the webpage as text
@@ -255,9 +255,9 @@ def fetch_compound_report(request):
                 data_point.time, []
             ).append(data_point.value)
 
-    for study_id, studies in initial_control_data.items():
-        for assay, assays in studies.items():
-            for time, times in assays.items():
+    for study_id, studies in list(initial_control_data.items()):
+        for assay, assays in list(studies.items()):
+            for time, times in list(assays.items()):
                 control_data.update({
                     (study_id, assay, time): np.average(times)
                 })
@@ -290,7 +290,7 @@ def fetch_compound_report(request):
                     ).setdefault(
                         assay, {}
                     ).setdefault(
-                        u'{0:.2f}_{1}'.format(
+                        '{0:.2f}_{1}'.format(
                             setup_compound.concentration,
                             setup_compound.concentration_unit.unit
                         ), {}
@@ -309,10 +309,10 @@ def fetch_compound_report(request):
             for concentration in plot[assay]:
                 entry = plot[assay][concentration]
                 averaged_plot = {}
-                for time, values in entry.items():
+                for time, values in list(entry.items()):
                     averaged_plot.update({time: np.average(values)})
                 # Add maximum
-                times = [float(t) for t in entry.keys()]
+                times = [float(t) for t in list(entry.keys())]
                 if assay not in data[compound]['table']['max_time'] or \
                         max(times) > data[compound]['table']['max_time'][assay]:
                     data[compound]['table']['max_time'].update({assay: max(times)})
@@ -418,20 +418,20 @@ def get_drugbank_data_from_chembl_id(chembl_id):
     }
 
     # Get drugbank_id or fail
-    url = u'https://www.ebi.ac.uk/unichem/rest/src_compound_id/{}/1/2'.format(chembl_id)
+    url = 'https://www.ebi.ac.uk/unichem/rest/src_compound_id/{}/1/2'.format(chembl_id)
     # Make the http request
     response = requests.get(url)
     # Get the webpage in JSON
     json_data = json.loads(response.text)
 
-    if json_data and u'error' not in json_data:
+    if json_data and 'error' not in json_data:
         # Get drugbank_id
         drugbank_id = json_data[0].get('src_compound_id')
         # Assign drugbank id right away
         data['drugbank_id'] = drugbank_id
 
         # Get URL of target for scrape
-        url = u"http://www.drugbank.ca/drugs/{}".format(drugbank_id)
+        url = "http://www.drugbank.ca/drugs/{}".format(drugbank_id)
         # Make the http request
         response = requests.get(url)
         # Get the webpage as text
@@ -501,8 +501,8 @@ def get_drugbank_data_from_chembl_id(chembl_id):
                                 data['protein_binding'] = protein_binding_processed[0]
 
                         # If +/- is in the string, the percent is likely the deviation
-                        if u'+/-' in protein_binding_initial:
-                            protein_binding_processed = protein_binding_initial.split(u'+/-')
+                        if '+/-' in protein_binding_initial:
+                            protein_binding_processed = protein_binding_initial.split('+/-')
                             protein_binding_processed = re.findall(
                                 integer_and_float_extractor,
                                 protein_binding_processed[0]
@@ -510,8 +510,8 @@ def get_drugbank_data_from_chembl_id(chembl_id):
                             if protein_binding_processed:
                                 data['protein_binding'] = protein_binding_processed[0]
 
-                        if u'±' in protein_binding_initial:
-                            protein_binding_processed = protein_binding_initial.split(u'±')
+                        if '±' in protein_binding_initial:
+                            protein_binding_processed = protein_binding_initial.split('±')
                             protein_binding_processed = re.findall(
                                 integer_and_float_extractor,
                                 protein_binding_processed[0]
@@ -550,10 +550,10 @@ def get_drugbank_data_from_chembl_id(chembl_id):
                             found_numbers.sort(key=float)
 
                             # If it is plus or minus
-                            if u'+/-' in trimmed_life or u'±' in trimmed_life:
+                            if '+/-' in trimmed_life or '±' in trimmed_life:
                                 found_numbers = [
-                                    unicode(float(found_numbers[-1])-float(found_numbers[0])),
-                                    unicode(float(found_numbers[-1])+float(found_numbers[0]))
+                                    str(float(found_numbers[-1])-float(found_numbers[0])),
+                                    str(float(found_numbers[-1])+float(found_numbers[0]))
                                 ]
 
                             # Take first two
@@ -597,7 +597,7 @@ def get_drugbank_data_from_chembl_id(chembl_id):
                             data['bioavailability'] = bioavailability_initial[0]
 
         # Convert Not Available to None (for clarity)
-        for key, value in data.items():
+        for key, value in list(data.items()):
             if value == 'Not Available':
                 data.update({key: ''})
 
@@ -612,7 +612,7 @@ def get_drugbank_data_from_chembl_id(chembl_id):
         }
 
         # Loop through all target cards
-        for class_name, full_name in classes.items():
+        for class_name, full_name in list(classes.items()):
             listed_targets = soup.findChildren('div', class_=class_name)
 
             if listed_targets:
@@ -628,13 +628,13 @@ def get_drugbank_data_from_chembl_id(chembl_id):
 
     # YES, I know that the function title is deceiving in that this is actually a PubChem ID
     # Get pubchemid from unichem too
-    url = u'https://www.ebi.ac.uk/unichem/rest/src_compound_id/{}/1/22'.format(chembl_id)
+    url = 'https://www.ebi.ac.uk/unichem/rest/src_compound_id/{}/1/22'.format(chembl_id)
     # Make the http request
     response = requests.get(url)
     # Get the webpage in JSON
     json_data = json.loads(response.text)
 
-    if json_data and u'error' not in json_data:
+    if json_data and 'error' not in json_data:
         # Extract ID
         pubchemid = json_data[0].get('src_compound_id')
         data.update({'pubchemid': pubchemid})
@@ -664,7 +664,7 @@ def fetch_chembl_search_results(request):
     """
     query = request.POST.get('query', '')
 
-    url = u'https://www.ebi.ac.uk/chembl/api/data/chembl_id_lookup/search.json?q={}'.format(query)
+    url = 'https://www.ebi.ac.uk/chembl/api/data/chembl_id_lookup/search.json?q={}'.format(query)
     # Make the http request
     response = requests.get(url)
     # Get the webpage in JSON
@@ -678,7 +678,7 @@ def fetch_chembl_search_results(request):
             additional_data = {}
             chembl_id = lookup.get('chembl_id', '')
 
-            url = u'https://www.ebi.ac.uk/chembl/api/data/molecule/{}.json'.format(chembl_id)
+            url = 'https://www.ebi.ac.uk/chembl/api/data/molecule/{}.json'.format(chembl_id)
             # Make the http request
             response = requests.get(url)
             # Get the webpage in JSON
