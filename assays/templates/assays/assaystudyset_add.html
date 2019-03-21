@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block extra_head %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+        svg > g:last-child > g:last-child {
+            pointer-events: none;
+        }
+        div.google-visualization-tooltip {
+            pointer-events: none;
+        }
+    </style>
+{% endblock %}
+
+{% block load_js %}
+    <script src="{% static "assays/assaystudyset_add.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    {# What will the breadcrumbs be #}
+    <li class="active">
+        {% if object %}
+            Edit <em>{{ object }}</em>
+        {% else %}
+            Add Study Set
+        {% endif %}
+    </li>
+{% endblock %}
+
+{% block content %}
+
+{# TODO NOT DRY #}
+{% if not form.is_bound or update %}
+<div id="list_section">
+{% else %}
+<div hidden id="list_section">
+{% endif %}
+    {# A little odd, I actually populate this by iterating over the queryset in the form #}
+    {# (Perhaps it would be more semantic to iterate over something passed in the context #}
+    {% comment %} <table class="table table-striped table-bordered" id="study_data_table">
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Study</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for study in form.studies.field.queryset.all %}
+            <tr>
+                <td style="text-align:center;">
+                    <input type="checkbox" class="big-checkbox study-selector" value="{{ study.id }}">
+                </td>
+                <td>{{ study }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table> {% endcomment %}
+
+    <h3>
+    <div class="alert alert-info" role="alert">
+        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+        <span class="sr-only">Info:</span>
+        Please check the boxes next to the studies you want for your set and then hit "Continue"
+    </div>
+    </h3>
+
+    <table hidden id="studies" class="display" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>Select</th>
+{#                    <th>Study ID</th>#}
+                <th>Study Name</th>
+                <th>Start Date</th>
+                <th>Study Types <span data-toggle="tooltip" title="CC = Chip Characterization, DM = Disease Model, EFF = Efficacy, TOX = Toxicity" class="glyphicon glyphicon-question-sign" aria-hidden="true" data-placement="bottom"></span></th>
+                <th>Organ Models</th>
+                <th>Data Points</th>
+                <th>Images</th>
+                <th>Videos</th>
+                <th>Supporting Data Files</th>
+{#                    <th>Integrated Study Configuration</th>#}
+                <th>Description</th>
+                <th>Intra-Study Reproducibility Status <span data-toggle="tooltip" title="Hover over pie charts for details." class="glyphicon glyphicon-question-sign" aria-hidden="true" data-placement="bottom"></span></th>
+                <th>Data Provider</th>
+                <th>Data Entry</th>
+                <th>Review</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for study in object_list %}
+            <tr class="study" id={{ study.id }} name={{ study.id }}>
+                {# TODO REPLACE #}
+                {# <td><a class="btn btn-primary" href="{% url 'assay_study_index' study.id %}">View/Edit</a></td> #}
+                <td style="text-align:center;">
+                    <input type="checkbox" class="big-checkbox study-selector" value="{{ study.id }}">
+                </td>
+{#                    <td>{{ study.assay_run_id }}</td>#}
+                <td style="word-wrap: break-word">{{ study.name }}</td>
+                <td>{{ study.start_date|date:"M d, Y" }}</td>
+                <td>{{ study.get_study_types_string }}</td>
+                <td>{{ study.organ_models|default:"-No Organ Models-" }}</td>
+{#                    <td>{{ study.study_configuration }}</td>#}
+                {% if study.data_points %}
+                    <td class="text-success">{{ study.data_points|intcomma }}</td>
+                {% else %}
+                    <td class="text-danger">0</td>
+                {% endif %}
+                {% if study.images %}
+                    <td class="text-success">{{ study.images|intcomma }}</td>
+                {% else %}
+                    <td class="text-danger">0</td>
+                {% endif %}
+                {% if study.videos %}
+                    <td class="text-success">{{ study.videos|intcomma }}</td>
+                {% else %}
+                    <td class="text-danger">0</td>
+                {% endif %}
+                {% if study.supporting_data %}
+                    <td class="text-success">{{ study.supporting_data|intcomma }}</td>
+                {% else %}
+                    <td class="text-danger">0</td>
+                {% endif %}
+                <td>{{ study.description }}</td>
+                <td>
+                    <div id="piechart{{ forloop.counter0 }}" data-nums="{{study.repro_nums}}" class="text-center" style="width: 70px; height: 70px; margin: auto; display: block;"></div>
+                </td>
+                <td><a href='/microdevices/center/{{ study.center.id }}/' target='_blank' title="{{ study.center.name }}">{{ study.center.center_id }}</a></td>
+                <td>
+                    {{ study.full_creator }}
+                </td>
+                <td>
+                    {% if study.signed_off_by %}
+                        {% if study.stakeholder_sign_off and not study.restricted %}
+                            <span hidden>3</span>
+                            <span title="This study can be viewed by all registered users" class="glyphicon glyphicon-eye-open text-info" aria-hidden="true"></span>
+                        {% elif study.stakeholder_sign_off %}
+                            <span hidden>2</span>
+                            <span title="All stakeholders have approved release of this data" class="glyphicon glyphicon-pencil text-warning" aria-hidden="true"></span>
+                        {% else %}
+                            <span hidden>1</span>
+                        {% endif %}
+                        <span title="This entry was signed off on by {{ study.full_reviewer }} on {{ study.signed_off_date }}: '{{ study.signed_off_notes }}'" class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+                    {% endif %}
+                    {% if study.flagged %}
+                        <span hidden>0</span>
+                        <span title="This entry is flagged for review: '{{ study.reason_for_flag }}'" class="glyphicon glyphicon-flag text-danger" aria-hidden="true"></span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <nav class="footer navbar-fixed-bottom hidden-print floating-submit-row">
+        <div class="container large-padding-top">
+            <button id="list_continue_button" type="submit" class="btn btn-primary">Continue</button>
+        </div>
+        {# Contrivance #}
+        <div class="small-padding-top"></div>
+    </nav>
+</div>
+
+{% if form.is_bound or update %}
+<div id="form_section">
+{% else %}
+<div hidden id="form_section">
+{% endif %}
+
+  <div class="text-center">
+  <a type="button" class="btn btn-xlarge btn-primary text-center submit-button" id="back_button">
+      <span class="glyphicon glyphicon glyphicon-hand-left" aria-hidden="true"></span>
+      Change Study Selections
+  </a>
+  </div>
+
+{% if update %}
+    <form enctype="multipart/form-data" class="form-horizontal" method="post" >
+
+    <h1>
+        Edit <em>{{ object }}</em>
+{% else %}
+    <form enctype="multipart/form-data" class="form-horizontal" method="post" >
+
+    <h1>
+        Add Study Set
+{% endif %}
+    <br>
+    {% csrf_token %}
+    </h1>
+
+    {% include "submit.html" with flag="y" %}
+
+    {% include 'errors.html' %}
+
+    {% include 'tracking.html' %}
+
+    <legend>Study Details</legend>
+
+    {% include 'generic_field.html' with field=form.name label="Study Set Name*" %}
+
+    {% include 'generic_field.html' with field=form.description label="Description*" %}
+
+    {% comment %} <div class="row padded-bottom">
+    <div class="col-sm-2"></div>
+    <div class="col-sm-10">
+    <a role='button' id="select_studies_button" class="btn btn-primary btn-block btn-lg">
+        <span class="glyphicon glyphicon-search"></span>
+        Select Studies
+    </a>
+    </div>
+    </div> {% endcomment %}
+
+    <div hidden>
+    {% include 'generic_field.html' with field=form.studies label="Studies*" %}
+
+    {% include 'generic_field.html' with field=form.assays label="Assays" %}
+    </div>
+
+    <legend>Studies</legend>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Study</th>
+                <th>Assays</th>
+            </tr>
+        </thead>
+        <tbody id="selected_studies_table">
+        </tbody>
+    </table>
+</form>
+</div>
+
+<div hidden id="assay_dialog" title="Select Assays">
+    <div class="padded-bottom">
+        <a id="assay_filter_section_select_all" class="btn btn-primary">Select All</a>
+        <a id="assay_filter_section_deselect_all" class="btn btn-danger">Deselect All</a>
+    </div>
+    <table id="assay_table" class="display table" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Target</th>
+                <th>Method</th>
+                <th>Unit</th>
+            </tr>
+        </thead>
+        <tbody id="assay_dialog_body">
+        </tbody>
+    </table>
+</div>
+{% endblock %}

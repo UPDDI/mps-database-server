@@ -18,6 +18,7 @@ from .models import (
     AssayChipReadoutAssay,
     AssayPlateReadoutAssay,
     AssaySetupCompound,
+    AssayStudySet,
     DEFAULT_SETUP_CRITERIA,
     DEFAULT_SETTING_CRITERIA,
     DEFAULT_COMPOUND_CRITERIA,
@@ -2795,6 +2796,104 @@ def fetch_data_points_from_filters(request):
         return HttpResponseServerError()
 
 
+def fetch_data_points_from_study_set(request):
+    intention = request.POST.get('intention', 'charting')
+
+    post_filter = json.loads(request.POST.get('post_filter', '{}'))
+
+    study_set_id = int(request.POST.get('study_set_id', 0))
+
+    current_study_set = AssayStudySet.objects.filter(id=study_set_id)
+
+    if current_study_set:
+        current_study_set = current_study_set[0]
+
+        accessible_studies = get_user_accessible_studies(request.user)
+
+        studies = accessible_studies.filter(id__in=current_study_set.studies.all())
+
+        assays = current_study_set.assays.filter(study_id__in=studies)
+
+        matrix_items = AssayMatrixItem.objects.filter(study_id__in=studies)
+
+        # Not particularly DRY
+        data_points = AssayDataPoint.objects.filter(
+            matrix_item_id__in=matrix_items,
+            study_assay_id__in=assays
+        ).prefetch_related(
+            # TODO
+            'study__group',
+            'study_assay__target',
+            'study_assay__method',
+            'study_assay__unit__base_unit',
+            'sample_location',
+            'matrix_item__matrix',
+            'matrix_item__organ_model',
+            'subtarget'
+        ).filter(
+            replaced=False,
+            excluded=False,
+            value__isnull=False
+        )
+
+        if not post_filter:
+            assays = assays.prefetch_related(
+                'target',
+                'method'
+            )
+
+            post_filter = acquire_post_filter(studies, assays, matrix_items, data_points)
+        else:
+            studies, assays, matrix_items, data_points = apply_post_filter(
+                post_filter, studies, assays, matrix_items, data_points
+            )
+
+        if intention == 'charting':
+            data = get_data_points_for_charting(
+                data_points,
+                request.POST.get('key', ''),
+                request.POST.get('mean_type', ''),
+                request.POST.get('interval_type', ''),
+                request.POST.get('percent_control', ''),
+                request.POST.get('include_all', ''),
+                request.POST.get('truncate_negative', ''),
+                json.loads(request.POST.get('dynamic_excluded', '{}')),
+                study=studies,
+                matrix_item=None,
+                matrix_items=matrix_items,
+                criteria=json.loads(request.POST.get('criteria', '{}')),
+                post_filter=post_filter
+            )
+
+            data.update({'post_filter': post_filter})
+
+            return HttpResponse(json.dumps(data),
+                                content_type="application/json")
+        elif intention == 'inter_repro':
+            criteria = json.loads(request.POST.get('criteria', '{}'))
+            inter_level = int(request.POST.get('inter_level', 1))
+            max_interpolation_size = int(request.POST.get('max_interpolation_size', 2))
+            initial_norm = int(request.POST.get('initial_norm', 0))
+
+            data = get_inter_study_reproducibility(
+                data_points,
+                matrix_items,
+                inter_level,
+                max_interpolation_size,
+                initial_norm,
+                criteria
+            )
+
+            data.update({'post_filter': post_filter})
+
+            return HttpResponse(json.dumps(data),
+                                content_type="application/json")
+        else:
+            return HttpResponseServerError()
+    else:
+        return HttpResponseServerError()
+
+
 def get_inter_study_reproducibility(
         data_points,
         matrix_items,
@@ -3377,7 +3476,10 @@ switch = {
     },
     'fetch_post_filter': {
         'call': fetch_post_filter
-    }
+    },
+    'fetch_data_points_from_study_set': {
+        'call': fetch_data_points_from_study_set
+    },
 }
 
 

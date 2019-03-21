@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block load_js %}
+    <script src="{% static "assays/assaystudyset_list.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li class="active">Targets</li>
+{% endblock %}
+
+{% block content %}
+    <div class="padded-bottom">
+        <legend>
+            <h2 class="text-center">
+                Study Sets
+            </h2>
+        </legend>
+        <div>
+            <table id="study_sets" class="display" cellspacing="0" width="100%" hidden>
+                <thead>
+                    <tr>
+                        <th>View Details</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for study_set in object_list %}
+                     <tr id="{{ study_set.id }}">
+                        <td><a class="btn btn-primary" href="{{ study_set.id }}">View</a></td>
+                        <td>{{ study_set.name }}</td>
+                        <td>{{ study_set.description }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

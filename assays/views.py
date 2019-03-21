@@ -32,7 +32,8 @@ from assays.models import (
     AssayStudySupportingData,
     # Deprecated, just in case
     AssayRun,
-    AssayDataUpload
+    AssayDataUpload,
+    AssayStudySet
 )
 from assays.forms import (
     AssayStudyConfigurationForm,
@@ -52,7 +53,8 @@ from assays.forms import (
     AssayStudySignOffForm,
     AssayStudyStakeholderFormSetFactory,
     AssayStudyDataUploadForm,
-    AssayStudyModelFormSet
+    AssayStudyModelFormSet,
+    AssayStudySetForm,
 )
 from microdevices.models import MicrophysiologyCenter
 from django import forms
@@ -86,7 +88,8 @@ from mps.mixins import (
     user_is_active,
     PermissionDenied,
     StudyGroupMixin,
-    StudyViewerMixin
+    StudyViewerMixin,
+    CreatorOrSuperuserRequiredMixin
 )
 
 from mps.base.models import save_forms_with_tracking
@@ -447,7 +450,7 @@ class AssayStudyEditableList(OneGroupRequiredMixin, ListView):
         return context
 
 
-class AssayStudyList(LoginRequiredMixin, ListView):
+class AssayStudyList(ListView):
     """A list of all studies"""
     template_name = 'assays/assaystudy_list.html'
     model = AssayStudy
@@ -1674,8 +1677,16 @@ class AssayStudyImages(StudyViewerMixin, DetailView):
         return context
 
 
-class GraphingReproducibilityFilterView(LoginRequiredMixin, TemplateView):
+class GraphingReproducibilityFilterView(TemplateView):
     template_name = 'assays/assay_filter.html'
+
+
+class AssayInterStudyReproducibility(TemplateView):
+    template_name = 'assays/assay_interstudy_reproducibility.html'
+
+
+class AssayStudyDataPlots(TemplateView):
+    template_name = 'assays/assaystudy_data_plots.html'
 
 
 class AssayTargetList(ListView):
@@ -1762,16 +1773,8 @@ class AssaySampleLocationList(ListView):
     template_name = 'assays/assaylocation_list.html'
 
 
-class AssayInterStudyReproducibility(LoginRequiredMixin, TemplateView):
-    template_name = 'assays/assay_interstudy_reproducibility.html'
-
-
-class AssayStudyDataPlots(LoginRequiredMixin, TemplateView):
-    template_name = 'assays/assaystudy_data_plots.html'
-
-
 # Inappropriate use of CBV
-class AssayDataFromFilters(LoginRequiredMixin, TemplateView):
+class AssayDataFromFilters(TemplateView):
     """Returns a combined file for all data for given filters"""
     template_name = 'assays/assay_filter.html'
 
@@ -1906,6 +1909,180 @@ class AssayDataFromFilters(LoginRequiredMixin, TemplateView):
             # For specifically text
             response = HttpResponse(data, content_type='text/csv')
             response['Content-Disposition'] = 'attachment;filename=MPS_Download.csv'
+
+            return response
+        # Return nothing otherwise
+        else:
+            return HttpResponse('', content_type='text/plain')
+
+
+class AssayStudySetAdd(CreateView, OneGroupRequiredMixin):
+    model = AssayStudySet
+    template_name = 'assays/assaystudyset_add.html'
+    form_class = AssayStudySetForm
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudySetAdd, self).get_context_data(**kwargs)
+        combined = get_user_accessible_studies(self.request.user)
+
+        get_queryset_with_organ_model_map(combined)
+        get_queryset_with_number_of_data_points(combined)
+        get_queryset_with_stakeholder_sign_off(combined)
+        get_queryset_with_group_center_dictionary(combined)
+
+        context['object_list'] = combined;
+
+        return context
+
+    def get_form(self, form_class=None):
+        form_class = self.get_form_class()
+
+        # If POST
+        if self.request.method == 'POST':
+            return form_class(self.request.POST, request=self.request)
+        # If GET
+        else:
+            return form_class(request=self.request)
+
+    def form_valid(self, form):
+        if form.is_valid():
+            save_forms_with_tracking(self, form, update=False)
+            form.save_m2m()
+            return redirect(
+                self.object.get_absolute_url()
+            )
+        else:
+            return self.render_to_response(
+                self.get_context_data(
+                    form=form
+                )
+            )
+
+
+class AssayStudySetUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
+    model = AssayStudySet
+    template_name = 'assays/assaystudyset_add.html'
+    form_class = AssayStudySetForm
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudySetUpdate, self).get_context_data(**kwargs)
+
+        combined = get_user_accessible_studies(self.request.user)
+
+        get_queryset_with_organ_model_map(combined)
+        get_queryset_with_number_of_data_points(combined)
+        get_queryset_with_stakeholder_sign_off(combined)
+        get_queryset_with_group_center_dictionary(combined)
+
+        context['object_list'] = combined;
+
+        context['update'] = True
+
+        return context
+
+    def get_form(self, form_class=None):
+        form_class = self.get_form_class()
+
+        # If POST
+        if self.request.method == 'POST':
+            return form_class(self.request.POST, instance=self.object, request=self.request)
+        # If GET
+        else:
+            return form_class(instance=self.object, request=self.request)
+
+    def form_valid(self, form):
+        if form.is_valid():
+            save_forms_with_tracking(self, form, update=True)
+            form.save_m2m()
+            return redirect(
+                self.object.get_absolute_url()
+            )
+        else:
+            return self.render_to_response(
+                self.get_context_data(
+                    form=form
+                )
+            )
+
+
+class AssayStudySetDataPlots(DetailView):
+    model = AssayStudySet
+    template_name = 'assays/assaystudyset_data_plots.html'
+
+
+class AssayStudySetReproducibility(DetailView):
+    model = AssayStudySet
+    template_name = 'assays/assaystudyset_reproducibility.html'
+
+
+# The queryset for this will be somewhat complicated...
+# TODO REVISE THE QUERYSET
+class AssayStudySetList(ListView):
+    model = AssayStudySet
+    template_name = 'assays/assaystudyset_list.html'
+
+
+# TODO CONSIDER DISPATCH
+class AssayStudySetData(DetailView):
+    """Returns a combined file for all data in a study set"""
+    model = AssayStudySet
+
+    def render_to_response(self, context, **response_kwargs):
+        # Make sure that the study exists, then continue
+        if self.object:
+            # TODO TODO TODO
+            studies = get_user_accessible_studies(self.request.user).filter(id__in=self.object.studies.all())
+            assays = self.object.assays.all()
+
+            matrix_items = AssayMatrixItem.objects.filter(study_id__in=studies)
+
+            matrix_items = matrix_items.filter(
+                assaydatapoint__study_assay_id__in=assays
+            ).distinct()
+
+            # If chip data
+            # Not particularly DRY
+            data_points = AssayDataPoint.objects.filter(
+                study_id__in=studies,
+                study_assay_id__in=assays
+            ).prefetch_related(
+                # TODO
+                'study__group__microphysiologycenter_set',
+                'matrix_item__assaysetupsetting_set__setting',
+                'matrix_item__assaysetupcell_set__cell_sample',
+                'matrix_item__assaysetupcell_set__density_unit',
+                'matrix_item__assaysetupcell_set__cell_sample__cell_type__organ',
+                'matrix_item__assaysetupcompound_set__compound_instance__compound',
+                'matrix_item__assaysetupcompound_set__concentration_unit',
+                'matrix_item__device',
+                'matrix_item__organ_model',
+                'matrix_item__matrix',
+                'study_assay__target',
+                'study_assay__method',
+                'study_assay__unit',
+                'sample_location',
+                # 'data_file_upload',
+                # Will use eventually, maybe
+                'subtarget'
+            ).filter(
+                replaced=False,
+                excluded=False,
+                value__isnull=False
+            ).order_by(
+                'matrix_item__name',
+                'study_assay__target__name',
+                'study_assay__method__name',
+                'time',
+                'sample_location__name',
+                'excluded',
+                'update_number'
+            )
+
+            data = get_data_as_csv(matrix_items, data_points=data_points, include_header=True)
+
+            # For specifically text
+            response = HttpResponse(data, content_type='text/csv')
+            response['Content-Disposition'] = 'attachment;filename=' + unicode(self.object) + '.csv'
 
             return response
         # Return nothing otherwise
