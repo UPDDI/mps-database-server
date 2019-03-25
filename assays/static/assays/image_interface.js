@@ -171,7 +171,7 @@ $(document).ready(function () {
     var table_elements = "<thead><tr><td style='font-weight: bold; width: .1%; white-space: nowrap;'>Chip/Well</td>";
     for (i=0; i<tableCols.length; i++) {
         var col = tableCols[i].replace(/\s/g, '').replace(/[,]/g, '');
-        table_elements += "<th style='white-space: nowrap;' data-column='" + col + "' class='text-center'>"+tableCols[i].toUpperCase()+"</th>";
+        table_elements += "<th style='white-space: nowrap;' data-column='" + col + "' class='text-center no-sort'>"+tableCols[i].toUpperCase()+"</th>";
     }
     table_elements += "</tr></thead><tbody>";
     for (i=0; i<tableRows.length; i++) {
@@ -306,13 +306,23 @@ $(document).ready(function () {
 
     image_table.dataTable({
         // columns: generateColumns(),
-        "ordering": false,
+        "ordering": true,
         "filter": false,
         "searching": false,
         dom: 'frt',
         fixedHeader: {headerOffset: 50},
         deferRender: true,
-        iDisplayLength: -1
+        iDisplayLength: -1,
+        "aoColumnDefs": [
+            {
+                "width": "10%",
+                "aTargets": [0]
+            },
+            {
+                orderable: false,
+                targets: "no-sort"
+            }
+        ]
     });
 
     // On keystroke, run search function.
@@ -329,10 +339,6 @@ $(document).ready(function () {
     function doSearch(backspace) {
         var query = $('#search-box').val().toUpperCase();
         var isChip = false;
-
-        // if (backspace) {
-        //     makeAllVisible();
-        // }
 
         // Always make everything visible again
         makeAllVisible();
@@ -418,18 +424,6 @@ $(document).ready(function () {
     // Collapsible Captions
     var lastX, indexInc, captionEndString = '';
     $(".caption").each(function(i, obj){
-        // if ($(obj).height() > 54){
-        //     $(obj).attr("data-text", $(obj).text());
-        //     obj.addEventListener("mouseover",function(){
-        //         $(obj).text($(obj).attr('data-text'));
-        //     });
-        //     obj.addEventListener("mouseout",function(){
-        //         $(obj).text($(obj).attr('data-text').substring(0,50)+'...');
-        //     });
-        //     $(obj).text($(obj).text().substring(0,50)+"...");
-        // } else {
-        //     $(obj).attr("data-text", $(obj).text());
-        // }
         if ($(obj).height() > 54){
             $(obj).attr("data-text-long", $(obj).text());
             lastX = $(obj).attr('data-text-long').lastIndexOf('x');
@@ -438,7 +432,7 @@ $(document).ready(function () {
                 indexInc += 1
             }
             captionEndString = $(obj).attr('data-text-long').substring(lastX-indexInc);
-            $(obj).attr("data-text-short", $(obj).attr('data-text-long').substring(0,50-captionEndString.length)+"..."+captionEndString);
+            $(obj).attr("data-text-short", $(obj).attr('data-text-long').substring(0,47-captionEndString.length)+"..."+captionEndString);
             $($(obj).parent())[0].addEventListener("mouseover",function(){
                 $(obj).text($(obj).attr('data-text-long'));
             });
@@ -452,18 +446,18 @@ $(document).ready(function () {
     });
 
     //TODO Unintelligently play with table sizing at different image quantities
-    // var mostImages = 0;
-    // $("td").each(function(index){
-    //     if ($(this).children().length > mostImages){
-    //         mostImages = $(this).children().length;
-    //     }
-    // });
-    // console.log(mostImages);
-    // console.log(tableCols.length);
-    // if (mostImages < 3 && tableCols.length < 4) {
-    //     console.log("Shrinking table");
-    //     console.log($("#fluid-content").width());
-    // }
+    var mostImages = 0;
+    $("td").each(function(index){
+        if ($(this).children().length > mostImages){
+            mostImages = $(this).children().length;
+        }
+    });
+    console.log(mostImages);
+    console.log(tableCols.length);
+    if (mostImages < 3 && tableCols.length < 4) {
+        console.log("Shrinking table");
+        console.log($("#fluid-content").width());
+    }
 
     // Escape Key closes dialog windows
     $(document).keydown(function(e) {
