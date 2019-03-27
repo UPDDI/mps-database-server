@@ -14,6 +14,10 @@
     <li class="active">Data Plots</li>
 {% endblock %}
 
+{% block sidebar %}
+    {% include 'assays/grouping_filtering.html' with charts="true" %}
+{% endblock %}
+
 {% block content %}
 <div class="row padded-row text-center padded-bottom large-padding-top">
     {% if user.id == object.created_by_id %}
@@ -46,8 +50,6 @@
     </div>
     </div>
 </div>
-
-{% include 'assays/grouping_filtering.html' %}
 
 {% include 'assays/chart_options.html' with chart_prefix="charts" chart_title="Selected Data" %}
 
