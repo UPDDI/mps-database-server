@@ -59,15 +59,8 @@ $(document).ready(function() {
         });
     }
 
-    // Setup triggers
-    $('#' + charts_name + 'chart_options').find('input').change(function() {
-        show_plots();
-    });
-
     // On load
-    $(document).ready(function() {
-        document.getElementById('id_current_url_input').value = window.location.href
-    });
+    document.getElementById('id_current_url_input').value = window.location.href
 
     // On click of copy to URL button (DEPRECATED)
     $('#id_copy_url_button').click(function() {

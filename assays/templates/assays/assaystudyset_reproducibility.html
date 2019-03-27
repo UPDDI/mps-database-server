@@ -7,11 +7,17 @@
 
 {% block load_js %}
     <script src="{% static "assays/grouping_filtering.js" %}"></script>
+    <script src="{% static "assays/inter_reproducibility.js" %}"></script>
+    <script src="{% static "assays/repro_triggers.js" %}"></script>
     <script src="{% static "assays/assaystudyset_reproducibility.js" %}"></script>
 {% endblock %}
 
 {% block breadcrumbs %}
     <li class="active">Reproducibility</li>
+{% endblock %}
+
+{% block sidebar %}
+    {% include 'assays/grouping_filtering.html' with repro="true" %}
 {% endblock %}
 
 {% block fluid-content %}
@@ -45,35 +51,6 @@
         </div>
     </div>
     </div>
-</div>
-
-{# TODO TODO TODO NEED GROUPING  AND FILTERING STUFF HERE TOO #}
-<div class="container">
-<div class="well">
-    {# TODO TODO TODO #}
-    <div class="row form-group">
-    <div class="col-sm-6 col-md-4">
-    <label class="radio-inline">
-        <input type="radio" name="inter_level" id="inter_level_by_center" value="1" checked>
-        By Center
-    </label>
-    <label class="radio-inline">
-        <input type="radio" name="inter_level" id="inter_level_by_study" value="0">
-        By Study
-    </label>
-    </div>
-    <div class="col-sm-6 col-md-4">
-    <label>
-        <input type="checkbox" name="initial_norm" id="initial_norm">
-        Normalize by Median Value
-    </label>
-    </div>
-    <div class="col-md-4">
-    <label>Maximum Interpolation Size</label>
-        <input id="max_interpolation_size" class="form-control" type="number" value="2" style="width: 75px; display: inline;">
-    </div>
-    </div>
-</div>
 </div>
 
 <div class="row padded-row">
