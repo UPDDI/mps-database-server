@@ -6,6 +6,7 @@
 {% endblock %}
 
 {% block load_js %}
+    <script src="{% static "assays/grouping_filtering.js" %}"></script>
     <script src="{% static "assays/assaystudyset_reproducibility.js" %}"></script>
 {% endblock %}
 
@@ -44,10 +45,6 @@
         </div>
     </div>
     </div>
-</div>
-
-<div class="container" id="grouping_filtering">
-    {% include 'assays/grouping_filtering.html' %}
 </div>
 
 {# TODO TODO TODO NEED GROUPING  AND FILTERING STUFF HERE TOO #}
