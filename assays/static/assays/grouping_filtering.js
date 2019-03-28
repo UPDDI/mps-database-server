@@ -705,13 +705,16 @@ $(document).ready(function () {
     //     }, 250);
     // });
 
-    if($(window).width() > 768) {
+    if ($(window).width() > 768) {
         $('#page').addClass('pushed');
         $('#sidebar').addClass('active');
 
         setTimeout(function() {
             $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
         }, 250);
+    }
+    else {
+        $('#autocollapse').width($(window).width());
     }
 
     // ON LOAD, PROCESS THE GET PARAMS AND APPLY TO ALL SUBMIT BUTTONS
