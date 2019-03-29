@@ -24,6 +24,8 @@ from compounds.forms import (
     CompoundPropertyInlineFormset
 )
 
+from django.utils.safestring import mark_safe
+
 
 class CompoundTargetInline(admin.TabularInline):
     """Admin Inline for Compound Targets"""
@@ -118,6 +120,7 @@ class CompoundAdmin(LockableAdmin):
                        'modified_by', 'modified_on', 'image_display')
     actions = ['update_fields']
 
+    @mark_safe
     def image_display(self, obj):
         if obj.chemblid:
             url = (

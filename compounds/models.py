@@ -1,6 +1,8 @@
 from django.db import models
 from mps.base.models import LockableModel
 
+from django.utils.safestring import mark_safe
+
 CHEMBL = None
 
 
@@ -223,6 +225,7 @@ class Compound(LockableModel):
     def __str__(self):
         return '{0}'.format(self.name)
 
+    @mark_safe
     def chembl_link(self):
         if self.chemblid:
             return ('<a href="https://www.ebi.ac.uk/chembl/compound/inspect/'
@@ -233,6 +236,7 @@ class Compound(LockableModel):
     chembl_link.allow_tags = True
     chembl_link.short_description = 'ChEMBL ID'
 
+    @mark_safe
     def thumb_src(self):
         if self.chemblid:
             return ('https://www.ebi.ac.uk/chembldb/compound/'
@@ -240,6 +244,7 @@ class Compound(LockableModel):
         else:
             return ''
 
+    @mark_safe
     def thumb(self):
         url = self.thumb_src()
         if url:

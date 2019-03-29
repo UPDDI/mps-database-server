@@ -28,6 +28,8 @@ from .forms import (
 
 from import_export.admin import ImportExportModelAdmin
 
+from django.utils.safestring import mark_safe
+
 
 class URLFieldWidget(AdminURLFieldWidget):
     """Widget for displaying URLs in Admin"""
@@ -117,6 +119,7 @@ class TrialSourceAdmin(LockableAdmin):
     )
     actions = ['update_fields']
 
+    @mark_safe
     def source_site(self, obj):
         return '<a href="%s" target="_blank">%s</a>' % (obj.source_website, obj.source_website)
 
@@ -137,6 +140,7 @@ class FindingResultInline(admin.TabularInline):
     readonly_fields = ['get_edit_link']
     extra = 0
 
+    @mark_safe
     def get_edit_link(self, obj=None):
         if obj.pk:  # if object has already been saved and has a primary key, show link to it
             url = reverse('admin:%s_%s_change' % (obj._meta.app_label, obj._meta.model_name), args=[force_text(obj.pk)])
@@ -197,12 +201,14 @@ class DrugTrialAdmin(LockableAdmin):
                        'modified_on', 'drug_display', 'figure1_display', 'figure2_display']
 
     # Display figures
+    @mark_safe
     def figure1_display(self, obj):
         if obj.id and obj.figure1:
             return '<img src="%s">' % \
                    obj.figure1.url
         return ''
 
+    @mark_safe
     def figure2_display(self, obj):
         if obj.id and obj.figure2:
             return '<img src="%s">' % \
@@ -211,6 +217,7 @@ class DrugTrialAdmin(LockableAdmin):
     figure1_display.allow_tags = True
     figure2_display.allow_tags = True
 
+    @mark_safe
     def drug_display(self, obj):
 
         if obj.compound.chemblid:
@@ -257,6 +264,7 @@ class DrugTrialAdmin(LockableAdmin):
     )
     inlines = [FindingResultInline]
 
+    @mark_safe
     def source_page(self, obj):
         return '<a href="%s" target="_blank">%s</a>' % (obj.source_link, obj.source_link)
     source_page.allow_tags = True
@@ -354,6 +362,7 @@ class FindingAdmin(LockableAdmin):
     )
     actions = ['update_fields']
 
+    @mark_safe
     def optional_link(self, obj):
         words = obj.description.split()
         sentence = ''

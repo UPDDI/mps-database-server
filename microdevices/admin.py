@@ -15,6 +15,8 @@ from.forms import MicrophysiologyCenterForm, GroupDeferralForm
 from django.urls import resolve
 from django.db.models.fields.files import FieldFile
 
+from django.utils.safestring import mark_safe
+
 
 class MicrophysiologyCenterAdmin(LockableAdmin):
     """Admin for Microphysiology Centers"""
@@ -56,6 +58,7 @@ class MicrophysiologyCenterAdmin(LockableAdmin):
         ),
     )
 
+    @mark_safe
     def center_site(self, obj):
         return '<a href="%s" target="_blank">%s</a>' % (obj.website, obj.website)
     center_site.allow_tags = True
@@ -90,6 +93,7 @@ class ManufacturerAdmin(LockableAdmin):
         ),
     )
 
+    @mark_safe
     def manufacturer_site(self, obj):
         return '<a href="%s" target="_blank">%s</a>' % (obj.website, obj.website)
     manufacturer_site.allow_tags = True
@@ -103,12 +107,14 @@ class MicrodeviceAdmin(LockableAdmin):
         js = ('microdevices/layout.js',)
         css = {'all': ('assays/customize_admin.css',)}
 
+    @mark_safe
     def device_image_display(self, obj):
         if obj.id and obj.device_image:
             return '<img src="%s">' % \
                    obj.device_image.url
         return ''
 
+    @mark_safe
     def device_cross_section_image_display(self, obj):
         if obj.id and obj.device_cross_section_image:
             return '<img src="%s">' % \

@@ -77,6 +77,8 @@ import pytz
 
 from import_export.admin import ImportExportModelAdmin
 
+from django.utils.safestring import mark_safe
+
 
 def modify_templates():
     """Writes totally new templates for chips and both types of plates"""
@@ -847,6 +849,7 @@ class AssayStudyAdmin(LockableAdmin):
         )
         return qs
 
+    @mark_safe
     def stakeholder_display(self, obj):
         contents = ''
         trigger = ''
@@ -875,6 +878,7 @@ class AssayStudyAdmin(LockableAdmin):
 
     stakeholder_display.allow_tags = True
 
+    @mark_safe
     def access_group_display(self, obj):
         contents = ''
         trigger = ''

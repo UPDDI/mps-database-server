@@ -3,6 +3,8 @@ from django.contrib.auth.admin import UserAdmin, GroupAdmin
 from django.contrib.auth.models import User, Group
 from .forms import MyUserChangeForm
 
+from django.utils.safestring import mark_safe
+
 
 class MyUserAdmin(UserAdmin):
     """Revised User Admin interface"""
@@ -28,6 +30,7 @@ class MyUserAdmin(UserAdmin):
         )
         return qs
 
+    @mark_safe
     def all_groups(self, obj):
         contents = ''
         trigger = ''
@@ -59,6 +62,7 @@ class MyGroupAdmin(GroupAdmin):
         )
         return qs
 
+    @mark_safe
     def all_users(self, obj):
         contents = ''
         trigger = ''

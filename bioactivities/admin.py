@@ -19,6 +19,8 @@ from .models import (
 from bioactivities.forms import AssayForm
 from bioactivities.forms import TargetsForm
 
+from django.utils.safestring import mark_safe
+
 # TODO TODO TODO allow_tags attribute has been removed
 
 
@@ -287,12 +289,14 @@ class BioactivityAdmin(LockableAdmin):
     ordering = ('compound', 'standard_name')
     raw_id_fields = ('compound', 'target', 'assay',)
 
+    @mark_safe
     def chembl_link(self, obj):
         return obj.assay.chembl_link()
 
     chembl_link.allow_tags = True
     chembl_link.short_description = 'CHEMBL Links'
 
+    @mark_safe
     def bioactivity_display(self, obj):
 
         if obj.compound.chemblid:

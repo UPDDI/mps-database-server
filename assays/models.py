@@ -10,6 +10,8 @@ from microdevices.models import (
 from mps.base.models import LockableModel, FlaggableModel, FlaggableRestrictedModel
 from django.contrib.auth.models import Group, User
 
+from django.utils.safestring import mark_safe
+
 import urllib.request, urllib.parse, urllib.error
 import collections
 
@@ -306,6 +308,7 @@ class AssayWellType(LockableModel):
     def __str__(self):
         return self.well_type
 
+    @mark_safe
     def colored_display(self):
         """Colored display for admin list view."""
 

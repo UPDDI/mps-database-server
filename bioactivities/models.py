@@ -1,6 +1,8 @@
 from django.db import models
 from mps.base.models import LockableModel
 
+from django.utils.safestring import mark_safe
+
 CHEMBL = None
 FIELDS = {
     'chemblId': 'chemblid',
@@ -85,6 +87,7 @@ class Target(LockableModel):
 
         return self.name
 
+    @mark_safe
     def chembl_link(self):
 
         if self.chemblid:
@@ -135,6 +138,7 @@ class Assay(LockableModel):
 
         return self.chemblid
 
+    @mark_safe
     def chembl_link(self):
 
         if self.chemblid:

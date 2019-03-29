@@ -17,6 +17,8 @@ from resources.forms import (
     DefinitionForm
 )
 
+from django.utils.safestring import mark_safe
+
 
 class ResourceAdmin(LockableAdmin):
     """Admin for Resource"""
@@ -52,6 +54,7 @@ class ResourceAdmin(LockableAdmin):
     )
     actions = ['update_fields']
 
+    @mark_safe
     def resource_site(self, obj):
         return '<a href="%s" target="_blank">%s</a>' % (obj.resource_website, obj.resource_website)
     resource_site.allow_tags = True

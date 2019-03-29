@@ -2,6 +2,8 @@ from django.db import models
 from mps.base.models import LockableModel
 from django.utils.html import format_html
 
+from django.utils.safestring import mark_safe
+
 
 class ResourceSubtype(LockableModel):
     """A Resource Subtype specifies a category (e.g. supplier, database, etc.
@@ -60,6 +62,7 @@ class Definition(LockableModel):
     def __str__(self):
         return self.term
 
+    @mark_safe
     def show_url(self):
         if self.reference:
             return format_html(
