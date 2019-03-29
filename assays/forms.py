@@ -710,7 +710,7 @@ class AssayMatrixForm(SignOffMixin, BootstrapForm):
         super(AssayMatrixForm, self).clean()
 
         if AssayMatrix.objects.filter(
-                study=self.instance.study,
+                study_id=self.instance.study.id,
                 name=self.cleaned_data.get('name', '')
         ).exclude(pk=self.instance.pk).count():
             raise forms.ValidationError({'name': ['Matrix name must be unique within study.']})
@@ -1034,7 +1034,7 @@ class AssaySetupCompoundInlineFormSet(BaseInlineFormSet):
                 instance.duration,
                 instance.addition_location_id
             ): True for instance in AssaySetupCompound.objects.filter(
-            matrix_item=matrix_item
+            matrix_item_id=matrix_item.id
             ).prefetch_related(
                 'compound_instance__compound',
                 'concentration_unit'
@@ -1335,7 +1335,7 @@ class AssayMatrixItemFullForm(SignOffMixin, BootstrapForm):
 
         # Make sure the barcode/ID is unique in the study
         if AssayMatrixItem.objects.filter(
-                study=self.instance.study,
+                study_id=self.instance.study.id,
                 name=self.cleaned_data.get('name')
         ).exclude(id=self.instance.id):
             raise forms.ValidationError({'name': ['ID/Barcode must be unique within study.']})

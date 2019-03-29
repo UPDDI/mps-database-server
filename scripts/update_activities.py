@@ -195,7 +195,7 @@ def run(days=180):
         for target in targets:
             current_bio = Bioactivity.objects.filter(
                 standard_name=bio_type,
-                target=target,
+                target_id=target.id,
                 standardized_value__isnull=False
             ).prefetch_related('target')
 

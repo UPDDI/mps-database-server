@@ -107,7 +107,7 @@ class AdverseEventDetail(DetailView):
         context = super(AdverseEventDetail, self).get_context_data(**kwargs)
 
         events = CompoundAdverseEvent.objects.filter(
-            compound=self.object
+            compound_id=self.object.id
         ).prefetch_related(
             'event__organ',
             'compound'

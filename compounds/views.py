@@ -44,7 +44,7 @@ class CompoundsDetail(DetailView):
         # If there is a compound
         if obj:
             # Get the associated targets
-            targets = CompoundTarget.objects.filter(compound=obj)
+            targets = CompoundTarget.objects.filter(compound_id=obj.id)
             # For each target, split up the actions so they can be individual labels
             for target in targets:
                 target.actions = [action for action in target.action.split(', ') if action]

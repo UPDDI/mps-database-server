@@ -115,7 +115,7 @@ class OrganModelProtocolInlineFormset(BaseInlineFormSet):
 
             # Make sure that no protocol in use is checked for deletion
             if protocol_id and delete_checked:
-                if AssayMatrixItem.objects.filter(organ_model_protocol=protocol_id):
+                if AssayMatrixItem.objects.filter(organ_model_protocol_id=protocol_id):
                     raise forms.ValidationError('You cannot remove protocols that are referenced by a chip/well.')
 
 

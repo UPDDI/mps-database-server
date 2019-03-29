@@ -525,7 +525,7 @@ def run():
         for target in targets:
             current_bio = PubChemBioactivity.objects.filter(
                 activity_name=bio_type,
-                assay__target=target
+                assay__target_id=target.id
             ).prefetch_related('assay__target')
 
             bio_pk = [bio.id for bio in current_bio]

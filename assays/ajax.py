@@ -1478,7 +1478,7 @@ def fetch_data_points(request):
     elif request.POST.get('study', ''):
         matrix_item = None
         study = AssayStudy.objects.get(pk=int(request.POST.get('study', None)))
-        matrix_items = AssayMatrixItem.objects.filter(study=study)
+        matrix_items = AssayMatrixItem.objects.filter(study_id=study.id)
         pre_filter.update({
             'matrix_item_id__in': matrix_items
         })
@@ -1502,7 +1502,7 @@ def fetch_data_points(request):
 
     # A little contrived
     assays = AssayStudyAssay.objects.filter(
-        study=study
+        study_id=study.id
     )
 
     # UGLY NOT DRY

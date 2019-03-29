@@ -601,7 +601,7 @@ class AssayStudyIndex(StudyViewerMixin, DetailView):
         context = super(AssayStudyIndex, self).get_context_data(**kwargs)
 
         matrices = AssayMatrix.objects.filter(
-            study=self.object
+            study_id=self.object.id
         ).prefetch_related(
             'assaymatrixitem_set',
             'created_by',
@@ -637,7 +637,7 @@ class AssayStudyIndex(StudyViewerMixin, DetailView):
 
         # Stakeholder status
         context['stakeholder_sign_off'] = AssayStudyStakeholder.objects.filter(
-            study=self.object,
+            study_id=self.object.id,
             signed_off_by_id=None,
             sign_off_required=True
         ).count() == 0
@@ -738,7 +738,7 @@ class AssayStudySignOff(UpdateView):
         # Check if user is a stakeholder admin ONLY IF SIGNED OFF
         if study.signed_off_by:
             stakeholders = AssayStudyStakeholder.objects.filter(
-                study=study
+                study_id=study.id
             ).prefetch_related(
                 'study',
                 'group',
@@ -795,7 +795,7 @@ class AssayStudySignOff(UpdateView):
 
             send_initial_sign_off_alert = False
             initial_number_of_required_sign_offs = AssayStudyStakeholder.objects.filter(
-                study=self.object,
+                study_id=self.object.id,
                 signed_off_by_id=None,
                 sign_off_required=True
             ).count()
@@ -813,7 +813,7 @@ class AssayStudySignOff(UpdateView):
                 save_forms_with_tracking(self, None, formset=[stakeholder_formset], update=True)
 
             current_number_of_required_sign_offs = AssayStudyStakeholder.objects.filter(
-                study=self.object,
+                study_id=self.object.id,
                 signed_off_by_id=None,
                 sign_off_required=True
             ).count()
@@ -836,7 +836,7 @@ class AssayStudySignOff(UpdateView):
                 stakeholder_admin_groups = {
                     group + ADMIN_SUFFIX: True for group in
                     AssayStudyStakeholder.objects.filter(
-                        study=self.object, sign_off_required=True
+                        study_id=self.object.id, sign_off_required=True
                     ).prefetch_related('group').values_list('group__name', flat=True)
                 }
 
@@ -873,7 +873,7 @@ class AssayStudySignOff(UpdateView):
                 stakeholder_viewer_groups = {
                     group: True for group in
                     AssayStudyStakeholder.objects.filter(
-                        study=self.object
+                        study_id=self.object.id
                     ).prefetch_related('group').values_list('group__name', flat=True)
                 }
                 initial_groups = list(stakeholder_viewer_groups.keys())
@@ -955,7 +955,7 @@ class AssayStudySignOff(UpdateView):
                     'assays/email/superuser_initial_sign_off_alert.txt',
                     {
                         'study': self.object,
-                        'stakeholders': AssayStudyStakeholder.objects.filter(study=self.object).order_by('-signed_off_date')
+                        'stakeholders': AssayStudyStakeholder.objects.filter(study_id=self.object.id).order_by('-signed_off_date')
                     }
                 )
 
@@ -970,7 +970,7 @@ class AssayStudySignOff(UpdateView):
                     'assays/email/superuser_stakeholder_alert.txt',
                     {
                         'study': self.object,
-                        'stakeholders': AssayStudyStakeholder.objects.filter(study=self.object).order_by('-signed_off_date')
+                        'stakeholders': AssayStudyStakeholder.objects.filter(study_id=self.object.id).order_by('-signed_off_date')
                     }
                 )
 
@@ -1078,9 +1078,9 @@ class AssayStudyDataUpload(ObjectGroupRequiredMixin, UpdateView):
                             current_value = False
 
                         if current_value:
-                            data_file_upload = AssayDataFileUpload.objects.filter(study=self.object, id=current_id)
+                            data_file_upload = AssayDataFileUpload.objects.filter(study_id=self.object.id, id=current_id)
                             if data_file_upload:
-                                data_points_to_replace = AssayDataPoint.objects.filter(data_file_upload=data_file_upload).exclude(replaced=True)
+                                data_points_to_replace = AssayDataPoint.objects.filter(data_file_upload__in=data_file_upload).exclude(replaced=True)
                                 data_points_to_replace.update(replaced=True)
 
             return redirect(self.object.get_absolute_url())
@@ -1260,7 +1260,7 @@ class AssayMatrixUpdate(StudyGroupMixin, UpdateView):
         # context['formset'] = AssayMatrixItemFormSetFactory(instance=self.object)
 
         matrix_item_queryset = AssayMatrixItem.objects.filter(
-            matrix=self.object
+            matrix_id=self.object.id
         ).order_by(
             'row_index',
             'column_index'
