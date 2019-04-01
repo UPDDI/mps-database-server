@@ -803,8 +803,12 @@ $(document).ready(function () {
         $.each($('#charting_options_tables').find('input'), function() {
             // var current_category = $(this).attr('data-category');
             var current_category = 'ajax_data';
-            // For radio and checkboxes
-            if (this.checked) {
+            // For checkboxes
+            if (this.type === 'checkbox') {
+                options[current_category][this.name] = this.checked ? 'true' : '';
+            }
+            // For radio
+            else if (this.type === 'radio' && this.checked) {
                 options[current_category][this.name] = this.value;
             }
             // For numeric

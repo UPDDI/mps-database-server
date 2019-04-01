@@ -1,5 +1,6 @@
 //Get token
 // var middleware_token = getCookie('csrftoken');
+// DEPRECATED: SLATED FOR DELETION
 
 function whittle(master,master_id,subject,next_model,next_filter) {
     // all_options is actually a deferred promise so that the variable is not assigned before AJAX over
