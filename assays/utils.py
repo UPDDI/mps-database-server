@@ -210,36 +210,6 @@ def unicode_csv_reader(in_file, dialect=csv.excel, **kwargs):
     return rows
 
 
-class UnicodeWriter:
-    """Used to write UTF-8 CSV files"""
-    def __init__(self, f, dialect=csv.excel, encoding="utf-8-sig", **kwds):
-        """Init the UnicodeWriter
-
-        Params:
-        f -- the file stream to write to
-        dialect -- the "dialect" of csv to use (default excel)
-        encoding -- the text encoding set to use (default utf-8)
-        """
-        self.queue = io.StringIO()
-        self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
-        self.stream = f
-        self.encoder = codecs.getincrementalencoder(encoding)()
-
-    def writerow(self, row):
-        """This function takes a Unicode string and encodes it to the output"""
-        self.writer.writerow([s.encode('utf-8') for s in row])
-        data = self.queue.getvalue()
-        data = data.decode('utf-8')
-        data = self.encoder.encode(data)
-        self.stream.write(data)
-        self.queue.truncate(0)
-
-    def writerows(self, rows):
-        """This function writes out all rows given"""
-        for row in rows:
-            self.writerow(row)
-
-
 def get_user_accessible_studies(user):
     """This function acquires a queryset of all studies the user has access to
 

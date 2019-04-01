@@ -41,7 +41,6 @@ from .forms import (
 )
 
 from .utils import (
-    UnicodeWriter,
     # REPLACED_DATA_POINT_CODE,
     # MATRIX_ITEM_PREFETCH,
     DEFAULT_EXPORT_HEADER,
@@ -55,6 +54,7 @@ from .utils import (
     intra_status_for_inter,
 )
 
+import csv
 from io import StringIO
 from django.shortcuts import get_object_or_404
 from mps.templatetags.custom_filters import ADMIN_SUFFIX, is_group_editor
@@ -451,7 +451,7 @@ def get_data_as_csv(ids, data_points=None, both_assay_names=False, include_heade
         data[index] = [str(item) for item in current_list]
 
     string_io = StringIO()
-    csv_writer = UnicodeWriter(string_io)
+    csv_writer = csv.writer(string_io, dialect=csv.excel)
     for one_line_of_data in data:
         csv_writer.writerow(one_line_of_data)
 
@@ -666,7 +666,7 @@ def get_control_data(
                         study_values = {}
 
                         for point in points:
-                            if truncate_negative and value < 0:
+                            if truncate_negative and point.value < 0:
                                 study_values.setdefault(point.study_id, []).append(0)
                             elif normalize_units:
                                 study_values.setdefault(point.study_id, []).append(point.value * point.study_assay.unit.scale_factor)
@@ -1161,7 +1161,7 @@ def get_data_points_for_charting(
                         study_values = {}
 
                         for point in points:
-                            if truncate_negative and value < 0:
+                            if truncate_negative and point.value < 0:
                                 study_values.setdefault(point.study_id, []).append(0)
                             else:
                                 study_values.setdefault(point.study_id, []).append(point.value)
