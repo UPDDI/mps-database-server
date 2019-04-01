@@ -640,9 +640,6 @@ def get_control_data(
 
         # No dynamic quality here
         if value is not None and (include_all or not excluded):
-            if truncate_negative and value < 0:
-                value = 0
-
             # TODO CONTROL DEFINITIONS WILL BECOME MORE COMPLICATED LATER
             # Check if the setup is marked a control chip
             if raw.matrix_item.test_type == 'control':
@@ -669,7 +666,9 @@ def get_control_data(
                         study_values = {}
 
                         for point in points:
-                            if normalize_units:
+                            if truncate_negative and value < 0:
+                                study_values.setdefault(point.study_id, []).append(0)
+                            elif normalize_units:
                                 study_values.setdefault(point.study_id, []).append(point.value * point.study_assay.unit.scale_factor)
                             else:
                                 study_values.setdefault(point.study_id, []).append(point.value)
@@ -956,28 +955,6 @@ def get_data_points_for_charting(
     if additional_data:
         raw_data.extend(additional_data)
 
-    # Don't bother with heatmaps at the moment
-    # if not matrix_item:
-    #     if not matrix_items:
-    #         heatmap_matrices = AssayMatrix.objects.filter(
-    #             study_id=study,
-    #             representation='plate'
-    #         )
-    #     else:
-    #         heatmap_matrices = AssayMatrix.objects.filter(
-    #             assaymatrixitem__in=matrix_items,
-    #             representation='plate'
-    #         )
-    #
-    #     heatmap_data = raw_data.filter(matrix_item__matrix_id__in=heatmap_matrices)
-    #
-    #     final_data.update({
-    #         'heatmap': get_data_for_heatmap(heatmap_data)
-    #     })
-    #
-    #     if key == 'device':
-    #         raw_data = raw_data.exclude(matrix_item__matrix_id__in=heatmap_matrices)
-
     assays_of_interest = AssayStudyAssay.objects.filter(study_id__in=study)
 
     target_method_pairs = {}
@@ -1062,8 +1039,6 @@ def get_data_points_for_charting(
 
         # TODO Should probably just use dynamic_excluded instead of quality for this
         if value is not None and not replaced and (include_all or not dynamic_excluded.get(str(raw.id), excluded)):
-            if truncate_negative and value < 0:
-                value = 0
             # Get tag for data point
             # If by compound
             if key == 'group':
@@ -1186,7 +1161,10 @@ def get_data_points_for_charting(
                         study_values = {}
 
                         for point in points:
-                            study_values.setdefault(point.study_id, []).append(point.value)
+                            if truncate_negative and value < 0:
+                                study_values.setdefault(point.study_id, []).append(0)
+                            else:
+                                study_values.setdefault(point.study_id, []).append(point.value)
 
                         for study_id, values in list(study_values.items()):
                             if len(values) > 1:
