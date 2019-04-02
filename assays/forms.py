@@ -461,7 +461,7 @@ class AssayStudyFormAdmin(BootstrapForm):
 
         groups_without_repeat = groups_with_center_full
 
-        if self.instance:
+        if self.instance and getattr(self.instance, 'group', ''):
             groups_without_repeat.exclude(pk=self.instance.group.id)
 
         self.fields['access_groups'].queryset = groups_without_repeat

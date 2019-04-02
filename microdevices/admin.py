@@ -271,42 +271,42 @@ class OrganModelAdmin(LockableAdmin):
     readonly_fields = ['created_by', 'created_on',
                        'modified_by', 'modified_on']
 
-    fieldsets = (
-        (
-            None, {
-                'fields': (
-                    (
-                        'name', 'organ', 'alt_name', 'base_model', 'model_type'
-                    ),
-                    (
-                        'disease', 'disease_trigger'
-                    ),
-                    (
-                        'device', 'description',
-                    ),
-                    (
-                        'mps', 'epa', 'tctc'
-                    ),
-                    (
-                        'model_image'
-                    ),
-                    (
-                        'references'
-                    )
-                )
-            }
-        ),
-        (
-            'Change Tracking', {
-                'fields': (
-                    'locked',
-                    ('created_by', 'created_on'),
-                    ('modified_by', 'modified_on'),
-                    ('signed_off_by', 'signed_off_date'),
-                )
-            }
-        )
-    )
+    # fieldsets = (
+    #     (
+    #         None, {
+    #             'fields': (
+    #                 (
+    #                     'name', 'organ', 'alt_name', 'base_model', 'model_type'
+    #                 ),
+    #                 (
+    #                     'disease', 'disease_trigger'
+    #                 ),
+    #                 (
+    #                     'device', 'description',
+    #                 ),
+    #                 (
+    #                     'mps', 'epa', 'tctc'
+    #                 ),
+    #                 (
+    #                     'model_image'
+    #                 ),
+    #                 (
+    #                     'references'
+    #                 )
+    #             )
+    #         }
+    #     ),
+    #     (
+    #         'Change Tracking', {
+    #             'fields': (
+    #                 'locked',
+    #                 ('created_by', 'created_on'),
+    #                 ('modified_by', 'modified_on'),
+    #                 ('signed_off_by', 'signed_off_date'),
+    #             )
+    #         }
+    #     )
+    # )
 
     actions = ['update_fields']
     save_on_top = True

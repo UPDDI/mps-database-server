@@ -907,30 +907,23 @@ class AssayStudyAdmin(LockableAdmin):
         datetime_now_local = datetime.now(tz)
         fourteen_days_from_date = datetime_now_local + timedelta(days=14)
 
-        initial_study = AssayStudy.objects.get(pk=form.instance.id)
-        initial_sign_off = initial_study.signed_off_by
-        initial_restricted = initial_study.restricted
-        initial_required_stakeholders = AssayStudyStakeholder.objects.filter(
-            study_id=initial_study.id,
-            signed_off_by_id=None,
-            sign_off_required=True
-        )
-        initial_required_stakeholder_group_ids = list(initial_required_stakeholders.values_list('group_id', flat=True))
-        previous_access_groups = {group.name: group.id for group in initial_study.access_groups.all()}
-
-        viewer_subject = 'Study {0} Now Available for Viewing'.format(initial_study)
-
-        if change:
-            initial_number_of_required_sign_offs = initial_required_stakeholders.count()
-        else:
-            initial_number_of_required_sign_offs = 0
-
         send_initial_sign_off_alert = False
 
         # SAVE FORM HERE
         # TODO TODO TODO
 
         if change:
+            initial_study = AssayStudy.objects.get(pk=form.instance.id)
+            initial_sign_off = initial_study.signed_off_by
+            initial_restricted = initial_study.restricted
+            initial_required_stakeholders = AssayStudyStakeholder.objects.filter(
+                study_id=initial_study.id,
+                signed_off_by_id=None,
+                sign_off_required=True
+            )
+            initial_required_stakeholder_group_ids = list(initial_required_stakeholders.values_list('group_id', flat=True))
+            previous_access_groups = {group.name: group.id for group in initial_study.access_groups.all()}
+
             obj = form.save()
             obj.modified_by = request.user
             obj.save()
@@ -939,9 +932,23 @@ class AssayStudyAdmin(LockableAdmin):
                 send_initial_sign_off_alert = True
 
         else:
+            initial_study = form.instance
+            initial_sign_off = initial_study.signed_off_by
+            initial_restricted = initial_study.restricted
+            initial_required_stakeholders = AssayStudyStakeholder.objects.none()
+            initial_required_stakeholder_group_ids = list(initial_required_stakeholders.values_list('group_id', flat=True))
+            previous_access_groups = {}
+
             obj = form.save()
             obj.modified_by = obj.created_by = request.user
             obj.save()
+
+        if change:
+            initial_number_of_required_sign_offs = initial_required_stakeholders.count()
+        else:
+            initial_number_of_required_sign_offs = 0
+
+        viewer_subject = 'Study {0} Now Available for Viewing'.format(initial_study)
 
         # SAVE FORMSETS HERE
         # TODO TODO TODO
