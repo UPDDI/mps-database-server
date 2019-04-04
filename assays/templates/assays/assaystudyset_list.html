@@ -16,26 +16,29 @@
                 Study Sets
             </h2>
         </legend>
-        <div>
-            <table id="study_sets" class="display" cellspacing="0" width="100%" hidden>
-                <thead>
-                    <tr>
-                        <th>View Details</th>
-                        <th>Name</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
 
-                <tbody>
-                {% for study_set in object_list %}
-                     <tr id="{{ study_set.id }}">
-                        <td><a class="btn btn-primary" href="{{ study_set.id }}">View</a></td>
-                        <td>{{ study_set.name }}</td>
-                        <td>{{ study_set.description }}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <div class="row text-center padded-bottom">
+            <a href="{% url 'assaystudyset-add' %}" class="btn btn-lg btn-success" role="button">Create Study Set</a>
         </div>
+
+        <table id="study_sets" class="display" cellspacing="0" width="100%" hidden>
+            <thead>
+                <tr>
+                    <th>View Details</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for study_set in object_list %}
+                 <tr id="{{ study_set.id }}">
+                    <td><a class="btn btn-primary" href="{{ study_set.id }}">View</a></td>
+                    <td>{{ study_set.name }}</td>
+                    <td>{{ study_set.description }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
 {% endblock %}
