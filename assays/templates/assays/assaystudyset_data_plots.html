@@ -19,7 +19,7 @@
     {% include 'assays/grouping_filtering.html' with charts="true" %}
 {% endblock %}
 
-{% block content %}
+{% block fluid-content %}
 <div class="row padded-row text-center padded-bottom large-padding-top">
     {% if user.id == object.created_by_id %}
     <a href="/assays/assaystudyset/{{ object.id}}/update" type="button" class="btn btn-xlarge btn-primary text-center submit-button" id="download_submit">
