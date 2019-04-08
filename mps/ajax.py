@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 # Kind of a weird import, probably should have a utils file or something
 from .views import get_search_queryset_with_permissions
-import urllib
+import html
 
 
 def main(request):
@@ -43,8 +43,8 @@ def fetch_global_search_suggestions(request):
     for suggestion in suggestions[:10]:
         # data.append(suggestion.suggestion)
         data.append({
-            'label': urllib.parse.unquote(suggestion.text.split('\n')[0]),
-            'value': urllib.parse.unquote(suggestion.text.split('\n')[1])
+            'label': html.unescape(suggestion.text.split('\n')[0]),
+            'value': html.unescape(suggestion.text.split('\n')[1])
         })
 
     return HttpResponse(json.dumps(data),
