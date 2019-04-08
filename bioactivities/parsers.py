@@ -849,8 +849,9 @@ def heatmap(request):
     # generate csv writers for each file handle
     data_csv_writer = csv.writer(data_csv_filehandle)
 
+    # NOTE THE UTF-8 BOM
     # write out our data lists into csv format
-    data_csv_writer.writerow(['compound', 'bioactivity', 'value'])
+    data_csv_writer.writerow(['\ufeffcompound', 'bioactivity', 'value'])
     data_csv_writer.writerows(rearranged_data.values.tolist())
 
     # close the csv files that we have written so far

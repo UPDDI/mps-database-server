@@ -452,6 +452,11 @@ def get_data_as_csv(ids, data_points=None, both_assay_names=False, include_heade
 
     string_io = StringIO()
     csv_writer = csv.writer(string_io, dialect=csv.excel)
+
+    # Add the UTF-8 BOM
+    data[0][0] = '\ufeff' + data[0][0]
+
+    # Write the lines
     for one_line_of_data in data:
         csv_writer.writerow(one_line_of_data)
 
