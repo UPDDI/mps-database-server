@@ -17,6 +17,7 @@ from django.views.generic.base import TemplateView
 
 from microdevices.models import MicrophysiologyCenter
 from mps.templatetags.custom_filters import ADMIN_SUFFIX, VIEWER_SUFFIX
+import html
 
 
 def main(request):
@@ -91,6 +92,13 @@ def get_search_queryset_with_permissions(request):
 # A generic use of the search_view_factory
 def custom_search(request):
     # Filter on group: either get all with no group or those with a group the user has
+    request.GET = request.GET.copy()
+    request.GET.update({
+        # EXCEEDINGLY CRUDE
+        'q': html.escape(
+            request.GET.get('q', '')
+        ).replace('&#x27;', '&#39;')
+    })
     sqs = get_search_queryset_with_permissions(request)
 
     view = search_view_factory(
