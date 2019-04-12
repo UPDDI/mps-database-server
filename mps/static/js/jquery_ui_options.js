@@ -22,8 +22,8 @@ $(document).ready(function () {
         },
         create: function() {
             if ($(window).width() < 900) {
-                $(this).dialog('option', 'width', $(window).width() * 0.5);
-                $(this).dialog('option', 'height', $(window).height() * 0.70);
+                $(this).dialog('option', 'width', $(window).width() * 0.75);
+                $(this).dialog('option', 'height', $(window).height() * 0.75);
             }
         }
     });
