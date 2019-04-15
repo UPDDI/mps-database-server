@@ -157,6 +157,8 @@
 
     {% include 'assays/group_table.html' %}
 
+    {% include 'assays/reference_table.html' with references_set=object.assaystudyreference_set %}
+
     {% if object.assaystudysupportingdata_set.count %}
         <legend>Supporting Data</legend>
 
