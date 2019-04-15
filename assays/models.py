@@ -2610,3 +2610,53 @@ class AssayStudySet(FlaggableModel):
 
     def __str__(self):
         return self.name
+
+
+class AssayReference(FlaggableModel):
+    pubmed_id = models.CharField(verbose_name='PubMed ID', max_length=20, unique=True)
+    title = models.CharField(verbose_name='Title', max_length=255, default='')
+    authors = models.CharField(verbose_name='Authors', max_length=255, default='')
+    abstract = models.CharField(verbose_name='Abstract', max_length=4000, default='')
+    publication = models.CharField(verbose_name='Publication', max_length=255, default='')
+    doi = models.CharField(verbose_name='DOI', max_length=100, default='', unique=True)
+
+    def get_metadata(self):
+        return {
+            'pubmed_id': self.pubmed_id,
+            'title': self.title,
+            'authors': self.authors,
+            'abstract': self.abstract,
+            'publication': self.publication,
+            'doi': self.doi,
+        }
+
+    def __str__(self):
+        return '{}'.format(self.pubmed_id)
+
+    def get_post_submission_url(self):
+        return '/assays/references/'
+
+
+class AssayStudyReference(models.Model):
+    class Meta(object):
+        unique_together = [
+            (
+                'reference',
+                'reference_for'
+            )
+        ]
+
+    reference = models.ForeignKey(AssayReference, on_delete=models.CASCADE)
+    reference_for = models.ForeignKey(AssayStudy, on_delete=models.CASCADE)
+
+# TODO TODO TODO
+# class AssayStudySetReference(models.Model):
+    # class Meta(object):
+    #     unique_together = [
+    #         (
+    #             'reference',
+    #             'reference_for'
+    #         )
+    #     ]
+#     reference = models.ForeignKey(AssayReference, on_delete=models.CASCADE)
+#     reference_for = models.ForeignKey(AssayStudySet, on_delete=models.CASCADE)

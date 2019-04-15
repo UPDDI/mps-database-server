@@ -3,7 +3,7 @@
 from django.db import models
 from django.contrib.auth.models import Group
 
-from mps.base.models import LockableModel, TrackableModel
+from mps.base.models import LockableModel, TrackableModel, FlaggableModel
 from django.core.validators import MaxValueValidator
 
 
@@ -297,3 +297,29 @@ class OrganModelLocation(models.Model):
 #
 #     def __str__(self):
 #         return self.name
+
+
+class OrganModelReference(models.Model):
+    class Meta(object):
+        unique_together = [
+            (
+                'reference',
+                'reference_for'
+            )
+        ]
+
+    reference = models.ForeignKey('assays.AssayReference', on_delete=models.CASCADE)
+    reference_for = models.ForeignKey(OrganModel, on_delete=models.CASCADE)
+
+
+class MicrodeviceReference(models.Model):
+    class Meta(object):
+        unique_together = [
+            (
+                'reference',
+                'reference_for'
+            )
+        ]
+
+    reference = models.ForeignKey('assays.AssayReference', on_delete=models.CASCADE)
+    reference_for = models.ForeignKey(Microdevice, on_delete=models.CASCADE)

@@ -1,0 +1,86 @@
+{{ reference_formset.management_form }}
+<legend>References</legend>
+
+{% if reference_formset.non_form_errors %}
+    <div class="alert alert-danger" role="alert">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        <span class="sr-only">Error:</span>
+        {{ reference_formset.non_form_errors }}
+    </div>
+{% endif %}
+
+{% if reference_formset.errors %}
+    {% for dict in reference_formset.errors %}
+        {% for key,value in dict.items %}
+            {% if key %}
+                <div class="alert alert-danger" role="alert">
+                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                    <span class="sr-only">Error:</span>
+                    {{ forloop.parentloop.counter }}.) {{ key }} : {{ value }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+{% endif %}
+
+<a id="add_button-{{ reference_formset.prefix }}" class="btn btn-success" role="button">Add Reference</a>
+<table class="table table-striped inlines" id="{{ reference_formset.prefix }}-group" name="{{ reference_formset.prefix }}">
+    <thead>
+        <tr>
+            <th>PubMed ID</th>
+            <th>Title</th>
+            <th>Authors</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for reference in reference_formset %}
+            <tr class="inline reference-row" id="reference-{{ forloop.counter0 }}">
+                {% if reference.id.value %}
+                <td class="original" hidden>
+                    <input id="id_{{ reference_formset.prefix }}-{{ forloop.counter0 }}-id" name="{{ reference_formset.prefix }}-{{ forloop.counter0 }}-id" type="hidden" value="{{ reference.id.value }}">
+                </td>
+                {% endif %}
+                <td>
+                    <span data-reference-field="pubmed_id"></span>
+                    <input class="reference-id-field" readonly="readonly" id="id_{{ reference_formset.prefix }}-{{ forloop.counter0 }}-reference"
+                           name="{{ reference_formset.prefix }}-{{ forloop.counter0 }}-reference" size="5" value="{{ reference.reference.value|default_if_none:'' }}" hidden>
+                    <button id='search-{{ forloop.counter0 }}-' type="button" class="btn btn-xs btn-primary open-reference-dialog">
+                        <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                    </button>
+                </td>
+                <td data-reference-field="title"></td>
+                <td data-reference-field="authors"></td>
+                <td>{{ reference.DELETE }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div hidden id="dialog" title="Choose a Reference">
+<table id="reference_table" class="table table-striped">
+    <thead>
+        <tr>
+            <th>Select</th>
+            <th hidden>ID #</th>
+            <th>PubMed ID</th>
+            <th>Title</th>
+            <th>Authors</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for reference in reference_queryset %}
+        <tr class="reference">
+            <td>
+                <button type="button" class="reference-selector btn btn-xs btn-primary" data-reference-id="{{ reference.id }}" id="reference_{{ reference.id }}" name="{{ reference }}">Select</button>
+            </td>
+            <td data-reference-field="id" hidden>{{ reference.id }}</td>
+            <td data-reference-field="pubmed_id">{{ reference.pubmed_id }}</td>
+            <td data-reference-field="title">{{ reference.title }}</td>
+            <td data-reference-field="authors">{{ reference.authors }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>

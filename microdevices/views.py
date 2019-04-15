@@ -2,12 +2,13 @@ from django.views.generic import DetailView, CreateView, UpdateView, ListView, T
 from django.shortcuts import redirect
 from django import forms
 
-from .forms import MicrodeviceForm, OrganModelForm, OrganModelProtocolFormsetFactory, OrganModelLocationFormsetFactory
+from .forms import MicrodeviceForm, OrganModelForm, OrganModelProtocolFormsetFactory, OrganModelLocationFormsetFactory, OrganModelReferenceFormSetFactory, MicrodeviceReferenceFormSetFactory
 from .models import Microdevice, OrganModel, ValidatedAssay, OrganModelProtocol, MicrophysiologyCenter
 from mps.mixins import SpecificGroupRequiredMixin, PermissionDenied, user_is_active
 from mps.base.models import save_forms_with_tracking
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
+from assays.models import AssayReference
 
 
 class OrganModelList(ListView):
@@ -65,12 +66,28 @@ class MicrodeviceAdd(SpecificGroupRequiredMixin, CreateView):
 
     required_group_name = 'Add Microdevices Front'
 
+    def get_context_data(self, **kwargs):
+        context = super(MicrodeviceAdd, self).get_context_data(**kwargs)
+        if self.request.POST:
+            if 'reference_formset' not in context:
+                context['reference_formset'] = MicrodeviceReferenceFormSetFactory(self.request.POST)
+        else:
+            context['reference_formset'] = MicrodeviceReferenceFormSetFactory()
+
+        context['reference_queryset'] = AssayReference.objects.all()
+
+        return context
+
     def form_valid(self, form):
-        if form.is_valid():
-            save_forms_with_tracking(self, form, formset=False, update=False)
+        reference_formset = MicrodeviceReferenceFormSetFactory(
+            self.request.POST,
+            instance=form.instance
+        )
+        if form.is_valid() and reference_formset.is_valid():
+            save_forms_with_tracking(self, form, formset=[reference_formset], update=False)
             return redirect(self.object.get_post_submission_url())
         else:
-            return self.render_to_response(self.get_context_data(form=form))
+            return self.render_to_response(self.get_context_data(form=form, reference_formset=reference_formset))
 
 
 class MicrodeviceUpdate(SpecificGroupRequiredMixin, UpdateView):
@@ -83,15 +100,27 @@ class MicrodeviceUpdate(SpecificGroupRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(MicrodeviceUpdate, self).get_context_data(**kwargs)
+        if self.request.POST:
+            if 'reference_formset' not in context:
+                context['reference_formset'] = MicrodeviceReferenceFormSetFactory(self.request.POST, instance=self.object)
+        else:
+            context['reference_formset'] = MicrodeviceReferenceFormSetFactory(instance=self.object)
+
+        context['reference_queryset'] = AssayReference.objects.all()
         context['update'] = True
+
         return context
 
     def form_valid(self, form):
-        if form.is_valid():
-            save_forms_with_tracking(self, form, formset=False, update=True)
+        reference_formset = MicrodeviceReferenceFormSetFactory(
+            self.request.POST,
+            instance=self.object
+        )
+        if form.is_valid() and reference_formset.is_valid():
+            save_forms_with_tracking(self, form, formset=[reference_formset], update=True)
             return redirect(self.object.get_post_submission_url())
         else:
-            return self.render_to_response(self.get_context_data(form=form))
+            return self.render_to_response(self.get_context_data(form=form, reference_formset=reference_formset))
 
 
 class OrganModelAdd(SpecificGroupRequiredMixin, CreateView):
@@ -108,9 +137,13 @@ class OrganModelAdd(SpecificGroupRequiredMixin, CreateView):
             if self.request.POST:
                 context['protocol_formset'] = OrganModelProtocolFormsetFactory(self.request.POST, self.request.FILES)
                 context['location_formset'] = OrganModelLocationFormsetFactory(self.request.POST, self.request.FILES)
+                context['reference_formset'] = OrganModelReferenceFormSetFactory(self.request.POST)
             else:
                 context['protocol_formset'] = OrganModelProtocolFormsetFactory()
                 context['location_formset'] = OrganModelLocationFormsetFactory()
+                context['reference_formset'] = OrganModelReferenceFormSetFactory()
+
+        context['reference_queryset'] = AssayReference.objects.all()
 
         return context
 
@@ -124,8 +157,12 @@ class OrganModelAdd(SpecificGroupRequiredMixin, CreateView):
             self.request.POST,
             instance=form.instance
         )
-        if form.is_valid() and protocol_formset.is_valid() and location_formset.is_valid():
-            save_forms_with_tracking(self, form, formset=[protocol_formset, location_formset], update=False)
+        reference_formset = OrganModelReferenceFormSetFactory(
+            self.request.POST,
+            instance=form.instance
+        )
+        if form.is_valid() and protocol_formset.is_valid() and location_formset.is_valid() and reference_formset.is_valid():
+            save_forms_with_tracking(self, form, formset=[protocol_formset, location_formset, reference_formset], update=False)
 
             # Update the base model to be self-referential if it is missing
             if not form.instance.base_model_id:
@@ -137,7 +174,8 @@ class OrganModelAdd(SpecificGroupRequiredMixin, CreateView):
             return self.render_to_response(self.get_context_data(
                 form=form,
                 protocol_formset=protocol_formset,
-                location_formset=location_formset
+                location_formset=location_formset,
+                reference_formset=reference_formset
             ))
 
 
@@ -176,10 +214,16 @@ class OrganModelUpdate(UpdateView):
                     self.request.POST,
                     instance=self.object
                 )
+                context['reference_formset'] = OrganModelReferenceFormSetFactory(
+                    self.request.POST,
+                    instance=self.object
+                )
             else:
                 context['protocol_formset'] = OrganModelProtocolFormsetFactory(instance=self.object)
                 context['location_formset'] = OrganModelLocationFormsetFactory(instance=self.object)
+                context['reference_formset'] = OrganModelReferenceFormSetFactory(instance=self.object)
 
+        context['reference_queryset'] = AssayReference.objects.all()
         context['update'] = True
 
         return context
@@ -194,8 +238,12 @@ class OrganModelUpdate(UpdateView):
             self.request.POST,
             instance=form.instance
         )
-        if form.is_valid() and protocol_formset.is_valid() and location_formset.is_valid():
-            save_forms_with_tracking(self, form, formset=[protocol_formset, location_formset], update=True)
+        reference_formset = OrganModelReferenceFormSetFactory(
+            self.request.POST,
+            instance=form.instance
+        )
+        if form.is_valid() and protocol_formset.is_valid() and location_formset.is_valid() and reference_formset.is_valid():
+            save_forms_with_tracking(self, form, formset=[protocol_formset, location_formset, reference_formset], update=True)
 
             # Update the base model to be self-referential if it is missing
             if not form.instance.base_model_id:
@@ -207,7 +255,8 @@ class OrganModelUpdate(UpdateView):
             return self.render_to_response(self.get_context_data(
                 form=form,
                 protocol_formset=protocol_formset,
-                location_formset=location_formset
+                location_formset=location_formset,
+                reference_formset=reference_formset
             ))
 
 
