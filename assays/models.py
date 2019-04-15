@@ -2657,8 +2657,8 @@ class AssayReference(FlaggableModel):
             'doi': self.doi,
         }
 
-    def __unicode__(self):
-        return u'{}'.format(self.pubmed_id)
+    def __str__(self):
+        return '{}'.format(self.pubmed_id)
 
     def get_post_submission_url(self):
         return '/assays/references/'
