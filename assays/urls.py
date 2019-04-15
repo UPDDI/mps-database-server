@@ -38,7 +38,10 @@ from assays.views import (
     AssayStudySetDataPlots,
     AssayStudySetReproducibility,
     AssayStudySetList,
-    AssayStudySetData
+    AssayStudySetData,
+    AssayReferenceList,
+    AssayReferenceAdd,
+    AssayReferenceUpdate
 )
 import assays.ajax
 
@@ -139,6 +142,11 @@ urlpatterns = [
 
     # Data from filters
     url(r'^assays/data_from_filters/$', AssayDataFromFilters.as_view(), name='data-from-filters'),
+
+    # References
+    url(r'^assays/references/$', AssayReferenceList.as_view(), name='assay-reference-list'),
+    url(r'^assays/references/add/$', AssayReferenceAdd.as_view(), name='assay-reference-add'),
+    url(r'^assays/references/(?P<pk>[0-9]+)/update/$', AssayReferenceUpdate.as_view(), name='assay-reference-update'),
 
     # Ajax
     url(r'^assays_ajax/$', assays.ajax.ajax),

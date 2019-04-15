@@ -72,6 +72,8 @@ import numpy as np
 from scipy.stats.mstats import gmean
 from scipy.stats import iqr
 
+from bs4 import BeautifulSoup
+import requests
 import re
 
 import logging
@@ -3374,6 +3376,52 @@ def study_editor_validation(request):
         return False
 
 
+def get_pubmed_reference_data(request):
+    """Returns a dictionary of PubMed data given a PubMed ID"""
+    data = {}
+    pubmedid = None
+    if request.POST.get('pubmedid', ''):
+        pubmedid = request.POST.get('pubmedid')
+    # Get URL of target for scrape
+    url = u'https://www.ncbi.nlm.nih.gov/pubmed/{}'.format(pubmedid)
+    # Make the http request
+    response = requests.get(url)
+    # Get the webpage as text
+    stuff = response.text
+    # Make a BeatifulSoup object
+    soup = BeautifulSoup(stuff, 'html5lib')
+
+    # Get Title
+    if soup.find_all("div", {"class": "abstract"}):
+        data['title'] = soup.select(".abstract > h1")[0].get_text()
+
+    # Get Authors
+    if soup.find_all("div", {"class": "auths"}):
+        data['authors'] = ", ".join([x.get_text() for x in soup.select(".abstract > .auths > a")])
+
+    # Get Abstract
+    if soup.find_all("div", {"class": "abstr"}):
+        if soup.find_all("div", {"class": "abstr_eng"}):
+            data['abstract'] = soup.select(".abstract > .abstr > .abstr_eng")[0].get_text()
+        else:
+            data['abstract'] = soup.select(".abstract > .abstr")[0].get_text()[8:]
+    else:
+        data['abstract'] = 'None'
+
+    # Get Publication
+    if soup.find_all("div", {"class": "cit"}):
+        data['publication'] = soup.select(".abstract > .cit > a")[0].get_text()
+
+    # Get DOI
+    if soup.find_all("dl", {"class": "rprtid"}):
+        data['doi'] = soup.select(".rprtid dd a")[0].get_text()
+    else:
+        data['doi'] = ""
+
+    return HttpResponse(json.dumps(data),
+                        content_type="application/json")
+
+
 # TODO TODO TODO
 switch = {
     'fetch_center_id': {'call': fetch_center_id},
@@ -3412,6 +3460,9 @@ switch = {
     },
     'fetch_data_points_from_study_set': {
         'call': fetch_data_points_from_study_set
+    },
+    'get_pubmed_reference_data': {
+        'call': get_pubmed_reference_data
     },
 }
 

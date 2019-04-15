@@ -6,6 +6,7 @@
     <script src="{% static "js/enter_override.js" %}"></script>
     <script src="{% static "microdevices/layout.js" %}"></script>
     <script src="{% static "microdevices/microdevice_add.js" %}"></script>
+    <script src="{% static "assays/reference_selection.js" %}"></script>
 {% endblock %}
 
 {% block load_css %}
@@ -187,6 +188,8 @@
         {{ form.number_of_columns }}
     </div>
 </div>
+
+{% include 'add_reference.html' %}
 
 {# These fields are deprecated #}
 {#<div class="form-group">#}
