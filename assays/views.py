@@ -2123,6 +2123,11 @@ class AssayReferenceAdd(OneGroupRequiredMixin, CreateView):
     template_name = 'assays/assayreference_add.html'
     form_class = AssayReferenceForm
 
+    def get_context_data(self, **kwargs):
+        context = super(AssayReferenceAdd, self).get_context_data(**kwargs)
+        context['update'] = False
+        return context
+
     def form_valid(self, form):
         if form.is_valid():
             save_forms_with_tracking(self, form, formset=[], update=False)
@@ -2131,7 +2136,12 @@ class AssayReferenceAdd(OneGroupRequiredMixin, CreateView):
             return self.render_to_response(self.get_context_data(form=form))
 
 
-class AssayReferenceUpdate(OneGroupRequiredMixin, UpdateView):
+class AssayReferenceDetail(DetailView):
+    model = AssayReference
+    template_name = 'assays/assayreference_detail.html'
+
+
+class AssayReferenceUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
     model = AssayReference
     template_name = 'assays/assayreference_add.html'
     form_class = AssayReferenceForm
