@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block breadcrumbs %}
+    {% if update %}
+    <li><a href="assays/references">References</a></li>
+    {% else %}
+    <li><a href="..">References</a></li>
+    {% endif %}
+    <li class="active">
+        View Reference
+    </li>
+{% endblock %}
+
+{% block content %}
+    <h1>
+        View Reference
+    </h1>
+    <br>
+
+    <div>
+        <div id="ref_pubmed_id" class="row padded-bottom">
+            <div class="col-sm-2">
+                <label class="pull-right">PubMed ID</label>
+            </div>
+            <div class="col-sm-10"><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{ object.pubmed_id }}" target="_blank">{{ object.pubmed_id }}</a></div>
+        </div>
+        <div id="ref_title" class="row padded-bottom">
+            <div class="col-sm-2">
+                <label class="pull-right">Title</label>
+            </div>
+            <div class="col-sm-10">{{object.title}}</div>
+        </div>
+        <div id="ref_authors" class="row padded-bottom">
+            <div class="col-sm-2">
+                <label class="pull-right">Authors</label>
+            </div>
+            <div class="col-sm-10">{{object.authors}}</div>
+        </div>
+        <div id="ref_abstract" class="row padded-bottom">
+            <div class="col-sm-2">
+                <label class="pull-right">Abstract</label>
+            </div>
+            <div class="col-sm-10">{{object.abstract}}</div>
+        </div>
+        <div id="ref_publication" class="row padded-bottom">
+            <div class="col-sm-2">
+                <label class="pull-right">Publication</label>
+            </div>
+            <div class="col-sm-10">{{object.publication}}</div>
+        </div>
+        <div id="ref_doi" class="row padded-bottom">
+            <div class="col-sm-2">
+                <label class="pull-right">DOI</label>
+            </div>
+            <div class="col-sm-10"><a href="https://doi.org/{{ object.doi }}" target="_blank">{{ object.doi }}</a></div>
+        </div>
+    </div>
+
+    <br>
+{% endblock %}
