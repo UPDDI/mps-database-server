@@ -11,11 +11,11 @@
         {% for reference in references_set %}
             <tr>
                 <td>
-                    <a target="_blank" href="/assays/references/{{ reference.id }}/">
-                        {{ reference.title }}
+                    <a target="_blank" href="/assays/references/{{ reference.reference.id }}/">
+                        {{ reference.reference.title }}
                     </a>
                 </td>
-                <td>{{ reference.authors }}</td>
+                <td>{{ reference.reference.authors }}</td>
             </tr>
         {% endfor %}
     </tbody>

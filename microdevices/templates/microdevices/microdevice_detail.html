@@ -78,14 +78,19 @@
                     {% endif %}
                 </td>
             </tr>
+            {% if object.microdevicereference_set.count %}
             <tr>
                 <td>
                     <b>References</b>
                 </td>
                 <td>
-                    {{ object.references|linebreaksbr|default:'-No References Listed-' }}
+                    {% for reference in object.microdevicereference_set.all %}
+                        <a href="/assays/references/{{ reference.reference.id }}" target="_blank">{{ reference.reference.title }}</a><br>
+                    {% endfor %}
+                    {#{{ object.references|linebreaksbr|default:'-No References Listed-' }}#}
                 </td>
             </tr>
+            {% endif %}
         </tbody>
     </table>
 
