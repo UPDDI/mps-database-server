@@ -4,7 +4,6 @@
 {% block load_js %}
     <script src="{% static "assays/assayreference_add.js" %}"></script>
     <script src="{% static "assays/reference_selection.js" %}"></script>
-
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -14,7 +13,7 @@
     <li><a href="..">References</a></li>
     {% endif %}
     <li class="active">
-        Add Reference
+        {% if update %}Update{% else %}Add{% endif %} Reference
     </li>
 {% endblock %}
 
@@ -22,7 +21,7 @@
     <form class="form-horizontal" method="post" enctype="multipart/form-data">
 
         <h1>
-            Add Reference
+            {% if update%}Update{% else %}Add{% endif %} Reference
         <br>
         {% csrf_token %}
         </h1>
@@ -45,7 +44,8 @@
             {% endfor %}
         {% endif %}
 
-        <legend>PubMed ID</legend>
+        <br>
+
         {# <label for="pubmed_id" class="col-sm-2 control-label">PubMed ID</label>#}
         {# <textarea name="pubmed_id" rows="1" maxlength="200" id="pubmed_id" required="" class="form-control" cols="40"></textarea>#}
         {% include 'generic_field.html' with field=form.pubmed_id label="PubMed ID" %}

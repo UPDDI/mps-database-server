@@ -123,14 +123,19 @@
                 </td>
             </tr>
             {% endif %}
+            {% if object.organmodelreference_set.count %}
             <tr>
                 <td>
                     <b>References</b>
                 </td>
                 <td>
-                    {{ object.references|linebreaksbr }}
+                    {% for reference in object.organmodelreference_set.all %}
+                        <a href="/assays/references/{{ reference.reference.id }}" target="_blank">{{ reference.reference.title }}</a><br>
+                    {% endfor %}
+                    {#{{ object.references|linebreaksbr|default:'-No References Listed-' }}#}
                 </td>
             </tr>
+            {% endif %}
         </tbody>
     </table>
 
