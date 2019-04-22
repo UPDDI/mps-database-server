@@ -25,12 +25,14 @@
             <table id="references-table" class="table display" cellspacing="0" width="100%" hidden>
                 <thead>
                     <tr>
-                        <th>View/Edit</th>
+                        <th>View</th>
+                        <th>Edit</th>
                         <th>PubMed</th>
                         <th>Title</th>
                         <th>Authors</th>
                         <th>Abstract</th>
                         <th>Publication</th>
+                        <th>Year</th>
                         <th>DOI</th>
                     </tr>
                 </thead>
@@ -38,12 +40,14 @@
                 <tbody>
                 {% for reference in object_list %}
                      <tr>
-                        <td><a class="btn btn-primary" href="{% url 'assay-reference-update' reference.id %}">View/Edit</a></td>
+                        <td><a class="btn btn-primary" href="{% url 'assay-reference-detail' reference.id %}">View</a></td>
+                        <td><a class="btn btn-primary" href="{% url 'assay-reference-update' reference.id %}">Edit</a></td>
                         <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{ reference.pubmed_id }}" target="_blank">{{ reference.pubmed_id }}</a></td>
                         <td>{{ reference.title }}</td>
                         <td>{{ reference.authors }}</td>
                         <td>{{ reference.abstract }}</td>
                         <td>{{ reference.publication }}</td>
+                        <td>{{ reference.year }}</td>
                         <td><a href="https://doi.org/{{ reference.doi }}" target="_blank">{{ reference.doi }}</a></td>
                     </tr>
                 {% endfor %}

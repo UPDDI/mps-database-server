@@ -7,11 +7,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}
-    {% if update %}
-    <li><a href="assays/references">References</a></li>
-    {% else %}
-    <li><a href="..">References</a></li>
-    {% endif %}
+    <li><a href="{% url 'assay-reference-list' %}">References</a></li>
     <li class="active">
         {% if update %}Update{% else %}Add{% endif %} Reference
     </li>
@@ -48,7 +44,7 @@
 
         {# <label for="pubmed_id" class="col-sm-2 control-label">PubMed ID</label>#}
         {# <textarea name="pubmed_id" rows="1" maxlength="200" id="pubmed_id" required="" class="form-control" cols="40"></textarea>#}
-        {% include 'generic_field.html' with field=form.pubmed_id label="PubMed ID" %}
+        {% include 'generic_field.html' with field=form.query_term label="Query Term" %}
         <div class="row padded-bottom">
             <div class="col-sm-2"></div>
             <div class="col-sm-10">
@@ -61,10 +57,12 @@
         {% else %}
         <div class="hidden">
         {% endif %}
+            {% include 'generic_field.html' with field=form.pubmed_id label="PubMed ID" %}
             {% include 'generic_field.html' with field=form.title label="Title" %}
             {% include 'generic_field.html' with field=form.authors label="Authors" %}
             {% include 'generic_field.html' with field=form.abstract label="Abstract" %}
             {% include 'generic_field.html' with field=form.publication label="Publication" %}
+            {% include 'generic_field.html' with field=form.year label="Year" %}
             {% include 'generic_field.html' with field=form.doi label="DOI" %}
         </div>
 
@@ -75,6 +73,9 @@
     {% else %}
     <div>
     {% endif %}
+        <div id="ref_pubmed_id" class="row padded-bottom">
+
+        </div>
         <div id="ref_title" class="row padded-bottom">
 
         </div>
@@ -85,6 +86,9 @@
 
         </div>
         <div id="ref_publication" class="row padded-bottom">
+
+        </div>
+        <div id="ref_year" class="row padded-bottom">
 
         </div>
         <div id="ref_doi" class="row padded-bottom">

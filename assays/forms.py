@@ -1573,10 +1573,13 @@ class AssayStudySetForm(BootstrapForm):
 
 class AssayReferenceForm(BootstrapForm):
 
+    query_term = forms.CharField(initial='', required=False)
+
     class Meta(object):
         model = AssayReference
         exclude = tracking
         widgets = {
+            'query_term': forms.Textarea(attrs={'rows': 1}),
             'title': forms.Textarea(attrs={'rows': 2}),
             'authors': forms.Textarea(attrs={'rows': 1}),
             'abstract': forms.Textarea(attrs={'rows': 10}),

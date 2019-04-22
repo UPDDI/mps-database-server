@@ -2,11 +2,7 @@
 {% load static %}
 
 {% block breadcrumbs %}
-    {% if update %}
-    <li><a href="assays/references">References</a></li>
-    {% else %}
-    <li><a href="..">References</a></li>
-    {% endif %}
+    <li><a href="{% url 'assay-reference-list' %}">References</a></li>
     <li class="active">
         View Reference
     </li>
@@ -48,6 +44,12 @@
                 <label class="pull-right">Publication</label>
             </div>
             <div class="col-sm-10">{{object.publication}}</div>
+        </div>
+        <div id="ref_publication" class="row padded-bottom">
+            <div class="col-sm-2">
+                <label class="pull-right">Year</label>
+            </div>
+            <div class="col-sm-10">{{object.year}}</div>
         </div>
         <div id="ref_doi" class="row padded-bottom">
             <div class="col-sm-2">
