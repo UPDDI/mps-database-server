@@ -70,4 +70,6 @@ $(document).ready(function () {
             overwrite_confirm.dialog('open');
         }
     });
+
+    $('#footer').height($('#footer').height() + 100);
 });

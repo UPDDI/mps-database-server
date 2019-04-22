@@ -2645,7 +2645,8 @@ class AssayReference(FlaggableModel):
     authors = models.CharField(verbose_name='Authors', max_length=255, default='')
     abstract = models.CharField(verbose_name='Abstract', max_length=4000, default='')
     publication = models.CharField(verbose_name='Publication', max_length=255, default='')
-    doi = models.CharField(verbose_name='DOI', max_length=100, default='', unique=True)
+    year = models.CharField(verbose_name='Year', max_length=4, default='')
+    doi = models.CharField(verbose_name='DOI', max_length=100, default='')
 
     def get_metadata(self):
         return {
@@ -2654,11 +2655,12 @@ class AssayReference(FlaggableModel):
             'authors': self.authors,
             'abstract': self.abstract,
             'publication': self.publication,
+            'year': self.year,
             'doi': self.doi,
         }
 
     def __str__(self):
-        return '{}'.format(self.pubmed_id)
+        return '{}.{}.{}.{}.doi:{}.PMID:{}'.format(self.authors, self.title, self.publication, self.year, self.doi, self.pubmed_id)
 
     def get_post_submission_url(self):
         return '/assays/references/'

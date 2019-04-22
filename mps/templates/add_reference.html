@@ -58,29 +58,32 @@
 </table>
 
 <div hidden id="dialog" title="Choose a Reference">
-<table id="reference_table" class="table table-striped">
-    <thead>
-        <tr>
-            <th>Select</th>
-            <th hidden>ID #</th>
-            <th>PubMed ID</th>
-            <th>Title</th>
-            <th>Authors</th>
-        </tr>
-    </thead>
+    <div class="row text-center padded-bottom">
+        <a href="/assays/references/add/" class="btn btn-lg btn-success" target="_blank" role="button">Create New Reference<br><h6>*Requires refresh</h6></a>
+    </div>
+    <table id="reference_table" class="table table-striped">
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th hidden>ID #</th>
+                <th>PubMed ID</th>
+                <th>Title</th>
+                <th>Authors</th>
+            </tr>
+        </thead>
 
-    <tbody>
-    {% for reference in reference_queryset %}
-        <tr class="reference">
-            <td>
-                <button type="button" class="reference-selector btn btn-xs btn-primary" data-reference-id="{{ reference.id }}" id="reference_{{ reference.id }}" name="{{ reference }}">Select</button>
-            </td>
-            <td data-reference-field="id" hidden>{{ reference.id }}</td>
-            <td data-reference-field="pubmed_id">{{ reference.pubmed_id }}</td>
-            <td data-reference-field="title">{{ reference.title }}</td>
-            <td data-reference-field="authors">{{ reference.authors }}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+        <tbody>
+        {% for reference in reference_queryset %}
+            <tr class="reference">
+                <td>
+                    <button type="button" class="reference-selector btn btn-xs btn-primary" data-reference-id="{{ reference.id }}" id="reference_{{ reference.id }}" name="{{ reference.id }}">Select</button>
+                </td>
+                <td data-reference-field="id" hidden>{{ reference.id }}</td>
+                <td data-reference-field="pubmed_id">{{ reference.pubmed_id }}</td>
+                <td data-reference-field="title">{{ reference.title }}</td>
+                <td data-reference-field="authors">{{ reference.authors }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>

@@ -4,7 +4,7 @@ $(document).ready(function() {
         "sDom": '<B<"row">lfrtip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
-        "order": [[1, "asc"]],
+        "order": [[2, "asc"]],
         "aoColumnDefs": [
             {
                 "className": "dt-center",
@@ -14,7 +14,7 @@ $(document).ready(function() {
             },
             {
                 'className': 'none',
-                "targets": [4]
+                "targets": [5]
             }
         ]
     });
