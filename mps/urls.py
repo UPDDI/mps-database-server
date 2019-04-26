@@ -14,7 +14,7 @@ import django.views
 import mps.management
 
 # For registration
-from django_registration.views import ActivationView, RegistrationView
+from django_registration.backends.activation.views import ActivationView, RegistrationView
 from django.contrib.auth import views as auth_views
 
 from django.conf.urls.static import static
@@ -48,14 +48,16 @@ urlpatterns = [
     url(r'^accounts/loggedin/$', mps.views.loggedin, name='auth_loggedin'),
     url(
         r'^password_change/$',
-        auth_views.PasswordChangeView,
-        {'template_name': 'password_change.html'},
+        auth_views.PasswordChangeView.as_view(
+            template_name='password_change.html'
+        ),
         name='password_change'
     ),
     url(
         r'^password_change_done/$',
-        auth_views.PasswordChangeDoneView,
-        {'template_name': 'password_change_done.html'},
+        auth_views.PasswordChangeDoneView.as_view(
+            template_name='password_change_done.html'
+        ),
         name="password_change_done"
     ),
 
@@ -63,65 +65,72 @@ urlpatterns = [
     url(
         r'^activate/complete/$',
         mps.views.TemplateView.as_view(
-            template_name='registration/activation_complete.html'
+            template_name='django_registration/activation_complete.html'
         ),
-        name='registration_activation_complete'
+        name='django_registration_activation_complete'
     ),
     # The activation key can make use of any character from the
     # URL-safe base64 alphabet, plus the colon as a separator.
     url(
         r'^activate/(?P<activation_key>[-:\w]+)/$',
         ActivationView.as_view(),
-        name='registration_activate'
+        name='django_registration_activate'
     ),
     url(
         r'^register/$',
         RegistrationView.as_view(
             form_class=mps.forms.CaptchaRegistrationForm
         ),
-        name='registration_register'
+        name='django_registration_register'
     ),
     url(
         r'^register/complete/$',
         mps.views.TemplateView.as_view(
-            template_name='registration/registration_complete.html'
+            template_name='django_registration/registration_complete.html'
         ),
-        name='registration_complete'
+        name='django_registration_complete'
     ),
     url(
         r'^register/closed/$',
         mps.views.TemplateView.as_view(
-            template_name='registration/registration_closed.html'
+            template_name='django_registration/registration_closed.html'
         ),
-        name='registration_disallowed'
+        name='django_registration_disallowed'
     ),
 
     # Password Reset
     url(
         r'^password/reset/$',
-        auth_views.PasswordResetView,
-        {
-            'post_reset_redirect': 'auth_password_reset_done',
-            'email_template_name': 'registration/password_reset_email.txt',
-            'password_reset_form': mps.forms.CaptchaResetForm,
-        },
+        auth_views.PasswordResetView.as_view(
+            success_url='/password/reset/done/',
+            email_template_name='django_registration/password_reset_email.txt',
+            subject_template_name='django_registration/password_reset_subject.txt',
+            template_name='django_registration/password_reset_form.html',
+            form_class=mps.forms.CaptchaResetForm,
+        ),
         name='auth_password_reset'
     ),
     url(
         r'^password/reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/'
         r'(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-        auth_views.PasswordResetConfirmView,
-        {'post_reset_redirect': 'auth_password_reset_complete'},
+        auth_views.PasswordResetConfirmView.as_view(
+            success_url='/password/reset/complete/',
+            template_name='django_registration/password_reset_confirm.html'
+        ),
         name='auth_password_reset_confirm'
     ),
     url(
         r'^password/reset/complete/$',
-        auth_views.PasswordResetCompleteView,
+        auth_views.PasswordResetCompleteView.as_view(
+            template_name='django_registration/password_reset_complete.html'
+        ),
         name='auth_password_reset_complete'
     ),
     url(
         r'^password/reset/done/$',
-        auth_views.PasswordResetDoneView,
+        auth_views.PasswordResetDoneView.as_view(
+            template_name='django_registration/password_reset_done.html'
+        ),
         name='auth_password_reset_done'
     ),
 

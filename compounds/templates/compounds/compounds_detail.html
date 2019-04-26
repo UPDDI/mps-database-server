@@ -39,10 +39,10 @@
         </h1>
     </legend>
 
-    <div class="padded-row">
+    <div class="row padded-row">
 
         <div class="col-sm-3 col-md-2 thumbnail text-center">
-            <img src="https://www.ebi.ac.uk/chembldb/compound/displayimage/{{ object.chemblid }}">
+            <img src="https://www.ebi.ac.uk/chembl/api/data/image/{{ object.chemblid }}.svg?engine=indigo">
             {% if object.mps %}
                 <span class="label label-primary">MPS</span>
             {% endif %}

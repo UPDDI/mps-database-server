@@ -18,7 +18,7 @@ WIDGETS_TO_ADD_FORM_CONTROL_TO = {
 
 DATE_INPUT_WIDGET = "<class 'django.forms.widgets.DateInput'>"
 
-WIDGETS_WITH_AUTOCOMPLETE_OFF  = {
+WIDGETS_WITH_AUTOCOMPLETE_OFF = {
     "<class 'django.forms.widgets.DateInput'>": True,
 }
 
@@ -113,7 +113,7 @@ class CaptchaRegistrationForm(RegistrationFormUniqueEmail):
         # Magic strings are in poor taste, should use a template instead
         subject = 'New User: {0} {1}'.format(new_user.first_name, new_user.last_name)
         message = render_to_string(
-            'registration/superuser_new_user_alert.txt',
+            'django_registration/superuser_new_user_alert.txt',
             {
                 'user': new_user
             }

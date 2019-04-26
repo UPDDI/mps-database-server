@@ -2,7 +2,7 @@
 This email was sent because you requested an MPS Database account.
 
 Please click the following link to finish registration:
-https://mps.csb.pitt.edu{% url 'registration_activate' activation_key %}
+https://mps.csb.pitt.edu{% url 'django_registration_activate' activation_key %}
 
 The above link is valid for {{ expiration_days }} days.
 

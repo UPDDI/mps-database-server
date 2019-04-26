@@ -421,7 +421,10 @@ $(document).ready(function() {
 
             // Validate again if there is a file
             // Only affects charts
-            refresh_chart_only();
+            // refresh_chart_only();
+
+            plot_existing_data();
+            toggle_excluded();
         });
 
         var current_data_table_selector = $('#current_data_table');
@@ -520,31 +523,35 @@ $(document).ready(function() {
         });
     }
 
-    var refresh_table_and_charts = function() {
-        if ($('#id_file')[0] && $('#id_file')[0].files[0]) {
-            // resetChart();
-            validate_readout_file('True');
-            // getText(file);
-        }
-        else {
-            plot_existing_data();
-        }
+    // var refresh_table_and_charts = function() {
+    //     // Useless
+    //     // if ($('#id_file')[0] && $('#id_file')[0].files[0]) {
+    //     //     // resetChart();
+    //     //     validate_readout_file('True');
+    //     //     // getText(file);
+    //     // }
+    //     // else {
+    //     //     plot_existing_data();
+    //     // }
+    //
+    //     plot_existing_data();
+    //     toggle_excluded();
+    // };
 
-        toggle_excluded();
-    };
-
-    var refresh_chart_only = function() {
-        if ($('#id_file')[0] && $('#id_file')[0].files[0]) {
-            // resetChart();
-            validate_readout_file('');
-            // getText(file);
-        }
-        else {
-            plot_existing_data();
-        }
-
-        toggle_excluded();
-    };
+    // Useless, odd
+    // var refresh_chart_only = function() {
+    //     // if ($('#id_file')[0] && $('#id_file')[0].files[0]) {
+    //     //     // resetChart();
+    //     //     validate_readout_file('');
+    //     //     // getText(file);
+    //     // }
+    //     // else {
+    //     //     plot_existing_data();
+    //     // }
+    //
+    //     plot_existing_data();
+    //     toggle_excluded();
+    // };
 
     function toggle_excluded() {
         // Stop gap: magic string
@@ -562,14 +569,14 @@ $(document).ready(function() {
     }
 
     // Refresh on file change
-    $('#id_file').change(function(evt) {
-        refresh_table_and_charts();
-    });
-
-    // Refresh on change in overwrite option NEED REPLCATE TO BE ACCURATE
-    $('#id_overwrite_option').change(function() {
-        refresh_table_and_charts();
-    });
+    // $('#id_file').change(function(evt) {
+    //     refresh_table_and_charts();
+    // });
+    //
+    // // Refresh on change in overwrite option NEED REPLCATE TO BE ACCURATE
+    // $('#id_overwrite_option').change(function() {
+    //     refresh_table_and_charts();
+    // });
 
     // Handling Device flow
     // Make sure global var exists before continuing

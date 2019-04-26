@@ -92,15 +92,20 @@ CONTROL_LABEL = '-Control-'
 # Variable to indicate that these should be split for special filters
 COMBINED_VALUE_DELIMITER = '~@|'
 
+
 # Note manipulations for sorting
-# Somewhat contrived
-# THESE SHOULD BE DEFINED, NOT LAMBDA FUNCTIONS
-convert = lambda text: int(text) if text.isdigit() else text.lower()
-alphanum_key = lambda key: [
-    convert(
-        c.replace('     ~@I1', '!').replace('     ~@I2', '"').replace('     ~@S', '"')
-    ) for c in re.split('([0-9]+)', key)
-]
+def atof(text):
+    try:
+        retval = float(text)
+    except ValueError:
+        retval = text
+    return retval
+
+
+def alphanum_key(text):
+    return [
+        atof(c.replace('     ~@i1', '!').replace('     ~@i2', '"').replace('     ~@s', '"')) for c in re.split(r'[+-]?([0-9]+(?:[.][0-9]*)?|[.][0-9]+)', text)
+    ]
 
 alphanum_key_for_item_groups = lambda pair: re.split('([0-9]+)', pair[0])
 
@@ -593,7 +598,8 @@ def get_control_data(
         include_all,
         truncate_negative,
         new_data_for_control=None,
-        normalize_units=False
+        normalize_units=False,
+        group_sample_location=True
 ):
     """Gets control data for performing percent control calculations
 
@@ -637,6 +643,9 @@ def get_control_data(
         method = study_assay.method.name
 
         sample_location = raw.sample_location.name
+
+        if not group_sample_location:
+            sample_location = ''
 
         # chip_id = raw.assay_chip_id.chip_setup.assay_chip_id
 
@@ -819,45 +828,6 @@ def get_item_groups(study, criteria, matrix_items=None):
     return (sorted_treatment_groups, setup_to_treatment_group, header_keys)
 
 
-# TODO PROTOTYPE ONLY
-# def get_paired_id_and_name(field):
-#     return '\n'.join((field.name, unicode(field.id)))
-#
-#
-# def get_data_for_heatmap(raw_data):
-#     data = {
-#         'matrices': {},
-#         'values': {}
-#     }
-#
-#     # Nesting like this is a serious violation of style
-#     for raw in raw_data:
-#         data.get('values').setdefault(
-#             get_paired_id_and_name(raw.matrix_item.matrix), {}
-#         ).setdefault(
-#             get_paired_id_and_name(raw.study_assay.target), {}
-#         ).setdefault(
-#             get_paired_id_and_name(raw.study_assay.method), {}
-#         ).setdefault(
-#             # Dumb exception
-#             '\n'.join((raw.study_assay.unit.unit, unicode(raw.study_assay.unit.id))), {}
-#         ).setdefault(
-#             get_paired_id_and_name(raw.sample_location), {}
-#         ).setdefault(
-#             get_paired_id_and_name(raw.subtarget), {}
-#         ).setdefault(
-#             '\n'.join((raw.get_time_string(), unicode(raw.time))), {}
-#         ).setdefault(
-#             '_'.join([unicode(raw.matrix_item.row_index), unicode(raw.matrix_item.column_index)]), []
-#         ).append(raw.value)
-#
-#         data.get('matrices').setdefault(
-#             get_paired_id_and_name(raw.matrix_item.matrix), [[''] * raw.matrix_item.matrix.number_of_columns for _ in range(raw.matrix_item.matrix.number_of_rows)]
-#         )[raw.matrix_item.row_index][raw.matrix_item.column_index] = raw.matrix_item.name
-#
-#     return data
-
-
 # TODO TODO TODO MAKE SURE STUDY NO LONGER REQUIRED
 # TODO TODO TODO  CLEAN UP
 # TODO WHY ARE THERE SO MANY PARAMS??
@@ -919,25 +889,6 @@ def get_data_points_for_charting(
 
     initial_data = {}
 
-    controls = {}
-    if percent_control:
-        new_data_for_control = None
-        if new_data:
-            new_data_for_control = raw_data
-
-        controls = get_control_data(
-            study,
-            # key,
-            mean_type,
-            include_all,
-            truncate_negative,
-            new_data_for_control=new_data_for_control,
-            normalize_units=normalize_units
-        )
-
-        if controls.get('errors' , ''):
-            return controls
-
     averaged_data = {}
 
     all_keys = {}
@@ -956,6 +907,26 @@ def get_data_points_for_charting(
         group_sample_location = 'sample_location' in criteria.get('special', [])
         group_method = 'method' in criteria.get('special', [])
         group_time = 'time' in criteria.get('special', [])
+
+    controls = {}
+    if percent_control:
+        new_data_for_control = None
+        if new_data:
+            new_data_for_control = raw_data
+
+        controls = get_control_data(
+            study,
+            # key,
+            mean_type,
+            include_all,
+            truncate_negative,
+            new_data_for_control=new_data_for_control,
+            normalize_units=normalize_units,
+            group_sample_location=group_sample_location
+        )
+
+        if controls.get('errors', ''):
+            return controls
 
     # Append the additional_data as necessary
     # Why is this done? It is an expedient way to avoid duplicating data
@@ -1142,6 +1113,9 @@ def get_data_points_for_charting(
                 if all_keys.setdefault(matrix_item_name, matrix_item_id) != matrix_item_id:
                     key_discrimination.update({matrix_item_name: True})
 
+            if not group_sample_location:
+                sample_location = ''
+
             # Set data in nested monstrosity that is initial_data
             initial_data.setdefault(
                 target, {}
@@ -1208,9 +1182,17 @@ def get_data_points_for_charting(
                                 study_id
                             )
 
-                            averaged_data.setdefault(target, {}).setdefault(unit, {}).setdefault(tag, {}).setdefault(sample_location, {}).update({
-                                time: average_interval_study_id
-                            })
+                            averaged_data.setdefault(
+                                target, {}
+                            ).setdefault(
+                                unit, {}
+                            ).setdefault(
+                                tag, {}
+                            ).setdefault(
+                                sample_location, {}
+                            ).setdefault(
+                                time, []
+                            ).append(average_interval_study_id)
 
     accommodate_sample_location = group_sample_location and len(all_sample_locations) > 1
 
@@ -1262,79 +1244,103 @@ def get_data_points_for_charting(
 
                     # all_keys.update({current_key: True})
 
-                    for time, value_interval_study_id in list(time_values.items()):
-                        value = value_interval_study_id[0]
-                        interval = value_interval_study_id[1]
-                        study_id = value_interval_study_id[2]
+                    all_values = {}
+                    all_intervals = {}
 
+                    for time_concentration, current_values in time_values.items():
+                        for value_interval_study_id in current_values:
+                            value = value_interval_study_id[0]
+                            interval = value_interval_study_id[1]
+                            study_id = value_interval_study_id[2]
+
+                            # UGLY NOT DRY
+                            # Contrived combination of time and concentration only for dose-response
+                            if key == 'dose':
+                                concentration = time_concentration[0]
+                                time = time_concentration[1]
+
+                                if not percent_control:
+                                    all_values.setdefault(concentration, []).append(value)
+                                    all_intervals.update({concentration: interval})
+
+                                elif controls.get((study_id, target, unit, sample_location, time), False):
+                                    control_value = controls.get((study_id, target, unit, sample_location, time))
+
+                                    # We can not divide by zero
+                                    if control_value == 0:
+                                        return {
+                                            'errors': 'Could not calculate percent control because some control values are zero (divide by zero error).'
+                                        }
+
+                                    adjusted_value = (value / control_value) * 100
+                                    adjusted_interval = (interval / control_value) * 100
+
+                                    all_values.setdefault(concentration, []).append(adjusted_value)
+                                    all_intervals.update({concentration: adjusted_interval})
+
+                            else:
+                                time = time_concentration
+
+                                if not percent_control:
+                                    all_values.setdefault(time, []).append(value)
+                                    all_intervals.update({time: interval})
+
+                                elif controls.get((study_id, target, unit, sample_location, time), False):
+                                    control_value = controls.get((study_id, target, unit, sample_location, time))
+
+                                    # We can not divide by zero
+                                    if control_value == 0:
+                                        return {'errors': 'Could not calculate percent control because some control values are zero (divide by zero error).'}
+
+                                    adjusted_value = (value / control_value) * 100
+                                    adjusted_interval = (interval / control_value) * 100
+
+                                    all_values.setdefault(time, []).append(adjusted_value)
+                                    all_intervals.update({time: adjusted_interval})
+
+                    for time, values in all_values.items():
+                        if len(values) > 1:
+                            # If geometric mean
+                            if mean_type == 'geometric':
+                                # Geometric mean will sometimes fail (due to zero values and so on)
+                                average = gmean(values)
+                                if np.isnan(average):
+                                    return {'errors': 'Geometric mean could not be calculated (probably due to negative values), please use an arithmetic mean instead.'}
+                            # Median
+                            elif mean_type == 'median':
+                                average = np.median(values)
+                            # If arithmetic mean
+                            else:
+                                average = np.mean(values)
+
+                            # If standard deviation
+                            # NOTE: ONLY STANDARD DEVIATION IS AFFECTED BY number_for_interval
+                            if interval_type == 'std':
+                                interval = np.std(values) * number_for_interval
+                            # IQR
+                            elif interval_type == 'iqr':
+                                # NOTE THAT THIS IS NOT MULTIPLIED BY number_for_interval
+                                interval = iqr(values)
+                            # Standard error if not std
+                            else:
+                                interval = np.std(values) / len(values) ** 0.5
+
+                        else:
+                            average = values[0]
+                            interval = all_intervals[time]
+
+                        current_data.setdefault(current_key, {}).update({time: average})
                         if interval != 0:
                             accommodate_intervals = True
-
-                        # UGLY NOT DRY
-                        # Contrived combination of time and concentration only for dose-response
-                        if key == 'dose':
-                            concentration = time[0]
-                            time = time[1]
-
-                            if not percent_control:
-                                current_data.setdefault(current_key, {}).update({concentration: value})
-                                current_data.setdefault('{}{}'.format(current_key,  '     ~@i1'), {}).update({concentration: value - interval})
-                                current_data.setdefault('{}{}'.format(current_key, '     ~@i2'), {}).update({concentration: value + interval})
-                                y_header.update({concentration: True})
-                                include_current = True
-
-                            elif controls.get((study_id, target, unit, sample_location, time), False):
-                                control_value = controls.get((study_id, target, unit, sample_location, time))
-
-                                # We can not divide by zero
-                                if control_value == 0:
-                                    return {
-                                        'errors': 'Could not calculate percent control because some control values are zero (divide by zero error).'}
-
-                                adjusted_value = (value / control_value) * 100
-                                adjusted_interval = (interval / control_value) * 100
-
-                                current_data.setdefault(current_key, {}).update({concentration: adjusted_value})
-                                current_data.setdefault('{}{}'.format(current_key , '     ~@i1'), {}).update(
-                                    {concentration: adjusted_value - adjusted_interval})
-                                current_data.setdefault('{}{}'.format(current_key, '     ~@i2'), {}).update(
-                                    {concentration: adjusted_value + adjusted_interval})
-                                y_header.update({concentration: True})
-                                include_current = True
-                        else:
-                            if not percent_control:
-                                current_data.setdefault(current_key, {}).update({time: value})
-                                current_data.setdefault('{}     ~@i1'.format(current_key), {}).update({time: value - interval})
-                                current_data.setdefault('{}     ~@i2'.format(current_key), {}).update({time: value + interval})
-                                y_header.update({time: True})
-                                include_current = True
-
-                            elif controls.get((study_id, target, unit, sample_location, time), False):
-                                control_value = controls.get((study_id, target, unit, sample_location, time))
-
-                                # We can not divide by zero
-                                if control_value == 0:
-                                    return {'errors': 'Could not calculate percent control because some control values are zero (divide by zero error).'}
-
-                                adjusted_value = (value / control_value) * 100
-                                adjusted_interval = (interval / control_value) * 100
-
-                                current_data.setdefault(current_key, {}).update({time: adjusted_value})
-                                current_data.setdefault('{}     ~@i1'.format(current_key), {}).update({time: adjusted_value - adjusted_interval})
-                                current_data.setdefault('{}     ~@i2'.format(current_key), {}).update({time: adjusted_value + adjusted_interval})
-                                y_header.update({time: True})
-                                include_current = True
+                            current_data.setdefault(current_key+'     ~@i1', {}).update({time: average - interval})
+                            current_data.setdefault(current_key+'     ~@i2', {}).update({time: average + interval})
+                        y_header.update({time: True})
+                        include_current = True
 
                     key_present = current_key in x_header
 
                     if include_current and not key_present:
                         x_header.append(current_key)
-                    # To include all
-                    # x_header.append(current_key)
-                    # x_header.extend([
-                    #     current_key + '     ~@i1',
-                    #     current_key + '     ~@i2'
-                    # ])
 
                     # Only include intervals if necessary
                     if accommodate_intervals and include_current and not key_present:
@@ -1346,14 +1352,6 @@ def get_data_points_for_charting(
                         if '{}{}'.format(current_key, '     ~@i1') in current_data:
                             del current_data['{}{}'.format(current_key, '     ~@i1')]
                             del current_data['{}{}'.format(current_key, '     ~@i2')]
-
-            # for current_key in all_keys:
-            #     if current_key not in x_header:
-            #         x_header.extend([
-            #             current_key,
-            #             current_key + '     ~@i1',
-            #             current_key + '     ~@i2'
-            #         ])
 
             x_header.sort(key=alphanum_key)
             current_table[0].extend(x_header)

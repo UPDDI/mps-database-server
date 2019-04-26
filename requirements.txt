@@ -1,9 +1,9 @@
 # Not used yet
 # matplotlib
-uwsgi
-django-uwsgi-cache
+# uwsgi
+# django-uwsgi-cache
 networkx
-Django==1.11.20
+Django==2.1.8
 Jinja2
 Markdown
 MarkupSafe
@@ -49,15 +49,15 @@ ipython
 logilab-common
 # Code checking
 mccabe
-# Managed in conda
-# numpy
-# pandas
+numpy
+scipy
+pandas
 # Style checking
 pycodestyle
 # Profiling
 profilehooks
 # Connect to postgres
-psycopg2
+psycopg2-binary
 # Functions for Boolean satisfiability problem
 pycosat
 # Style
@@ -72,14 +72,14 @@ python-gflags
 python-mimeparse
 # Time zones
 pytz
+# uwsgi
+pyuwsgi
 # Asynchronous messaging with ZeroMQ
-# pyzmq
+pyzmq
 # Refactoring library
 rope
 # Helper for rope
 ropemode
-# Managed in conda
-# scipy
 # Compatibility library
 six
 # SQL parser
@@ -97,6 +97,7 @@ django-import-export
 django-simple-captcha
 # Keep old-style comments
 django-contrib-comments
+django-rest-framework
 # Using whoosh for now, may switch to a more sophisticated search engine later
 whoosh
 django-haystack
