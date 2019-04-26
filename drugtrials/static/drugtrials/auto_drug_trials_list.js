@@ -16,6 +16,9 @@ $(document).ready(function() {
             dataSrc: function(json) {
                 console.log(json);
                 return json.data;
+            },
+            error: function (xhr, errmsg, err) {
+                console.log(xhr.status + ": " + xhr.responseText);
             }
         },
         columns: [

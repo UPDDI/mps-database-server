@@ -7,16 +7,32 @@ import ujson as json
 import cgi
 
 # imports by Dale
-import urllib2
+import urllib
 import psycopg2
 import psycopg2.extras
 
-import mps_AATCcredentials
+import drugtrials.mps_AATCcredentials as mps_AATCcredentials
 
 
 def main(request):
     """Default to Server Error"""
     return HttpResponseServerError()
+
+
+def rList(nct_id, key):
+    l = [d for d in key if d['nct_id'] == nct_id]
+
+    if len(l) < 1:
+        return None
+    # elif len(l) == 1:
+    #     return next((item for item in key if item["nct_id"] == nct_id))
+    else:
+        return l
+
+
+def lst2pgarr(alist):
+    return '{' + ','.join(alist) + '}'
+
 
 def fetch_auto_drug_trial_data(request):
     # This should be replaced by query in the future, testing purposes only
@@ -27,16 +43,14 @@ def fetch_auto_drug_trial_data(request):
 
 # https://clinicaltrials.gov/ct2/results?cond=&term=&type=Intr&rslt=With&recrs=e&age_v=&gndr=&intr=&titles=&outc=&spons=&lead=&id=&cntry=US&state=&city=&dist=&locn=&strd_s=&strd_e=&prcd_s=&prcd_e=&sfpd_s=&sfpd_e=&lupd_s=&lupd_e=
     url = "https://clinicaltrials.gov/ct2/results/download_fields?cond=" + disease + "&term=&type=Intr&rslt=With&recrs=e&age_v=&gndr=&intr=&titles=&outc=&spons=&lead=&id=&cntry=US&state=&city=&dist=&locn=&strd_s=&strd_e=&prcd_s=&prcd_e=&sfpd_s=&sfpd_e=&lupd_s=&lupd_e=&down_count=10000&down_fmt=plain"
-    file = urllib2.urlopen(url)
+    file = urllib.request.urlopen(url)
     studyIDs = []
     link = "https://ClinicalTrials.gov/show/"
     for line in file:
+        line = str(line)
         if link in line:
             ID = line[line.find(link)+len(link):line.find(link)+len(link)+11]
             studyIDs.append(ID)
-
-    def lst2pgarr(alist):
-        return '{' + ','.join(alist) + '}'
 
     studyIDs = (lst2pgarr(studyIDs))
 
@@ -45,9 +59,8 @@ def fetch_auto_drug_trial_data(request):
 
     try:
         conn = psycopg2.connect(dbname="aact", host="aact-db.ctti-clinicaltrials.org", user=userName, password=passWord, port=5432)
-    except Exception, e:
-        print "Cannot connect to database"
-        print e
+    except Exception as e:
+        return HttpResponseServerError()
 
     del userName
     del passWord
@@ -105,29 +118,19 @@ def fetch_auto_drug_trial_data(request):
     cur.close()
     conn.close()
 
-    def rList(nct_id,key):
-        l = [d for d in key if d['nct_id'] == nct_id]
-
-        if len(l) < 1:
-            return None
-        # elif len(l) == 1:
-        #     return (item for item in key if item["nct_id"] == nct_id).next()
-        else:
-            return l
-
     studiesWithResults = []
     for i in range(0,len(studies)):
         #for j in range(0, len(outcomes)):
         #if studies[i]['results_first_posted_date'] is not None:
             #studiesWithResults.append(studies[i]['nct_id'])
             nct_id = studies[i]['nct_id']
-            study = {'brief_summaries': (item for item in brief_summaries if item["nct_id"] == nct_id).next(), \
+            study = {'brief_summaries': next((item for item in brief_summaries if item["nct_id"] == nct_id)), \
                      'conditions': rList(nct_id,conditions), \
                      'design_groups': rList(nct_id,design_groups), \
                      'design_outcomes': rList(nct_id,design_outcomes), \
                      'detailed_descriptions': rList(nct_id,detailed_descriptions), \
                      'drugs': rList(nct_id,drugs), \
-                     'eligibilities': (item for item in eligibilities if item["nct_id"] == nct_id).next(), \
+                     'eligibilities': next((item for item in eligibilities if item["nct_id"] == nct_id)), \
                      'interventions': rList(nct_id,interventions), \
                      'links': rList(nct_id,links), \
                      'outcome_analyses': rList(nct_id,outcome_analyses), \
@@ -136,7 +139,7 @@ def fetch_auto_drug_trial_data(request):
                      'reported_events': rList(nct_id,reported_events), \
                      'result_groups': rList(nct_id,result_groups), \
                      'sponsors': rList(nct_id,sponsors), \
-                     'studies': (item for item in studies if item["nct_id"] == nct_id).next(), \
+                     'studies': next((item for item in studies if item["nct_id"] == nct_id)), \
                      'study_references': rList(nct_id,study_references), \
                      'nct_id': nct_id #?
                     }
@@ -158,6 +161,7 @@ def fetch_auto_drug_trial_data(request):
         json.dumps(outcomeDataDisplay),
         content_type="application/json"
     )
+
 
 def fetch_adverse_events_data(request):
     ae_data = list(CompoundAdverseEvent.objects.prefetch_related(
