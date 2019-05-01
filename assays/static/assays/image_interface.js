@@ -126,7 +126,7 @@ $(document).ready(function () {
                 '<tr><th>Notes</th><td>'+iNotes+'</td></tr>'+
                 '<tr><th>'+type+' File Name</th><td>'+iFileName+'</td></tr>'+
                 '<tr><th>'+type+' Field</th><td>'+iField.split(".")[0]+fieldTooltip+'</td></tr>'+
-                '<tr><th>'+type+' Magnification</th><td>'+iMagnification.split(".")[0]+'x</td></tr>'+
+                '<tr><th>'+type+' Magnification</th><td>'+iMagnification+'x</td></tr>'+
                 '<tr><th>'+type+' Resolution</th><td>'+iResolution+" "+iResolutionUnit+'</td></tr>'+
                 '<tr><th>'+type+' Sample Label</th><td>'+iSampleLabel+sampleLabelTooltip+'</td></tr>'+
                 '<tr><th>'+type+' Wavelength (ex/em nm)</th><td>'+iWavelength+'</td></tr>'+
@@ -192,7 +192,7 @@ $(document).ready(function () {
         for (var i=0; i<Object.keys(tableData).length; i++) {
             if (tableData[Object.keys(tableData)[i]][1] == cls) {
                 var caption = metadata_list[Object.keys(tableData)[i]]["target_analyte"] + " (" + metadata_list[Object.keys(tableData)[i]]["sample_location"] + "), "
-                +metadata_list[Object.keys(tableData)[i]]["sample_label"]+", "+metadata_list[Object.keys(tableData)[i]]["magnification"].split(".")[0]
+                +metadata_list[Object.keys(tableData)[i]]["sample_label"]+", "+metadata_list[Object.keys(tableData)[i]]["magnification"]
                 +"x at " + metadata_list[Object.keys(tableData)[i]]["time"];
 
                 var extension = metadata_list[Object.keys(tableData)[i]]["file_name"].split(".").pop().toLowerCase();

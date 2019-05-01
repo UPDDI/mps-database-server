@@ -16,7 +16,7 @@ $(document).ready(function() {
     var charts_name = 'charts';
 
     // Datatable for assays
-    $('#assay_table').DataTable( {
+    $('#assay_table').DataTable({
         dom: 'B<"row">lfrtip',
         fixedHeader: {headerOffset: 50},
         responsive: true,
@@ -83,5 +83,11 @@ $(document).ready(function() {
         else {
             export_button.attr('href', export_button.attr('href').split('?')[0]);
         }
+
+        $('#export_include_all').prop('checked', $(this).prop('checked'));
     }).trigger('change');
+
+    $('#export_include_all').change(function() {
+        $('#include_all').trigger('click');
+    });
 });
