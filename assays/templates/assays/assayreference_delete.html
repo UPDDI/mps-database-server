@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block breadcrumbs %}
+    <li><a href="/assays/references/">References</a></li>
+    <li>
+        <a href="{{ object.get_absolute_url }}"><em>{{ object.title }}</em></a>
+    </li>
+    <li>
+        <a href="{{ object.get_absolute_url }}update">Update</a>
+    </li>
+    <li class="active">Delete</li>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        <h2 class="text-danger">Are you sure you want to delete the Reference:<br><b>{{ object.title }}</b>?</h2>
+
+        <hr>
+
+        <div class="padded-bottom">
+            <button type="submit" class="btn btn-danger">Confirm Deletion</button>
+        </div>
+    </form>
+{% endblock %}

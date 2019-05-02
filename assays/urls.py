@@ -33,7 +33,8 @@ from assays.views import (
     AssayReferenceList,
     AssayReferenceAdd,
     AssayReferenceUpdate,
-    AssayReferenceDetail
+    AssayReferenceDetail,
+    AssayReferenceDelete
 )
 import assays.ajax
 
@@ -148,6 +149,7 @@ urlpatterns = [
     url(r'^assays/references/add/$', AssayReferenceAdd.as_view(), name='assay-reference-add'),
     url(r'^assays/references/(?P<pk>[0-9]+)/$', AssayReferenceDetail.as_view(), name='assay-reference-detail'),
     url(r'^assays/references/(?P<pk>[0-9]+)/update/$', AssayReferenceUpdate.as_view(), name='assay-reference-update'),
+    url(r'^assays/references/(?P<pk>[0-9]+)/delete/$', AssayReferenceDelete.as_view(), name='assay-reference-delete'),
 
     # Ajax
     url(r'^assays_ajax/$', assays.ajax.ajax),
