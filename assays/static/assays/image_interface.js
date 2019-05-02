@@ -47,21 +47,6 @@ $(document).ready(function () {
             // Prevent scrolling
             $('body').addClass('stop-scrolling');
 
-            // Change height if necessary
-            // if ($(window).height() < 950) {
-            //     $(this).dialog('option', 'height', $(window).height() - 100);
-            // }
-            // else {
-            //     $(this).dialog('option', 'height', 750);
-            // }
-            //
-            // if ($(window).width() < 1300) {
-            //     $(this).dialog('option', 'width', $(window).width() - 200);
-            // }
-            // else {
-            //     $(this).dialog('option', 'width', 1800);
-            // }
-
             $(this).dialog('option', 'width', $(window).width());
             $(this).dialog('option', 'height', ($(window).height()-$('#floating-sliders').height()-1));
 
@@ -446,18 +431,18 @@ $(document).ready(function () {
     });
 
     //TODO Unintelligently play with table sizing at different image quantities
-    var mostImages = 0;
-    $("td").each(function(index){
-        if ($(this).children().length > mostImages){
-            mostImages = $(this).children().length;
-        }
-    });
-    console.log(mostImages);
-    console.log(tableCols.length);
-    if (mostImages < 3 && tableCols.length < 4) {
-        console.log("Shrinking table");
-        console.log($("#fluid-content").width());
-    }
+    // var mostImages = 0;
+    // $("td").each(function(index){
+    //     if ($(this).children().length > mostImages){
+    //         mostImages = $(this).children().length;
+    //     }
+    // });
+    // console.log(mostImages);
+    // console.log(tableCols.length);
+    // if (mostImages < 3 && tableCols.length < 4) {
+    //     console.log("Shrinking table");
+    //     console.log($("#fluid-content").width());
+    // }
 
     // Escape Key closes dialog windows
     $(document).keydown(function(e) {
