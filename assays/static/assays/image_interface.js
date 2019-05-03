@@ -44,8 +44,7 @@ $(document).ready(function () {
             $('body').removeClass('stop-scrolling');
         },
         open: function() {
-            // Prevent scrolling
-            $('body').addClass('stop-scrolling');
+            $.ui.dialog.prototype.options.open();
 
             $(this).dialog('option', 'width', $(window).width());
             $(this).dialog('option', 'height', ($(window).height()-$('#floating-sliders').height()-1));
