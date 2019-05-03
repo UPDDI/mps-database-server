@@ -1,6 +1,6 @@
 $(document).ready(function() {
 
-    // Set override exception to include chembl_search (so it doesn't trigger the submission)
+    // Set override exception to include reference search field/button (so it doesn't trigger the submission)
     window.OVERRIDE.exceptions.push($("#fetch_reference_info"));
     window.OVERRIDE.exceptions.push($("#id_query_term"));
 
