@@ -48,7 +48,11 @@
                         <td>{{ reference.abstract }}</td>
                         <td>{{ reference.publication }}</td>
                         <td>{{ reference.year }}</td>
-                        <td><a href="https://doi.org/{{ reference.doi }}" target="_blank">{{ reference.doi }}</a></td>
+                        {% if reference.doi == 'N/A' %}
+                            <td>N/A</td>
+                        {% else %}
+                            <td><a href="https://doi.org/{{ reference.doi }}" target="_blank">{{ reference.doi }}</a></td>
+                        {% endif %}
                     </tr>
                 {% endfor %}
                 </tbody>
