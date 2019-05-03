@@ -43,6 +43,7 @@ from assays.views import (
     AssayReferenceAdd,
     AssayReferenceUpdate,
     AssayReferenceDetail,
+    AssayReferenceDelete,
     TCTCSummary
 )
 import assays.ajax
@@ -150,6 +151,7 @@ urlpatterns = [
     url(r'^assays/references/add/$', AssayReferenceAdd.as_view(), name='assay-reference-add'),
     url(r'^assays/references/(?P<pk>[0-9]+)/$', AssayReferenceDetail.as_view(), name='assay-reference-detail'),
     url(r'^assays/references/(?P<pk>[0-9]+)/update/$', AssayReferenceUpdate.as_view(), name='assay-reference-update'),
+    url(r'^assays/references/(?P<pk>[0-9]+)/delete/$', AssayReferenceDelete.as_view(), name='assay-reference-delete'),
 
     # TCTC Summary test
     url(r'^tctc_summary/$', TCTCSummary.as_view(), name='tctc_summary'),

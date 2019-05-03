@@ -2613,7 +2613,7 @@ class AssayStudySet(FlaggableModel):
 
 
 class AssayReference(FlaggableModel):
-    pubmed_id = models.CharField(verbose_name='PubMed ID', max_length=20, unique=True)
+    pubmed_id = models.CharField(verbose_name='PubMed ID', max_length=20, unique=True, blank=False, null=False)
     title = models.CharField(verbose_name='Title', max_length=255, default='')
     authors = models.CharField(verbose_name='Authors', max_length=255, default='')
     abstract = models.CharField(verbose_name='Abstract', max_length=4000, default='')
@@ -2633,10 +2633,16 @@ class AssayReference(FlaggableModel):
         }
 
     def __str__(self):
-        return '{}.{}.{}.{}.doi:{}.PMID:{}'.format(self.authors, self.title, self.publication, self.year, self.doi, self.pubmed_id)
+        return '{}. {}. {}. {}. doi:{}. PMID:{}'.format(self.authors, self.title, self.publication, self.year, self.doi, self.pubmed_id)
 
     def get_post_submission_url(self):
         return '/assays/references/'
+
+    def get_absolute_url(self):
+        return '/assays/references/{}/'.format(self.id)
+
+    def get_delete_url(self):
+        return '{}delete/'.format(self.get_absolute_url())
 
 
 class AssayStudyReference(models.Model):

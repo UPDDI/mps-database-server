@@ -2160,6 +2160,13 @@ class AssayReferenceUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
             return self.render_to_response(self.get_context_data(form=form))
 
 
+class AssayReferenceDelete(DeletionMixin, DeleteView):
+    """Delete a Reference"""
+    model = AssayReference
+    template_name = 'assays/assayreference_delete.html'
+    success_url = '/assays/references/'
+
+
 def get_summary_data(set_name, queryset, on_or_after_date=None):
     if on_or_after_date:
         queryset = queryset.filter(created_on__lt=on_or_after_date)

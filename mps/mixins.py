@@ -287,29 +287,31 @@ class DeletionMixin(object):
         self.object = self.get_object()
 
         group = getattr(self.object, 'group', None)
-        study = None
+        study = getattr(self.object, 'study', None)
         study_sign_off = False
 
-        if not group:
-            study = getattr(self.object, 'study', None)
+        if not group and study:
             group = study.group
             study_sign_off = study.signed_off_by
 
-        group = group.name
+            group = group.name
 
-        if not is_group_admin(self.request.user, group):
-            return PermissionDenied(self.request, 'Only group admins can perform this action. Please contact your group admin.')
+            if not is_group_admin(self.request.user, group):
+                return PermissionDenied(self.request, 'Only group admins can perform this action. Please contact your group admin.')
 
-        if study_sign_off:
-            return PermissionDenied(
-                self.request,
-                'You cannot modify this because the study has been signed off on by {0} {1}.'
-                ' If something needs to be changed, contact the individual who signed off.'
-                ' If you are the individual who signed off, please contact a database administrator.'.format(
-                    study.signed_off_by.first_name,
-                    study.signed_off_by.last_name
+            if study_sign_off:
+                return PermissionDenied(
+                    self.request,
+                    'You cannot modify this because the study has been signed off on by {0} {1}.'
+                    ' If something needs to be changed, contact the individual who signed off.'
+                    ' If you are the individual who signed off, please contact a database administrator.'.format(
+                        study.signed_off_by.first_name,
+                        study.signed_off_by.last_name
+                    )
                 )
-            )
+        else:
+            if self.request.user.id != self.object.created_by_id:
+                return PermissionDenied(self.request, 'Only the creator of this entry can perform this action. Please contact an administrator or the creator of this entry.')
 
         can_be_deleted = True
 
