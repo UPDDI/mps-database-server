@@ -118,4 +118,7 @@
     <h3>There are currenty no findings associated with {{ object }} drug trials in the database.</h3>
     <br><br>
     {% endif %}
+    <div class="text-center">
+        <a class="btn btn-primary btn-lg" href="https://clinicaltrials.gov/ct2/results?cond={{ object }}&recrs=e&age_v=&gndr=&type=&rslt=With&Search=Apply" target="_blank">Review Completed Drug Trials</a>
+    </div>
 {% endblock %}

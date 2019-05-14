@@ -66,6 +66,21 @@ class Disease(LockableModel):
         null=True,
         blank=True
     )
+    biology_metabolomicsworkbench_url = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True
+    )
+    biology_pharmagkb_url = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True
+    )
+    biology_drugbank_url = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True
+    )
 
     # Everything necessary for the Clinical Data Page
     clinicaldata_blurb = models.TextField(

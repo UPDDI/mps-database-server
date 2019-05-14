@@ -1,3 +1,4 @@
+// TODO REPRO JS IS NOT DRY
 $(document).ready(function () {
     // Load core chart package
     google.charts.load('current', {'packages':['corechart']});
@@ -46,26 +47,19 @@ $(document).ready(function () {
 
     function draw_tables(){
         //Clone reproducibility section per row
-        gas_table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+        gas_table.rows().every(function (rowIdx, tableLoop, rowLoop) {
             var data = this.data();
             var icc_status = data[7];
             if (icc_status){
-                var organModel = data_group_to_organ_models[data[0]].join('<br>');
-                var targetAnalyte = data_groups[data[0]][0];
-                var methodKit = data_groups[data[0]][method_index];
-                var sampleLocation = data_group_to_sample_locations[data[0]].join('<br>');
-                var compoundTreatments = treatment_groups[data_groups[data[0]][data_groups[data[0]].length - 1]]['Trimmed Compounds'];
-                var valueUnit = data_groups[data[0]][value_unit_index];
-                var setting = data_groups[data[0]][setting_index];
-                var cells = data_groups[data[0]][cells_index];
                 var group = data[0];
 
-                var $elem = $( "#repro-data" );
-                var $clone = $elem.clone( true ).removeAttr('id').addClass('repro-'+group).appendTo("#clone-container");
+                var $elem = $("#repro-data");
+                var $clone = $elem.clone(true).removeAttr('id').addClass('repro-'+group).appendTo("#clone-container");
                 $clone.removeClass('hidden');
                 mad_list[group]['columns'].unshift("Time");
                 $clone.find('[data-id=repro-title]').text('Set ' + group);
-                $clone.find('[data-id=selection-parameters]').html(build_selection_parameters(studyID, organModel, targetAnalyte, methodKit, sampleLocation, compoundTreatments, valueUnit));
+                var current_table = $clone.find('[data-id=selection-parameters]');
+                populate_selection_table(group, current_table);
                 $clone.find('[data-id=selection-parameters]').find('td, th').css('padding','8px 10px');
                 $clone.find('[data-id=chip-rep-rep-ind]').html(buildCV_ICC(data[5],data[6]));
                 $clone.find('[data-id=chip-rep-rep-ind]').find('td, th').css('padding','8px 10px');
@@ -330,11 +324,7 @@ $(document).ready(function () {
 
                     data_group_to_sample_locations = json.data_group_to_sample_locations;
                     data_group_to_organ_models = json.data_group_to_organ_models;
-                    value_unit_index = header_keys.indexOf('Value Unit');
-                    method_index = header_keys.indexOf('Method');
-                    setting_index = header_keys.indexOf('Settings');
-                    cells_index = header_keys.indexOf('Cells');
-                    target_index = header_keys.indexOf('Target');
+                    value_unit_index = header_keys.data.indexOf('Value Unit');
 
                     var pie_all_zero = pie.every(function(x){
                         if (!x){
@@ -594,31 +584,34 @@ $(document).ready(function () {
         return !all_null;
     }
 
-    // TODO INFLEXIBLE
-    function build_selection_parameters(studyId, organModel, targetAnalyte, methodKit, sampleLocation, compoundTreatments, valueUnit){
-        var content = ''
-        if (targetAnalyte) {
-            content += '<tr><th><strong style="font-size: 16px;">Target/Analyte</strong></th><td><strong style="font-size: 16px;">'+targetAnalyte+'</strong></td></tr>'
-        }
-        if (studyId) {
-            content += '<tr><th>Study ID</th><td>'+studyId+'</td></tr>'
-        }
-        if (organModel) {
-            content += '<tr><th>MPS Model</th><td>'+organModel+'</td></tr>'
-        }
-        if (methodKit) {
-            content += '<tr><th>Method/Kit</th><td>'+methodKit+'</td></tr>'
-        }
-        if (sampleLocation) {
-            content += '<tr><th>Sample Location</th><td>'+sampleLocation+'</td></tr>'
-        }
-        if (compoundTreatments) {
-            content += '<tr><th>Compound Treatment(s)</th><td>'+compoundTreatments+'</td></tr>'
-        }
-        if (valueUnit) {
-            content += '<tr><th>Value Unit</th><td>'+valueUnit+'</td></tr>'
-        }
-        return content;
+    // TODO REPRO JS IS NOT DRY
+    function populate_selection_table(set, current_table) {
+        var current_body = current_table.find('tbody');
+
+        var rows = [];
+
+        $.each(header_keys['data'], function(index, key) {
+            if (key === 'Target') {
+                rows.push(
+                    '<tr><th><h4><strong>Target/Analyte</strong></h4></th><td><h4><strong>' + data_groups[set][index] + '</strong></h4></td></tr>'
+                );
+            } else {
+                rows.push(
+                    '<tr><th>' + key + '</th><td>' + data_groups[set][index] + '</td></tr>'
+                );
+            }
+        });
+
+        var current_treatment_group = data_groups[set][data_groups[set].length - 1];
+
+        $.each(header_keys['treatment'], function(index, key) {
+            rows.push(
+                '<tr><th>' + key + '</th><td>' + treatment_groups[current_treatment_group][key] + '</td></tr>'
+            );
+        });
+
+        rows = rows.join('');
+        current_body.html(rows);
     }
 
     function buildCV_ICC(cv, icc){

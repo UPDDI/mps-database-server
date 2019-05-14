@@ -181,11 +181,11 @@ class DrugTrialAdmin(LockableAdmin):
     class Media(object):
         js = ('js/inline_fix.js',)
 
-    resource_class = DrugTrialResource
-
-    formfield_overrides = {
-        URLField: {'widget': URLFieldWidget},
-    }
+    # resource_class = DrugTrialResource
+    #
+    # formfield_overrides = {
+    #     URLField: {'widget': URLFieldWidget},
+    # }
 
     save_on_top = True
     list_per_page = 300

@@ -1860,7 +1860,10 @@ def fetch_assay_study_reproducibility(request):
     data['data_group_to_sample_locations'] = final_data_group_to_sample_locations
     data['data_group_to_organ_models'] = final_data_group_to_organ_models
 
-    data['header_keys'] = data_header_keys
+    data['header_keys'] = {
+        'treatment': treatment_header_keys,
+        'data': data_header_keys
+    }
 
     data['treatment_groups'] = treatment_group_representatives
 

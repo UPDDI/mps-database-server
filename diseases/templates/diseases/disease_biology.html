@@ -120,7 +120,11 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h4>
-                        <strong><a target="_blank" href="http://www.metabolomicsworkbench.org/data/DRCCStudySummary.php?Mode=ProcessExpDataTextSearch&amp;Title={{ object }}">Metabolomicsworkbench</a></strong>
+                        {% if object.biology_metabolomicsworkbench_url %}
+                            <strong><a target="_blank" href="{{ object.biology_metabolomicsworkbench_url }}">Metabolomicsworkbench</a></strong>
+                        {% else %}
+                            <strong><a target="_blank" href="http://www.metabolomicsworkbench.org/data/DRCCStudySummary.php?Mode=ProcessExpDataTextSearch&amp;Title={{ object }}">Metabolomicsworkbench</a></strong>
+                        {% endif %}
                     </h4>
                 </div>
                 <div class="col-xs-12 panel-body">Metabolomicsworkbench serves as a national and international repository for metabolomics data.</div>
@@ -133,7 +137,11 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h4>
-                        <strong><a target="_blank" href="https://www.pharmgkb.org/search?connections&amp;query={{ object }}">PharmaGKB</a></strong>
+                        {% if object.biology_pharmagkb_url %}
+                            <strong><a target="_blank" href="{{ object.biology_pharmagkb_url }}">PharmaGKB</a></strong>
+                        {% else %}
+                            <strong><a target="_blank" href="https://www.pharmgkb.org/search?connections&amp;query={{ object }}">PharmaGKB</a></strong>
+                        {% endif %}
                     </h4>
                 </div>
                 <div class="col-xs-12 panel-body">PharmaGKB is a website that investigates genetic variations and how the body responds to medication.</div>
@@ -144,7 +152,11 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h4>
-                        <strong><a target="_blank" href="https://www.drugbank.ca/unearth/q?utf8=%E2%9C%93&amp;searcher=drugs&amp;query={{ object }}">DrugBank</a></strong>
+                        {% if object.biology_drugbank_url %}
+                            <strong><a target="_blank" href="{{ object.biology_drugbank_url }}">DrugBank</a></strong>
+                        {% else %}
+                            <strong><a target="_blank" href="https://www.drugbank.ca/unearth/q?utf8=%E2%9C%93&amp;searcher=drugs&amp;query={{ object }}">DrugBank</a></strong>
+                        {% endif %}
                     </h4>
                 </div>
                 <div class="col-xs-12 panel-body">DrugBank is a unique bioinformatics and chemoinformatics database that combines drug data with comprehensive drug target information.</div>
