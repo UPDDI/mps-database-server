@@ -2613,14 +2613,15 @@ class AssayStudySet(FlaggableModel):
 
 
 class AssayReference(FlaggableModel):
-    pubmed_id = models.CharField(verbose_name='PubMed ID', max_length=20, unique=True, blank=False, null=False)
-    title = models.CharField(verbose_name='Title', max_length=255, default='')
-    authors = models.CharField(verbose_name='Authors', max_length=255, default='')
-    abstract = models.CharField(verbose_name='Abstract', max_length=4000, default='')
-    publication = models.CharField(verbose_name='Publication', max_length=255, default='')
-    year = models.CharField(verbose_name='Year', max_length=4, default='')
-    doi = models.CharField(verbose_name='DOI', max_length=100, default='')
+    pubmed_id = models.CharField(verbose_name='PubMed ID', max_length=20, blank=True, default='N/A')
+    title = models.CharField(verbose_name='Title', max_length=255)
+    authors = models.CharField(verbose_name='Authors', max_length=255)
+    abstract = models.CharField(verbose_name='Abstract', max_length=4000, blank=True, default='')
+    publication = models.CharField(verbose_name='Publication', max_length=255)
+    year = models.CharField(verbose_name='Year', max_length=4)
+    doi = models.CharField(verbose_name='DOI', max_length=100, blank=True, default='N/A')
 
+    # Somewhat odd
     def get_metadata(self):
         return {
             'pubmed_id': self.pubmed_id,
@@ -2657,14 +2658,16 @@ class AssayStudyReference(models.Model):
     reference = models.ForeignKey(AssayReference, on_delete=models.CASCADE)
     reference_for = models.ForeignKey(AssayStudy, on_delete=models.CASCADE)
 
+
 # TODO TODO TODO
-# class AssayStudySetReference(models.Model):
-    # class Meta(object):
-    #     unique_together = [
-    #         (
-    #             'reference',
-    #             'reference_for'
-    #         )
-    #     ]
-#     reference = models.ForeignKey(AssayReference, on_delete=models.CASCADE)
-#     reference_for = models.ForeignKey(AssayStudySet, on_delete=models.CASCADE)
+class AssayStudySetReference(models.Model):
+    class Meta(object):
+        unique_together = [
+            (
+                'reference',
+                'reference_for'
+            )
+        ]
+
+    reference = models.ForeignKey(AssayReference, on_delete=models.CASCADE)
+    reference_for = models.ForeignKey(AssayStudySet, on_delete=models.CASCADE)

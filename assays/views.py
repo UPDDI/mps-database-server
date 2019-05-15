@@ -58,6 +58,7 @@ from assays.forms import (
     AssayStudyModelFormSet,
     AssayStudySetForm,
     AssayReferenceForm,
+    AssayStudySetReferenceFormSetFactory
 )
 from microdevices.models import MicrophysiologyCenter
 from django import forms
@@ -1956,6 +1957,14 @@ class AssayStudySetAdd(CreateView, OneGroupRequiredMixin):
 
         context['object_list'] = combined;
 
+        if self.request.method == 'POST':
+            if 'reference_formset' not in context:
+                context['reference_formset'] = AssayStudySetReferenceFormSetFactory(self.request.POST)
+        else:
+            context['reference_formset'] = AssayStudySetReferenceFormSetFactory()
+
+        context['reference_queryset'] = AssayReference.objects.all()
+
         return context
 
     def get_form(self, form_class=None):
@@ -1969,8 +1978,13 @@ class AssayStudySetAdd(CreateView, OneGroupRequiredMixin):
             return form_class(request=self.request)
 
     def form_valid(self, form):
-        if form.is_valid():
-            save_forms_with_tracking(self, form, update=False)
+        reference_formset = AssayStudySetReferenceFormSetFactory(
+            self.request.POST,
+            instance=form.instance
+        )
+
+        if form.is_valid() and reference_formset.is_valid():
+            save_forms_with_tracking(self, form, update=False, formset=[reference_formset])
             form.save_m2m()
             return redirect(
                 self.object.get_absolute_url()
@@ -2002,6 +2016,14 @@ class AssayStudySetUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
 
         context['update'] = True
 
+        if self.request.method == 'POST':
+            if 'reference_formset' not in context:
+                context['reference_formset'] = AssayStudySetReferenceFormSetFactory(self.request.POST, instance=self.object)
+        else:
+            context['reference_formset'] = AssayStudySetReferenceFormSetFactory(instance=self.object)
+
+        context['reference_queryset'] = AssayReference.objects.all()
+
         return context
 
     def get_form(self, form_class=None):
@@ -2015,8 +2037,13 @@ class AssayStudySetUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
             return form_class(instance=self.object, request=self.request)
 
     def form_valid(self, form):
-        if form.is_valid():
-            save_forms_with_tracking(self, form, update=True)
+        reference_formset = AssayStudySetReferenceFormSetFactory(
+            self.request.POST,
+            instance=form.instance
+        )
+
+        if form.is_valid() and reference_formset.is_valid():
+            save_forms_with_tracking(self, form, update=True, formset=[reference_formset])
             form.save_m2m()
             return redirect(
                 self.object.get_absolute_url()

@@ -28,7 +28,7 @@ from assays.models import (
     AssayStudySet,
     AssayReference,
     AssayStudyReference,
-    # AssayStudySetReference,
+    AssayStudySetReference,
 )
 from compounds.models import Compound, CompoundInstance, CompoundSupplier
 from microdevices.models import (
@@ -1539,7 +1539,7 @@ class AssayStudyDataUploadForm(BootstrapForm):
 class AssayStudySetForm(BootstrapForm):
     class Meta(object):
         model = AssayStudySet
-        exclude = ('',)
+        exclude = tracking
         widgets = {
             'description': forms.Textarea(attrs={'rows': 10})
         }
@@ -1593,9 +1593,9 @@ AssayStudyReferenceFormSetFactory = inlineformset_factory(
     exclude=[]
 )
 
-# AssayStudySetReferenceFormSetFactory = inlineformset_factory(
-#     AssayStudySet,
-#     AssayStudySetReference,
-#     extra=1,
-#     exclude=[]
-# )
+AssayStudySetReferenceFormSetFactory = inlineformset_factory(
+    AssayStudySet,
+    AssayStudySetReference,
+    extra=1,
+    exclude=[]
+)

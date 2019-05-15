@@ -15,6 +15,7 @@
 
 {% block load_js %}
     <script src="{% static "assays/assaystudyset_add.js" %}"></script>
+    <script src="{% static "assays/reference_selection.js" %}"></script>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -228,6 +229,8 @@
         <tbody id="selected_studies_table">
         </tbody>
     </table>
+
+    {% include 'add_reference.html' %}
 </form>
 </div>
 
