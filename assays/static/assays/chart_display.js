@@ -1115,7 +1115,12 @@ $(document).ready(function () {
             // Try to get a more reasonable size for cells
             columnDefs: [
                 // Treat the group column as if it were just the number
-                { "type": "brute-numeric", "targets": 0, "width": "10%" }
+                { "type": "brute-numeric", "targets": 0, "width": "10%" },
+                // Chips/wells reduced width to 25%
+                {
+                    width: '25%',
+                    targets: [-1]
+                }
             ]
         });
 

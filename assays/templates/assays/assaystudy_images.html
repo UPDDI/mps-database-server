@@ -4,6 +4,7 @@
 {% block extra_head %}
     <script>
         var metadata_list = JSON.parse("{{ metadata|escapejs|safe }}");
+        var orderedStudyImages = JSON.parse("{{ orderedStudyImages|escapejs|safe }}");
         var tableRows = JSON.parse("{{ tableRows|escapejs|safe }}");
         var tableCols = JSON.parse("{{ tableCols|escapejs|safe }}");
         var tableData = JSON.parse("{{ tableData|escapejs|safe }}");

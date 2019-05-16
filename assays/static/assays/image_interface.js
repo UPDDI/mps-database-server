@@ -189,29 +189,30 @@ $(document).ready(function () {
 
     for (j=0; j<tableCols.length; j++){
         cls = tableCols[j].split(" ").join("").split(",").join("");
-        for (var i=0; i<Object.keys(tableData).length; i++) {
-            if (tableData[Object.keys(tableData)[i]][1] == cls) {
-                var caption = metadata_list[Object.keys(tableData)[i]]["target_analyte"] + " (" + metadata_list[Object.keys(tableData)[i]]["sample_location"] + "), "
-                +metadata_list[Object.keys(tableData)[i]]["sample_label"]+", "+metadata_list[Object.keys(tableData)[i]]["magnification"]
-                +"x at " + metadata_list[Object.keys(tableData)[i]]["time"];
+        // for (var i=0; i<Object.keys(tableData).length; i++) {
+        $.each(orderedStudyImages, function(index, image_id) {
+            if (tableData[image_id][1] == cls) {
+                var caption = metadata_list[image_id]["target_analyte"] + " (" + metadata_list[image_id]["sample_location"] + "), "
+                +metadata_list[image_id]["sample_label"]+", "+metadata_list[image_id]["magnification"]
+                +"x at " + metadata_list[image_id]["time"];
 
-                var extension = metadata_list[Object.keys(tableData)[i]]["file_name"].split(".").pop().toLowerCase();
+                var extension = metadata_list[image_id]["file_name"].split(".").pop().toLowerCase();
                 if (['flv', 'avi', 'mp4', 'mov', 'wmv'].indexOf(extension) >= 0){
-                    $('[data-column="' + cls + '"][data-row="' + tableData[Object.keys(tableData)[i]][0] + '"]').append('<span data-pic="'+Object.keys(tableData)[i]
+                    $('[data-column="' + cls + '"][data-row="' + tableData[image_id][0] + '"]').append('<span data-pic="'+image_id
                     +'" style="vertical-align: top; display: inline-block; margin:2px;" class="image_thumbnail"><figure><div style="position: absolute; z-index: 0;"><img alt="'
-                    +metadata_list[Object.keys(tableData)[i]]["file_name"]+'" style="height: 120px; width: 120px; filter: contrast('+contrast+'%) brightness('+brightness+'%);" src="/media/assay_thumbs/'
-                    +study_pk+'/thumbnail_'+metadata_list[Object.keys(tableData)[i]]["file_name"].split(".").slice(0, -1).join('.')
+                    +metadata_list[image_id]["file_name"]+'" style="height: 120px; width: 120px; filter: contrast('+contrast+'%) brightness('+brightness+'%);" src="/media/assay_thumbs/'
+                    +study_pk+'/thumbnail_'+metadata_list[image_id]["file_name"].split(".").slice(0, -1).join('.')
                     +'_120_120.jpg"/></div><div onMouseOver="this.style.opacity='+"1"+'" onMouseOut="this.style.opacity='+"0.5"+'" style="position: absolute; z-index: 1; opacity: 0.5;"><img src="/media/assay_images/playbutton.png" style="padding: 30px; filter: invert(1);"/></div><div style="padding-top:120px;"><figcaption style="width: 120px; word-wrap: break-word;" class="caption text-center">'+ caption +'</figcaption></div></figure></span>');
                 }
                 else {
-                    $('[data-column="' + cls + '"][data-row="' + tableData[Object.keys(tableData)[i]][0] + '"]').append('<span data-pic="'+Object.keys(tableData)[i]
+                    $('[data-column="' + cls + '"][data-row="' + tableData[image_id][0] + '"]').append('<span data-pic="'+image_id
                     +'" style="vertical-align: top; display: inline-block; margin:2px;" class="image_thumbnail"><figure><img alt="'
-                    +metadata_list[Object.keys(tableData)[i]]["file_name"]+'" style="height: 120px; width: 120px; filter: contrast('+contrast+'%) brightness('+brightness+'%);" src="/media/assay_thumbs/'
-                    +study_pk+'/thumbnail_'+metadata_list[Object.keys(tableData)[i]]["file_name"].split(".").slice(0, -1).join('.')
+                    +metadata_list[image_id]["file_name"]+'" style="height: 120px; width: 120px; filter: contrast('+contrast+'%) brightness('+brightness+'%);" src="/media/assay_thumbs/'
+                    +study_pk+'/thumbnail_'+metadata_list[image_id]["file_name"].split(".").slice(0, -1).join('.')
                     +'_120_120.jpg"/><figcaption style="width: 120px; word-wrap: break-word;" class="text-center caption">'+ caption +'</figcaption></figure></span>');
                 }
             }
-        }
+        });
     }
 
     $( function() {

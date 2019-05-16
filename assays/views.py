@@ -1664,6 +1664,10 @@ class AssayStudyImages(StudyViewerMixin, DetailView):
             'setting__study'
         )
 
+        ordered_study_images = AssayImage.objects.filter(
+            setting_id__in=study_image_settings
+        ).order_by('time').values_list('id', flat=True)
+
         metadata = {}
         tableCols = []
         tableRows = []
@@ -1695,6 +1699,7 @@ class AssayStudyImages(StudyViewerMixin, DetailView):
         context['tableRows'] = json.dumps(tableRows)
         context['tableCols'] = json.dumps(tableCols)
         context['tableData'] = json.dumps(tableData)
+        context['orderedStudyImages'] = json.dumps(ordered_study_images)
 
         # Maybe useful later
         # get_user_status_context(self, context)
