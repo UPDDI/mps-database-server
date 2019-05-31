@@ -52,8 +52,8 @@
     </div>
 </div>
 
-{% if object.assaystudyreference_set.count %}
-    {% include 'assays/reference_table.html' with references_set=object.assaystudyreference_set.all %}
+{% if object.assaystudysetreference_set.count %}
+    {% include 'assays/reference_table.html' with references_set=object.assaystudysetreference_set.all %}
 {% endif %}
 
 {# Note indicating no data to display initially #}
