@@ -196,6 +196,10 @@
 
     {% include 'tracking.html' %}
 
+    {% if update %}
+    {% include "sign_off_form.html" with creator=object.created_by.id %}
+    {% endif %}
+
     <legend>Study Details</legend>
 
     {% include 'generic_field.html' with field=form.name label="Study Set Name*" %}

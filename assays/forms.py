@@ -1536,7 +1536,7 @@ class AssayStudyDataUploadForm(BootstrapForm):
         return self.cleaned_data
 
 
-class AssayStudySetForm(BootstrapForm):
+class AssayStudySetForm(SignOffMixin, BootstrapForm):
     class Meta(object):
         model = AssayStudySet
         exclude = tracking

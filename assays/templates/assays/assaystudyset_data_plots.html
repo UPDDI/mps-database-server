@@ -52,6 +52,10 @@
     </div>
 </div>
 
+{% if object.assaystudyreference_set.count %}
+    {% include 'assays/reference_table.html' with references_set=object.assaystudyreference_set.all %}
+{% endif %}
+
 {# Note indicating no data to display initially #}
 <div id="charts" class="padded-bottom">
     No data to display

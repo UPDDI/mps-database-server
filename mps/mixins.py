@@ -261,6 +261,11 @@ class CreatorOrSuperuserRequiredMixin(object):
     # Thus, to perform this comparison it is necessary to access request.user via authentication
     def dispatch(self, *args, **kwargs):
         self.object = self.get_object()
+        if self.object.signed_off_by:
+            return PermissionDenied(
+                self.request,
+                'You cannot change this entry because it has been signed off on.'
+            )
         if not self.request.user.is_authenticated or (self.request.user != self.object.created_by and not self.request.user.is_superuser):
             return PermissionDenied(self.request, 'Only the creator of this entry can view this page.')
         return super(CreatorOrSuperuserRequiredMixin, self).dispatch(*args, **kwargs)

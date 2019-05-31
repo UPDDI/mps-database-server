@@ -1946,7 +1946,7 @@ class AssayDataFromFilters(TemplateView):
             return HttpResponse('', content_type='text/plain')
 
 
-class AssayStudySetAdd(CreateView, OneGroupRequiredMixin):
+class AssayStudySetAdd(OneGroupRequiredMixin, CreateView):
     model = AssayStudySet
     template_name = 'assays/assaystudyset_add.html'
     form_class = AssayStudySetForm
@@ -2138,7 +2138,7 @@ class AssayStudySetData(DetailView):
 
             # For specifically text
             response = HttpResponse(data, content_type='text/csv')
-            response['Content-Disposition'] = 'attachment;filename=' + unicode(self.object) + '.csv'
+            response['Content-Disposition'] = 'attachment;filename=' + str(self.object) + '.csv'
 
             return response
         # Return nothing otherwise
