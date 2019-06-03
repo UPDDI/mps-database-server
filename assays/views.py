@@ -2077,10 +2077,10 @@ class AssayStudyAddNew(OneGroupRequiredMixin, CreateView):
             # Make the assumption that if one is missing, all are
             if 'study_assay_formset' not in context:
                 context['study_assay_formset'] = AssayStudyAssayFormSetFactory(self.request.POST)
-                context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(self.request.POST, self.request.FILES)
+                # context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(self.request.POST, self.request.FILES)
         else:
             context['study_assay_formset'] = AssayStudyAssayFormSetFactory()
-            context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory()
+            # context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory()
 
         # Cellsamples will always be the same
         context['cellsamples'] = CellSample.objects.all().prefetch_related(
@@ -2096,12 +2096,13 @@ class AssayStudyAddNew(OneGroupRequiredMixin, CreateView):
             self.request.POST,
             instance=form.instance
         )
-        supporting_data_formset = AssayStudySupportingDataFormSetFactory(
-            self.request.POST,
-            self.request.FILES,
-            instance=form.instance
-        )
-        if form.is_valid() and study_assay_formset.is_valid() and supporting_data_formset.is_valid():
+        # supporting_data_formset = AssayStudySupportingDataFormSetFactory(
+        #     self.request.POST,
+        #     self.request.FILES,
+        #     instance=form.instance
+        # )
+        if form.is_valid() and study_assay_formset.is_valid():
+        # if form.is_valid() and study_assay_formset.is_valid() and supporting_data_formset.is_valid():
             save_forms_with_tracking(self, form, formset=[study_assay_formset, supporting_data_formset], update=False)
             return redirect(
                 self.object.get_absolute_url()

@@ -333,7 +333,7 @@ $(document).ready(function () {
     function spawn_column(prefix) {
         var column_index = number_of_columns[prefix];
         // UGLY
-        study_setup_head.find('.' + prefix + '_start').last().after('<th class="' + prefix + '_start' + '">' + prefix + ' ' + column_index + '<br>' + create_delete_button(prefix, column_index) +'</th>');
+        study_setup_head.find('.' + prefix + '_start').last().after('<th class="' + prefix + '_start' + '">' + prefix[0].toUpperCase() + prefix.slice(1) + ' ' + (column_index + 1) + '<br>' + create_delete_button(prefix, column_index) +'</th>');
 
         // ADD TO EXISTING ROWS AS EMPTY
         study_setup_body.find('tr').each(function(row_index) {
