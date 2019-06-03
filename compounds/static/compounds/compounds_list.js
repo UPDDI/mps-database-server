@@ -21,8 +21,13 @@ $(document).ready(function() {
                 "bSortable": false,
                 "aTargets": [0, 1]
             },
+            // {
+            //     "targets": [4, 9],
+            //     "visible": false,
+            //     "searchable": true
+            // },
             {
-                "targets": [4, 9],
+                "targets": [4],
                 "visible": false,
                 "searchable": true
             },

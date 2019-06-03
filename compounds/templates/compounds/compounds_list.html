@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block load_js %}
-    <script src="{% static "js/project_filter.js" %}"></script>
+    {# <script src="{% static "js/project_filter.js" %}"></script> #}
     <script src="{% static "compounds/compounds_list.js" %}"></script>
 {% endblock %}
 
@@ -22,7 +22,8 @@
             <a href="/compounds/add/" class="btn btn-lg btn-success" role="button">Add Compound</a>
         </div>
 
-        {% include 'project_filters.html' %}
+        {# Deprecated #}
+{# {% include 'project_filters.html' %} #}
 
         <table hidden id="compounds" class="display" cellspacing="0" width="100%">
             <thead>
@@ -38,7 +39,7 @@
                     <th>Known Drug</th>
 {#                    <th>Last Update</th>#}
                     {% comment %} <th>Image</th> {% endcomment %}
-                    <th>Project</th>
+                    {% comment %} <th>Project</th> {% endcomment %}
                 </tr>
             </thead>
 
@@ -79,7 +80,7 @@
                       {% endif %}
                     </td> {% endcomment %}
 
-                    <td>
+                    {% comment %} <td>
                         {% if compound.mps %}
                             MPS
                         {% endif %}
@@ -92,7 +93,7 @@
                         {% if not compound.epa and not compound.mps and not compound.tctc %}
                             Unassigned
                         {% endif %}
-                    </td>
+                    </td> {% endcomment %}
                 </tr>
             {% endfor %}
             </tbody>

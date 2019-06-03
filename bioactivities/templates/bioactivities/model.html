@@ -211,7 +211,8 @@
         } else {
           add += "<span class='glyphicon glyphicon-remove'></span>";
         }
-        $('#show').prepend('<div class="thumbnail span2 text-center"><img src="https://www.ebi.ac.uk/chembldb/compound/displayimage/' + chembl[label.toLowerCase()] + '" class="img-polaroid"><strong>' + label.toLowerCase() + '</strong>' + add + '</div>')
+        // $('#show').prepend('<div class="thumbnail span2 text-center"><img src="https://www.ebi.ac.uk/chembldb/compound/displayimage/' + chembl[label.toLowerCase()] + '" class="img-polaroid"><strong>' + label.toLowerCase() + '</strong>' + add + '</div>')
+        $('#show').prepend('<div class="thumbnail span2 text-center"><img style="width: 200px; height: 200px;" src="https://www.ebi.ac.uk/chembl/api/data/image/' + chembl[label.toLowerCase()] + '.svg?engine=indigo" class="img-polaroid"><strong>' + label.toLowerCase() + '</strong>' + add + '</div>')
       }
     }
     var chart = new google.visualization.ScatterChart(document.getElementById('chart_div'));

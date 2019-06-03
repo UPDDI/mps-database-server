@@ -9,12 +9,18 @@ from .models import (
     MicrophysiologyCenter,
     GroupDeferral,
     OrganModelReference,
-    MicrodeviceReference
+    MicrodeviceReference,
+    OrganModelCell,
+    OrganModelProtocolCell,
+    OrganModelProtocolSetting,
 )
 from assays.models import AssayMatrixItem, AssaySampleLocation
 from diseases.models import Disease
 from mps.forms import SignOffMixin, BootstrapForm
 from django.forms.models import inlineformset_factory
+
+# A little strange to import this way: spaghetti
+from assays.forms import ModelFormSplitTime, PhysicalUnits
 
 # These are all of the tracking fields
 tracking = ('created_by', 'created_on', 'modified_on', 'modified_by', 'signed_off_by', 'signed_off_date')
@@ -178,3 +184,68 @@ class GroupDeferralForm(BootstrapForm):
         )
 
         self.fields['group'].queryset = groups_with_center_full
+
+
+class OrganModelProtocolForm(BootstrapForm):
+    class Meta(object):
+        model = OrganModelProtocol
+        exclude = tracking + ('organ_model',)
+
+        widgets = {
+            'name': forms.Textarea(attrs={'rows': 1}),
+            'description': forms.Textarea(attrs={'rows': 6}),
+        }
+
+
+class OrganModelProtocolCellForm(ModelFormSplitTime):
+    class Meta(object):
+        model = OrganModelProtocolCell
+        exclude = tracking
+
+    def __init__(self, *args, **kwargs):
+        # self.static_choices = kwargs.pop('static_choices', None)
+        super(OrganModelProtocolCellForm, self).__init__(*args, **kwargs)
+
+        # Change widget size
+        self.fields['cell_sample'].widget.attrs['style'] = 'width:75px;'
+        self.fields['passage'].widget.attrs['style'] = 'width:75px;'
+
+        self.fields['density_unit'].queryset = PhysicalUnits.objects.filter(availability__contains='cell')
+
+
+class OrganModelProtocolSettingForm(ModelFormSplitTime):
+    class Meta(object):
+        model = OrganModelProtocolSetting
+        exclude = tracking
+
+
+class OrganModelCellForm(BootstrapForm):
+    class Meta(object):
+        model = OrganModelProtocolCell
+        exclude = tracking
+
+
+OrganModelProtocolCellFormsetFactory = inlineformset_factory(
+    OrganModelProtocol,
+    OrganModelProtocolCell,
+    form=OrganModelProtocolCellForm,
+    extra=1,
+    exclude=[],
+)
+
+OrganModelProtocolSettingFormsetFactory = inlineformset_factory(
+    OrganModelProtocol,
+    OrganModelProtocolSetting,
+    form=OrganModelProtocolSettingForm,
+    extra=1,
+    exclude=[],
+)
+
+
+OrganModelCellFormsetFactory = inlineformset_factory(
+    OrganModel,
+    OrganModelCell,
+    form=OrganModelCellForm,
+    extra=1,
+    exclude=[],
+)

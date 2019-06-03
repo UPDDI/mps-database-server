@@ -56,7 +56,7 @@
                     <th>Frequency</th>
                     <th>Value</th>
                     <th>Value Units</th>
-                    <th>Project</th>
+                    {% comment %} <th>Project</th> {% endcomment %}
                 </tr>
             </thead>
 
@@ -94,7 +94,7 @@
                     <td>{{ finding.frequency|default_if_none:"" }}</td>
                     <td>{{ finding.value|default_if_none:"" }}</td>
                     <td>{{ finding.value_units|default_if_none:"" }}</td>
-                    <td>
+                    {% comment %} <td>
                         {% if finding.drug_trial.compound.mps %}
                             MPS
                         {% endif %}
@@ -107,7 +107,7 @@
                         {% if not finding.drug_trial.compound.epa and not finding.drug_trial.compound.mps and not finding.drug_trial.compound.tctc %}
                             Unassigned
                         {% endif %}
-                    </td>
+                    </td> {% endcomment %}
                 </tr>
             {% endfor %}
             </tbody>

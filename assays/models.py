@@ -1461,6 +1461,9 @@ class AssayTarget(LockableModel):
     # Tentative
     alt_name = models.CharField(max_length=1000, blank=True, default='')
 
+    # List of all methods
+    methods = models.ManyToManyField('assays.AssayMethod')
+
     def __str__(self):
         return '{0}'.format(self.name)
 
@@ -1636,6 +1639,11 @@ class AssayStudy(FlaggableModel):
         verbose_name='Data File',
         blank=True, null=True
     )
+
+    # TODO MAKE REQUIRED
+    # TODO DEAL WITH CONFLICTS
+    organ_model = models.ForeignKey(OrganModel, blank=True, null=True, on_delete=models.CASCADE)
+    organ_model_protocol = models.ForeignKey(OrganModelProtocol, blank=True, null=True, on_delete=models.CASCADE)
 
     # TODO
     # def get_study_types_string(self):
@@ -1876,8 +1884,12 @@ class AssayMatrixItem(FlaggableModel):
     row_index = models.IntegerField()
     column_index = models.IntegerField()
 
+    # TODO DEPRECATED: PURGE
+    # HENCEFORTH ALL ITEMS WILL HAVE AN ORGAN MODEL PROTOCOL
     device = models.ForeignKey(Microdevice, verbose_name='Device', on_delete=models.CASCADE)
 
+    # TODO DEPRECATED: PURGE
+    # HENCEFORTH ALL ITEMS WILL HAVE AN ORGAN MODEL PROTOCOL
     organ_model = models.ForeignKey(OrganModel, verbose_name='Model', null=True, blank=True, on_delete=models.CASCADE)
 
     organ_model_protocol = models.ForeignKey(
@@ -1888,6 +1900,7 @@ class AssayMatrixItem(FlaggableModel):
         on_delete=models.CASCADE
     )
 
+    # TODO DEPRECATED: PURGE
     # formerly just 'variance'
     variance_from_organ_model_protocol = models.CharField(
         max_length=3000,
@@ -2671,3 +2684,12 @@ class AssayStudySetReference(models.Model):
 
     reference = models.ForeignKey(AssayReference, on_delete=models.CASCADE)
     reference_for = models.ForeignKey(AssayStudySet, on_delete=models.CASCADE)
+
+
+class AssayType(FlaggableModel):
+    """Describes a genre of assay"""
+    name = models.CharField(max_length=512, unique=True)
+    description = models.CharField(max_length=2000)
+
+    # List of all related targets
+    targets = models.ManyToManyField('assays.AssayTarget')

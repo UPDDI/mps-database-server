@@ -79,9 +79,10 @@
 
     {% include 'generic_field.html' with field=form.model_type label="Model Type*" %}
 
-    {% include 'generic_field.html' with field=form.disease label="Disease" %}
+    {# REMOVED FOR NOW #}
+    {# {% include 'generic_field.html' with field=form.disease label="Disease" %} #}
 
-    {% include 'generic_field.html' with field=form.disease_trigger label="Disease Trigger" %}
+    {# {% include 'generic_field.html' with field=form.disease_trigger label="Disease Trigger" %} #}
     {# <h6 class="text-center">Note: Leave "Disease" blank for models that are healthy at the start of a study.</h6>#}
 
     {# TODO REVISE #}
@@ -167,6 +168,58 @@
         </tbody>
     </table>
 
+    {{ cell_formset.management_form }}
+    <legend>Cells</legend>
+    {% if cell_formset.non_form_errors %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{ cell_formset.non_form_errors }}
+        </div>
+    {% endif %}
+
+    {% if cell_formset.errors %}
+        {% for dict in cell_formset.errors %}
+            {% for key,value in dict.items %}
+                {% if key %}
+                    <div class="alert alert-danger" role="alert">
+                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                        <span class="sr-only">Error:</span>
+                        {{ forloop.parentloop.counter }}.) {{ key }} : {{ value }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+
+    <a id="add_button-{{ cell_formset.prefix }}" class="btn btn-success" role="button">Add Cells</a>
+    <table class="table table-striped inlines" id="{{ cell_formset.prefix }}-group" name="cells">
+        <thead>
+            <tr>
+                <th>Cell Type*</th>
+                <th>Count*</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cell in cell_formset %}
+                <tr class="inline" id="cells-{{ forloop.counter0 }}">
+                    {% if cell.id.value %}
+                    <td class="original" hidden>
+                        <input type="hidden"
+                               id="id_{{ cell_formset.prefix }}-{{ forloop.counter0 }}-id"
+                               name="{{ cell_formset.prefix }}-{{ forloop.counter0 }}-id"
+                               value="{{ cell.id.value }}">
+                    </td>
+                    {% endif %}
+                    <td>{{ cell.cell_type }}</td>
+                    <td>{{ cell.count }}</td>
+                    <td>{{ cell.DELETE }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
     {{ protocol_formset.management_form }}
     <legend>Protocols</legend>
     {% if protocol_formset.non_form_errors %}
@@ -195,8 +248,9 @@
     <table class="table table-striped inlines" id="{{ protocol_formset.prefix }}-group" name="protocols">
         <thead>
             <tr>
-                <th>Version*</th>
+                <th>Name*</th>
                 <th>File (PDF)*</th>
+                <th>Edit</th>
                 <th>Delete</th>
             </tr>
         </thead>
@@ -211,8 +265,15 @@
                                value="{{ protocol.id.value }}">
                     </td>
                     {% endif %}
-                    <td>{{ protocol.version }}</td>
-                    <td>{{ protocol.file }}</td>
+                    <td>{{ protocol.name }}</td>
+                    <td>{{ protocol.protocol_file }}</td>
+                    {% if protocol.id.value %}
+                    <td>
+                        <a href="{% url 'protocol-update' protocol.id.value %}" class="btn btn-primary">Edit</a>
+                    </td>
+                    {% else %}
+                    <td></td>
+                    {% endif %}
                     <td>{{ protocol.DELETE }}</td>
                 </tr>
             {% endfor %}

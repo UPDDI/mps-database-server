@@ -61,6 +61,7 @@ class Manufacturer(LockableModel):
 class Microdevice(LockableModel):
     """A Microdevice describes a physical vessel for performing experiments (a plate, chip, etc.)"""
     class Meta(object):
+        verbose_name = 'Device'
         ordering = ('name', 'organ',)
 
     # TODO TODO THIS SHOULD BE JUST NAME
@@ -154,7 +155,7 @@ class Microdevice(LockableModel):
 class OrganModel(LockableModel):
     """An Organ Model describes a way of preparing a device to emulate a particular organ"""
     class Meta(object):
-        verbose_name = 'Organ Model'
+        verbose_name = 'MPS Model'
         ordering = ('name', 'organ',)
 
     # model_name = models.CharField(max_length=200, unique=True)
@@ -166,6 +167,7 @@ class OrganModel(LockableModel):
     device = models.ForeignKey(Microdevice, on_delete=models.CASCADE)
     description = models.CharField(max_length=4000, default='', blank=True)
 
+    # TO BE DEPRECATED
     model_image = models.ImageField(upload_to='models', null=True, blank=True)
 
     # "Base Model" represents the "parent" of the model in question
@@ -197,6 +199,7 @@ class OrganModel(LockableModel):
         default=''
     )
 
+    # DEPRECATED
     # NAIVE
     epa = models.BooleanField(
         default=False,
@@ -215,6 +218,7 @@ class OrganModel(LockableModel):
     # protocol = models.FileField(upload_to='protocols', verbose_name='Protocol File',
     #                        blank=True, null=True, help_text='File detailing the protocols for this model')
 
+    # TO BE DEPRECATED
     references = models.CharField(max_length=2000, blank=True, default='')
 
     def __str__(self):
@@ -227,6 +231,11 @@ class OrganModel(LockableModel):
         return '/microdevices/model/'
 
 
+# class OrganModelImage(models.Model):
+#     pass
+
+
+# TODO DEPRECATED
 # It is somewhat odd that ValidatedAssays are inlines in lieu of a manytomany field
 # This was done originally so that additional fields could be added to a validated assay
 # If no new fields become apparent, it may be worthwhile to do away with inlines and move to M2M
@@ -237,7 +246,8 @@ class ValidatedAssay(models.Model):
     assay = models.ForeignKey('assays.AssayModel', verbose_name='Assay Model', on_delete=models.CASCADE)
 
 
-class OrganModelProtocol(models.Model):
+# TODO PLEASE NOTE THIS WILL BE REFERRED TO AS SIMPLY A "VERSION"
+class OrganModelProtocol(FlaggableModel):
     """Organ Model Protocols point to a file detailing the preparation of a model
 
     This model is intended to be an inline
@@ -245,16 +255,46 @@ class OrganModelProtocol(models.Model):
 
     class Meta(object):
         unique_together = [('version', 'organ_model')]
+        # TODO SWITCH TO THIS UNIQUE TOGETHER RESTRICTION ASAP
+        # unique_together = [('name', 'organ_model')]
+        verbose_name = 'MPS Model Version'
 
     organ_model = models.ForeignKey(OrganModel, verbose_name='Organ Model', on_delete=models.CASCADE)
     # Uhh... this should probably just be "name"...
-    version = models.CharField(max_length=20)
-    file = models.FileField(upload_to='protocols', verbose_name='Protocol File')
+    # TRANSFER ALL VERSIONS TO NAMES
+    version = models.CharField(max_length=20, default='', blank=True)
+    name = models.CharField(max_length=200)
+    # THIS SHOULD DEFINITELY NOT BE CALLED SIMPLY "FILE"
+    # file = models.FileField(upload_to='protocols', verbose_name='Protocol File')
+    protocol_file = models.FileField(upload_to='protocols', verbose_name='Protocol File')
+
+    description = models.CharField(max_length=4000, default='', blank=True)
+
+    disease = models.ForeignKey('diseases.Disease', null=True, blank=True, on_delete=models.CASCADE)
+    # Obviously only really relevant for disease models
+    disease_trigger = models.CharField(
+        max_length=10,
+        choices=(
+            ('', ''),
+            ('Compound', 'Induced by Compound'),
+            ('Cells', 'Addition of Diseased Cells'),
+        ),
+        blank=True,
+        default=''
+    )
 
     def __str__(self):
+        # return self.name
         return self.version
 
+    def get_absolute_url(self):
+        return "/microdevices/protocol/{}/".format(self.id)
 
+    def get_post_submission_url(self):
+        return '{}update'.format(self.organ_model.get_absolute_url())
+
+
+# TODO SEEMS TO BE UNUSED
 class GroupDeferral(TrackableModel):
     """This indicates the status of a group and whether they have deferred their ability to approve studies"""
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
@@ -266,11 +306,71 @@ class GroupDeferral(TrackableModel):
     )
 
 
+# PLEASE KEEP IN MIND
 class OrganModelLocation(models.Model):
     """This is an inline for models that permits us to list relevant sample locations"""
     sample_location = models.ForeignKey('assays.AssaySampleLocation', on_delete=models.CASCADE)
     notes = models.CharField(max_length=1024)
     organ_model = models.ForeignKey(OrganModel, on_delete=models.CASCADE)
+
+
+# PROTOTYPE
+# JUST THE CELL TYPE APPARENTLY
+class OrganModelCell(models.Model):
+    organ_model = models.ForeignKey(OrganModel, on_delete=models.CASCADE)
+    cell_type = models.ForeignKey('cellsamples.CellType', on_delete=models.CASCADE)
+    count = models.IntegerField()
+
+
+# JUST INCLUDE EVERYTHING FOR NOW
+# SOMEWHAT UNUSUAL TO HAVE THIS DECOUPLED FROM SETUPCELL
+class OrganModelProtocolCell(models.Model):
+    organ_model_protocol = models.ForeignKey(OrganModelProtocol, on_delete=models.CASCADE)
+
+    cell_sample = models.ForeignKey('cellsamples.CellSample', on_delete=models.CASCADE)
+    biosensor = models.ForeignKey('cellsamples.Biosensor', on_delete=models.CASCADE)
+    density = models.FloatField(verbose_name='density', default=0)
+
+    density_unit = models.ForeignKey('assays.PhysicalUnits', on_delete=models.CASCADE)
+    passage = models.CharField(
+        max_length=16,
+        verbose_name='Passage#',
+        blank=True,
+        default=''
+    )
+
+    # DO WE WANT ADDITION TIME AND DURATION?
+    # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
+    # TODO TODO TODO TEMPORARILY NOT REQUIRED
+    addition_time = models.FloatField(null=True, blank=True)
+
+    # TODO TODO TODO DO WE WANT DURATION????
+    # duration = models.FloatField(null=True, blank=True)
+
+    # TODO TODO TODO TEMPORARILY NOT REQUIRED
+    addition_location = models.ForeignKey('assays.AssaySampleLocation', blank=True, default=1, on_delete=models.CASCADE)
+
+
+# JUST INCLUDE EVERYTHING FOR NOW
+class OrganModelProtocolSetting(models.Model):
+    organ_model_protocol = models.ForeignKey(OrganModelProtocol, on_delete=models.CASCADE)
+
+    # No longer one-to-one
+    # setup = models.ForeignKey('assays.AssaySetup', on_delete=models.CASCADE)
+    setting = models.ForeignKey('assays.AssaySetting', on_delete=models.CASCADE)
+    # DEFAULTS TO NONE, BUT IS REQUIRED
+    unit = models.ForeignKey('assays.PhysicalUnits', blank=True, default=14, on_delete=models.CASCADE)
+    value = models.CharField(max_length=255)
+
+    # Will we include these??
+    # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
+    addition_time = models.FloatField(blank=True)
+
+    # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
+    duration = models.FloatField(blank=True)
+
+    # TODO TODO TODO TEMPORARILY NOT REQUIRED
+    addition_location = models.ForeignKey('assays.AssaySampleLocation', blank=True, default=1, on_delete=models.CASCADE)
 
 
 # REMOVED FOR NOW

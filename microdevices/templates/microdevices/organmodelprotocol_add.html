@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block load_js %}
+    <script src="{% static "assays/compound_instances.js" %}"></script>
+    <script src="{% static "assays/cell_sample_selection.js" %}"></script>
+    <script src="{% static "assays/chart_display.js" %}"></script>
+    <script src="{% static "js/flag.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li></li>
+{% endblock %}
+
+{% block content %}
+    <form enctype="multipart/form-data" class="form-horizontal" method="post" >
+
+    <h1>
+        Edit <em>{{ object }}</em>
+    <br>
+    {% csrf_token %}
+    </h1>
+
+    {% include "submit.html" with flag="y" creator=object.created_by.id %}
+
+    {% include 'errors.html' %}
+
+    {% include 'tracking.html' %}
+
+    {% include "sign_off_form.html" with group=form.instance.study.group.name %}
+
+    <legend>MPS Model Version Details</legend>
+
+    {% include 'generic_field.html' with field=form.name label="Model Version Name*" %}
+
+    {% include 'generic_field.html' with field=form.disease label="Disease" %}
+
+    {% include 'generic_field.html' with field=form.disease_trigger label="Disease Trigger" %}
+
+    {% include 'generic_field.html' with field=form.protocol_file label="Protocol File*" %}
+
+    {{ cell_formset.management_form }}
+    <legend>Cell Samples</legend>
+
+    {% if cell_formset.errors %}
+        {% for dict in cell_formset.errors %}
+            {% for key,value in dict.items %}
+                {% if key %}
+                    <div class="alert alert-danger" role="alert">
+                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                        <span class="sr-only">Error:</span>
+                        {{ forloop.parentloop.counter }}.) {{ key }} : {{ value }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+
+    {% if cell_formset.non_form_errors %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{ cell_formset.non_form_errors }}
+        </div>
+    {% endif %}
+
+    <p>
+        Click a magnifying glass to see a list of available cell samples. Use 'e' for scientific notation: 1e+3 = 1000.
+        <br>
+        <a href="/cellsamples/cellsample">
+            <span class="glyphicon glyphicon-plus text-success" aria-hidden="true"></span>
+            Add/Edit Cell Samples (Must Refresh Page to See Change)
+        </a>
+    </p>
+
+    <table class="table table-striped table-condensed table-bordered inlines" id="{{ cell_formset.prefix }}-group" name="cells">
+        <thead>
+            <tr>
+                <td><a id="add_button-{{ cell_formset.prefix }}" class="btn btn-success" role="button">Add Cell</a></td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cell in cell_formset %}
+                <tr class="inline cell-inline" id="cells-{{ forloop.counter0 }}">
+                <td>
+                <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+                    <tr>
+                        <th>Cell Sample*</th>
+                        <th>Passage</th>
+                        <th>Biosensor*</th>
+                    </tr>
+                    <tr>
+                        {% if cell.id.value %}
+                        <td class="original" hidden>
+                            <input id="id_{{ cell_formset.prefix }}-{{ forloop.counter0 }}-id" name="{{ cell_formset.prefix }}-{{ forloop.counter0 }}-id" type="hidden" value="{{ cell.id.value }}">
+                        </td>
+                    {% endif %}
+                    <td>
+                    	<input class="cell-sample-id-field" readonly="readonly" id="id_{{ cell_formset.prefix }}-{{ forloop.counter0 }}-cell_sample"
+                               name="{{ cell_formset.prefix }}-{{ forloop.counter0 }}-cell_sample" size="5" value="{{ cell.cell_sample.value|default_if_none:'' }}">
+                        <button id='search-{{ forloop.counter0 }}-' type="button" class="btn btn-xs btn-primary open-cell-sample-dialog">
+                            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                        </button>
+                        <label class="small" id="id_{{ cell_formset.prefix }}-{{ forloop.counter0 }}-cell_sample_label"></label>
+                    </td>
+                    <td>{{ cell.passage }}</td>
+                    <td>{{ cell.biosensor }}</td>
+                    </tr>
+                </table>
+                <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+                    <tr>
+                        <th>Density*</th>
+                        <th>Density Unit*</th>
+                    </tr>
+                    <tr>
+                        <td title="Use 'e' for scientific notation: 1e+3 = 1000">{{ cell.density }}</td>
+                        <td>{{ cell.density_unit }}</td>
+                    </tr>
+                </table>
+                <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+                    <tr>
+                        <th class="bg-success" colspan="3">Addition Time*</th>
+{#                        <th class="bg-info" colspan="3">Duration*</th>#}
+                    </tr>
+                    <tr>
+                        <th class="bg-success">Day</th>
+                        <th class="bg-success">Hour</th>
+                        <th class="bg-success">Minute</th>
+{#                        <th class="bg-info">Day</th>#}
+{#                        <th class="bg-info">Hour</th>#}
+{#                        <th class="bg-info">Minute</th>#}
+                        <th class="bg-warning">Addition Location*</th>
+                        <th class="bg-danger">Delete</th>
+                    </tr>
+                    <tr>
+                        <td hidden>
+                            {{ cell.addition_time }}
+{#                            {{ cell.duration }}#}
+                        </td>
+                        <td class="bg-success">{{ cell.addition_time_day }}</td>
+                        <td class="bg-success">{{ cell.addition_time_hour }}</td>
+                        <td class="bg-success">{{ cell.addition_time_minute }}</td>
+{#                        <td class="bg-info">{{ cell.duration_day }}</td>#}
+{#                        <td class="bg-info">{{ cell.duration_hour }}</td>#}
+{#                        <td class="bg-info">{{ cell.duration_minute }}</td>#}
+                        <td class="bg-warning">{{ cell.addition_location }}</td>
+                        <td class="bg-danger">{{ cell.DELETE }}</td>
+                    </tr>
+                </table>
+                </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                {# Contrived extra add button #}
+                <td><a onclick="$('#add_button-{{ cell_formset.prefix }}').click();" class="btn btn-success" role="button">Add Cell</a></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    {{ setting_formset.management_form }}
+    <legend>Settings</legend>
+
+    {% if setting_formset.errors %}
+        {% for dict in setting_formset.errors %}
+            {% for key,value in dict.items %}
+                {% if key %}
+                    <div class="alert alert-danger" role="alert">
+                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                        <span class="sr-only">Error:</span>
+                        {{ forloop.parentloop.counter }}.) {{ key }} : {{ value }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+
+    {% if setting_formset.non_form_errors %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{ setting_formset.non_form_errors }}
+        </div>
+    {% endif %}
+
+    <table class="table table-striped table-condensed table-bordered inlines" id="{{ setting_formset.prefix }}-group" name="settings">
+        <thead>
+            <tr>
+                <td><a id="add_button-{{ setting_formset.prefix }}" class="btn btn-success" role="button">Add Setting</a></td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for setting in setting_formset %}
+                <tr class="inline setting-inline" id="settings-{{ forloop.counter0 }}">
+                <td>
+                <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+                    <tr>
+                        <th>Setting*</th>
+                        <th>Value*</th>
+                        <th>Unit*</th>
+                    </tr>
+                    <tr>
+                        {% if setting.id.value %}
+                        <td class="original" hidden>
+                                <input id="id_{{ setting_formset.prefix }}-{{ forloop.counter0 }}-id" name="{{ setting_formset.prefix }}-{{ forloop.counter0 }}-id" type="hidden" value="{{ setting.id.value }}">
+                            </td>
+                        {% endif %}
+                        <td>{{ setting.setting }}</td>
+                        <td>{{ setting.value }}</td>
+                        <td>{{ setting.unit }}</td>
+                    </tr>
+                </table>
+                <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+                    <tr>
+                        <th class="bg-success" colspan="3">Addition Time*</th>
+                        <th class="bg-info" colspan="3">Duration*</th>
+                    </tr>
+                    <tr>
+                        <th class="bg-success">Day</th>
+                        <th class="bg-success">Hour</th>
+                        <th class="bg-success">Minute</th>
+                        <th class="bg-info">Day</th>
+                        <th class="bg-info">Hour</th>
+                        <th class="bg-info">Minute</th>
+                        <th class="bg-warning">Addition Location*</th>
+                        <th class="bg-danger">Delete</th>
+                    </tr>
+                    <tr>
+                        <td hidden>
+                            {{ setting.addition_time }}
+                            {{ setting.duration }}
+                        </td>
+                        <td class="bg-success">{{ setting.addition_time_day }}</td>
+                        <td class="bg-success">{{ setting.addition_time_hour }}</td>
+                        <td class="bg-success">{{ setting.addition_time_minute }}</td>
+                        <td class="bg-info">{{ setting.duration_day }}</td>
+                        <td class="bg-info">{{ setting.duration_hour }}</td>
+                        <td class="bg-info">{{ setting.duration_minute }}</td>
+                        <td class="bg-warning">{{ setting.addition_location }}</td>
+                        <td class="bg-danger">{{ setting.DELETE }}</td>
+                    </tr>
+                </table>
+                </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                {# Contrived extra add button #}
+                <td><a onclick="$('#add_button-{{ setting_formset.prefix }}').click();" class="btn btn-success" role="button">Add Setting</a></td>
+            </tr>
+        </tfoot>
+    </table>
+</form>
+
+{# NOT DRY TODO MAKE A INCLUDE PLEASE #}
+<div hidden id="dialog" title="Choose a Cell Sample">
+    <table id="cellsamples" class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>ID #</th>
+                    <th>Receipt Date</th>
+                    <th>Cell Type</th>
+                    <th>Cell Origin</th>
+                    <th>Supplier</th>
+                    <th>Barcode/Lot#</th>
+                    <th>Patient</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for cellsample in cellsamples %}
+                <tr class="cellsample">
+                    <td>
+                        <button type="button" class="cellsample-selector btn btn-xs btn-primary" data-cell-sample-id="{{ cellsample.id }}" id="cell_sample_{{ cellsample.id }}" name="{{ cellsample }}">Select</button>
+                    </td>
+                    <td>{{ cellsample.id }}</td>
+                    <td>{{ cellsample.receipt_date|date:"M d, Y" }}</td>
+                    <td>{{ cellsample.cell_type }}</td>
+                    <td>{{ cellsample.cell_subtype }}</td>
+                    <td>{{ cellsample.supplier }}</td>
+                    <td>{{ cellsample.barcode }}</td>
+                    <td>
+                        {% if cellsample.patient_age or cellsample.patient_gender != 'N' or cellsample.patient_condition %}
+                            {{ cellsample.patient_age|default:"Unknown" }} year old {{ cellsample.patient_gender }}
+                            {{ cellsample.patient_condition }}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+    </table>
+</div>
+{% endblock %}

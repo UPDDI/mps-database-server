@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block breadcrumbs %}
     <li><a href="/microdevices/model">MPS Models</a></li>
@@ -70,7 +71,7 @@
                 </td>
             </tr>
             {% endif %}
-            <tr>
+            {% comment %} <tr>
                 <td>
                     <b>Project</b>
                 </td>
@@ -88,7 +89,7 @@
                         <span class="label label-default">Unassigned</span>
                     {% endif %}
                 </td>
-            </tr>
+            </tr> {% endcomment %}
             <tr>
                 <td>
                     <b>Model Image</b>
@@ -154,6 +155,27 @@
             <tr>
                 <td>{{ sample_location.sample_location }}</td>
                 <td>{{ sample_location.notes }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if object.organmodelcell_set.count %}
+    <legend>Cells</legend>
+
+    <table class="table table-striped table-bordered table-nonfluid" style="background-color: #EBEFC9;">
+        <thead>
+            <tr>
+                <th>Cell Type</th>
+                <th>Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cell in object.organmodelcell_set.all %}
+            <tr>
+                <td>{{ cell.cell_type }}</td>
+                <td>{{ cell.count|intcomma }}</td>
             </tr>
             {% endfor %}
         </tbody>

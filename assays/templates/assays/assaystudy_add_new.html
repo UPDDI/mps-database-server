@@ -1,0 +1,759 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block load_js %}
+    <script src="{% static "js/image_display.js" %}"></script>
+    <script src="{% static "js/enter_override.js" %}"></script>
+    <script src="{% static "js/split_time.js" %}"></script>
+    <script src="{% static "assays/compound_instances.js" %}"></script>
+    <script src="{% static "assays/cell_sample_selection.js" %}"></script>
+    <script src="{% static "js/calendar.js" %}"></script>
+    <script src="{% static "js/flag.js" %}"></script>
+    <script src="{% static "assays/organ_model_filter.js" %}"></script>
+    <script src="{% static "assays/assaystudy_add_new.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/editable_studies/">Editable Studies</a></li>
+    {% if object %}
+        <li>
+			<a href="{{ object.get_absolute_url }}">{{ object }}</a>
+        </li>
+    {% endif %}
+    <li class="active">
+        {% if object %}
+            Edit <em>{{ object }}</em>
+        {% else %}
+            Add Study
+        {% endif %}
+    </li>
+{% endblock %}
+
+{% block content %}
+{% if update %}
+    <form enctype="multipart/form-data" class="form-horizontal" method="post" >
+
+    <h1>
+        Edit <em>{{ object }}</em>
+{% else %}
+    <form enctype="multipart/form-data" class="form-horizontal" method="post" >
+
+    <h1>
+        Add Study
+{% endif %}
+    <br>
+    {% csrf_token %}
+    </h1>
+
+    {% include "submit.html" with flag="y" group=form.instance.group.name %}
+
+    {% include 'errors.html' %}
+
+    {% include 'tracking.html' %}
+
+    <legend>Study Details</legend>
+
+    {% if form.group.errors %}
+        {% for error in form.group.errors %}
+            <div class="alert alert-danger" role="alert">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error:</span>
+                {{error}}
+            </div>
+        {% endfor %}
+    <div class="form-group has-error">
+    {% else %}
+    <div class="form-group">
+    {% endif %}
+        <label for="group" class="col-sm-2 control-label">Group*</label>
+        <div class="col-sm-10">
+          {{ form.group }}
+          <span id="center_name"></span>
+        </div>
+    </div>
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{ form.non_field_errors }}
+        </div>
+    <div class="form-group has-error">
+    {% else %}
+    <div class="form-group">
+    {% endif %}
+        <label for="study_type" class="col-sm-2 control-label">Study Types*</label>
+        <div class="col-sm-10">
+            <label for="toxicity" style="padding-right: 10px;">Toxicity</label>
+              {{ form.toxicity }}
+            <label for="efficacy" style="padding-left: 20px;padding-right: 10px;">Efficacy</label>
+              {{ form.efficacy }}
+            <label for="disease" style="padding-left: 20px;padding-right: 10px;">Disease Model</label>
+              {{ form.disease }}
+            {# Please note superficial edit from Cell Characterization to Chip Characterization #}
+            {# This is subject to change #}
+            <label for="cell_characterization" style="padding-left: 20px;padding-right: 10px;">Chip Characterization</label>
+              {{ form.cell_characterization }}
+        </div>
+    </div>
+
+    {# Proposed: Excluded for convenience #}
+{#    {% include 'generic_field.html' with field=form.study_types label="Study Types*" %}#}
+
+    {% include 'generic_field.html' with field=form.name label="Study Name*" %}
+
+    {% if form.start_date.errors %}
+        {% for error in form.start_date.errors %}
+            <div class="alert alert-danger" role="alert">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error:</span>
+                {{error}}
+            </div>
+        {% endfor %}
+    <div class="form-group has-error">
+    {% else %}
+    <div class="form-group">
+    {% endif %}
+        <label for="start_date" class="col-sm-2 control-label">
+            Start Date*
+            {# Proposed #}
+{#            <span class="glyphicon glyphicon-question-sign"#}
+{#                title="This date specifies when treatment of devices began&#010;Format: yyyy-mm-dd">#}
+{#            </span>#}
+        </label>
+        <div class="col-sm-10 calendar-container">
+          {{ form.start_date }} [yyyy-mm-dd]
+          <div>
+              This date specifies when treatment of devices began
+          </div>
+        </div>
+    </div>
+
+    {% include 'generic_field.html' with field=form.description label="Description" %}
+
+    <div class="form-group">
+        <label for="use_in_calculations" class="col-sm-2 control-label">Use in Calculations</label>
+        <div class="col-sm-10">
+          {{ form.use_in_calculations }}
+          <div>
+              <em>Check</em> if the data in this study can be used in calculations.
+              <br>
+              <em>Do not check</em> if this study is faulty or a one-off experiment.
+          </div>
+        </div>
+    </div>
+
+    {% if form.protocol.errors %}
+        {% for error in form.protocol.errors %}
+            <div class="alert alert-danger" role="alert">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error:</span>
+                {{ error }}
+            </div>
+        {% endfor %}
+    <div class="form-group has-error">
+    {% else %}
+    <div class="form-group">
+    {% endif %}
+        <label for="protocol" class="col-sm-2 control-label">Protocol File</label>
+        <div class="col-sm-10">
+            {{ form.protocol }}
+            <div>
+                You can upload a file for this study's protocol.
+                <br>
+                The protocol should be <em>specific to this study</em> (i.e. not an MPS model protocol).
+                <br>
+                <b>Preferred Format: PDF</b>
+            </div>
+        </div>
+    </div>
+
+    {% if form.image.errors %}
+        {% for error in form.image.errors %}
+            <div class="alert alert-danger" role="alert">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error:</span>
+                {{error}}
+            </div>
+        {% endfor %}
+    <div class="form-group has-error">
+    {% else %}
+    <div class="form-group">
+    {% endif %}
+        <label for="image" class="col-sm-2 control-label">Image</label>
+        <div class="col-sm-10">
+            {{ form.image }}
+            <p>
+                You can upload an image to clarify this study.
+                <br>
+                <b>Preferred Formats: PNG, JPEG, GIF</b>
+            </p>
+        </div>
+    </div>
+
+    <div id="image_display">
+        <div id="current_display">
+            {% if object.image %}
+                <img class="img-responsive center-block padded-bottom" src="/media/{{ object.image }}">
+            {% endif %}
+        </div>
+    </div>
+
+    <legend>For Integrated Chip Studies</legend>
+    {% if form.study_configuration.errors %}
+        {% for error in form.study_configuration.errors %}
+            <div class="alert alert-danger" role="alert">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error:</span>
+                {{error}}
+            </div>
+        {% endfor %}
+    <div class="form-group has-error">
+    {% else %}
+    <div class="form-group">
+    {% endif %}
+        <label for="study_configuration" class="col-sm-2 control-label">Integrated Study Configuration</label>
+        <div class="col-sm-10">
+            {{ form.study_configuration }}
+            <br>
+            <a href="/assays/studyconfiguration">
+                <span class="glyphicon glyphicon-plus text-success" aria-hidden="true"></span>
+                Add/Edit Integrated Study Configurations (Must Refresh Page to See Change)
+            </a>
+        </div>
+    </div>
+
+    {{ study_assay_formset.management_form }}
+    <legend>Assays</legend>
+
+    {% if study_assay_formset.non_form_errors %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{ study_assay_formset.non_form_errors }}
+        </div>
+    {% endif %}
+
+    {% if study_assay_formset.errors %}
+        {% for dict in study_assay_formset.errors %}
+            {% for key,value in dict.items %}
+                {% if key %}
+                    <div class="alert alert-danger" role="alert">
+                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                        <span class="sr-only">Error:</span>
+                        {{ forloop.parentloop.counter }}.) {{ key }} : {{ value }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+
+    <a id="add_button-{{ study_assay_formset.prefix }}" class="btn btn-success" role="button">Add Assay</a>
+    <table class="table table-striped inlines" id="{{ study_assay_formset.prefix }}-group"  name="assays">
+        <thead>
+            <tr>
+                <th>Target/Analyte*</th>
+                <th>Method/Kit*</th>
+                <th>Readout Unit*</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for assay in study_assay_formset %}
+                <tr class="inline" id="assay-{{ forloop.counter0 }}">
+{#                     Hidden input for Update (need id to associate)#}
+                    {% if assay.id.value %}
+                    <td class="original" hidden>
+                        <input id="id_{{ study_assay_formset.prefix }}-{{ forloop.counter0 }}-id" name="{{ study_assay_formset.prefix }}-{{ forloop.counter0 }}-id" type="hidden" value="{{ assay.id.value }}">
+                    </td>
+                    {% endif %}
+                    <td>{{ assay.target }}</td>
+                    <td>{{ assay.method }}</td>
+                    <td>{{ assay.unit }}</td>
+                    <td>{{ assay.DELETE }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {{ supporting_data_formset.management_form }}
+    <legend>Supporting Data</legend>
+    {% if supporting_data_formset.non_form_errors %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{ supporting_data_formset.non_form_errors }}
+        </div>
+    {% endif %}
+
+    {% if supporting_data_formset.errors %}
+        {% for dict in supporting_data_formset.errors %}
+            {% for key,value in dict.items %}
+                {% if key %}
+                    <div class="alert alert-danger" role="alert">
+                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                        <span class="sr-only">Error:</span>
+                        {{ forloop.parentloop.counter }}.) {{ key }} : {{ value }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+
+    <a id="add_button-{{ supporting_data_formset.prefix }}" class="btn btn-success" role="button">Add Supporting Data</a>
+    <table class="table table-striped inlines" id="{{ supporting_data_formset.prefix }}-group" name="supporting_data">
+        <thead>
+            <tr>
+                <th>Description*</th>
+                <th>Supporting Data File*</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for supporting_data in supporting_data_formset %}
+                <tr class="inline" id="supporting_data-{{ forloop.counter0 }}">
+                    {% if supporting_data.id.value %}
+                    <td class="original" hidden>
+                        <input type="hidden"
+                               id="id_{{ supporting_data_formset.prefix }}-{{ forloop.counter0 }}-id"
+                               name="{{ supporting_data_formset.prefix }}-{{ forloop.counter0 }}-id"
+                               value="{{ supporting_data.id.value }}">
+                    </td>
+                    {% endif %}
+                    <td>{{ supporting_data.description }}</td>
+                    <td>{{ supporting_data.supporting_data }}</td>
+                    <td>{{ supporting_data.DELETE }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {# TODO PUT MODEL SELECTION STUFF HERE #}
+    <legend>Setup Information</legend>
+
+    {% include 'generic_field.html' with field=form.organ_model label="MPS Model*" %}
+    {% include 'generic_field.html' with field=form.organ_model_protocol label="MPS Model Version*" %}
+
+    {# TODO PUT THE TABLE THING HERE #}
+    <div id="study_setup_table_section">
+            {# Section for visibility checkboxes #}
+            {# A litle awkward #}
+            <div class="row large-padding-top">
+            <div class="col-md-4 col-lg-3">
+                <div class="fancy-checkbox table-filter padded-bottom" align="left">
+                    <input class="visibility-checkbox" type="checkbox" name="show_cells" id="show_cells" value=".cell-display" checked/>
+                    <div class="btn-group">
+                        <label for="show_cells" class="btn btn-success">
+                            <span class="glyphicon glyphicon-ok"></span>
+                            <span> </span>
+                        </label>
+                        <label for="show_cells" class="btn btn-default active">
+                            Show Cells
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-lg-3">
+                <div class="fancy-checkbox table-filter padded-bottom" align="left">
+                    <input class="visibility-checkbox" type="checkbox" name="show_compounds" id="show_compounds" value=".compound-display" checked/>
+                    <div class="btn-group">
+                        <label for="show_compounds" class="btn btn-info">
+                            <span class="glyphicon glyphicon-ok"></span>
+                            <span> </span>
+                        </label>
+                        <label for="show_compounds" class="btn btn-default active">
+                            Show Compounds
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-lg-3">
+                <div class="fancy-checkbox table-filter padded-bottom" align="left">
+                    <input class="visibility-checkbox" type="checkbox" name="show_settings" id="show_settings" value=".setting-display" checked/>
+                    <div class="btn-group">
+                        <label for="show_settings" class="btn btn-warning">
+                            <span class="glyphicon glyphicon-ok"></span>
+                            <span> </span>
+                        </label>
+                        <label for="show_settings" class="btn btn-default active">
+                            Show Settings
+                        </label>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+        {# Set of buttons for adding cells, compounds, settings etc. #}
+        <div class="padded-bottom">
+        <a role="button" class="btn btn-success" id="add_group_button"><span class="glyphicon glyphicon-plus-sign"></span>Add Group</a>
+        </div>
+
+        <div class="padded-bottom">
+        <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="cell">Add Cell</a>
+        <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="compound">Add Compound</a>
+        {# Probably will be renamed #}
+        <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="setting">Add Setting</a>
+        </div>
+
+        <table class="table table-striped table-bordered table-nonfluid" id="study_setup_table">
+            <thead>
+                <th>Number of Chips</th>
+                <th>Test Type</th>
+                <th hidden class="cell_start"></th>
+                <th hidden class="compound_start"></th>
+                <th hidden class="setting_start"></th>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    {# Hidden for Cells, Compounds, and Settings #}
+    <div hidden>
+        {{ form.setup_data }}
+        {{ form.number_of_items }}
+        {{ form.test_type }}
+    </div>
+</form>
+
+{# TODO TODO TODO TODO NONE OF THIS IS DRY #}
+{# Compound #}
+<div hidden id="compound_dialog" title="Edit a Compound">
+    <div class="row thumbnail">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-11">
+    <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+    <tr>
+        <th colspan="3">Compound*</th>
+    </tr>
+    <tr>
+        <td colspan="3">{{ form.compound_compound }}</td>
+    </tr>
+    <tr>
+        <th>Supplier*</th>
+        <th>Lot*</th>
+        <th>Receipt Date</th>
+    </tr>
+    <tr>
+        <td>{{ form.compound_supplier_text }}</td>
+        <td>{{ form.compound_lot_text }}</td>
+        <td>{{ form.compound_receipt_date }}</td>
+    </tr>
+    </table>
+    <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+        <tr>
+            <th>Concentration*</th>
+            <th>Concentration Unit*</th>
+        </tr>
+        <tr>
+            <td>{{ form.compound_concentration }}</td>
+            <td>{{ form.compound_concentration_unit }}</td>
+        </tr>
+        {% comment %}
+        <tr>
+            <th>Concentration Increment</th>
+            <th>Increment Operation</th>
+        </tr>
+        <tr>
+            <td>{{ form.compound_concentration_increment }}</td>
+            <td>{{ form.compound_concentration_increment_type }}</td>
+        </tr>
+        <tr>
+            <td colspan="2">{{ form.compound_concentration_increment_direction }}</td>
+        </tr>
+        {% endcomment %}
+    </table>
+    <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+        <tr>
+            <th class="bg-success" colspan="3">Addition Time*</th>
+            <th class="bg-info" colspan="3">Duration*</th>
+        </tr>
+        <tr>
+            <th class="bg-success">Day</th>
+            <th class="bg-success">Hour</th>
+            <th class="bg-success">Minute</th>
+            <th class="bg-info">Day</th>
+            <th class="bg-info">Hour</th>
+            <th class="bg-info">Minute</th>
+            <th class="bg-warning">Addition Location*</th>
+        </tr>
+        <tr>
+            <td class="bg-success">{{ form.compound_addition_time_day }}</td>
+            <td class="bg-success">{{ form.compound_addition_time_hour }}</td>
+            <td class="bg-success">{{ form.compound_addition_time_minute }}</td>
+            <td class="bg-info">{{ form.compound_duration_day }}</td>
+            <td class="bg-info">{{ form.compound_duration_hour }}</td>
+            <td class="bg-info">{{ form.compound_duration_minute }}</td>
+            <td class="bg-warning">{{ form.compound_addition_location }}</td>
+        </tr>
+    </table>
+    </div>
+    </div>
+</div>
+
+{# Cell #}
+<div hidden id="cell_dialog" title="Edit a Cell">
+    <div class="row thumbnail">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-11">
+    <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+        <tr>
+            <th>Cell Sample*</th>
+            <th>Passage</th>
+            <th>Biosensor*</th>
+        </tr>
+        <tr>
+        <td>
+            {# Inline styles are evil #}
+            <input readonly="readonly" id="id_cell_cell_sample" name="cell_cell_sample" value="{{ form.cell_cell_sample.value|default_if_none:'' }}" class="form-control" style="width: 75px; display: inline;">
+            <button id='id_cell_sample_search' type="button" class="btn btn-xs btn-primary open-cell-sample-dialog">
+                <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+            </button>
+            <label class="small" id="id_cell_sample_label"></label>
+        </td>
+        <td>{{ form.cell_passage }}</td>
+        <td>{{ form.cell_biosensor }}</td>
+        </tr>
+    </table>
+    <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+        <tr>
+            <th>Density*</th>
+            <th>Density Unit*</th>
+        </tr>
+        <tr>
+            <td title="Use 'e' for scientific notation: 1e+3 = 1000">{{ form.cell_density }}</td>
+            <td>{{ form.cell_density_unit }}</td>
+        </tr>
+    </table>
+    <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+        <tr>
+            <th class="bg-success" colspan="3">Addition Time*</th>
+    {#                        <th class="bg-info" colspan="3">Duration*</th>#}
+        </tr>
+        <tr>
+            <th class="bg-success">Day</th>
+            <th class="bg-success">Hour</th>
+            <th class="bg-success">Minute</th>
+    {#                        <th class="bg-info">Day</th>#}
+    {#                        <th class="bg-info">Hour</th>#}
+    {#                        <th class="bg-info">Minute</th>#}
+            <th class="bg-warning">Addition Location*</th>
+        </tr>
+        <tr>
+
+            <td class="bg-success">{{ form.cell_addition_time_day }}</td>
+            <td class="bg-success">{{ form.cell_addition_time_hour }}</td>
+            <td class="bg-success">{{ form.cell_addition_time_minute }}</td>
+    {#                        <td class="bg-info">{{ form.cell_duration_day }}</td>#}
+    {#                        <td class="bg-info">{{ form.cell_duration_hour }}</td>#}
+    {#                        <td class="bg-info">{{ form.cell_duration_minute }}</td>#}
+            <td class="bg-warning">{{ form.cell_addition_location }}</td>
+        </tr>
+    </table>
+    </div>
+    </div>
+</div>
+
+{# Setting #}
+<div hidden id="setting_dialog" title="Edit a Setting">
+    <div class="row thumbnail">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-11">
+    <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+        <tr>
+            <th>Setting*</th>
+            <th>Value*</th>
+            <th>Unit*</th>
+        </tr>
+        <tr>
+            <td>{{ form.setting_setting }}</td>
+            <td>{{ form.setting_value }}</td>
+            <td>{{ form.setting_unit }}</td>
+        </tr>
+    </table>
+    <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+        <tr>
+            <th class="bg-success" colspan="3">Addition Time*</th>
+            <th class="bg-info" colspan="3">Duration*</th>
+        </tr>
+        <tr>
+            <th class="bg-success">Day</th>
+            <th class="bg-success">Hour</th>
+            <th class="bg-success">Minute</th>
+            <th class="bg-info">Day</th>
+            <th class="bg-info">Hour</th>
+            <th class="bg-info">Minute</th>
+            <th class="bg-warning">Addition Location*</th>
+        </tr>
+        <tr>
+            <td class="bg-success">{{ form.setting_addition_time_day }}</td>
+            <td class="bg-success">{{ form.setting_addition_time_hour }}</td>
+            <td class="bg-success">{{ form.setting_addition_time_minute }}</td>
+            <td class="bg-info">{{ form.setting_duration_day }}</td>
+            <td class="bg-info">{{ form.setting_duration_hour }}</td>
+            <td class="bg-info">{{ form.setting_duration_minute }}</td>
+            <td class="bg-warning">{{ form.setting_addition_location }}</td>
+        </tr>
+    </table>
+    </div>
+    </div>
+</div>
+
+<div hidden id="dialog" title="Choose a Cell Sample">
+{#        <div class="alert alert-info text-center" role="alert">#}
+{#            <button role="button" class="btn btn-danger" id="clear_cell_sample">Clear Cell Sample</button>#}
+{#        </div>#}
+    <table id="cellsamples" class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>ID #</th>
+                    <th>Receipt Date</th>
+                    <th>Cell Type</th>
+                    <th>Cell Origin</th>
+                    <th>Supplier</th>
+                    <th>Barcode/Lot#</th>
+                    <th>Patient</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for cellsample in cellsamples %}
+                <tr class="cellsample">
+                    <td>
+                        <button type="button" class="cellsample-selector btn btn-xs btn-primary" data-cell-sample-id="{{ cellsample.id }}" id="cell_sample_{{ cellsample.id }}" name="{{ cellsample }}">Select</button>
+                    </td>
+                    <td>{{ cellsample.id }}</td>
+                    <td>{{ cellsample.receipt_date|date:"M d, Y" }}</td>
+                    <td>{{ cellsample.cell_type }}</td>
+                    <td>{{ cellsample.cell_subtype }}</td>
+                    <td>{{ cellsample.supplier }}</td>
+                    <td>{{ cellsample.barcode }}</td>
+                    <td>
+                        {% if cellsample.patient_age or cellsample.patient_gender != 'N' or cellsample.patient_condition %}
+                            {{ cellsample.patient_age|default:"Unknown" }} year old {{ cellsample.patient_gender }}
+                            {{ cellsample.patient_condition }}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+    </table>
+
+    {# DISPLAYS #}
+    <div id="empty_cell_html">
+        {% if detail %}
+        <div data-prefix="{{ cell_formset.prefix }}" class="alert alert-success force-off-black-text cell-display no-margins">
+        {% else %}
+        <div data-prefix="{{ cell_formset.prefix }}" class="alert alert-success force-off-black-text cell-display">
+        {% endif %}
+            <div class="error-message-section error-display">
+            </div>
+            <div>
+                <span class="cell-cell_sample"></span>
+            </div>
+            <div>Passage: <span class="cell-passage"></span></div>
+            <div>Biosensor: <span class="cell-biosensor"></span></div>
+            <div>
+                <span class="cell-density"></span>
+                <span class="cell-density_unit"></span>
+            </div>
+            <div class="cell-addition_time_section">
+                <span>Added on D</span>
+                <span class="cell-addition_time_day"></span>
+                <span>H</span>
+                <span class="cell-addition_time_hour"></span>
+                <span>M</span>
+                <span class="cell-addition_time_minute"></span>
+            </div>
+            <div>
+                <span class="cell-addition_location"></span>
+            </div>
+        </div>
+    </div>
+
+    {# TODO #}
+    <div id="empty_compound_html">
+        {% if detail %}
+        <div data-prefix="{{ compound_formset.prefix }}" class="alert alert-info force-off-black-text compound-display no-margins">
+        {% else %}
+        <div data-prefix="{{ compound_formset.prefix }}" class="alert alert-info force-off-black-text compound-display">
+        {% endif %}
+            <div class="error-message-section error-display">
+            </div>
+            <div>
+                <span class="compound-compound"></span>
+                <span class="compound-concentration"></span>
+                <span class="compound-concentration_unit"></span>
+            </div>
+            <div>
+                <span class="compound-supplier_text"></span>
+                <span class="compound-lot_text"></span>
+            </div>
+            <div class="compound-receipt_date"></div>
+            <div class="compound-addition_time_section">
+                <span>Added on D</span>
+                <span class="compound-addition_time_day"></span>
+                <span>H</span>
+                <span class="compound-addition_time_hour"></span>
+                <span>M</span>
+                <span class="compound-addition_time_minute"></span>
+            </div>
+            <div class="compound-duration_section">
+                <span>Duration of D</span>
+                <span class="compound-duration_day"></span>
+                <span>H</span>
+                <span class="compound-duration_hour"></span>
+                <span>M</span>
+                <span class="compound-duration_minute"></span>
+            </div>
+            <div>
+                <span class="compound-addition_location"></span>
+            </div>
+        </div>
+    </div>
+
+    {# TODO TODO TODO #}
+    <div id="empty_setting_html">
+        {% if detail %}
+        <div data-prefix="{{ setting_formset.prefix }}" class="alert alert-warning force-off-black-text setting-display no-margins">
+        {% else %}
+        <div data-prefix="{{ setting_formset.prefix }}" class="alert alert-warning force-off-black-text setting-display">
+        {% endif %}
+            <div class="error-message-section error-display">
+            </div>
+            <div>
+                <span class="setting-setting"></span>
+                <span class="setting-value"></span>
+                <span class="setting-unit"></span>
+            </div>
+            <div class="setting-addition_time_section">
+                <span>Added on D</span>
+                <span class="setting-addition_time_day"></span>
+                <span>H</span>
+                <span class="setting-addition_time_hour"></span>
+                <span>M</span>
+                <span class="setting-addition_time_minute"></span>
+            </div>
+            <div class="setting-duration_section">
+                <span>Duration of D</span>
+                <span class="setting-duration_day"></span>
+                <span>H</span>
+                <span class="setting-duration_hour"></span>
+                <span>M</span>
+                <span class="setting-duration_minute"></span>
+            </div>
+            <div>
+                <span class="setting-addition_location"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="empty_error_html">
+        <div class="alert alert-danger force-off-black-text matrix_item-error-message-box">
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+
+{% block load_js %}
+    <script src="{% static "assays/grouping_filtering.js" %}"></script>
+    <script src="{% static "assays/organ_model_filter.js" %}"></script>
+    <script src="{% static "assays/cell_sample_selection.js" %}"></script>
+    <script src="{% static "assays/assaymatrix_update.js" %}"></script>
+    <script src="{% static "assays/chart_display.js" %}"></script>
+    <script src="{% static "js/calendar.js" %}"></script>
+    <script src="{% static "js/enter_override.js" %}"></script>
+    <script src="{% static "assays/compound_instances.js" %}"></script>
+    <script src="{% static "js/flag.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    {% if not detail %}
+    <li><a href="/assays/assaystudy/editable_studies/">Editable Studies</a></li>
+    {% else %}
+    <li><a href="/assays/assaystudy/">Studies</a></li>
+    {% endif %}
+    <li><a href="{{ form.instance.study.get_absolute_url }}">{{ form.instance.study }}</a></li>
+    <li class="active">
+            Edit <em>{{ object }}</em>
+    </li>
+{% endblock %}
+
+{% block sidebar %}
+    {% include 'assays/grouping_filtering.html' with charts="true" %}
+{% endblock %}
+
+{% block fluid-content %}
+
+{# This section is a setup table similar to the new study page #}
+{# TODO PUT THE TABLE THING HERE #}
+{# TODO TODO VERY MUCH NOT DRY #}
+<div id="study_setup_table_section">
+        {# Section for visibility checkboxes #}
+        {# A litle awkward #}
+        <div class="row large-padding-top">
+        <div class="col-md-4 col-lg-3">
+            <div class="fancy-checkbox table-filter padded-bottom" align="left">
+                <input class="visibility-checkbox" type="checkbox" name="show_cells" id="show_cells" value=".cell-display" checked/>
+                <div class="btn-group">
+                    <label for="show_cells" class="btn btn-success">
+                        <span class="glyphicon glyphicon-ok"></span>
+                        <span> </span>
+                    </label>
+                    <label for="show_cells" class="btn btn-default active">
+                        Show Cells
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-lg-3">
+            <div class="fancy-checkbox table-filter padded-bottom" align="left">
+                <input class="visibility-checkbox" type="checkbox" name="show_compounds" id="show_compounds" value=".compound-display" checked/>
+                <div class="btn-group">
+                    <label for="show_compounds" class="btn btn-info">
+                        <span class="glyphicon glyphicon-ok"></span>
+                        <span> </span>
+                    </label>
+                    <label for="show_compounds" class="btn btn-default active">
+                        Show Compounds
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-lg-3">
+            <div class="fancy-checkbox table-filter padded-bottom" align="left">
+                <input class="visibility-checkbox" type="checkbox" name="show_settings" id="show_settings" value=".setting-display" checked/>
+                <div class="btn-group">
+                    <label for="show_settings" class="btn btn-warning">
+                        <span class="glyphicon glyphicon-ok"></span>
+                        <span> </span>
+                    </label>
+                    <label for="show_settings" class="btn btn-default active">
+                        Show Settings
+                    </label>
+                </div>
+            </div>
+        </div>
+        </div>
+
+    {# Set of buttons for adding cells, compounds, settings etc. #}
+    <div class="padded-bottom">
+    <a role="button" class="btn btn-success" id="add_group_button"><span class="glyphicon glyphicon-plus-sign"></span>Add Group</a>
+    </div>
+
+    <div class="padded-bottom">
+    <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="cell">Add Cell</a>
+    <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="compound">Add Compound</a>
+    {# Probably will be renamed #}
+    <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="setting">Add Setting</a>
+    </div>
+
+    <table class="table table-striped table-bordered table-nonfluid" id="study_setup_table">
+        <thead>
+            <th>Number of Chips</th>
+            <th>Test Type</th>
+            <th hidden class="cell_start"></th>
+            <th hidden class="compound_start"></th>
+            <th hidden class="setting_start"></th>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div style="display: none;">
+{# START FORMS #}
+{{ item_formset.management_form }}
+{{ compound_formset.management_form }}
+{{ cell_formset.management_form }}
+{{ setting_formset.management_form }}
+
+<h2>Matrix Items</h2>
+<div id="{{ item_formset.prefix }}">
+{#    {{ item_formset.non_form_errors }}#}
+{% for form in item_formset %}
+    <div id="{{ form.prefix }}" class="{{ item_formset.prefix }} no-selectize">
+        {{ form }}
+    </div>
+{% endfor %}
+</div>
+
+<h2>Compounds</h2>
+<div id="{{ compound_formset.prefix }}">
+{#    {{ compound_formset.non_form_errors }}#}
+{% for form in compound_formset %}
+    <div id="{{ form.prefix }}" class="{{ compound_formset.prefix }} no-selectize">
+        {{ form }}
+    </div>
+{% endfor %}
+</div>
+
+<h2>Cells</h2>
+<div id="{{ cell_formset.prefix }}">
+{#    {{ cell_formset.non_form_errors }}#}
+{% for form in cell_formset %}
+    <div id="{{ form.prefix }}" class="{{ cell_formset.prefix }} no-selectize">
+        {{ form }}
+    </div>
+{% endfor %}
+</div>
+
+<h2>Settings</h2>
+<div id="{{ setting_formset.prefix }}">
+{#    {{ setting_formset.non_form_errors }}#}
+{% for form in setting_formset %}
+    <div id="{{ form.prefix }}" class="{{ setting_formset.prefix }} no-selectize">
+        {{ form }}
+    </div>
+{% endfor %}
+</div>
+</div>
+{# End FORMS #}
+
+{# Cellsample Selection Stuff #}
+<div hidden id="dialog" title="Choose a Cell Sample">
+{#        <div class="alert alert-info text-center" role="alert">#}
+{#            <button role="button" class="btn btn-danger" id="clear_cell_sample">Clear Cell Sample</button>#}
+{#        </div>#}
+
+    <table id="cellsamples" class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>ID #</th>
+                    <th>Receipt Date</th>
+                    <th>Cell Type</th>
+                    <th>Cell Origin</th>
+                    <th>Supplier</th>
+                    <th>Barcode/Lot#</th>
+                    <th>Patient</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for cellsample in cellsamples %}
+                <tr class="cellsample">
+                    <td>
+                        <button type="button" class="cellsample-selector btn btn-xs btn-primary" data-cell-sample-id="{{ cellsample.id }}" id="cell_sample_{{ cellsample.id }}" name="{{ cellsample }}">Select</button>
+                    </td>
+                    <td>{{ cellsample.id }}</td>
+                    <td>{{ cellsample.receipt_date|date:"M d, Y" }}</td>
+                    <td>{{ cellsample.cell_type }}</td>
+                    <td>{{ cellsample.cell_subtype }}</td>
+                    <td>{{ cellsample.supplier }}</td>
+                    <td>{{ cellsample.barcode }}</td>
+                    <td>
+                        {% if cellsample.patient_age or cellsample.patient_gender != 'N' or cellsample.patient_condition %}
+                            {{ cellsample.patient_age|default:"Unknown" }} year old {{ cellsample.patient_gender }}
+                            {{ cellsample.patient_condition }}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+    </table>
+</div>
+
+{# Hidden templates #}
+<div style="display: none;">
+
+    {# DISPLAYS #}
+    <div id="empty_cell_html">
+        {% if detail %}
+        <div data-prefix="{{ cell_formset.prefix }}" class="alert alert-success force-off-black-text cell-display no-margins">
+        {% else %}
+        <div data-prefix="{{ cell_formset.prefix }}" class="alert alert-success force-off-black-text cell-display">
+        {% endif %}
+            <div class="error-message-section error-display">
+            </div>
+            <div>
+                <span class="cell-cell_sample"></span>
+            </div>
+            <div>Passage: <span class="cell-passage"></span></div>
+            <div>Biosensor: <span class="cell-biosensor"></span></div>
+            <div>
+                <span class="cell-density"></span>
+                <span class="cell-density_unit"></span>
+            </div>
+            <div class="cell-addition_time_section">
+                <span>Added on D</span>
+                <span class="cell-addition_time_day"></span>
+                <span>H</span>
+                <span class="cell-addition_time_hour"></span>
+                <span>M</span>
+                <span class="cell-addition_time_minute"></span>
+            </div>
+            <div>
+                <span class="cell-addition_location"></span>
+            </div>
+        </div>
+    </div>
+
+    {# TODO #}
+    <div id="empty_compound_html">
+        {% if detail %}
+        <div data-prefix="{{ compound_formset.prefix }}" class="alert alert-info force-off-black-text compound-display no-margins">
+        {% else %}
+        <div data-prefix="{{ compound_formset.prefix }}" class="alert alert-info force-off-black-text compound-display">
+        {% endif %}
+            <div class="error-message-section error-display">
+            </div>
+            <div>
+                <span class="compound-compound"></span>
+                <span class="compound-concentration"></span>
+                <span class="compound-concentration_unit"></span>
+            </div>
+            <div>
+                <span class="compound-supplier_text"></span>
+                <span class="compound-lot_text"></span>
+            </div>
+            <div class="compound-receipt_date"></div>
+            <div class="compound-addition_time_section">
+                <span>Added on D</span>
+                <span class="compound-addition_time_day"></span>
+                <span>H</span>
+                <span class="compound-addition_time_hour"></span>
+                <span>M</span>
+                <span class="compound-addition_time_minute"></span>
+            </div>
+            <div class="compound-duration_section">
+                <span>Duration of D</span>
+                <span class="compound-duration_day"></span>
+                <span>H</span>
+                <span class="compound-duration_hour"></span>
+                <span>M</span>
+                <span class="compound-duration_minute"></span>
+            </div>
+            <div>
+                <span class="compound-addition_location"></span>
+            </div>
+        </div>
+    </div>
+
+    {# TODO TODO TODO #}
+    <div id="empty_setting_html">
+        {% if detail %}
+        <div data-prefix="{{ setting_formset.prefix }}" class="alert alert-warning force-off-black-text setting-display no-margins">
+        {% else %}
+        <div data-prefix="{{ setting_formset.prefix }}" class="alert alert-warning force-off-black-text setting-display">
+        {% endif %}
+            <div class="error-message-section error-display">
+            </div>
+            <div>
+                <span class="setting-setting"></span>
+                <span class="setting-value"></span>
+                <span class="setting-unit"></span>
+            </div>
+            <div class="setting-addition_time_section">
+                <span>Added on D</span>
+                <span class="setting-addition_time_day"></span>
+                <span>H</span>
+                <span class="setting-addition_time_hour"></span>
+                <span>M</span>
+                <span class="setting-addition_time_minute"></span>
+            </div>
+            <div class="setting-duration_section">
+                <span>Duration of D</span>
+                <span class="setting-duration_day"></span>
+                <span>H</span>
+                <span class="setting-duration_hour"></span>
+                <span>M</span>
+                <span class="setting-duration_minute"></span>
+            </div>
+            <div>
+                <span class="setting-addition_location"></span>
+            </div>
+        </div>
+    </div>
+
+<div id="empty_error_html">
+    <div class="alert alert-danger force-off-black-text matrix_item-error-message-box">
+    </div>
+</div>
+
+</div>
+
+{# CHARTING STUFF #}
+{% if not adding %}
+<div>
+
+{# {% include 'assays/grouping_filtering.html' %} #}
+
+{# {% include 'assays/chart_options.html' with chart_prefix="charts" chart_title="Current Data" % #}
+
+{% include 'assays/sidebar_extras.html' with show_hide="true" %}
+
+{# Note indicating no data to display initially #}
+<div id="charts" class="padded-bottom">
+    No data to display
+</div>
+
+{% include 'assays/group_table.html' %}
+</div>
+{% endif %}
+
+{% endblock %}

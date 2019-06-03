@@ -3,7 +3,7 @@
 {% load humanize %}
 
 {% block load_js %}
-    <script src="{% static "js/project_filter.js" %}"></script>
+    {# <script src="{% static "js/project_filter.js" %}"></script> #}
     <script src="{% static "diseases/disease_models.js" %}"></script>
 {% endblock %}
 
@@ -50,7 +50,8 @@
             </h2>
         </legend>
 
-        {% include 'project_filters.html' %}
+        {# Deprecated #}
+{# {% include 'project_filters.html' %} #}
 
         <table hidden id="models" class="display" width="100%">
             <thead>
@@ -62,7 +63,7 @@
                     <th>Device</th>
                     <th>Center</th>
                     <th>Description</th>
-                    <th>Project</th>
+                    {% comment %} <th>Project</th> {% endcomment %}
                 </tr>
             </thead>
 
@@ -76,7 +77,7 @@
                     <td><a target="_blank" href="/microdevices/device/{{ disease_model.device.id }}">{{ disease_model.device|default_if_none:"" }}</a></td>
                     <td>{{ disease_model.center|default_if_none:"" }}</td>
                     <td>{{ disease_model.description }}</td>
-                    <td>
+                    {% comment %} <td>
                         {% if disease_model.mps %}
                             MPS
                         {% endif %}
@@ -89,7 +90,7 @@
                         {% if not disease_model.epa and not disease_model.mps and not disease_model.tctc %}
                             Unassigned
                         {% endif %}
-                    </td>
+                    </td> {% endcomment %}
                 </tr>
             {% endfor %}
             </tbody>

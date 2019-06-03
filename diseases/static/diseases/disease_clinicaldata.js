@@ -34,11 +34,11 @@ $(document).ready(function() {
                 "width": "10%",
                 "targets": [0]
             },
-            {
-                "targets": [11],
-                "visible": false,
-                "searchable": true
-            },
+            // {
+            //     "targets": [11],
+            //     "visible": false,
+            //     "searchable": true
+            // },
             {
                 responsivePriority: 1,
                 targets: [0, 2]

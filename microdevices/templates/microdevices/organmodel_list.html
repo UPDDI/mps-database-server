@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block load_js %}
-    <script src="{% static "js/project_filter.js" %}"></script>
+    {# <script src="{% static "js/project_filter.js" %}"></script> #}
     <script src="{% static "microdevices/organmodel_list.js" %}"></script>
 {% endblock %}
 
@@ -22,7 +22,8 @@
             <a href="/microdevices/model/add/" class="btn btn-lg btn-success" role="button">Add Model</a>
         </div>
 
-        {% include 'project_filters.html' %}
+        {# Deprecated #}
+{# {% include 'project_filters.html' %} #}
 
         <table hidden id="models" class="display" cellspacing="0" width="100%">
             <thead>
@@ -34,9 +35,10 @@
                     <th>Base Model</th>
                     <th>Organ</th>
                     <th>Device</th>
-                    <th>Disease</th>
+                    {# REMOVED FOR NOW #}
+                    {# <th>Disease</th> #}
                     <th>Description</th>
-                    <th>Project</th>
+                    {% comment %} <th>Project</th> {% endcomment %}
                 </tr>
             </thead>
 
@@ -54,9 +56,9 @@
                     </td>
                     <td>{{ model.organ|default_if_none:"" }}</td>
                     <td><a href="/microdevices/device/{{ model.device.id }}">{{ model.device|default_if_none:"" }}</a></td>
-                    <td>{{ model.disease }}</td>
+                    {# <td>{{ model.disease }}</td> #}
                     <td>{{ model.description }}</td>
-                    <td>
+                    {% comment %} <td>
                         {% if model.mps %}
                             MPS
                         {% endif %}
@@ -69,7 +71,7 @@
                         {% if not model.epa and not model.mps and not model.tctc %}
                             Unassigned
                         {% endif %}
-                    </td>
+                    </td> {% endcomment %}
                 </tr>
             {% endfor %}
             </tbody>

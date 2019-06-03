@@ -40,6 +40,7 @@ from assays.forms import (
     AssayStudyConfigurationForm,
     ReadyForSignOffForm,
     AssayStudyForm,
+    AssayStudyFormNew,
     AssayStudySupportingDataFormSetFactory,
     AssayStudyAssayFormSetFactory,
     AssayStudyReferenceFormSetFactory,
@@ -58,7 +59,8 @@ from assays.forms import (
     AssayStudyModelFormSet,
     AssayStudySetForm,
     AssayReferenceForm,
-    AssayStudySetReferenceFormSetFactory
+    AssayStudySetReferenceFormSetFactory,
+    AssayMatrixFormNew
 )
 from microdevices.models import MicrophysiologyCenter
 from django import forms
@@ -2050,13 +2052,66 @@ class AssayStudySetUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
         if form.is_valid() and reference_formset.is_valid():
             save_forms_with_tracking(self, form, update=True, formset=[reference_formset])
             form.save_m2m()
+
+
+class AssayStudyAddNew(OneGroupRequiredMixin, CreateView):
+    """Add a study"""
+    template_name = 'assays/assaystudy_add_new.html'
+    form_class = AssayStudyFormNew
+
+    def get_form(self, form_class=None):
+        form_class = self.get_form_class()
+        # Get group selection possibilities
+        groups = filter_groups(self.request.user)
+
+        # If POST
+        if self.request.method == 'POST':
+            return form_class(self.request.POST, self.request.FILES, groups=groups)
+        # If GET
+        else:
+            return form_class(groups=groups)
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyAddNew, self).get_context_data(**kwargs)
+        if self.request.POST:
+            # Make the assumption that if one is missing, all are
+            if 'study_assay_formset' not in context:
+                context['study_assay_formset'] = AssayStudyAssayFormSetFactory(self.request.POST)
+                context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(self.request.POST, self.request.FILES)
+        else:
+            context['study_assay_formset'] = AssayStudyAssayFormSetFactory()
+            context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory()
+
+        # Cellsamples will always be the same
+        context['cellsamples'] = CellSample.objects.all().prefetch_related(
+            'cell_type__organ',
+            'supplier',
+            'cell_subtype__cell_type'
+        )
+
+        return context
+
+    def form_valid(self, form):
+        study_assay_formset = AssayStudyAssayFormSetFactory(
+            self.request.POST,
+            instance=form.instance
+        )
+        supporting_data_formset = AssayStudySupportingDataFormSetFactory(
+            self.request.POST,
+            self.request.FILES,
+            instance=form.instance
+        )
+        if form.is_valid() and study_assay_formset.is_valid() and supporting_data_formset.is_valid():
+            save_forms_with_tracking(self, form, formset=[study_assay_formset, supporting_data_formset], update=False)
             return redirect(
                 self.object.get_absolute_url()
             )
         else:
             return self.render_to_response(
                 self.get_context_data(
-                    form=form
+                    form=form,
+                    study_assay_formset=study_assay_formset,
+                    supporting_data_formset=supporting_data_formset
                 )
             )
 
@@ -2448,3 +2503,72 @@ class TCTCSummary(SuperuserRequiredMixin, TemplateView):
             context['delta_rows'] = delta_rows
 
         return context
+
+
+# TODO ADD PERMISSION MIXINS
+class AssayStudyIndexNew(StudyViewerMixin, DetailView):
+    """Show all chip and plate models associated with the given study"""
+    model = AssayStudy
+    context_object_name = 'study_index'
+    template_name = 'assays/assaystudy_index.html'
+
+    # For permission mixin
+    def get_object(self, queryset=None):
+        self.study = super(AssayStudyIndex, self).get_object()
+        return self.study
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyIndex, self).get_context_data(**kwargs)
+
+        matrices = AssayMatrix.objects.filter(
+            study_id=self.object.id
+        ).prefetch_related(
+            'assaymatrixitem_set',
+            'created_by',
+        )
+
+        items = AssayMatrixItem.objects.filter(
+            matrix_id__in=matrices
+        ).prefetch_related(
+            'device',
+            'created_by',
+            'matrix',
+            'organ_model',
+            'assaysetupcompound_set__compound_instance__compound',
+            'assaysetupcompound_set__concentration_unit',
+            'assaysetupcompound_set__addition_location',
+            'assaysetupcell_set__cell_sample__cell_type__organ',
+            'assaysetupcell_set__cell_sample__cell_subtype',
+            'assaysetupcell_set__cell_sample__supplier',
+            'assaysetupcell_set__addition_location',
+            'assaysetupcell_set__density_unit',
+            'assaysetupsetting_set__setting',
+            'assaysetupsetting_set__unit',
+            'assaysetupsetting_set__addition_location',
+        )
+
+        # Cellsamples will always be the same
+        context['matrices'] = matrices
+        context['items'] = items
+
+        get_user_status_context(self, context)
+
+        context['ready_for_sign_off_form'] = ReadyForSignOffForm()
+
+        # Stakeholder status
+        context['stakeholder_sign_off'] = AssayStudyStakeholder.objects.filter(
+            study_id=self.object.id,
+            signed_off_by_id=None,
+            sign_off_required=True
+        ).count() == 0
+
+        context['detail'] = True
+
+        return context
+
+
+class AssayMatrixNew(StudyGroupMixin, UpdateView):
+    """Show all chip and plate models associated with the given study"""
+    model = AssayMatrix
+    template_name = 'assays/assaymatrix_update.html'
+    form_class = AssayMatrixFormNew

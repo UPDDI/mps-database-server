@@ -182,28 +182,24 @@ def fetch_adverse_events_data(request):
         'compound__compound__alogp',
         'compound__black_box',
         # SUBJECT TO CHANGE
-        'compound__compound__tctc',
-        'compound__compound__mps',
-        'compound__compound__epa'
+        # 'compound__compound__tctc',
+        # 'compound__compound__mps',
+        # 'compound__compound__epa'
     ))
 
     data = []
 
     # A serializer would probably better serve us here...
     for ae in ae_data:
-        project = ''
-
-        if ae.get('compound__compound__tctc'):
-            project += 'TCTC'
-
-        if ae.get('compound__compound__epa'):
-            project += 'EPA'
-
-        if ae.get('compound__compound__mps'):
-            project += 'MPS'
-
-        if not project:
-            project = 'Unassigned'
+        # project = ''
+        # if ae.get('compound__compound__tctc'):
+        #     project += 'TCTC'
+        # if ae.get('compound__compound__epa'):
+        #     project += 'EPA'
+        # if ae.get('compound__compound__mps'):
+        #     project += 'MPS'
+        # if not project:
+        #     project = 'Unassigned'
 
         organ_name = ''
 
@@ -242,7 +238,7 @@ def fetch_adverse_events_data(request):
                 'estimated_usage': estimated_usage,
                 'organ': organ_name,
                 'black_box_warning': black_box_warning,
-                'project': project,
+                # 'project': project,
                 'logp': ae.get('compound__compound__logp'),
                 'alogp': ae.get('compound__compound__alogp')
             }
@@ -280,7 +276,7 @@ def fetch_aggregate_ae_by_compound(request):
         if compound.estimated_usage:
             estimated_usage = '{:,}'.format(compound.estimated_usage)
 
-        checkbox = '<input class="checkbox big-checkbox compound" type="checkbox" value="{}">'.format(compound.compound.name)
+        checkbox = '<input class="table-checkbox big-checkbox compound" type="checkbox" value="{}">'.format(compound.compound.name)
 
         data.append({
             # 'checkbox': cgi.escape(compound.compound.name),
@@ -320,7 +316,7 @@ def fetch_aggregate_ae_by_event(request):
         if adverse_event.organ:
             organ_name = adverse_event.organ.organ_name
 
-        checkbox = '<input class="checkbox big-checkbox adverse-event" type="checkbox" value="{}">'.format(adverse_event.event)
+        checkbox = '<input class="table-checkbox big-checkbox adverse-event" type="checkbox" value="{}">'.format(adverse_event.event)
 
         if frequency:
             data.append({

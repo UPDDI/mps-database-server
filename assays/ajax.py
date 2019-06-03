@@ -31,7 +31,9 @@ from microdevices.models import (
     MicrophysiologyCenter,
     Microdevice,
     OrganModel,
-    OrganModelProtocol
+    OrganModelProtocol,
+    OrganModelProtocolCell,
+    OrganModelProtocolSetting,
 )
 
 # from mps.settings import TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX
@@ -223,7 +225,7 @@ def fetch_protocol(request):
     protocol = OrganModelProtocol.objects.filter(pk=protocol_id)
 
     if protocol and protocol[0].organ_model.center and any(i in protocol[0].organ_model.center.groups.all() for i in request.user.groups.all()):
-        protocol_file = protocol[0].file
+        protocol_file = protocol[0].protocol_file
         file_name = '/'.join(protocol_file.name.split('/')[1:])
         # href = '/media/' + protocol_file.name
         href = '/media/{}'.format(protocol_file.name)
@@ -3339,6 +3341,70 @@ def fetch_post_filter(request):
     pass
 
 
+def get_organ_model_protocol_setup(organ_model_protocol_id):
+    organ_model_protocol = get_object_or_404(OrganModelProtocol, pk=organ_model_protocol_id)
+
+    data = {
+        'cell': [],
+        'setting': [],
+        # 'compound': [],
+    }
+
+    excluded_keys = ['id', '_state', 'organ_model_protocol_id']
+
+    setup_cells = data.get('cell')
+    setup_settings = data.get('setting')
+    # setup_compounds = data.get('compound')
+
+    for cell in OrganModelProtocolCell.objects.filter(organ_model_protocol_id=organ_model_protocol_id):
+        current_cell = {
+            key: cell.__dict__.get(key) for key in cell.__dict__.keys() if key not in excluded_keys
+        }
+        setup_cells.append(current_cell)
+
+    for setting in OrganModelProtocolSetting.objects.filter(organ_model_protocol_id=organ_model_protocol_id):
+        current_setting = {
+            key: setting.__dict__.get(key) for key in setting.__dict__.keys() if key not in excluded_keys
+        }
+        setup_settings.append(current_setting)
+
+    # for compound in OrganModelProtocolCompound.objects.filter(id=organ_model_protocol_id):
+    #     current_compound = compound.__dict__.pop('_state')
+    #     setup_compounds.append(current_compound)
+
+    return data
+
+
+def fetch_organ_model_protocol_setup(request):
+    organ_model_protocol_id = request.POST.get('organ_model_protocol_id', 0)
+
+    data = get_organ_model_protocol_setup(organ_model_protocol_id)
+
+    return HttpResponse(
+        json.dumps(data),
+        content_type='application/json'
+    )
+
+
+def fetch_matrix_setup(request):
+    matrix_id = request.POST.get('matrix_id', 0)
+    matrix = get_object_or_404(AssayMatrix, pk=matrix_id)
+    organ_model_protocol_id = matrix.study.organ_model_protocol_id
+
+    data = {}
+
+    organ_model_protocol = get_organ_model_protocol_setup(organ_model_protocol_id)
+
+    data.update({
+        'current_setup': organ_model_protocol
+    })
+
+    return HttpResponse(
+        json.dumps(data),
+        content_type='application/json'
+    )
+
+
 def study_viewer_validation(request):
     study = None
     if request.POST.get('study', ''):
@@ -3478,6 +3544,12 @@ switch = {
     },
     'get_pubmed_reference_data': {
         'call': get_pubmed_reference_data
+    },
+    'fetch_organ_model_protocol_setup': {
+        'call': fetch_organ_model_protocol_setup
+    },
+    'fetch_matrix_setup': {
+        'call': fetch_matrix_setup
     },
 }
 

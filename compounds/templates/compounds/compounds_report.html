@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block load_js %}
-    <script src="{% static "js/project_filter.js" %}"></script>
+    {# <script src="{% static "js/project_filter.js" %}"></script> #}
     <script src="{% static "compounds/compound_report.js" %}"></script>
 {% endblock %}
 
@@ -29,7 +29,8 @@
             <button role="button" class="btn btn-danger" id="clear_selections">Clear Current Selections</button>
         </div>
 
-        {% include 'project_filters.html' %}
+        {# Deprecated #}
+{# {% include 'project_filters.html' %} #}
 
         <table hidden id="compounds" class="display" cellspacing="0" width="100%">
             <thead id="compounds_header">
@@ -42,17 +43,18 @@
                     <th>LogP</th>
                     <th>Rule of 5 Violations</th>
                     <th>Known Drug</th>
-                    <th>Image</th>
-                    <th>Project</th>
+                    {% comment %} <th>Image</th> {% endcomment %}
+                    {% comment %} <th>Project</th> {% endcomment %}
                 </tr>
             </thead>
 
             <tbody>
             <form autocomplete="off">
             {% for compound in object_list %}
-                <tr class="compound" id={{ compound.id }} name={{ compound.name }}>
+                {# NAME HERE IS USELESS ANYWAY #}
+                <tr class="compound" id="{{ compound.id }}" name="{{ compound.name }}">
                     {# Checkbox for each compound #}
-                    <td><input data-table-index="{{ forloop.counter0 }}" class="big-checkbox checkbox" type="checkbox" value="{{ compound.name|safe }}"></td>
+                    <td><input data-table-index="{{ forloop.counter0 }}" class="big-checkbox table-checkbox" type="checkbox" value="{{ compound.name|safe }}"></td>
                     <td><a href="/compounds/{{ compound.id }}">{{ compound.name }}</a></td>
                     <td><a href="https://www.ebi.ac.uk/chembl/compound/inspect/{{ compound.chemblid }}">{{ compound.chemblid }}</a></td>
                     <td>{{ compound.synonyms }}</td>
@@ -72,15 +74,16 @@
 
                     {# Tags field is deprecated #}
 {#                    <td>{{ compound.tags|default_if_none:"" }}</td>#}
-                    <td>
+                    {% comment %} <td>
                       {% if compound.chemblid %}
-                          <img src="https://www.ebi.ac.uk/chembldb/compound/displayimage/{{ compound.chemblid }}">
+                          {# <img src="https://www.ebi.ac.uk/chembldb/compound/displayimage/{{ compound.chemblid }}"> #}
+                          <img src="https://www.ebi.ac.uk/chembl/api/data/image/{{ compound.chemblid }}.svg?engine=indigo">
                       {% else %}
                         <span style="width: 128px; height: 128px;" class="glyphicon glyphicon-file text-warning" aria-hidden="true"></span>
                       {% endif %}
-                    </td>
+                    </td> {% endcomment %}
 
-                    <td>
+                    {% comment %} <td>
                         {% if compound.mps %}
                             MPS
                         {% endif %}
@@ -93,7 +96,7 @@
                         {% if not compound.epa and not compound.mps and not compound.tctc %}
                             Unassigned
                         {% endif %}
-                    </td>
+                    </td> {% endcomment %}
                 </tr>
             {% endfor %}
             </form>

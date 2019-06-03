@@ -1,3 +1,4 @@
+// WHY IS THERE THIS FILE *AND* datepicker.js?
 $(document).ready(function () {
     // OLD METHOD
     $.each($('.calendar-container'), function() {

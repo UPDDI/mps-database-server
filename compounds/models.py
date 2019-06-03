@@ -72,6 +72,7 @@ class Compound(LockableModel):
     # Pubchem ID
     pubchemid = models.CharField(verbose_name='PubChem ID', max_length=40, default='', blank=True)
 
+    # DEPRECATED: SLATED FOR REMOVAL
     epa = models.BooleanField(
         default=False,
         help_text='Whether this compound is part of the EPA project'

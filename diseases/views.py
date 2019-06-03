@@ -23,6 +23,7 @@ class DiseaseList(ListView):
                 drug_trial__disease=disease
             )
 
+            # TODO TODO TODO MUST REVISE
             disease.models = OrganModel.objects.filter(disease=disease)
 
             disease.studies = get_user_accessible_studies(

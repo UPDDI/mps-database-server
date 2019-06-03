@@ -338,7 +338,7 @@ $(document).ready(function () {
     });
 
     // Tracks the clicking of checkboxes to fill compounds
-    $('.checkbox').change(function() {
+    $('.table-checkbox').change(function() {
         var compound = this.value;
         var checkbox_index = $(this).attr('data-table-index');
 
@@ -398,16 +398,26 @@ $(document).ready(function () {
         responsive: true,
         "order": [[ 1, "asc" ]],
         "aoColumnDefs": [
+            // {
+            //     "bSortable": false,
+            //     "aTargets": [8]
+            // },
+            // {
+            //     "targets": [3, 9],
+            //     "visible": false,
+            //     "searchable": true
+            // },
             {
-                "bSortable": false,
-                "aTargets": [8]
-            },
-            {
-                "targets": [3, 9],
+                "targets": [3],
                 "visible": false,
                 "searchable": true
             },
-            { "sSortDataType": "dom-checkbox", "targets": 0, "width": "10%" },
+            {
+                sSortDataType: "dom-checkbox",
+                targets: [0],
+                width: "10%",
+                className: 'dt-center'
+            },
         ],
         "iDisplayLength": 25
     });

@@ -109,7 +109,8 @@ $(document).ready(function () {
                     var com = compounds[names[i]];
                     var box = "<div id='com" + i + "' class='thumbnail text-center'>";
                     box += '<button id="X' + i + '" type="button" class="btn-xs btn-danger">X</button>';
-                    box += "<img src='https://www.ebi.ac.uk/chembldb/compound/displayimage/"+ com.CHEMBL + "' class='img-polaroid'>";
+                    // box += "<img src='https://www.ebi.ac.uk/chembldb/compound/displayimage/"+ com.CHEMBL + "' class='img-polaroid'>";
+                    box += "<img src='https://www.ebi.ac.uk/chembl/api/data/image/"+ com.CHEMBL + ".svg?engine=indigo' style='width: 200px; height: 200px;' class='img-polaroid'>";
                     box += "<strong>" + com.name + "</strong><br>";
                     box += "Known Drug: ";
                     box += com.knownDrug ? "<span class='glyphicon glyphicon-ok text-success'></span><br>" : "<span class='glyphicon glyphicon-remove text-danger'></span><br>";

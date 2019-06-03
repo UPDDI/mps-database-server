@@ -3,7 +3,7 @@
 {% load humanize %}
 
 {% block load_js %}
-    <script src="{% static "js/project_filter.js" %}"></script>
+    {# <script src="{% static "js/project_filter.js" %}"></script> #}
     <script src="{% static "drugtrials/adverse_events_list.js" %}"></script>
 {% endblock %}
 
@@ -19,7 +19,8 @@
             </h2>
         </legend>
 
-        {% include 'project_filters.html' %}
+        {# Deprecated #}
+{# {% include 'project_filters.html' %} #}
 
         <table id="adverse_events" class="display" cellspacing="0" width="100%">
             <thead>
@@ -43,7 +44,7 @@
                     <th>Black Box Warning</th>
                     <th>Logp</th>
                     <th>ALogp</th>
-                    <th>Project</th>
+                    {% comment %} <th>Project</th> {% endcomment %}
                 </tr>
             </thead>
         </table>

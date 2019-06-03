@@ -2,7 +2,7 @@
 // TODO WE MAY WANT THIS IN MULTIPLE LOCATIONS, BUT AT THE MOMENT I AM ASSUMING ADD ONLY
 // TODO THIS FILE IS A MESS
 $(document).ready(function () {
-    // TODO TODO TODO IN THE FUTURE FILE-SCOPE VARIABLES SHOULD BE IN ALL-CAPS
+    // TODO TODO TODO IN THE FUTURE FILE-SCOPE CONSTANTS SHOULD BE IN ALL-CAPS
     // The matrix's ID
     var matrix_id = Math.floor(window.location.href.split('/')[5]);
 
@@ -107,13 +107,6 @@ $(document).ready(function () {
     final_indexes[cell_prefix] = cell_final_index;
     final_indexes[setting_prefix] = setting_final_index;
 
-    // For converting between times
-    var time_conversions = {
-        'day': 1440.0,
-        'hour': 60.0,
-        'minute': 1.0
-    };
-
     // For using incrementers
     // TODO TODO SUBJECT TO CHANGE
     var incrementers = {
@@ -153,32 +146,6 @@ $(document).ready(function () {
         }
 
         return new_form;
-    }
-
-    // DEPRECATED
-    // WILL PROBABLY JUST HANDLE THIS IN PYTHON
-    function get_split_time(time_in_minutes) {
-        var times = {
-            'day': 0,
-            'hour': 0,
-            'minute': 0
-        };
-
-        var time_in_minutes_remaining = time_in_minutes;
-        $.each(time_conversions, function(time_unit, conversion) {
-            var initial_time_for_current_field = Math.floor(time_in_minutes_remaining / conversion);
-            if (initial_time_for_current_field) {
-                times[time_unit] = initial_time_for_current_field;
-                time_in_minutes_remaining -= initial_time_for_current_field * conversion;
-            }
-        });
-
-        // Add fractions of minutes if necessary
-        if (time_in_minutes_remaining) {
-            times['minute'] += time_in_minutes_remaining
-        }
-
-        return times
     }
 
     // This function turns numbers into letters

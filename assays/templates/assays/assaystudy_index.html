@@ -63,6 +63,11 @@
             </h1>
         </div>
 
+        {# CRUDE WAY TO GET MATRIX #}
+        {% for matrix in object.assaymatrix_set.all %}
+        <a href="{{ matrix.get_absolute_url }}new/" class="btn btn-lg btn-primary">NEW EDIT PAGE</a>
+        {% endfor %}
+
         <legend>
             <h2>
                 Matrices
