@@ -302,6 +302,7 @@ $(document).ready(function () {
     }
 
     function replace_setup_data() {
+        console.log(current_setup_data);
         setup_data_selector.val(JSON.stringify(current_setup_data));
     }
 
@@ -334,7 +335,7 @@ $(document).ready(function () {
     }
 
     // JUST USES DEFAULT PROTOCOL FOR NOW
-    function spawn_row(setup_to_use) {
+    function spawn_row(setup_to_use, add_new_row) {
         if (!setup_to_use) {
             setup_to_use = current_setup;
         }
@@ -403,9 +404,14 @@ $(document).ready(function () {
 
         study_setup_body.append(new_row);
 
-        current_setup_data.push(
-            $.extend(true, {}, setup_to_use)
-        );
+        if (add_new_row) {
+            current_setup_data.push(
+                $.extend(true, {}, setup_to_use)
+            );
+        }
+
+        // console.log(add_new_row, current_setup_data.length);
+
         setup_data_selector.val(JSON.stringify(current_setup_data));
     }
 
@@ -440,7 +446,7 @@ $(document).ready(function () {
 
     $(document).on('click', 'a[data-clone-row-button="true"]', function() {
         current_row_index = Math.floor($(this).attr('data-row'));
-        spawn_row(current_setup_data[current_row_index]);
+        spawn_row(current_setup_data[current_row_index], true);
     });
 
     $(document).on('click', 'a[data-delete-row-button="true"]', function() {
@@ -448,6 +454,8 @@ $(document).ready(function () {
 
         // JUST FLAT OUT DELETE THE ROW
         current_setup_data.splice(current_row_index, 1);
+
+        console.log('DELETE', current_row_index, current_setup_data);
 
         rebuild_table();
     });
@@ -457,7 +465,7 @@ $(document).ready(function () {
     });
 
     $('#add_group_button').click(function() {
-        spawn_row();
+        spawn_row(null, true);
     });
 
     // function apply_protocol_setup_to_row() {
@@ -477,12 +485,12 @@ $(document).ready(function () {
 
         if (current_setup_data.length) {
             $.each(current_setup_data, function(index, content) {
-                console.log('HERE', content);
-                spawn_row(content);
+                // console.log('HERE', content, 'Length', current_setup_data.length);
+                spawn_row(content, false);
             });
         }
         else {
-            spawn_row();
+            spawn_row(null, true);
         }
 
         replace_setup_data();
