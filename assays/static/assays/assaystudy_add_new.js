@@ -68,20 +68,16 @@ $(document).ready(function () {
                 // Populate the fields
                 var current_data = $.extend(true, {}, current_setup_data[current_row_index][current_prefix][current_column_index]);
 
-                console.log(current_setup_data);
-
                 var this_popup = $(this);
 
                 this_popup.find('input').each(function() {
                     if ($(this).attr('name')) {
-                        console.log($(this).attr('name'), current_data[$(this).attr('name').replace(current_prefix + '_', '')]);
                         $(this).val(current_data[$(this).attr('name').replace(current_prefix + '_', '')]);
                     }
                 });
 
                 this_popup.find('select').each(function() {
                     if ($(this).attr('name')) {
-                        console.log($(this).attr('name'), current_data[$(this).attr('name').replace(current_prefix + '_', '') + '_id']);
                         this.selectize.setValue(current_data[$(this).attr('name').replace(current_prefix + '_', '') + '_id']);
                     }
                 });
@@ -97,15 +93,11 @@ $(document).ready(function () {
                         current_data[current_time_prefix],
                     );
 
-                    console.log(split_time);
 
                     $.each(split_time, function(time_name, time_value) {
-                        console.log(prefix + '_' + current_time_prefix + '_' + time_name);
                         this_popup.find('input[name="' + prefix + '_' + current_time_prefix + '_' + time_name + '"]').val(time_value);
                     });
                 });
-
-                console.log(current_data);
             },
             buttons: [
             {
@@ -116,14 +108,12 @@ $(document).ready(function () {
                     var current_data = {};
 
                     $(this).find('input').each(function() {
-                        console.log($(this).attr('name'), $(this).val());
                         if ($(this).attr('name')) {
                             current_data[$(this).attr('name').replace(current_prefix + '_', '')] = $(this).val();
                         }
                     });
 
                     $(this).find('select').each(function() {
-                        console.log($(this).attr('name'), $(this).val());
                         if ($(this).attr('name')) {
                             current_data[$(this).attr('name').replace(current_prefix + '_', '') + '_id'] = $(this).val();
                         }
@@ -148,8 +138,6 @@ $(document).ready(function () {
                         current_data['cell_sample_id'] = $(this).find('input[name="' + prefix + '_cell_sample"]').val();
                         delete current_data['cell_sample'];
                     }
-
-                    console.log(current_data);
 
                     // current_setup_data[current_row_index][current_prefix][current_column_index] = $.extend(true, {}, current_data);
                     modify_setup_data(current_prefix, current_data, current_row_index, current_column_index);
@@ -182,9 +170,6 @@ $(document).ready(function () {
         else {
             // Ideally, this would be cached in an object or something
             var origin = $('#id_' + prefix + '_' + field_name);
-
-            console.log(origin);
-            console.log(origin.prop('tagName'));
 
             // Get the select display if select
             if (origin.prop('tagName') === 'SELECT') {
@@ -235,10 +220,7 @@ $(document).ready(function () {
                         value,
                     );
 
-                    console.log(split_time);
-
                     $.each(split_time, function(time_name, time_value) {
-                        console.log(prefix + '_' + key + '_' + time_name);
                         new_display.find('.' + prefix + '-' + key + '_' + time_name).html(time_value);
                     });
                 }
@@ -319,6 +301,10 @@ $(document).ready(function () {
         return '<a data-clone-row-button="true" data-row="' + index + '" role="button" class="btn btn-info">Clone</a>';
     }
 
+    function replace_setup_data() {
+        setup_data_selector.val(JSON.stringify(current_setup_data));
+    }
+
     function modify_setup_data(prefix, content, setup_index, object_index) {
         if (object_index) {
             current_setup_data[setup_index][prefix][object_index] = $.extend(true, {}, content);
@@ -333,7 +319,7 @@ $(document).ready(function () {
     function spawn_column(prefix) {
         var column_index = number_of_columns[prefix];
         // UGLY
-        study_setup_head.find('.' + prefix + '_start').last().after('<th class="' + prefix + '_start' + '">' + prefix[0].toUpperCase() + prefix.slice(1) + ' ' + (column_index + 1) + '<br>' + create_delete_button(prefix, column_index) +'</th>');
+        study_setup_head.find('.' + prefix + '_start').last().after('<th class="new_column ' + prefix + '_start' + '">' + prefix[0].toUpperCase() + prefix.slice(1) + ' ' + (column_index + 1) + '<br>' + create_delete_button(prefix, column_index) +'</th>');
 
         // ADD TO EXISTING ROWS AS EMPTY
         study_setup_body.find('tr').each(function(row_index) {
@@ -348,7 +334,11 @@ $(document).ready(function () {
     }
 
     // JUST USES DEFAULT PROTOCOL FOR NOW
-    function spawn_row() {
+    function spawn_row(setup_to_use) {
+        if (!setup_to_use) {
+            setup_to_use = current_setup;
+        }
+
         var new_row = $('<tr>');
 
         var row_index = study_setup_body.find('tr').length;
@@ -375,7 +365,7 @@ $(document).ready(function () {
         );
 
         $.each(prefixes, function(index, prefix) {
-            var content_set = current_setup[prefix];
+            var content_set = setup_to_use[prefix];
             if (!content_set.length) {
                 if (!number_of_columns[prefix]) {
                     new_row.append(
@@ -400,18 +390,6 @@ $(document).ready(function () {
                 }
 
                 for (var i = 0; i < number_of_columns[prefix]; i++) {
-                    // var html_contents = [
-                    //     create_edit_button(prefix, row_index, i)
-                    // ];
-                    //
-                    // var content = content_set[i];
-                    // if (content) {
-                    //     $.each(content, function(key, value) {
-                    //         html_contents.push(key + ': ' + value);
-                    //     });
-                    // }
-                    //
-                    // html_contents = html_contents.join('<br>')
                     var html_contents = get_content_display(prefix, row_index, i, content_set[i]);
 
                     new_row.append(
@@ -426,27 +404,52 @@ $(document).ready(function () {
         study_setup_body.append(new_row);
 
         current_setup_data.push(
-            $.extend(true, {}, current_setup)
+            $.extend(true, {}, setup_to_use)
         );
         setup_data_selector.val(JSON.stringify(current_setup_data));
     }
 
     $(document).on('change', '.test-type', function() {
-        console.log('test_type', $(this).val());
         modify_setup_data('test_type', $(this).val(), $(this).attr('data-row'));
     });
 
     $(document).on('change', '.number-of-items', function() {
-        console.log('test_type', $(this).val());
         modify_setup_data('number_of_items', $(this).val(), $(this).attr('data-row'));
     });
 
     $(document).on('click', 'a[data-edit-button="true"]', function() {
-        console.log(this);
         current_prefix = $(this).attr('data-prefix');
         current_row_index = $(this).attr('data-row');
         current_column_index = $(this).attr('data-column');
         $('#' + $(this).attr('data-prefix') + '_dialog').dialog('open');
+    });
+
+    $(document).on('click', 'a[data-delete-column-button="true"]', function() {
+        current_prefix = $(this).attr('data-prefix');
+        current_column_index = $(this).attr('data-column');
+
+        // DELETE EVERY COLUMN FOR THIS PREFIX THEN REBUILD
+        $.each(current_setup_data, function(index, current_content) {
+            current_content[current_prefix].splice(current_column_index, 1);
+        });
+
+        number_of_columns[current_prefix] -= 1;
+
+        rebuild_table();
+    });
+
+    $(document).on('click', 'a[data-clone-row-button="true"]', function() {
+        current_row_index = Math.floor($(this).attr('data-row'));
+        spawn_row(current_setup_data[current_row_index]);
+    });
+
+    $(document).on('click', 'a[data-delete-row-button="true"]', function() {
+        current_row_index = Math.floor($(this).attr('data-row'));
+
+        // JUST FLAT OUT DELETE THE ROW
+        current_setup_data.splice(current_row_index, 1);
+
+        rebuild_table();
     });
 
     $('a[data-add-new-button="true"]').click(function() {
@@ -460,6 +463,30 @@ $(document).ready(function () {
     // function apply_protocol_setup_to_row() {
     //
     // }
+
+    function rebuild_table() {
+        // GET RID OF ANYTHING IN THE TABLE
+        study_setup_head.find('.new_column').remove();
+        study_setup_body.empty();
+
+        number_of_columns = {
+            'cell': 0,
+            'compound': 0,
+            'setting': 0,
+        };
+
+        if (current_setup_data.length) {
+            $.each(current_setup_data, function(index, content) {
+                console.log('HERE', content);
+                spawn_row(content);
+            });
+        }
+        else {
+            spawn_row();
+        }
+
+        replace_setup_data();
+    }
 
     // Handling Device flow
     // Make sure global var exists before continuing
@@ -477,8 +504,6 @@ $(document).ready(function () {
             window.spinner.spin(
                 document.getElementById("spinner")
             );
-
-            console.log(protocol.val());
 
             if (protocol.val()) {
               $.ajax({
@@ -508,12 +533,9 @@ $(document).ready(function () {
 
                       // FORCE INITIAL TO BE CONTROL
                       current_setup['test_type'] = 'control';
-
-                      // GET RID OF ANYTHING IN THE TABLE
-                      study_setup_body.empty();
                       current_setup_data = [];
 
-                      spawn_row();
+                      rebuild_table();
                   },
                   error: function (xhr, errmsg, err) {
                       // Stop spinner
