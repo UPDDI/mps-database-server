@@ -2103,7 +2103,8 @@ class AssayStudyAddNew(OneGroupRequiredMixin, CreateView):
         # )
         if form.is_valid() and study_assay_formset.is_valid():
         # if form.is_valid() and study_assay_formset.is_valid() and supporting_data_formset.is_valid():
-            save_forms_with_tracking(self, form, formset=[study_assay_formset, supporting_data_formset], update=False)
+            # save_forms_with_tracking(self, form, formset=[study_assay_formset, supporting_data_formset], update=False)
+            save_forms_with_tracking(self, form, formset=[study_assay_formset], update=False)
             return redirect(
                 self.object.get_absolute_url()
             )
@@ -2112,7 +2113,7 @@ class AssayStudyAddNew(OneGroupRequiredMixin, CreateView):
                 self.get_context_data(
                     form=form,
                     study_assay_formset=study_assay_formset,
-                    supporting_data_formset=supporting_data_formset
+                    # supporting_data_formset=supporting_data_formset
                 )
             )
 
