@@ -288,7 +288,7 @@ $(document).ready(function() {
                 width: '20%'
             },
             {
-                title: "Organ Models",
+                title: "MPS Models",
                 "render": function (data, type, row) {
                     return data_group_to_organ_models[row[0]].join('<br>');
                 }
