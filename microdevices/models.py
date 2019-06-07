@@ -242,7 +242,7 @@ class OrganModel(LockableModel):
 class ValidatedAssay(models.Model):
     """Validated Assays show which assays have been approved for a particular Organ Model"""
     # Validated assays for an organ model used in inline
-    organ_model = models.ForeignKey(OrganModel, verbose_name='Organ Model', on_delete=models.CASCADE)
+    organ_model = models.ForeignKey(OrganModel, verbose_name='MPS Model', on_delete=models.CASCADE)
     assay = models.ForeignKey('assays.AssayModel', verbose_name='Assay Model', on_delete=models.CASCADE)
 
 
@@ -259,7 +259,7 @@ class OrganModelProtocol(FlaggableModel):
         # unique_together = [('name', 'organ_model')]
         verbose_name = 'MPS Model Version'
 
-    organ_model = models.ForeignKey(OrganModel, verbose_name='Organ Model', on_delete=models.CASCADE)
+    organ_model = models.ForeignKey(OrganModel, verbose_name='MPS Model', on_delete=models.CASCADE)
     # Uhh... this should probably just be "name"...
     # TRANSFER ALL VERSIONS TO NAMES
     version = models.CharField(max_length=20, default='', blank=True)

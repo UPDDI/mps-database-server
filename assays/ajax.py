@@ -3027,8 +3027,8 @@ def get_inter_study_reproducibility(
             point.time / 1440.0, []
         ).append(point.standard_value)
 
-    for set, chart_groups in list(initial_chart_data.items()):
-        current_set = final_chart_data.setdefault(set, {})
+    for this_set, chart_groups in list(initial_chart_data.items()):
+        current_set = final_chart_data.setdefault(this_set, {})
         for chart_group, legends in list(chart_groups.items()):
             current_data = {}
             current_table = current_set.setdefault(chart_group, [['Time']])
@@ -3154,7 +3154,7 @@ def get_inter_study_reproducibility(
                 'best': row
             })
 
-    for set, current_dic in list(results_rows_full.items()):
+    for this_set, current_dic in list(results_rows_full.items()):
         current_best = current_dic.get('best')
 
         # If the current best has no ICC, try CV
@@ -3168,7 +3168,7 @@ def get_inter_study_reproducibility(
                         'best': row
                     })
 
-    for set, current_dic in list(results_rows_full.items()):
+    for this_set, current_dic in list(results_rows_full.items()):
         current_best = current_dic.get('best')
 
         if current_best[8]:
@@ -3216,8 +3216,8 @@ def get_inter_study_reproducibility(
             row[0] / 1440.0, (row[2], shape)
         )
 
-    for set, chart_groups in list(inter_chart_data.items()):
-        current_set = final_chart_data.setdefault(set, {})
+    for this_set, chart_groups in list(inter_chart_data.items()):
+        current_set = final_chart_data.setdefault(this_set, {})
         for chart_group, legends in list(chart_groups.items()):
             current_data = {}
             current_table = current_set.setdefault(chart_group, [['Time']])
@@ -3227,7 +3227,7 @@ def get_inter_study_reproducibility(
                 # Get the median
                 current_median = np.median([
                     np.median(x) for x in list(initial_chart_data.get(
-                        set
+                        this_set
                     ).get(
                         'average'
                     ).get(
@@ -3251,7 +3251,7 @@ def get_inter_study_reproducibility(
                         y_header.update({time: True})
                     else:
                         values = initial_chart_data.get(
-                            set
+                            this_set
                         ).get(
                             'average'
                         ).get(

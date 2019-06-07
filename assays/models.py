@@ -1064,11 +1064,11 @@ class AssayChipSetup(FlaggableRestrictedModel):
     device = models.ForeignKey(Microdevice, verbose_name='Device', on_delete=models.CASCADE)
 
     # RENAMED (previously field was erroneously device)
-    organ_model = models.ForeignKey(OrganModel, verbose_name='Organ Model Name', null=True, blank=True, on_delete=models.CASCADE)
+    organ_model = models.ForeignKey(OrganModel, verbose_name='MPS Model Name', null=True, blank=True, on_delete=models.CASCADE)
 
     organ_model_protocol = models.ForeignKey(
         OrganModelProtocol,
-        verbose_name='Organ Model Protocol',
+        verbose_name='MPS Model Protocol',
         null=True,
         blank=True,
         on_delete=models.CASCADE
@@ -1180,7 +1180,7 @@ class AssayChipSetup(FlaggableRestrictedModel):
 
     def get_hyperlinked_model_or_device(self):
         if not self.organ_model:
-            return '<a href="{0}">{1} (No Organ Model)</a>'.format(self.device.get_absolute_url(), self.device.name)
+            return '<a href="{0}">{1} (No MPS Model)</a>'.format(self.device.get_absolute_url(), self.device.name)
         else:
             return '<a href="{0}">{1}</a>'.format(self.organ_model.get_absolute_url(), self.organ_model.name)
 
@@ -1823,7 +1823,7 @@ class AssayMatrix(FlaggableModel):
     #         organ_models.append(matrix_item.organ_model)
     #
     #     if not organ_models:
-    #         return '-No Organ Models-'
+    #         return '-No MPS Models-'
     #     else:
     #         return ','.join(list(set(organ_models)))
 
@@ -2021,7 +2021,7 @@ class AssayMatrixItem(FlaggableModel):
 
     def get_hyperlinked_model_or_device(self):
         if not self.organ_model:
-            return '<a target="_blank" href="{0}">{1} (No Organ Model)</a>'.format(self.device.get_absolute_url(), self.device.name)
+            return '<a target="_blank" href="{0}">{1} (No MPS Model)</a>'.format(self.device.get_absolute_url(), self.device.name)
         else:
             return '<a target="_blank" href="{0}">{1}</a>'.format(self.organ_model.get_absolute_url(), self.organ_model.name)
 
