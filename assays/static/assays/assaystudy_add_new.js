@@ -206,7 +206,10 @@ $(document).ready(function () {
 
         var new_display = empty_html[prefix].clone();
 
-        if (content) {
+        // Delete button
+        new_display.find('.subform-delete').attr('data-prefix', prefix).attr('data-row', row_index).attr('data-column', column_index);
+
+        if (content && Object.keys(content).length) {
             $.each(content, function(key, value) {
                 // html_contents.push(key + ': ' + value);
                 // I will need to think about invalid fields
@@ -454,6 +457,19 @@ $(document).ready(function () {
 
         // JUST FLAT OUT DELETE THE ROW
         current_setup_data.splice(current_row_index, 1);
+
+        console.log('DELETE', current_row_index, current_setup_data);
+
+        rebuild_table();
+    });
+
+    $(document).on('click', '.subform-delete', function() {
+        current_row_index = Math.floor($(this).attr('data-row'));
+        current_column_index = Math.floor($(this).attr('data-column'));
+        current_prefix = $(this).attr('data-prefix');
+
+        // DELETE THE DATA HERE
+        current_setup_data[current_row_index][current_prefix][current_column_index] = {};
 
         console.log('DELETE', current_row_index, current_setup_data);
 
