@@ -748,6 +748,25 @@
 </div>
 {% endif %}
 
+{% if intra_repro == 'true' %}
+<div id="repro_sidebar_section">
+<h3 class="text-center">
+    <u>Intra-Reproducibility Properties</u>
+</h3>
+
+<ul class="list-unstyled components padded-bottom" id="repro_options_tables">
+    <li>
+        <div class="well" id="use_percent_control_section">
+            <label for="use_percent_control">
+                <input type="checkbox" name="use_percent_control" id="use_percent_control" />
+                Use Percent Control
+            </label>
+        </div>
+    </li>
+</ul>
+</div>
+{% endif %}
+
 {# CRUDE PADDING #}
 <div style="margin-bottom: 250px"></div>
 
