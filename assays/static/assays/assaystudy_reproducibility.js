@@ -313,6 +313,8 @@ $(document).ready(function () {
                     unit_id: $.urlParam('u'),
                     sample_location_id: $.urlParam('s'),
                     method_id: $.urlParam('m'),
+                    // SLOPPY
+                    percent_control: $('#use_percent_control').prop('checked') ? true: '',
                 },
                 type: 'POST',
                 dataSrc: function(json) {
@@ -479,6 +481,12 @@ $(document).ready(function () {
 
     function draw_charts(set) {
         var value_unit = data_groups[set][value_unit_index];
+
+        // Exception for percent control
+        if ($('#use_percent_control').prop('checked')) {
+            value_unit = '% Control';
+        }
+
         // var target_analyte = data_groups[data[0]][0];
         var cv_chart_data, chip_chart_data = null;
         var cv_chart_options = {

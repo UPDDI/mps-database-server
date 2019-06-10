@@ -1569,6 +1569,8 @@ def fetch_assay_study_reproducibility(request):
     sample_location_id_filter = request.POST.get('sample_location_id', '')
     method_id_filter = request.POST.get('method_id', '')
 
+    use_percent_control = request.POST.get('percent_control', '')
+
     # If chip data
     matrix_items = AssayMatrixItem.objects.filter(
         study_id=study.id
@@ -1707,10 +1709,48 @@ def fetch_assay_study_reproducibility(request):
     data_point_attribute_getter_base_values = tuple_attrgetter(*base_value_tuple)
     data_point_attribute_getter_current_values = tuple_attrgetter(*current_value_tuple)
 
+    controls = {}
+
+    if use_percent_control:
+        controls = get_control_data(
+            [study],
+            # CONTRIVED TO BE DEFAULT
+            # MEAN TYPE
+            # mean_type,
+            None,
+            # include_all
+            False,
+            # truncate negative
+            False,
+            new_data_for_control=None,
+            normalize_units=False,
+            group_sample_location=group_sample_location
+        )
+
     for point in data_points:
         point.standard_value = point.value
         item_id = point.matrix_item_id
-        if point.study_assay.unit.base_unit_id:
+
+        if use_percent_control:
+            sample_location = ''
+
+            if group_sample_location:
+                sample_location = point.sample_location.name
+
+            # SLOPPY: NOTE TIME CONVERSION TO DAYS
+            # SLOPPY: NOTE SPECIAL HANDLING FOR SAMPLE LOCATION
+            current_control = controls.get((point.study_id, point.study_assay.target.name, point.study_assay.unit.unit, sample_location, point.time / 1440.0), None)
+
+            if current_control:
+                point.standard_value /= current_control
+                # PERCENT
+                point.standard_value *= 100
+            else:
+                # SLOPPY, JUST IGNORE DATA POINTS LACKING WHAT WE NEED
+                continue
+
+        # SLOPPY: NOTE IGNORING BASE_UNIT WHEN USING PERCENT CONTROL
+        if point.study_assay.unit.base_unit_id and not use_percent_control:
             data_point_tuple = data_point_attribute_getter_base(point)
             point.standard_value *= point.study_assay.unit.scale_factor
         else:
@@ -1767,13 +1807,15 @@ def fetch_assay_study_reproducibility(request):
     ])
 
     for point in data_points:
-        repro_data.append([
-            point.study.name,
-            point.matrix_item.name,
-            point.time,
-            point.standard_value,
-            point.data_group
-        ])
+        # SLOPPY AND BAD
+        if point.standard_value:
+            repro_data.append([
+                point.study.name,
+                point.matrix_item.name,
+                point.time,
+                point.standard_value,
+                point.data_group
+            ])
 
     # TODO REVISE
     intra_data_table = get_repro_data(
