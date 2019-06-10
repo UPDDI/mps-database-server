@@ -405,6 +405,9 @@ $(document).ready(function () {
             }
         });
 
+        new_row.find('.number-of-items').val(setup_to_use['number_of_items']);
+        new_row.find('.test-type').val(setup_to_use['test_type']);
+
         study_setup_body.append(new_row);
 
         if (add_new_row) {
