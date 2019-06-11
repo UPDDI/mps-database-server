@@ -52,6 +52,30 @@
     </div>
 </div>
 
+<div class="well">
+    <div class="row text-center">
+        <h1>
+            {{ object.name }}
+        </h1>
+    </div>
+
+    {% if object.description %}
+        <legend>Description</legend>
+
+        <div class="padded-bottom">
+        <div class="panel panel-info">
+        <div class="panel-body">
+        {% if object.description %}
+            <p>
+                {{ object.description|linebreaksbr }}
+            </p>
+        {% endif %}
+        </div>
+        </div>
+        </div>
+    {% endif %}
+</div>
+
 {% if object.assaystudysetreference_set.count %}
     {% include 'assays/reference_table.html' with references_set=object.assaystudysetreference_set.all %}
 {% endif %}

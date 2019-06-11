@@ -165,6 +165,9 @@ $(document).ready(function () {
     // Assays to deselect/select after hitting confirm
     var current_assay_filter = {};
 
+    // To discern how to modify assays
+    var current_study_id = null;
+
     var assay_dialog_body = $('#assay_dialog_body');
     var assay_table = $('#assay_table');
 
@@ -234,6 +237,27 @@ $(document).ready(function () {
         });
     }
 
+    function check_assay_filter_button(study_id) {
+        var current_filter_button = $('.assay-select-button[data-study-id="' + current_study_id +'"]');
+        var current_assays = study_id_to_assays[study_id];
+
+        var study_is_affected = false;
+
+        $.each(current_assays, function(assay_index, assay_id) {
+            if (!current_assay_filter[assay_id]) {
+                study_is_affected = true;
+                return false;
+            }
+        });
+
+        if (study_is_affected) {
+            current_filter_button.addClass('btn-warning');
+        }
+        else {
+            current_filter_button.removeClass('btn-warning');
+        }
+    }
+
     function apply_assay_filter() {
         $.each(current_assay_filter, function(assay_id, add_or_remove) {
             // Add/remove from m2m
@@ -241,6 +265,8 @@ $(document).ready(function () {
             var current_assay_option = assays_selector.find('option[value="' + assay_id + '"]');
             current_assay_option.prop('selected', add_or_remove);
         });
+
+        check_assay_filter_button(current_study_id);
     }
 
     function add_or_remove_from_study_table(current_study_option, add_or_remove, initial) {
@@ -313,7 +339,7 @@ $(document).ready(function () {
 
     // TODO dialog for selecting a set of assays (per study)
     $(document).on('click', '.assay-select-button', function() {
-        var current_study_id = $(this).attr('data-study-id');
+        current_study_id = $(this).attr('data-study-id');
         var current_assays = study_id_to_assays[current_study_id];
 
         // Populate the datatable
@@ -411,6 +437,11 @@ $(document).ready(function () {
             current_assay_filter[$(this).val()] = false;
             $(this).attr('checked', false);
         }
+    });
+
+    // Make sure that all of the assay boxes have the correct colors
+    $('.assay-select-button').each(function() {
+        check_assay_filter_button($(this).attr('data-study-id'));
     });
 
     // Get initial assay filter
