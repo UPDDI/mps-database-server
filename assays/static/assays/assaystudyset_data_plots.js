@@ -12,6 +12,9 @@ $(document).ready(function() {
 
     var study_set_id = Math.floor(window.location.href.split('/')[5]);
 
+    window.CHARTS.call = 'fetch_data_points_from_study_set';
+    window.CHARTS.study_set_id = study_set_id;
+
     function show_plots() {
         current_context = 'plots';
 

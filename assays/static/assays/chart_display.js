@@ -9,6 +9,7 @@ window.CHARTS = {
     study_id: '',
     matrix_id: '',
     matrix_item_id: '',
+    study_set_id: '',
     filter: '{}',
     call: '',
     global_options: {}
@@ -486,6 +487,8 @@ $(document).ready(function () {
             // TODO MATRIX AND MATRIX ITEM
             matrix: window.CHARTS.matrix_id,
             matrix_item: window.CHARTS.matrix_item_id,
+            // TRICKY: STUDY SET
+            study_set_id: window.CHARTS.study_set_id,
             criteria: JSON.stringify(window.GROUPING.group_criteria),
             post_filter: JSON.stringify(individual_post_filter),
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
