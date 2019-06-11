@@ -6,4 +6,13 @@ $(document).ready(function() {
     google.charts.load('current', {'packages':['corechart']});
     // Set the callback
     google.charts.setOnLoadCallback(window.INTER_REPRO.show_repro);
+
+    // On load
+    document.getElementById('id_current_url_input').value = window.location.href
+
+    // On click of copy to URL button (DEPRECATED)
+    $('#id_copy_url_button').click(function() {
+        var current_url = document.getElementById('id_current_url_input'); current_url.select();
+        document.execCommand('copy');
+    });
 });
