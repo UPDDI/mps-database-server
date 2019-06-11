@@ -175,12 +175,6 @@ $(document).ready(function () {
         width: 900,
         closeOnEscape: true,
         autoOpen: false,
-        close: function () {
-            $('body').removeClass('stop-scrolling');
-        },
-        open: function () {
-            $('body').addClass('stop-scrolling');
-        },
         buttons: [
         {
             text: 'Apply',
