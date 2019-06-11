@@ -15,6 +15,7 @@ $(document).ready(function () {
 
     // Populate study_id_to_assay
     var study_id_to_assays = {};
+    var new_studies = [];
 
     var initial_load = true;
 
@@ -232,23 +233,25 @@ $(document).ready(function () {
     }
 
     function check_assay_filter_button(study_id) {
-        var current_filter_button = $('.assay-select-button[data-study-id="' + current_study_id +'"]');
-        var current_assays = study_id_to_assays[study_id];
+        if (study_id) {
+            var current_filter_button = $('.assay-select-button[data-study-id="' + current_study_id +'"]');
+            var current_assays = study_id_to_assays[study_id];
 
-        var study_is_affected = false;
+            var study_is_affected = false;
 
-        $.each(current_assays, function(assay_index, assay_id) {
-            if (!current_assay_filter[assay_id]) {
-                study_is_affected = true;
-                return false;
+            $.each(current_assays, function(assay_index, assay) {
+                if (!current_assay_filter[assay.id]) {
+                    study_is_affected = true;
+                    return false;
+                }
+            });
+
+            if (study_is_affected) {
+                current_filter_button.addClass('btn-warning');
             }
-        });
-
-        if (study_is_affected) {
-            current_filter_button.addClass('btn-warning');
-        }
-        else {
-            current_filter_button.removeClass('btn-warning');
+            else {
+                current_filter_button.removeClass('btn-warning');
+            }
         }
     }
 
@@ -285,6 +288,9 @@ $(document).ready(function () {
                     assays_selector.find('option[value="' + value.id + '"]').prop('selected', true);
                 });
             }
+
+            // Add to new studies
+            new_studies.push(Math.floor(study_id));
         }
         // If de-selected, then remove from table
         else if (!add_or_remove && current[0]) {
@@ -301,6 +307,19 @@ $(document).ready(function () {
     $('#list_continue_button').click(function() {
         $('#list_section').hide();
         $('#form_section').show();
+
+        // FORCE THE APPLICATION FOR ALL NEW STUDIES
+        $.each(new_studies, function(i, study_id) {
+            $.each(study_id_to_assays[study_id], function(index, assay) {
+                current_assay_filter[assay.id] = true;
+            });
+        });
+
+        // Apply the filter
+        apply_assay_filter();
+
+        // No longer consider new studies
+        new_studies = [];
     });
 
     // Back button
