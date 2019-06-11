@@ -230,11 +230,16 @@ $(document).ready(function () {
                 current_assay_filter[$(this).val()] = false;
             }
         });
+
+        // Make sure that all of the assay boxes have the correct colors
+        $('.assay-select-button').each(function() {
+            check_assay_filter_button(Math.floor($(this).attr('data-study-id')));
+        });
     }
 
     function check_assay_filter_button(study_id) {
         if (study_id) {
-            var current_filter_button = $('.assay-select-button[data-study-id="' + current_study_id +'"]');
+            var current_filter_button = $('.assay-select-button[data-study-id="' + study_id +'"]');
             var current_assays = study_id_to_assays[study_id];
 
             var study_is_affected = false;
@@ -450,11 +455,6 @@ $(document).ready(function () {
             current_assay_filter[$(this).val()] = false;
             $(this).attr('checked', false);
         }
-    });
-
-    // Make sure that all of the assay boxes have the correct colors
-    $('.assay-select-button').each(function() {
-        check_assay_filter_button($(this).attr('data-study-id'));
     });
 
     // Get initial assay filter
