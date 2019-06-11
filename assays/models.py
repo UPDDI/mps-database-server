@@ -2627,7 +2627,8 @@ class AssayStudySet(FlaggableModel):
 
 class AssayReference(FlaggableModel):
     pubmed_id = models.CharField(verbose_name='PubMed ID', max_length=20, blank=True, default='N/A')
-    title = models.CharField(verbose_name='Title', max_length=255)
+    # NOTE THAT TITLE IS SET TO UNIQUE
+    title = models.CharField(verbose_name='Title', max_length=255, unique=True)
     authors = models.CharField(verbose_name='Authors', max_length=255)
     abstract = models.CharField(verbose_name='Abstract', max_length=4000, blank=True, default='')
     publication = models.CharField(verbose_name='Publication', max_length=255)
