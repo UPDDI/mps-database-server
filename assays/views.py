@@ -2050,8 +2050,17 @@ class AssayStudySetUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
         )
 
         if form.is_valid() and reference_formset.is_valid():
-            save_forms_with_tracking(self, form, update=True, formset=[reference_formset])
+            save_forms_with_tracking(self, form, formset=[reference_formset], update=True)
             form.save_m2m()
+            return redirect(
+                self.object.get_absolute_url()
+            )
+        else:
+            return self.render_to_response(
+                self.get_context_data(
+                    form=form
+                )
+            )
 
 
 class AssayStudyAddNew(OneGroupRequiredMixin, CreateView):
