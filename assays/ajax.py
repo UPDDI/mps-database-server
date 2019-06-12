@@ -1717,19 +1717,26 @@ def fetch_assay_study_reproducibility(request):
             # CONTRIVED TO BE DEFAULT
             # MEAN TYPE
             # mean_type,
-            None,
+            'median',
             # include_all
             False,
             # truncate negative
             False,
             new_data_for_control=None,
-            normalize_units=False,
+            normalize_units=True,
             group_sample_location=group_sample_location
         )
 
     for point in data_points:
         point.standard_value = point.value
         item_id = point.matrix_item_id
+
+        # SLOPPY: NOTE IGNORING BASE_UNIT WHEN USING PERCENT CONTROL
+        if point.study_assay.unit.base_unit_id:
+            data_point_tuple = data_point_attribute_getter_base(point)
+            point.standard_value *= point.study_assay.unit.scale_factor
+        else:
+            data_point_tuple = data_point_attribute_getter_current(point)
 
         if use_percent_control:
             sample_location = ''
@@ -1739,7 +1746,10 @@ def fetch_assay_study_reproducibility(request):
 
             # SLOPPY: NOTE TIME CONVERSION TO DAYS
             # SLOPPY: NOTE SPECIAL HANDLING FOR SAMPLE LOCATION
-            current_control = controls.get((point.study_id, point.study_assay.target.name, point.study_assay.unit.unit, sample_location, point.time / 1440.0), None)
+            if point.study_assay.unit.base_unit_id:
+                current_control = controls.get((point.study_id, point.study_assay.target.name, point.study_assay.unit.base_unit.unit, sample_location, point.time / 1440.0), None)
+            else:
+                current_control = controls.get((point.study_id, point.study_assay.target.name, point.study_assay.unit.unit, sample_location, point.time / 1440.0), None)
 
             if current_control:
                 point.standard_value /= current_control
@@ -1747,14 +1757,10 @@ def fetch_assay_study_reproducibility(request):
                 point.standard_value *= 100
             else:
                 # SLOPPY, JUST IGNORE DATA POINTS LACKING WHAT WE NEED
+                # SETTING standard_value TO None IGNORES IT
+                point.standard_value = None
                 continue
 
-        # SLOPPY: NOTE IGNORING BASE_UNIT WHEN USING PERCENT CONTROL
-        if point.study_assay.unit.base_unit_id and not use_percent_control:
-            data_point_tuple = data_point_attribute_getter_base(point)
-            point.standard_value *= point.study_assay.unit.scale_factor
-        else:
-            data_point_tuple = data_point_attribute_getter_current(point)
         current_group = data_point_treatment_groups.setdefault(
             (
                 data_point_tuple,
@@ -1808,7 +1814,7 @@ def fetch_assay_study_reproducibility(request):
 
     for point in data_points:
         # SLOPPY AND BAD
-        if point.standard_value:
+        if point.standard_value is not None:
             repro_data.append([
                 point.study.name,
                 point.matrix_item.name,
