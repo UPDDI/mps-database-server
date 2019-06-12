@@ -16,6 +16,7 @@ $(document).ready(function () {
     // Populate study_id_to_assay
     var study_id_to_assays = {};
     var new_studies = [];
+    var initial_studies = {};
 
     var initial_load = true;
 
@@ -23,6 +24,7 @@ $(document).ready(function () {
     if (studies_selector.val()) {
         $.each(studies_selector.val(), function(index, value) {
             studies_table.find('.study-selector[value="' + value + '"]').prop('checked', true);
+            initial_studies[value] = true;
         });
     }
 
@@ -295,7 +297,9 @@ $(document).ready(function () {
             }
 
             // Add to new studies
-            new_studies.push(Math.floor(study_id));
+            if (!initial_studies[study_id]) {
+                new_studies.push(Math.floor(study_id));
+            }
         }
         // If de-selected, then remove from table
         else if (!add_or_remove && current[0]) {
