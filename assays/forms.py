@@ -1689,7 +1689,10 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         # study = super(AssayStudyFormNew, self).save(commit)
         study = super(AssayStudyFormNew, self).save()
 
-        all_setup_data = json.loads(self.cleaned_data.get('setup_data', '[]'))
+        if self.cleaned_data.get('setup_data', None):
+            all_setup_data = json.loads(self.cleaned_data.get('setup_data', '[]'))
+        else:
+            all_setup_data = []
 
         # print(self.cleaned_data)
         # print(self.cleaned_data.get('setup_data', []))
