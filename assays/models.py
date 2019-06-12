@@ -1617,6 +1617,9 @@ class AssayStudy(FlaggableModel):
     # Access groups
     access_groups = models.ManyToManyField(Group, blank=True, related_name='study_access_groups')
 
+    # Collaborator groups
+    collaborator_groups = models.ManyToManyField(Group, blank=True, related_name='study_collaborator_groups')
+
     # THESE ARE NOW EXPLICIT FIELDS IN STUDY
     group = models.ForeignKey(Group, verbose_name='Data Group', help_text='Select the Data Group. The study will be bound to this group', on_delete=models.CASCADE)
 
@@ -2160,7 +2163,7 @@ class AssaySetupCell(models.Model):
             passage = 'p{}'.format(self.passage)
 
         if self.addition_location:
-            return '{0} {1}\n~{2:.2e} {3}\nAdded to: {4}'.format(
+            return '{0} {1}\n~{2:.2e} {3}, Added to: {4}'.format(
                 self.cell_sample,
                 passage,
                 self.density,

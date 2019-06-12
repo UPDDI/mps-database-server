@@ -429,7 +429,7 @@ class AssayStudyForm(SignOffMixin, BootstrapForm):
             'name': forms.Textarea(attrs={'rows': 1}),
             'description': forms.Textarea(attrs={'rows': 5, 'cols': 100}),
         }
-        exclude = tracking + restricted + ('access_groups', 'signed_off_notes', 'bulk_file')
+        exclude = tracking + restricted + ('access_groups', 'signed_off_notes', 'bulk_file', 'collaborator_groups')
 
     def clean(self):
         """Checks for at least one study type"""
@@ -470,6 +470,7 @@ class AssayStudyFormAdmin(BootstrapForm):
             groups_without_repeat.exclude(pk=self.instance.group.id)
 
         self.fields['access_groups'].queryset = groups_without_repeat
+        self.fields['collaborator_groups'].queryset = groups_without_repeat
 
     def clean(self):
         # clean the form data, before validation

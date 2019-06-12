@@ -2438,7 +2438,7 @@
 
     </div>
 
-    <div id="study_editor_section" class="container">
+ <div id="study_editor_section" class="container">
 
         <h1 class="sub1-bars">Instructions for Data Providers</h1>
 
@@ -2551,24 +2551,30 @@
                             <ul class="list-unstyled">
                                 <li>To Add/Edit a <b>Study</b>
                                     <ul class="filled-circle">
-                                        <li>Click on the <b>Add Study</b> button or the <b>View/Edit</b> button next to the <b>Study</b> of interest to be routed to the <b>Study Matrices and Items</b> list page </li>
-                                        <li>Click on the <b>Edit This Study</b> button and add/edit the required information
+                                        <li>Click on the <b>Add Study</b> button to be routed to the <b>Study Level Details</b> page, or
+                                        click the <b>View/Edit</b> button next to the <b>Study</b> of interest to be routed to the <b>Study Matrices and Items</b> list page, then
+                                        click on the <b>Edit This Study</b> button </li>
+                                        <li> Add or Edit the required information <a href="https://youtu.be/yXP00_AJjq8" target="_blank"> (video tutorial) </a>
                                             <ul class="open-circle">
                                                 <li>Group – select a Data Group (the team performing the study) </li>
                                                 <li>Study Type – indicate the general purpose of the <b>Study</b> (one is required; check all that apply) </li>
                                                 <li>Study Name – use an informative name (e.g., "Kidney-Liver Vitamin C Metabolism" is more informative than "Study-1") </li>
                                                 <li>Start Date - start of experiment (Day 0 is generally considered the day the first cells added to model) </li>
+                                            </ul>
+                                        </li>
+                                        <li>Additional information can be added now or later (IMPORTANT: the Assay section must be completed PRIOR to uploading assay data)
+                                            <ul class="open-circle">
                                                 <li>Description - informative description (purpose, methods, results)</li>
                                                 <li>Use in Calculations - checking <b>Use in Calculations</b> tells the database to use this study's data in predictive modeling and other calculations  </li>
                                                 <li>Protocol File – a Word or pdf file containing the <b>Study</b> protocol </li>
                                                 <li>Image to Clarify A <b>Study</b> – recommend a picture of the setup or an illustration of the experimental protocol </li>
-                                                <li>For Integrated Chip Studies – select configuration if performing an integrated <b>Study</b>  </li>
+                                                <!-- <li>For Integrated Chip Studies – select configuration if performing an integrated <b>Study</b>  </li> -->
                                                 <li>Assays – for each combination of assay Method/Kit, Target/Analyte, and Unit used, add a row  </li>
                                                 <li>Supporting Data – attach files that will assist other database users in understanding the <b>Study</b> design and/or assay data (other than the protocol file, which is added separately)  </li>
                                             </ul>
                                         </li>
                                         <li>Click the <b>Submit</b> button to save changes</li>
-                                        <li>For information on continuing to add MPS models and assay data to the <b>Study</b> (Step 2), <a href="#matrices_editor">click here</a> </li>
+                                        <li>For information on continuing to add MPS models (<b>Matrix Items</b>) and assay data to the <b>Study</b> (Step 2), <a href="#matrices_editor">click here</a> </li>
                                     </ul>
                                 </li>
                                 <li><br>Notes
@@ -2576,6 +2582,12 @@
                                         <li>Everything in the <b>Study</b> can be edited at any time until the <b>Study</b> Data Group Admin signs off the <b>Study</b> (then it is locked) </li>
                                         <li>Data contained in files attached as <b>Supporting Data</b> are NOT available for visualization, analysis, or used in calculations within the MPS-GUI </li>
                                         <li>All combinations of Method/Kit, Target/Analyte, and Unit must be listed in the <b>Assays</b> Section of the <b>Study Level Details</b> page prior to uploading assay data</li>
+                                    </ul>
+                                </li>
+                                 <li><br>Additional Video Tutorial(s)
+                                    <ul class="filled-circle">
+                                        <li> Returning to an existing <b>Study</b> <a href="https://youtu.be/ZuQDpF9zhQU" target="_blank"> (video tutorial) </a> </li>
+
                                     </ul>
                                 </li>
                             </ul>
@@ -2629,7 +2641,7 @@
                     </div>
                 </div>
 
-                <button class="collapsible3">See a Note About Integrated Studies</button>
+                <!-- <button class="collapsible3">See a Note About Integrated Studies</button>
                 <div class="content3">
                     <div id="studyconfigurations" class="editorsubtainer">
                         <ul class="list-group">
@@ -2651,7 +2663,7 @@
                         </ul>
                     </div>
                 </div>
-
+                -->
                 <div id="studyleveldetails_editor">
                     <button class="collapsible3">Getting Help With Study Level Details (Example Provided) </button>
                     <div class="content3">
@@ -2743,46 +2755,60 @@ Results: add a summary of the study results. </td>
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
-                                <li>To Add/Edit a <b>Matrix</b>, from the <b>Study Matrices and Items</b> list page
+                                <li>To Add/Edit a <b>Matrix</b>, from the <b>Study Matrices and Items</b> list page <a href="https://youtu.be/QUGIyhIifgg" target="_blank"> (video tutorial) </a>
                                     <ul class="filled-circle">
                                         <li>To add - click the <b>Add Matrix</b> button</li>
                                         <li>To edit - click on the <b>View/Edit</b> button next to the <b>Matrix</b> of interest</li>
                                     </ul>
                                 </li>
-                                <li><br>In the <i>Global Section</i>:
+                                <li><br>In the <i>Global Section</i>
                                     <ul class="filled-circle">
                                         <li>Matrix Name – enter something descriptive</li>
                                         <li>Notes – free text field for describing the matrix</li>
                                         <li>Representation – select from the options in the list </li>
-                                        <li>If multiple chips -  select number of Items, Rows, and Columns </li>
+                                        <li>If multiple chips -  select number of Items, Rows, and Columns <a href="https://youtu.be/XhICJH2_PMw" target="_blank"> (video tutorial) </a> </li>
                                         <li>If Plate - select the applicable device </li>
                                     </ul>
                                 </li>
-                                <li><br>In the <i>Individual Section</i>:
+                                <li><br>In the <i>Individual Section</i>
                                     <ul class="filled-circle">
-                                        <li>Select an <i>Action</i> </li>
+                                        <li>Click in the <i>Action</i> Box</li>
+                                        <li>Select an <i>Action</i>
+                                            <ul class="filled-circle">
+                                                <li> For each <b>Matrix Item</b>, the Name/ID, Test Type, Setup Date, and Device/Model are required <a href="https://youtu.be/bVVxJ_0wIHI" target="_blank"> (video tutorial) </a> </li>
+                                                <li> Adding Settings <a href="https://youtu.be/X9rrAcdLOHI" target="_blank"> (video tutorial) </a>  </li>
+                                                <li> Adding Compounds <a href="https://youtu.be/zzHyKdVe8cY" target="_blank"> (video tutorial) </a>  </li>
+                                                <li> Adding Cells <a href="https://youtu.be/38fycWl5vOo" target="_blank"> (video tutorial) </a>  </li>
+                                            </ul>
+                                        </li>
                                         <li>Enter applicable information in the box below the <i>Action</i> </li>
                                         <li>Click on one of the <b>Apply</b> buttons or click and drag in the <b>Matrix</b> </li>
-                                        <li>For more details on how to setup MPS Models, <a href="#matrixitems_editor">click here</a> </li>
                                         <li>Click the <b>Submit</b> button to save changes</li>
                                     </ul>
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>For each <b>Matrix Item</b>, the Name/ID, Test Type, Setup Date, and MPS/Organ Model MUST be filled PRIOR to the first <b>Submit</b>  </li>
                                         <li>Name/IDs must be unique in an individual <b>Study</b> (cannot have repeats in a <b>Matrix</b> or in two <b>Matrices</b> of the same <b>Study</b>)  </li>
-                                        <li>Test Type specifies whether the <b>Matrix Item</b> functions as a control  </li>
-                                        <li>Submit (and Overwrite) after every change you do not want to have to make again  </li>
-                                        <li>Invest a little time in exploring the different Actions and Apply techniques to find what works best for you  </li>
+                                        <li>Test Type specifies whether the <b>Matrix Item</b> functions as a control </li>
                                         <li>After the first Submit, <b>Matrix Items</b> can be setup and/or updated in the <b>Matrix</b> or individually (to learn more about editting individual <b>Matrix Items</b>, <a href="#matrixitems_editor">click here</a>)   </li>
-                                        <li>For information on continuing to add MPS models and assay data to the <b>Study</b> (Step 3), <a href="#matrixitems_editor">click here</a> </li>
+                                        <li>Adding and deleting information from multiple <b>Matrix Items</b> is generally easiest to do on the matrix edit page </li>
+                                        <li>Editing information for a single <b>Matrix Item</b> will be easiest to do on the <b>Matrix Item</b> edit page </li>
+                                        <li>For information on continuing to add MPS models (<b>Matrix Items</b>) and assay data to the <b>Study</b> (Step 3), <a href="#matrixitems_editor">click here</a> </li>
+                                    </ul>
+                                </li>
+                                <li><br>Additional Video Tutorial(s)
+                                    <ul class="filled-circle">
+                                        <li> Removing item settings, compounds, and/or cells <a href="https://youtu.be/GGKOJ5o4gvY" target="_blank"> (video tutorial) </a> </li>
+                                        <!-- <li> Removing items from a matrix <a href="https://youtu.be/" target="_blank" > (video tutorial) </a> </li>
+                                        <li> Removing a matrix from a study <a href="https://youtu.be/" target="_blank" > (video tutorial) </a> </li>  -->
+                                        <li> Options for naming items <a href="https://youtu.be/d4fty0ZRXv8" target="_blank" > (video tutorial) </a> </li>
+
                                     </ul>
                                 </li>
                             </ul>
                         </li>
                     </ul>
                 </div>
-
 
                 <div id="matricessetupdetails_editor">
                     <button class="collapsible3">Getting Help With Matrix and Matrix Item Setup (Example Provided) </button>
@@ -3597,14 +3623,16 @@ Results: add a summary of the study results. </td>
                                     <ul class="filled-circle">
                                         <li>Prepare a data file (MIF-C-a) </li>
                                         <li>Select a <b>Study</b></li>
+                                        <li>Click no Edit Study</li>
+                                        <li>Confirm that all combinations of Method/Kit, Target/Analyte, and Unit must be included in the <i>Assays</i> section of the <b>Study Level Details</b> page PRIOR to uploading assay data points for that combination</li>
+
                                         <li>Click on the <b>Upload Data</b> button </li>
                                         <li>Click on the <b>Submit</b> button to save data to the <b>MPS Database</b> </li>
                                     </ul>
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>The ONLY assay data that are editable in the MPS-GUI is the <b>Exclude</b> field</li>
-                                        <li>All combinations of Method/Kit, Target/Analyte, and Unit must be included in the <i>Assays</i> section of the <b>Study Level Details</b> page PRIOR to uploading assay data points for that combination</li>
+                                        <li>The ONLY assay data that are editable in the MPS-GUI is the <b>Exclude</b> field (editable on the <b>Matrix Item</b> edit page) </li>
                                         <li>Contact an <b>MPS Database</b> Administrator for guidance on preparing data files</li>
                                         <li>To replace assay data values with new values, correct the values in the MIF-C-a file and re-upload
                                         <ul class="open-circle">
@@ -3793,7 +3821,7 @@ Results: add a summary of the study results. </td>
                                             <td> MIF-C-a and MIF-C-i </td>
                                             <td> yes </td>
                                             <td> yes </td>
-                                            <td> Specifies a compartment in the MPS Model such as: brain, vascular, neural, apical, basal. Must be in MPS Database llist. When  a sample is collected from the MPS Model, the compartment should be combined with a prefix indicating where the sample was collected, such as “effluent-brain” or “stock-brain”. Note that, when a chamber is image, no prefix would be used. </td>
+                                            <td> Specifies a compartment in the Organ Model such as: brain, vascular, neural, apical, basal. Must be in MPS Database llist. When  a sample is collected from the Organ Model, the compartment should be combined with a prefix indicating where the sample was collected, such as “effluent-brain” or “stock-brain”. Note that, when a chamber is image, no prefix would be used. </td>
                                             <td> effluent-apical </td>
                                             <td> Apical </td>
                                         </tr>
@@ -4080,6 +4108,7 @@ Results: add a summary of the study results. </td>
         </div>
 
     </div>
+
 
     {% if user.is_superuser %}
     <div id="component_admin_section" class="container">

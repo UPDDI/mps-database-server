@@ -52,7 +52,8 @@ class MyGroupAdmin(GroupAdmin):
     save_on_top = True
     list_display = (
         'name',
-        'all_users'
+        'all_users',
+        'collaborator_group_display'
     )
 
     def get_queryset(self, request):
@@ -74,6 +75,26 @@ class MyGroupAdmin(GroupAdmin):
         return '{0}<div hidden id="users_{1}">{2}</div>'.format(trigger, obj.pk, contents)
 
     all_users.allow_tags = True
+
+    @mark_safe
+    def collaborator_group_display(self, obj):
+        contents = ''
+        trigger = ''
+        queryset = obj.study_collaborator_groups.all()
+        count = queryset.count()
+
+        if count:
+            contents = '<br>'.join(
+                [
+                    '<a href="{}">{}</a>'.format(study.get_absolute_url(), study.name)for study in queryset.order_by('name')
+                ]
+            )
+            trigger = '<a href="javascript:void(0)" onclick=$("#collaborator_{0}").toggle()>Show/Hide Collaborator Studies ({1})</a>'.format(
+                obj.pk, count
+            )
+        return '{0}<div hidden id="collaborator_{1}">{2}</div>'.format(trigger, obj.pk, contents)
+
+    collaborator_group_display.allow_tags = True
 
 admin.site.unregister(Group)
 admin.site.register(Group, MyGroupAdmin)

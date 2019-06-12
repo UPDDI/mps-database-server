@@ -226,6 +226,7 @@ def get_user_accessible_studies(user):
 
     data_group_filter = {}
     access_group_filter = {}
+    collaborator_group_filter = {}
     unrestricted_filter = {}
     unsigned_off_filter = {}
     stakeholder_group_filter = {}
@@ -247,6 +248,9 @@ def get_user_accessible_studies(user):
     data_group_filter.update({
         'group__name__in': user_group_names
     })
+    collaborator_group_filter.update({
+        'collaborator_groups__name__in': user_group_names,
+    })
     access_group_filter.update({
         'access_groups__name__in': user_group_names,
     })
@@ -265,10 +269,12 @@ def get_user_accessible_studies(user):
 
     # Show if:
     # 1: Study has group matching user_group_names
-    # 2: Study has Stakeholder group matching user_group_name AND is signed off on
-    # 3: Study has access group matching user_group_names AND is signed off on AND all Stakeholders have signed off
-    # 4: Study is unrestricted AND is signed off on AND all Stakeholders have signed off
+    # 2: Study has Collaborator group matching user_group_names
+    # 3: Study has Stakeholder group matching user_group_name AND is signed off on
+    # 4: Study has access group matching user_group_names AND is signed off on AND all Stakeholders have signed off
+    # 5: Study is unrestricted AND is signed off on AND all Stakeholders have signed off
     combined = queryset.filter(**data_group_filter) | \
+               queryset.filter(**collaborator_group_filter) | \
                queryset.filter(**stakeholder_group_filter).exclude(**unsigned_off_filter) | \
                queryset.filter(**access_group_filter).exclude(**unsigned_off_filter).exclude(
                    **missing_stakeholder_filter) | \

@@ -50,10 +50,20 @@ def user_is_valid_study_viewer(user, study):
     # Find whether valid viewer by checking group and iterating over all access_groups
     valid_viewer = is_group_viewer(user, study.group.name)
 
+    # ALWAYS CHECK COLLABORATOR GROUPS
+    collaborator_group_names = {name: True for name in study.collaborator_groups.all().values_list('name', flat=True)}
+
+    user_group_names = user.groups.all().values_list('name', flat=True)
+
+    if collaborator_group_names:
+        for group_name in user_group_names:
+            if group_name.replace(VIEWER_SUFFIX, '').replace(ADMIN_SUFFIX, '') in collaborator_group_names:
+                valid_viewer = True
+                # Only iterate as many times as is needed
+                return valid_viewer
+
     # Only check access groups if the study IS signed off on
     if not valid_viewer and study.signed_off_by:
-        user_group_names = user.groups.all().values_list('name', flat=True)
-
         # Check if user is a stakeholder
         stakeholders = AssayStudyStakeholder.objects.filter(
             study_id=study.id
@@ -79,11 +89,12 @@ def user_is_valid_study_viewer(user, study):
         if all_required_stakeholders_have_signed_off:
             access_group_names = {name: True for name in study.access_groups.all().values_list('name', flat=True)}
 
-            for group_name in user_group_names:
-                if group_name.replace(VIEWER_SUFFIX, '').replace(ADMIN_SUFFIX, '') in access_group_names:
-                    valid_viewer = True
-                    # Only iterate as many times as is needed
-                    return valid_viewer
+            if access_group_names:
+                for group_name in user_group_names:
+                    if group_name.replace(VIEWER_SUFFIX, '').replace(ADMIN_SUFFIX, '') in access_group_names:
+                        valid_viewer = True
+                        # Only iterate as many times as is needed
+                        return valid_viewer
 
             # FINALLY: Check if the study is unrestricted
             if not study.restricted:

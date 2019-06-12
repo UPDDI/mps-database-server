@@ -1,6 +1,11 @@
 ==PERMISSION START==
 {# Add the data group #}
 {{ study.group.name }}
+{# Add the collaborator groups #}
+{% for collaborator_group in study.collaborator_groups.all %}
+    {{ collaborator_group.name }}
+{% endfor %}
+
 {# Add the stakeholders if sign off #}
 {% if study.signed_off_by %}
     {% for stakeholder in study.assaystudystakeholder_set.all %}
