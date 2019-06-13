@@ -2320,7 +2320,6 @@ class AssayReferenceDelete(DeletionMixin, DeleteView):
     model = AssayReference
     template_name = 'assays/assayreference_delete.html'
     success_url = '/assays/references/'
-<<<<<<< HEAD
 
 
 def get_summary_data(set_name, queryset, on_or_after_date=None):
@@ -2641,5 +2640,3 @@ class AssayMatrixNew(StudyGroupMixin, UpdateView):
     model = AssayMatrix
     template_name = 'assays/assaymatrix_update.html'
     form_class = AssayMatrixFormNew
-=======
->>>>>>> study_set_final
