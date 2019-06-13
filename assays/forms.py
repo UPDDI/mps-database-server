@@ -1610,7 +1610,6 @@ class AssayStudySetForm(SignOffMixin, BootstrapForm):
         self.fields['assays'].widget.attrs['class'] = 'no-selectize'
 
 
-
 class AssayReferenceForm(BootstrapForm):
 
     query_term = forms.CharField(initial='', required=False)

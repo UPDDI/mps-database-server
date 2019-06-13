@@ -2127,12 +2127,47 @@ class AssayStudyAddNew(OneGroupRequiredMixin, CreateView):
             )
 
 
-class AssayStudySetDataPlots(DetailView):
+def user_is_valid_study_set_viewer(user_accessible_studies_dic, study_set):
+    """Test whether a user can access a study set. The user must be able to access ALL groups in the study set.
+
+    user_accessible_studies_dic: dic matching study_id to True if accessible by user
+    study_set: The study set to test for the user
+    """
+    for study in study_set.studies.all():
+        if study.id not in user_accessible_studies_dic:
+            return False
+
+    return True
+
+
+# NOTE: TECHNICALLY SHOULD BE in MIXINS
+class StudySetViewerMixin(object):
+    """This mixin determines whether a user can view the study set and its data"""
+
+    # @method_decorator(login_required)
+    # @method_decorator(user_passes_test(user_is_active))
+    def dispatch(self, *args, **kwargs):
+        # Get the study
+        study_set = get_object_or_404(AssayStudySet, pk=self.kwargs['pk'])
+
+        user_accessible_studies = get_user_accessible_studies(self.request.user)
+
+        user_accessible_studies_dic = {study.id: True for study in user_accessible_studies}
+
+        valid_viewer = user_is_valid_study_set_viewer(user_accessible_studies_dic, study_set)
+        # Deny permission
+        if not valid_viewer:
+            return PermissionDenied(self.request, 'You are missing the necessary credentials to view this Study Set.')
+        # Otherwise return the view
+        return super(StudySetViewerMixin, self).dispatch(*args, **kwargs)
+
+
+class AssayStudySetDataPlots(StudySetViewerMixin, DetailView):
     model = AssayStudySet
     template_name = 'assays/assaystudyset_data_plots.html'
 
 
-class AssayStudySetReproducibility(DetailView):
+class AssayStudySetReproducibility(StudySetViewerMixin, DetailView):
     model = AssayStudySet
     template_name = 'assays/assaystudyset_reproducibility.html'
 
@@ -2142,6 +2177,28 @@ class AssayStudySetReproducibility(DetailView):
 class AssayStudySetList(ListView):
     model = AssayStudySet
     template_name = 'assays/assaystudyset_list.html'
+
+    # NOTE CUSTOM QUERYSET
+    def get_queryset(self):
+        queryset = AssayStudySet.objects.prefetch_related(
+            'created_by',
+            'signed_off_by',
+        )
+
+        user_accessible_studies = get_user_accessible_studies(self.request.user)
+
+        user_accessible_studies_dic = {study.id: True for study in user_accessible_studies}
+
+        valid_study_set_ids = []
+
+        # TODO TODO TODO RETRICT TO ONLY VALID ITERATIVELY
+        for study_set in queryset:
+            if user_is_valid_study_set_viewer(user_accessible_studies_dic, study_set):
+                valid_study_set_ids.append(study_set.id)
+
+        queryset = queryset.filter(id__in=valid_study_set_ids)
+
+        return queryset
 
 
 # TODO CONSIDER DISPATCH
@@ -2263,6 +2320,7 @@ class AssayReferenceDelete(DeletionMixin, DeleteView):
     model = AssayReference
     template_name = 'assays/assayreference_delete.html'
     success_url = '/assays/references/'
+<<<<<<< HEAD
 
 
 def get_summary_data(set_name, queryset, on_or_after_date=None):
@@ -2583,3 +2641,5 @@ class AssayMatrixNew(StudyGroupMixin, UpdateView):
     model = AssayMatrix
     template_name = 'assays/assaymatrix_update.html'
     form_class = AssayMatrixFormNew
+=======
+>>>>>>> study_set_final
