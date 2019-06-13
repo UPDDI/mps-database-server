@@ -237,7 +237,7 @@ admin.site.register(Microdevice, MicrodeviceAdmin)
 class OrganModelProtocolInline(admin.TabularInline):
     """Admin Inline for Organ Model Protocols"""
     model = OrganModelProtocol
-    fields = ('version', 'file')
+    fields = ('version', 'protocol_file')
     extra = 1
 
     class Media(object):
