@@ -44,12 +44,8 @@ from assays.models import (
     AssaySetting,
     AssaySubtarget,
     AssayReference,
-<<<<<<< HEAD
     AssayStudyReference,
     AssayType
-=======
-    AssayStudyReference
->>>>>>> study_set_final
 )
 from microdevices.models import MicrophysiologyCenter
 # from compounds.models import Compound
@@ -1392,7 +1388,6 @@ class AssayReferenceAdmin(ImportExportModelAdmin):
     search_fields = ('pubmed_id', 'title', 'authors')
 
 admin.site.register(AssayReference, AssayReferenceAdmin)
-<<<<<<< HEAD
 
 
 class AssayTypeAdmin(ImportExportModelAdmin):
@@ -1401,5 +1396,3 @@ class AssayTypeAdmin(ImportExportModelAdmin):
     filter_horizontal = ('targets',)
 
 admin.site.register(AssayType, AssayTypeAdmin)
-=======
->>>>>>> study_set_final
