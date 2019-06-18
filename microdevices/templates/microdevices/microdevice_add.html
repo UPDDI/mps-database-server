@@ -83,7 +83,8 @@
     </div>
 </div>
 
-{% include 'generic_field.html' with field=form.references label="References" %}
+{# DEPRECATED #}
+{# {% include 'generic_field.html' with field=form.references label="References" %} #}
 
 <legend>Dimensions</legend>
 
@@ -189,6 +190,8 @@
     </div>
 </div>
 
+<div id="layout_display"></div>
+
 {% include 'add_reference.html' %}
 
 {# These fields are deprecated #}
@@ -203,8 +206,6 @@
 {#    </div>#}
 {#</div>#}
 </form>
-
-<div id="layout_display"></div>
 
 <br>
 {% endblock %}

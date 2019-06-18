@@ -54,6 +54,8 @@ from .utils import (
     # NO_CELLS_STRING,
     # NO_SETTINGS_STRING,
     intra_status_for_inter,
+    power_analysis,
+    create_power_analysis_group_table
 )
 
 import csv
@@ -3491,6 +3493,340 @@ def study_editor_validation(request):
         return False
 
 
+def fetch_power_analysis_group_table(request):
+    study = get_object_or_404(AssayStudy, pk=int(request.POST.get('study', '')))
+    # Contrived!
+    studies = AssayStudy.objects.filter(id=study.id)
+    data = {}
+
+    post_filter = json.loads(request.POST.get('post_filter', '{}'))
+    criteria = json.loads(request.POST.get('criteria', '{}'))
+    # GET RID OF COMPOUND FOR SAKE OF POWER ANALYSIS' INITIAL TABLE
+    compound_criteria = criteria.pop('compound')
+
+    # If chip data
+    matrix_items = AssayMatrixItem.objects.filter(
+        study_id=study.id
+    )
+
+    assays = AssayStudyAssay.objects.filter(study_id=study.id)
+
+    data_points = AssayDataPoint.objects.filter(
+        study_id=study.id
+    ).prefetch_related(
+    # TODO optimize prefetch!
+        'study__group',
+        'study_assay__target',
+        'study_assay__method',
+        'study_assay__unit__base_unit',
+        'sample_location',
+        'matrix_item__matrix',
+        'matrix_item__organ_model',
+        'subtarget'
+    ).filter(
+        replaced=False,
+        excluded=False,
+        value__isnull=False
+    )
+
+    if not post_filter:
+        assays = assays.prefetch_related(
+            'target',
+            'method'
+        )
+
+        post_filter = acquire_post_filter(studies, assays, matrix_items, data_points)
+    else:
+        studies, assays, matrix_items, data_points = apply_post_filter(
+            post_filter, studies, assays, matrix_items, data_points
+        )
+
+    # OLD
+    # repro_data = get_repro_data(chip_data)
+    # Organization is assay -> unit -> compound/tag -> field -> time -> value
+    treatment_group_representatives, setup_to_treatment_group, treatment_header_keys = get_item_groups(
+        None,
+        criteria,
+        matrix_items
+    )
+
+    data_point_treatment_groups = {}
+    treatment_group_table = {}
+    data_group_to_studies = {}
+    data_group_to_sample_locations = {}
+    data_group_to_organ_models = {}
+    compound_table_data = {}
+    compound_avg_val_data = {}
+
+    power_analysis_input = []
+
+    # CONTRIVED FOR NOW
+    data_header_keys = [
+        'Target',
+        # 'Method',
+        'Value Unit',
+        # 'Sample Location'
+    ]
+
+    base_tuple = (
+        'study_assay.target_id',
+        # 'study_assay.method_id',
+        'study_assay.unit.base_unit_id',
+        # 'sample_location_id'
+    )
+
+    current_tuple = (
+        'study_assay.target_id',
+        # 'study_assay.method_id',
+        'study_assay.unit_id',
+        # 'sample_location_id'
+    )
+
+    additional_keys = []
+
+    # CRUDE
+    if criteria:
+        group_sample_location = 'sample_location' in criteria.get('special', [])
+        group_method = 'method' in criteria.get('special', [])
+
+        if group_method:
+            data_header_keys.append('Method')
+            additional_keys.append('study_assay.method_id')
+
+        if group_sample_location:
+            data_header_keys.append('Sample Location')
+            additional_keys.append('sample_location_id')
+
+    if additional_keys:
+        base_tuple += tuple(additional_keys)
+        current_tuple += tuple(additional_keys)
+
+    # ASSUME _id termination
+    base_value_tuple = tuple([x.replace('_id', '') for x in base_tuple])
+    current_value_tuple = tuple([x.replace('_id', '') for x in current_tuple])
+
+    # TODO TODO TODO TODO
+    data_point_attribute_getter_base = tuple_attrgetter(*base_tuple)
+    data_point_attribute_getter_current = tuple_attrgetter(*current_tuple)
+
+    data_point_attribute_getter_base_values = tuple_attrgetter(*base_value_tuple)
+    data_point_attribute_getter_current_values = tuple_attrgetter(*current_value_tuple)
+
+    initial_chart_data = {}
+    final_chart_data = {}
+
+    pass_to_power_analysis_dict = {}
+
+    matrix_id_to_stringified_compounds = {}
+    for matrix_item in matrix_items:
+        matrix_id_to_stringified_compounds[matrix_item.id] = matrix_item.stringify_compounds();
+
+    for point in data_points:
+        item_id = point.matrix_item_id
+        data_point_tuple = data_point_attribute_getter_current(point)
+        current_group = data_point_treatment_groups.setdefault(
+            (
+                data_point_tuple,
+                setup_to_treatment_group.get(item_id).get('index')
+            ),
+            '{}'.format(len(data_point_treatment_groups) + 1)
+        )
+        point.data_group = current_group
+        if current_group not in treatment_group_table:
+            if point.study_assay.unit.base_unit_id:
+                treatment_group_table.update({
+                    current_group: [str(x) for x in list(
+                        data_point_attribute_getter_base_values(point)
+                    ) + [setup_to_treatment_group.get(item_id).get('index')]]
+                })
+            else:
+                treatment_group_table.update({
+                    current_group: [str(x) for x in list(
+                        data_point_attribute_getter_current_values(point)
+                    ) + [setup_to_treatment_group.get(item_id).get('index')]]
+                })
+
+        compound_table_key = current_group
+        current_time = point.time
+        if compound_table_key not in compound_table_data:
+            compound_table_data[compound_table_key] = {}
+        compound_table_current_compounds = matrix_id_to_stringified_compounds[point.matrix_item.id]
+        if compound_table_current_compounds not in compound_table_data[compound_table_key]:
+            compound_table_data[compound_table_key][compound_table_current_compounds] = {
+                'chips': [],
+                'time-points': [],
+            }
+        if point.matrix_item.name not in compound_table_data[compound_table_key][compound_table_current_compounds]['chips']:
+            compound_table_data[compound_table_key][compound_table_current_compounds]['chips'].append(point.matrix_item.name)
+        if current_time not in compound_table_data[compound_table_key][compound_table_current_compounds]['time-points']:
+            compound_table_data[compound_table_key][compound_table_current_compounds]['time-points'].append(current_time)
+
+        data_group_to_studies.setdefault(
+            current_group, {}
+        ).update({
+            '<a href="{}" target="_blank">{} ({})</a>'.format(point.study.get_absolute_url(), point.study.name, point.study.group.name): point.study.name
+        })
+
+        data_group_to_sample_locations.setdefault(
+            current_group, {}
+        ).update({
+            point.sample_location.name: True
+        })
+
+        data_group_to_organ_models.setdefault(
+            current_group, {}
+        ).update({
+            point.matrix_item.organ_model.name: True
+        })
+
+        power_analysis_input.append([
+            point.data_group,
+            current_time,
+            (matrix_id_to_stringified_compounds[point.matrix_item.id]).split('\n')[0],
+            point.matrix_item.name,
+            point.value
+        ])
+
+        if current_group not in compound_avg_val_data:
+            compound_avg_val_data[current_group] = {'times':[]}
+        if compound_table_current_compounds not in compound_avg_val_data[current_group]:
+            compound_avg_val_data[current_group][compound_table_current_compounds] = {}
+        if current_time not in compound_avg_val_data[current_group]['times']:
+            compound_avg_val_data[current_group]['times'].append(current_time)
+        if current_time not in compound_avg_val_data[current_group][compound_table_current_compounds]:
+            compound_avg_val_data[current_group][compound_table_current_compounds][current_time] = point.value
+
+        # TODO BAD NOT DRY
+        # CHARTING STUFF
+        initial_chart_data.setdefault(
+            point.data_group, {}
+        ).setdefault(
+            compound_table_current_compounds, {}
+        ).setdefault(
+            # NOTE CONVERT TO DAYS
+            point.time / 1440.0, []
+        ).append(point.value)
+
+        pass_to_power_analysis_dict.setdefault(point.data_group, {}).setdefault(compound_table_current_compounds, []).append([point.data_group, point.time, compound_table_current_compounds, point.matrix_item.name, point.value])
+
+    # TODO BAD NOT DRY
+    for chart_group, legends in list(initial_chart_data.items()):
+        current_data = {}
+        current_table = final_chart_data.setdefault(chart_group, [['Time']])
+        x_header = {}
+        y_header = {}
+        for legend, times in list(legends.items()):
+            x_header.update({
+                legend: True,
+            })
+
+            x_header.update({
+                legend: True,
+                # This is to deal with intervals
+                '{}{}'.format(legend, '     ~@i1'): True,
+                '{}{}'.format(legend, '     ~@i2'): True,
+            })
+
+            for time, values in list(times.items()):
+                if len(values) > 1:
+                    # TODO TODO TODO ONLY ARITHMETIC MEAN RIGHT NOW
+                    value = np.mean(values)
+                    std = np.std(values)
+                    current_data.setdefault(legend, {}).update({time: value})
+                    current_data.setdefault('{}{}'.format(legend, '     ~@i1'), {}).update({time: value - std})
+                    current_data.setdefault('{}{}'.format(legend, '     ~@i2'), {}).update({time: value + std})
+                else:
+                    current_data.setdefault(legend, {}).update({time: values[0]})
+                y_header.update({time: True})
+
+        x_header_keys = list(x_header.keys())
+        x_header_keys.sort(key=alphanum_key)
+        current_table[0].extend(x_header_keys)
+
+        # if chart_group == 'average':
+        #     current_table[0].extend(x_header_keys)
+        # else:
+        #     current_table[0].extend([x.split('    ~@x')[0] for x in x_header_keys])
+
+        x_header = {x_header_keys[index]: index + 1 for index in range(len(x_header_keys))}
+
+        y_header = list(y_header.keys())
+        y_header.sort(key=lambda x: float(str(x).split('~')[0]))
+        # y_header.sort(key=float)
+
+        for y in y_header:
+            current_table.append([float(str(y).split('~')[0])] + [None] * (len(x_header)))
+            # current_table.append([y] + [None] * (len(x_header)))
+
+        y_header = {y_header[index]: index + 1 for index in range(len(y_header))}
+
+        for x, data_point in list(current_data.items()):
+            for y, value in list(data_point.items()):
+                current_table[y_header.get(y)][x_header.get(x)] = value
+
+    for x in compound_table_data:
+        temp = []
+        for y in compound_table_data[x]:
+            temp.append([y, len(compound_table_data[x][y]['chips']), len(compound_table_data[x][y]['time-points'])])
+        compound_table_data[x] = temp
+
+    data['compound_table_data'] = compound_table_data
+
+    power_analysis_input.insert(0, [
+        'Group',
+        'Time',
+        'Compound Treatment(s)',
+        'Chip ID',
+        'Value'
+    ])
+
+    power_analysis_group_table = create_power_analysis_group_table(len(treatment_group_table), power_analysis_input)
+
+    data['power_analysis_group_table'] = power_analysis_group_table['data']
+
+    data['data_groups'] = treatment_group_table
+
+    final_data_group_to_sample_locations = {}
+    for data_group, current_sample_location in list(data_group_to_sample_locations.items()):
+        final_data_group_to_sample_locations[data_group] = sorted(current_sample_location)
+
+    final_data_group_to_organ_models = {}
+    for data_group, current_organ_model in list(data_group_to_organ_models.items()):
+        final_data_group_to_organ_models[data_group] = sorted(current_organ_model)
+
+    data['data_group_to_sample_locations'] = final_data_group_to_sample_locations
+    data['data_group_to_organ_models'] = final_data_group_to_organ_models
+
+    data['header_keys'] = data_header_keys
+
+    data['treatment_groups'] = treatment_group_representatives
+
+    data['post_filter'] = post_filter
+
+    data['final_chart_data'] = final_chart_data
+
+    data['pass_to_power_analysis_dict'] = pass_to_power_analysis_dict
+
+    return HttpResponse(json.dumps(data),
+                        content_type='application/json')
+
+
+def fetch_power_analysis_results(request):
+    power_analysis_input = json.loads(request.POST.get('full_data', ''))
+    pam = request.POST.get('pam', '')
+    power_analysis_data = power_analysis(power_analysis_input, pam)
+
+    data = {}
+    for key, current_list in power_analysis_data.items():
+        for current_sublist in current_list:
+            for current_index, current_item in enumerate(current_sublist):
+                if type(current_item) is not str and current_item is not None:
+                    current_sublist[current_index] = float(current_item)
+
+    data['power_analysis_data'] = power_analysis_data
+
+    return HttpResponse(json.dumps(data), content_type='application/json')
+
 def get_pubmed_reference_data(request):
     """Returns a dictionary of PubMed data given a PubMed ID"""
     data = {}
@@ -3547,9 +3883,10 @@ def get_pubmed_reference_data(request):
         data['pubmed_id'] = ""
         data['doi'] = "N/A"
 
-    return HttpResponse(json.dumps(data),
-                        content_type="application/json")
-
+    return HttpResponse(
+        json.dumps(data),
+        content_type="application/json"
+    )
 
 # TODO TODO TODO
 switch = {
@@ -3586,6 +3923,12 @@ switch = {
     },
     'fetch_post_filter': {
         'call': fetch_post_filter
+    },
+    'fetch_power_analysis_group_table': {
+        'call': fetch_power_analysis_group_table
+    },
+    'fetch_power_analysis_results': {
+        'call': fetch_power_analysis_results
     },
     'fetch_data_points_from_study_set': {
         'call': fetch_data_points_from_study_set

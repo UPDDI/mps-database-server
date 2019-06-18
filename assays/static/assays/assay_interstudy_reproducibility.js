@@ -4,5 +4,6 @@ $(document).ready(function() {
     // Load core chart package
     google.charts.load('current', {'packages':['corechart']});
     // Set the callback
+
     google.charts.setOnLoadCallback(window.INTER_REPRO.show_repro);
 });

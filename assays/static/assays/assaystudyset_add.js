@@ -7,6 +7,7 @@ $(document).ready(function () {
     google.charts.setOnLoadCallback(reproPie);
 
     var studies_table = $('#studies');
+    var current_table = null;
 
     // Cached secletors
     var studies_selector = $('#id_studies');
@@ -23,7 +24,9 @@ $(document).ready(function () {
     // If the studies are not empty, it must be an update
     if (studies_selector.val()) {
         $.each(studies_selector.val(), function(index, value) {
-            studies_table.find('.study-selector[value="' + value + '"]').prop('checked', true);
+            var current_checkbox = studies_table.find('.study-selector[value="' + value + '"]');
+            current_checkbox.prop('checked', true);
+            current_checkbox.attr('checked', 'checked');
             initial_studies[value] = true;
         });
     }
@@ -31,6 +34,7 @@ $(document).ready(function () {
     // Hide initially
     studies_table.hide();
 
+    // BAD: NOT DRY
     function reproPie() {
         studies_table.show();
 
@@ -83,13 +87,13 @@ $(document).ready(function () {
         // Hide again
         studies_table.hide();
 
-        studies_table.DataTable({
+        current_table = studies_table.DataTable({
             dom: 'B<"row">lfrtip',
             fixedHeader: {headerOffset: 50},
             responsive: true,
             "iDisplayLength": 50,
             // Initially sort on start date (descending), not ID
-            "order": [ 2, "desc" ],
+            "order": [[0, "asc"], [2, "desc"]],
             "aoColumnDefs": [
                 {
                     sSortDataType: "dom-checkbox",
@@ -341,6 +345,22 @@ $(document).ready(function () {
         var current_study = studies_selector.find('option[value="' + $(this).val() + '"]').first();
         current_study.prop('selected', $(this).prop('checked'))
         add_or_remove_from_study_table(current_study, $(this).prop('checked'));
+        var checkbox_index = $(this).attr('data-table-index');
+
+        if ($(this).prop('checked')) {
+            current_table.data()[
+                checkbox_index
+            ][0] = current_table.data()[
+                checkbox_index
+            ][0].replace('>', ' checked="checked">');
+        }
+        else {
+            current_table.data()[
+                checkbox_index
+            ][0] = current_table.data()[
+                checkbox_index
+            ][0].replace(' checked="checked">', '>');
+        }
 
         // if ($(this).prop('checked')) {
         //     current_study_filter[$(this).val()] = true;

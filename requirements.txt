@@ -114,3 +114,6 @@ html5lib
 urllib3
 # Registration
 django-registration
+# R
+rpy2
+sympy

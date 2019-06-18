@@ -1,6 +1,6 @@
 $(document).ready(function() {
     window.TABLE = $('#references-table').DataTable({
-        "iDisplayLength": 100,
+        "iDisplayLength": 25,
         "sDom": '<B<"row">lfrtip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,

@@ -31,8 +31,9 @@
             </h1>
         </div>
         <div class="row text-center">
-            <a href="{{ object.get_reproducibility_url }}" class="btn btn-primary" role="button">View Reproducibility</a>
-            <a href="{{ object.get_images_url }}" class="btn btn-primary" role="button">View Images</a>
+            <a href="{{ object.get_reproducibility_url }}" class="btn btn-primary" role="button">Reproducibility</a>
+            <a href="{{ object.get_power_analysis_url }}" class="btn btn-primary" role="button">Power Analysis</a>
+            <a href="{{ object.get_images_url }}" class="btn btn-primary" role="button">Images</a>
             <a id="export_button" href="/assays/assaystudy/{{ object.id }}/data/" class="btn btn-info" role="button">Download Data</a>
             <label class="radio-inline">
                 <input type="checkbox" name="export_include_all" id="export_include_all" />

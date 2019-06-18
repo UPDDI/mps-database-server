@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+
+{% block load_js %}
+    <script src="{% static "assays/grouping_filtering.js" %}"></script>
+    <script src="{% static "assays/assaystudy_power_analysis_study.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="{{ object.get_list_url }}">All Studies</a></li>
+    <li><a href="{{ object.get_absolute_url }}">{{ object }}</a></li>
+    <li class="active">Power Analysis</li>
+{% endblock %}
+
+{% block sidebar %}
+    {% include 'assays/grouping_filtering.html' %}
+{% endblock %}
+
+{% block fluid-content %}
+    <div class="well">
+        <div class="row text-center">
+            <h1>
+                Power Analysis for<br>{{ object }}
+            </h1>
+        </div>
+        <div class="row text-center small-padding-top">
+            <a href="{{ object.get_summary_url }}" class="btn btn-primary" role="button">Study Summary</a>
+        </div>
+    </div>
+
+    {% include 'assays/sidebar_extras.html' %}
+
+    <label>Power Analysis Group Table</label>
+    <table id='group-table' class="display table-bordered" width="100%">
+
+    </table>
+
+    <hr>
+
+    <div id='compounds-table-container' hidden>
+        <div id="values-vs-time-graph">
+
+        </div>
+        <br>
+        <label>Select Two Compounds for Power Analysis</label>
+        <table id='compounds-table' class="display table-bordered">
+
+        </table>
+        <br>
+        <div class="row">
+            <div class="col-sm-2 col-xs-offset-3 well">
+                <input type="radio" id="pam-cohen-d" name="pam" value="d" checked>
+                <label for="pam-cohen-d">Cohen's d</label><br>
+                <input type="radio" id="pam-glass-d" name="pam" value="D">
+                <label for="pam-glass-d">Glass's ∆</label><br>
+                <input type="radio" id="pam-hedge-g" name="pam" value="g">
+                <label for="pam-hedge-g">Hedges' g</label><br>
+                <input type="radio" id="pam-hedge-gstar" name="pam" value="gs">
+                <label for="pam-hedge-gstar">Hedges' g*</label>
+            </div>
+            <div class="col-xs-4 text-center">
+                <br><br><button id="power-analysis-button" class="btn btn-lg btn-primary" disabled>Perform Power Analysis</button>
+            </div>
+        </div>
+    </div>
+    <div id='power-analysis-container' hidden>
+        <div class="row">
+            <div class="col-xs-6">
+                <div id="pa-value-graph">
+
+                </div>
+            </div>
+            <div class="col-xs-6">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div id="pa-p-value-graph">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div id="pa-power-graph">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <div id="pa-sample-size-graph">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Just a spacer (and yes, inline styles are ugly)#}
+    <div style="padding-bottom: 250px;"></div>
+{% endblock %}

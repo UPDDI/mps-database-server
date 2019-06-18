@@ -94,7 +94,7 @@
                 {# TODO REPLACE #}
                 {# <td><a class="btn btn-primary" href="{% url 'assay_study_index' study.id %}">View/Edit</a></td> #}
                 <td style="text-align:center;">
-                    <input type="checkbox" class="big-checkbox study-selector" value="{{ study.id }}">
+                    <input type="checkbox" class="big-checkbox study-selector" data-table-index="{{ forloop.counter0 }}" value="{{ study.id }}">
                 </td>
 {#                    <td>{{ study.assay_run_id }}</td>#}
                 <td style="word-wrap: break-word">{{ study.name }}</td>

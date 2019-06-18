@@ -32,6 +32,7 @@ from assays.views import (
     AssayDataFromFilters,
     AssayInterStudyReproducibility,
     AssayStudyDataPlots,
+    AssayStudyPowerAnalysisStudy,
     AssayDataFromFilters,
     AssayStudySetAdd,
     AssayStudySetUpdate,
@@ -168,6 +169,9 @@ urlpatterns = [
     # Data from filters
     url(r'^assays/data_from_filters/$', AssayDataFromFilters.as_view(), name='data-from-filters'),
 
+    # Power Analysis
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/power_analysis/$', AssayStudyPowerAnalysisStudy.as_view(), name='assay-power-analysis-study'),
+  
     # References
     url(r'^assays/references/$', AssayReferenceList.as_view(), name='assay-reference-list'),
     url(r'^assays/references/add/$', AssayReferenceAdd.as_view(), name='assay-reference-add'),

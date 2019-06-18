@@ -567,7 +567,7 @@ class AssayStudyUpdate(ObjectGroupRequiredMixin, UpdateView):
             if 'supporting_data_formset' not in context:
                 context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(self.request.POST, self.request.FILES, instance=self.object)
             if 'reference_formset' not in context:
-                context['reference_formset'] = AssayStudyReferenceFormSetFactory(self.request.POST)
+                context['reference_formset'] = AssayStudyReferenceFormSetFactory(self.request.POST, instance=self.object)
         else:
             context['study_assay_formset'] = AssayStudyAssayFormSetFactory(instance=self.object)
             context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(instance=self.object)
@@ -1946,6 +1946,14 @@ class AssayDataFromFilters(TemplateView):
         # Return nothing otherwise
         else:
             return HttpResponse('', content_type='text/plain')
+
+
+# TODO acquire and send all data like IntraRepro
+# TODO revise Mixin
+class AssayStudyPowerAnalysisStudy(LoginRequiredMixin, DetailView):
+    """Displays the power analysis interface for the current study"""
+    model = AssayStudy
+    template_name = 'assays/assaystudy_power_analysis_study.html'
 
 
 class AssayStudySetAdd(OneGroupRequiredMixin, CreateView):

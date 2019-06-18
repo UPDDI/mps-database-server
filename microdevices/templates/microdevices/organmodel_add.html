@@ -114,7 +114,8 @@
         </div>
     </div>
 
-    {% include 'generic_field.html' with field=form.references label="References" %}
+    {# DEPRECATED #}
+    {# {% include 'generic_field.html' with field=form.references label="References" %} #}
 
     {{ location_formset.management_form }}
     <legend>Locations</legend>

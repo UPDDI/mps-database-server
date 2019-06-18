@@ -22,8 +22,8 @@
 
 {% block fluid-content %}
 <div class="row padded-row text-center padded-bottom large-padding-top">
-    {% if user.id == object.created_by_id %}
-    <a href="/assays/assaystudyset/{{ object.id}}/update" type="button" class="btn btn-xlarge btn-primary submit-button" id="download_submit">
+    {% if user.id == object.created_by_id and not object.signed_off_by %}
+    <a href="/assays/assaystudyset/{{ object.id}}/update" type="button" class="btn btn-xlarge btn-primary submit-button">
         <span class="glyphicon glyphicon glyphicon-pencil" aria-hidden="true"></span>
         Update
     </a>
