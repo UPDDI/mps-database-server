@@ -5,14 +5,28 @@ $(document).ready(function () {
     var image_display_selector = $('#image_display');
     var current_image_display_selector = $('#current_display');
 
+    var setup_data_selector = $('#id_setup_data');
+
     var organ_model = $('#id_organ_model');
     var protocol = $('#id_organ_model_protocol');
+
+    var current_protocol = protocol.val();
 
     window.organ_model = organ_model;
     window.organ_model_protocol = protocol;
 
     // FULL DATA
     var current_setup_data = [];
+
+    var first_run = true;
+    var keep_current = false;
+
+    console.log(setup_data_selector.val());
+
+    if (protocol.val() && setup_data_selector.val()) {
+        current_setup_data = JSON.parse(setup_data_selector.val());
+        keep_current = true;
+    }
 
     // DATA FOR THE VERSION
     var current_setup = {};
@@ -285,8 +299,6 @@ $(document).ready(function () {
     var study_setup_head = study_setup_table.find('thead').find('tr');
     var study_setup_body = study_setup_table.find('tbody');
 
-    var setup_data_selector = $('#id_setup_data');
-
     function create_edit_button(prefix, row_index, column_index) {
         return '<a data-edit-button="true" data-row="' + row_index + '" data-prefix="' + prefix + '" data-column="' + column_index + '" role="button" class="btn btn-primary">Edit</a>';
     }
@@ -527,12 +539,25 @@ $(document).ready(function () {
 
         // NOTE THAT THIS IS TRIGGERED ON LOAD
         protocol.change(function() {
+            // TERMINATE EARLY IF FIRST RUN
+            if (first_run) {
+                first_run = false;
+                return;
+            }
+
             // Start SPINNING
             window.spinner.spin(
                 document.getElementById("spinner")
             );
 
-            if (protocol.val()) {
+            console.log('CHECK', protocol.val(), current_protocol);
+
+            current_setup = {};
+
+            if (protocol.val() && protocol.val() != current_protocol || protocol.val() && !Object.keys(current_setup).length) {
+              // Swap to new protocol
+              current_protocol = protocol.val();
+
               $.ajax({
                   url: "/assays_ajax/",
                   type: "POST",
@@ -560,7 +585,13 @@ $(document).ready(function () {
 
                       // FORCE INITIAL TO BE CONTROL
                       current_setup['test_type'] = 'control';
-                      current_setup_data = [];
+
+                      if (keep_current) {
+                          keep_current = false;
+                      }
+                      else {
+                          current_setup_data = [];
+                      }
 
                       rebuild_table();
                   },
@@ -572,9 +603,14 @@ $(document).ready(function () {
                   }
               });
             }
-            else {
-                window.spinner.stop();
+            else if (!current_protocol) {
+                current_setup_data = [];
+                rebuild_table();
             }
+
+            console.log(current_setup_data);
+
+            window.spinner.stop();
         }).trigger('change');
     }
 });

@@ -1642,6 +1642,7 @@ AssayStudySetReferenceFormSetFactory = inlineformset_factory(
 
 class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
     setup_data = forms.CharField(required=False)
+    processed_setup_data = forms.CharField(required=False)
     number_of_items = forms.CharField(required=False)
     test_type = forms.ChoiceField(
         initial='control',
@@ -1655,6 +1656,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         groups -- a queryset of groups (allows us to avoid N+1 problem)
         """
         self.groups = kwargs.pop('groups', None)
+        self.request = kwargs.pop('request', None)
         super(AssayStudyFormNew, self).__init__(*args, **kwargs)
         self.fields['group'].queryset = self.groups
 
@@ -1680,26 +1682,23 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
             raise forms.ValidationError('Please select at least one study type')
 
         # SLOPPY NOT DRY
+        new_setup_data = {}
 
-        return data
+        errors = []
 
-    def save(self, commit=True):
-        # PLEASE SEE BASE MODELS
-        # study = super(AssayStudyFormNew, self).save(commit)
-        study = super(AssayStudyFormNew, self).save()
+        study = super(AssayStudyFormNew, self).save(commit=False)
 
         if self.cleaned_data.get('setup_data', None):
             all_setup_data = json.loads(self.cleaned_data.get('setup_data', '[]'))
         else:
             all_setup_data = []
 
-        # print(self.cleaned_data)
-        # print(self.cleaned_data.get('setup_data', []))
-        # print(json.loads(self.cleaned_data.get('setup_data', '[]')))
-
         # if commit and all_setup_data:
         # SEE BASE MODELS FOR WHY COMMIT IS NOT HERE
         if all_setup_data:
+            created_by = self.request.user
+            created_on = timezone.now()
+
             current_item_number = 1
 
             # CRUDE: JUST MAKE ONE LARGE ROW?
@@ -1709,16 +1708,28 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                 number_of_items += int(setup_group.get('number_of_items', '0'))
 
             new_matrix = AssayMatrix(
-                name=study.name,
+                name=data.get('name'),
                 # Does not work with plates at the moment
                 representation='chips',
-                study=self.instance,
+                # study=self.instance,
                 device=None,
                 number_of_rows=1,
-                number_of_columns=number_of_items
+                number_of_columns=number_of_items,
+                created_by=created_by,
+                created_on=created_on,
+                modified_by=created_by,
+                modified_on=created_on,
             )
 
-            new_matrix.save()
+            try:
+                new_matrix.full_clean(exclude=['study'])
+            except Exception as e:
+                print('MATRIX')
+                print(e)
+                # raise forms.ValidationError(e)
+                errors.append(e)
+
+            # new_matrix.save()
 
             # COMPOUND STUFF BECAUSE COMPOUND SCHEMA IS MISERABLE
             # Get all chip setup assay compound instances
@@ -1742,24 +1753,51 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                 supplier.name: supplier for supplier in CompoundSupplier.objects.all()
             }
 
+            new_items = []
+            new_related = {}
+
             for setup_group in all_setup_data:
                 items_in_group = int(setup_group.pop('number_of_items', '0'))
                 test_type = setup_group.get('test_type', '')
                 for iteration in range(items_in_group):
                     new_item = AssayMatrixItem(
-                        study=study,
-                        matrix=new_matrix,
+                        # study=study,
+                        # matrix=new_matrix,
                         name=str(current_item_number),
                         # JUST MAKE SETUP DATE THE STUDY DATE FOR NOW
-                        setup_date=study.start_date,
+                        setup_date=data.get('start_date'),
                         row_index=0,
                         column_index=current_item_number-1,
-                        device=study.organ_model.device,
-                        organ_model=study.organ_model,
-                        organ_model_protocol=study.organ_model_protocol,
-                        test_type=test_type
+                        # device=study.organ_model.device,
+                        # organ_model=study.organ_model,
+                        # organ_model_protocol=study.organ_model_protocol,
+                        test_type=test_type,
+                        created_by=created_by,
+                        created_on=created_on,
+                        modified_by=created_by,
+                        modified_on=created_on,
                     )
-                    new_item.save()
+
+                    try:
+                        new_item.full_clean(exclude=[
+                            'study',
+                            'matrix',
+                            'device',
+                            'organ_model',
+                            'organ_model_protocol',
+                        ])
+                        new_items.append(new_item)
+                    except Exception as e:
+                        print('ITEM')
+                        print(e)
+                        # raise forms.ValidationError(e)
+                        errors.append(e)
+
+                    current_related_list = new_related.setdefault(
+                        str(len(new_items)), []
+                    )
+
+                    # new_item.save()
                     for prefix, current_objects in setup_group.items():
                         for current_object in current_objects:
                             if prefix in ['cell', 'compound', 'setting'] and current_object:
@@ -1768,10 +1806,27 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                 })
                                 if prefix == 'cell':
                                     new_cell = AssaySetupCell(**current_object)
-                                    new_cell.save()
+
+                                    try:
+                                        new_cell.full_clean(exclude=['matrix_item'])
+                                        current_related_list.append(new_cell)
+                                    except Exception as e:
+                                        print('CELL')
+                                        print(e)
+                                        # raise forms.ValidationError(e)
+                                        errors.append(e)
+                                    # new_cell.save()
                                 elif prefix == 'setting':
                                     new_setting = AssaySetupSetting(**current_object)
-                                    new_setting.save()
+                                    try:
+                                        new_setting.full_clean(exclude=['matrix_item'])
+                                        current_related_list.append(new_setting)
+                                    except Exception as e:
+                                        print('SETTING')
+                                        print(e)
+                                        # raise forms.ValidationError(e)
+                                        errors.append(e)
+                                    # new_setting.save()
                                 elif prefix == 'compound':
                                     # CONFUSING NOT DRY BAD
                                     # print(current_object)
@@ -1793,12 +1848,18 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                     if not supplier:
                                         supplier = CompoundSupplier(
                                             name=supplier_text,
-                                            created_by=study.created_by,
-                                            created_on=study.created_on,
-                                            modified_by=study.modified_by,
-                                            modified_on=study.modified_on
+                                            created_by=created_by,
+                                            created_on=created_on,
+                                            modified_by=created_by,
+                                            modified_on=created_on,
                                         )
-                                        supplier.save()
+                                        try:
+                                            supplier.full_clean()
+                                            supplier.save()
+                                        except Exception as e:
+                                            # raise forms.ValidationError(e)
+                                            errors.append(e)
+
                                         suppliers.update({
                                             supplier_text: supplier
                                         })
@@ -1817,12 +1878,18 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                             supplier=supplier,
                                             lot=lot_text,
                                             receipt_date=receipt_date,
-                                            created_by=study.created_by,
-                                            created_on=study.created_on,
-                                            modified_by=study.modified_by,
-                                            modified_on=study.modified_on
+                                            created_by=created_by,
+                                            created_on=created_on,
+                                            modified_by=created_by,
+                                            modified_on=created_on,
                                         )
-                                        compound_instance.save()
+                                        try:
+                                            compound_instance.full_clean()
+                                            compound_instance.save()
+                                        except Exception as e:
+                                            # raise forms.ValidationError(e)
+                                            errors.append(e)
+
                                         compound_instances.update({
                                             (compound, supplier.id, lot_text, receipt_date): compound_instance
                                         })
@@ -1849,7 +1916,16 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                             duration=duration,
                                             addition_location_id=addition_location_id
                                         )
-                                        new_compound.save()
+
+                                        try:
+                                            new_compound.full_clean(exclude=['matrix_item'])
+                                            current_related_list.append(new_compound)
+                                        except Exception as e:
+                                            print('COMPOUND')
+                                            print(e)
+                                            # raise forms.ValidationError(e)
+                                            errors.append(e)
+                                        # new_compound.save()
 
                                     assay_compound_instances.update({
                                         (
@@ -1864,6 +1940,79 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                     })
 
                     current_item_number += 1
+
+        if errors:
+            raise forms.ValidationError(errors)
+
+        new_setup_data.update({
+            'new_matrix': new_matrix,
+            'new_items': new_items,
+            'new_related': new_related,
+        })
+
+        data.update({
+            'processed_setup_data': new_setup_data
+        })
+
+        return data
+
+    def save(self, commit=True):
+        # PLEASE SEE BASE MODELS
+        # study = super(AssayStudyFormNew, self).save(commit)
+        study = super(AssayStudyFormNew, self).save()
+
+        # VERY SLOPPY
+        created_by = self.request.user
+        created_on = timezone.now()
+
+        study.created_by = created_by
+        study.created_on = created_on
+        study.modified_by = created_by
+        study.modified_on = created_on
+
+        study.save()
+        # SLOPPY: REVISE
+
+        study_id = study.id
+        device_id = study.organ_model.device_id
+        organ_model_id = study.organ_model_id
+        organ_model_protocol_id = study.organ_model_protocol_id
+
+        all_setup_data = self.cleaned_data.get('processed_setup_data', None)
+
+        if all_setup_data:
+            new_matrix = all_setup_data.get('new_matrix', None)
+            new_items = all_setup_data.get('new_items', None)
+            new_related = all_setup_data.get('new_related', None)
+
+            if new_matrix:
+                new_matrix.study_id = study_id
+                new_matrix.save()
+                new_matrix_id = new_matrix.id
+
+                new_item_ids = {}
+
+                for new_item in new_items:
+                    # ADD MATRIX and tracking
+                    new_item.matrix_id = new_matrix_id
+                    new_item.study_id = study_id
+                    new_item.device_id = device_id
+                    new_item.organ_model_id = organ_model_id
+                    new_item.organ_model_protocol_id = organ_model_protocol_id
+                    new_item.save()
+
+                    new_item_ids.update({
+                        new_item.name: new_item.id
+                    })
+
+                for current_item_name, new_related_data_set in new_related.items():
+                    new_item_id = new_item_ids.get(current_item_name, None)
+
+                    if new_item_id:
+                        for new_related_data in new_related_data_set:
+                            # ADD MATRIX ITEM
+                            new_related_data.matrix_item_id = new_item_id
+                            new_related_data.save()
 
         return study
 

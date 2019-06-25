@@ -2083,10 +2083,15 @@ class AssayStudyAddNew(OneGroupRequiredMixin, CreateView):
 
         # If POST
         if self.request.method == 'POST':
-            return form_class(self.request.POST, self.request.FILES, groups=groups)
+            return form_class(
+                self.request.POST,
+                self.request.FILES,
+                groups=groups,
+                request=self.request
+            )
         # If GET
         else:
-            return form_class(groups=groups)
+            return form_class(groups=groups, request=self.request)
 
     def get_context_data(self, **kwargs):
         context = super(AssayStudyAddNew, self).get_context_data(**kwargs)
