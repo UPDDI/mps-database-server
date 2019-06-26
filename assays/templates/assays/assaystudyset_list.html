@@ -27,6 +27,8 @@
                     <th>View Details</th>
                     <th>Name</th>
                     <th>Description</th>
+                    <th>Creator</th>
+                    <th>Review</th>
                 </tr>
             </thead>
 
@@ -36,6 +38,18 @@
                     <td><a class="btn btn-primary" href="{{ study_set.id }}">View</a></td>
                     <td>{{ study_set.name }}</td>
                     <td>{{ study_set.description }}</td>
+                    <td>{{ study_set.created_by }}</td>
+                    {# UNPLEASANT #}
+                    <td>
+                        {% if study_set.signed_off_by %}
+                            <span hidden>1</span>
+                            <span title="This entry was signed off by {{ study_set.full_reviewer }} on {{ study_set.signed_off_date }}: '{{ study_set.signed_off_notes }}'" class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+                        {% endif %}
+                        {% if study_set.flagged %}
+                            <span hidden>0</span>
+                            <span title="This entry is flagged for review: '{{ study_set.reason_for_flag }}'" class="glyphicon glyphicon-flag text-danger" aria-hidden="true"></span>
+                        {% endif %}
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>

@@ -137,7 +137,7 @@ class ObjectGroupRequiredMixin(object):
         if self.object.signed_off_by:
             return PermissionDenied(
                 self.request,
-                'You cannot edit this because it has been signed off on by {0} {1}.'
+                'You cannot edit this because it has been signed off by {0} {1}.'
                 ' If something needs to be changed, contact the individual who signed off.'
                 ' If you are the individual who signed off, please contact a database administrator.'.format(
                     self.object.signed_off_by.first_name,
@@ -173,7 +173,7 @@ class StudyGroupMixin(object):
             if study.signed_off_by:
                 return PermissionDenied(
                     self.request,
-                    'You cannot add this because the study has been signed off on by {0} {1}.'
+                    'You cannot add this because the study has been signed off by {0} {1}.'
                     ' If something needs to be changed, contact the individual who signed off.'
                     ' If you are the individual who signed off, please contact a database administrator.'.format(
                         study.signed_off_by.first_name,
@@ -209,7 +209,7 @@ class StudyGroupMixin(object):
             if study.signed_off_by and not self.detail:
                 return PermissionDenied(
                     self.request,
-                    'You cannot modify this because the study has been signed off on by {0} {1}.'
+                    'You cannot modify this because the study has been signed off by {0} {1}.'
                     ' If something needs to be changed, contact the individual who signed off.'
                     ' If you are the individual who signed off, please contact a database administrator.'.format(
                         study.signed_off_by.first_name,
@@ -318,7 +318,7 @@ class DeletionMixin(object):
             if study_sign_off:
                 return PermissionDenied(
                     self.request,
-                    'You cannot modify this because the study has been signed off on by {0} {1}.'
+                    'You cannot modify this because the study has been signed off by {0} {1}.'
                     ' If something needs to be changed, contact the individual who signed off.'
                     ' If you are the individual who signed off, please contact a database administrator.'.format(
                         study.signed_off_by.first_name,

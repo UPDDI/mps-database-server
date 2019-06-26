@@ -70,11 +70,23 @@
         .list-group {margin-bottom: 4px;}
     </style>
     {% endcompress %}
+
+    {% if GOOGLE_ANALYTICS %}
+      <!-- Global site tag (gtag.js) - Google Analytics -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id={{ GOOGLE_ANALYTICS }}"></script>
+      <script>
+      window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '{{ GOOGLE_ANALYTICS }}');
+      </script>
+    {% endif %}
 </head>
 
 {# TODO DRAFT VERSION -  NEEDS TO BE REVIEWED  #}
 
-<body data-spy="scroll" data-target=".navbar" data-offset="80">
+<body>
+{# <body data-spy="scroll" data-target=".navbar" data-offset="80"> #}
 
 <nav class="navbar navbar-inverse navbar-fixed-top">
 

@@ -763,10 +763,10 @@ def get_item_groups(study, criteria, matrix_items=None):
             header_keys.append('Study')
         if 'matrix_id' in criteria.get('setup'):
             header_keys.append('Matrix')
-    if criteria.get('cell', ''):
-        header_keys.append('Cells')
     if criteria.get('compound', ''):
         header_keys.append('Compounds')
+    if criteria.get('cell', ''):
+        header_keys.append('Cells')
     if criteria.get('setting', ''):
         header_keys.append('Settings')
 

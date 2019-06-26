@@ -58,7 +58,7 @@
         </tbody>
     </table> {% endcomment %}
 
-    <h3>
+    <h3 hidden id="study_list_hint">
     <div class="alert alert-info" role="alert">
         <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
         <span class="sr-only">Info:</span>
@@ -141,7 +141,7 @@
                         {% else %}
                             <span hidden>1</span>
                         {% endif %}
-                        <span title="This entry was signed off on by {{ study.full_reviewer }} on {{ study.signed_off_date }}: '{{ study.signed_off_notes }}'" class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+                        <span title="This entry was signed off by {{ study.full_reviewer }} on {{ study.signed_off_date }}: '{{ study.signed_off_notes }}'" class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
                     {% endif %}
                     {% if study.flagged %}
                         <span hidden>0</span>

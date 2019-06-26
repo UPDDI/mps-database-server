@@ -15,14 +15,19 @@ $(document).ready(function() {
     window.CHARTS.call = 'fetch_data_points_from_study_set';
     window.CHARTS.study_set_id = study_set_id;
 
-    function show_plots() {
-        current_context = 'plots';
+    // PROCESS GET PARAMS INITIALLY
+    window.GROUPING.process_get_params();
 
+    // TO DEAL WITH INITIAL POST FILTER, SHOULD IT EXIST
+    var first_run = true;
+
+    function show_plots() {
         var data = {
             // TODO TODO TODO CHANGE CALL
             call: 'fetch_data_points_from_study_set',
             intention: 'charting',
             study_set_id: study_set_id,
+            filters: JSON.stringify(window.GROUPING.filters),
             criteria: JSON.stringify(window.GROUPING.get_grouping_filtering()),
             post_filter: JSON.stringify(window.GROUPING.current_post_filter),
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
@@ -47,14 +52,25 @@ $(document).ready(function() {
                 // Stop spinner
                 window.spinner.stop();
 
-                window.CHARTS.prepare_side_by_side_charts(json, charts_name);
-                window.CHARTS.make_charts(json, charts_name);
+                if (first_run && $.urlParam('p')) {
+                    first_run = false;
 
-                // Recalculate responsive and fixed headers
-                $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
-                $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+                    window.GROUPING.set_grouping_filtering(json.post_filter);
+                    window.GROUPING.process_get_params();
+                    window.GROUPING.refresh_wrapper();
+                }
+                else {
+                    window.CHARTS.prepare_side_by_side_charts(json, charts_name);
+                    window.CHARTS.make_charts(json, charts_name);
+
+                    // Recalculate responsive and fixed headers
+                    $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
+                    $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+                }
             },
             error: function (xhr, errmsg, err) {
+                first_run = false;
+
                 // Stop spinner
                 window.spinner.stop();
 

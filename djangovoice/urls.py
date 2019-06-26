@@ -41,7 +41,9 @@ urlpatterns = [
 
     # override login template
     url(r'^signin/$',
-        view=LoginView,
+        view=LoginView.as_view(
+            template_name='login.html'
+        ),
         name='djangovoice_signin',
         kwargs={
             'template_name': 'djangovoice/signin.html',

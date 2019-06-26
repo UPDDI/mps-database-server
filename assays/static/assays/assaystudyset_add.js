@@ -9,10 +9,16 @@ $(document).ready(function () {
     var studies_table = $('#studies');
     var current_table = null;
 
-    // Cached secletors
+    // Cached selectors
     var studies_selector = $('#id_studies');
     var assays_selector = $('#id_assays');
     var selected_studies_table_selector = $('#selected_studies_table');
+
+    var list_section_selector = $('#list_section');
+    var form_section_selector = $('#form_section');
+
+    // CONTRIVED
+    var study_list_hint_selector = $('#study_list_hint');
 
     // Populate study_id_to_assay
     var study_id_to_assays = {};
@@ -121,12 +127,14 @@ $(document).ready(function () {
                 // Show when done (if not update)
                 // Hide table if updating
                 if (!studies_selector.val()) {
+                    study_list_hint_selector.show('slow');
                     studies_table.show('slow');
                     initial_load = false;
                 }
                 if (initial_load) {
                     studies_table.show();
-                    $('#list_section').hide();
+                    list_section_selector.hide();
+                    study_list_hint_selector.show();
                 }
 
                 initial_load = false;
@@ -249,19 +257,31 @@ $(document).ready(function () {
             var current_assays = study_id_to_assays[study_id];
 
             var study_is_affected = false;
+            var study_is_empty = true;
 
             $.each(current_assays, function(assay_index, assay) {
                 if (!current_assay_filter[assay.id]) {
                     study_is_affected = true;
-                    return false;
+                }
+                else {
+                    study_is_empty = false;
                 }
             });
 
-            if (study_is_affected) {
-                current_filter_button.addClass('btn-warning');
+            // Study is empty
+            if (study_is_empty) {
+                current_filter_button.removeClass('btn-warning');
+                current_filter_button.addClass('btn-danger');
             }
+            // Study is partial
+            else if (study_is_affected) {
+                current_filter_button.addClass('btn-warning');
+                current_filter_button.removeClass('btn-danger');
+            }
+            // Study is full
             else {
                 current_filter_button.removeClass('btn-warning');
+                current_filter_button.removeClass('btn-danger');
             }
         }
     }
@@ -318,8 +338,8 @@ $(document).ready(function () {
 
     // List continue buttons
     $('#list_continue_button').click(function() {
-        $('#list_section').hide();
-        $('#form_section').show();
+        list_section_selector.hide();
+        form_section_selector.show();
 
         // FORCE THE APPLICATION FOR ALL NEW STUDIES
         $.each(new_studies, function(i, study_id) {
@@ -337,8 +357,8 @@ $(document).ready(function () {
 
     // Back button
     $('#back_button').click(function() {
-        $('#list_section').show();
-        $('#form_section').hide();
+        list_section_selector.show();
+        form_section_selector.hide();
     });
 
     $(document).on('click', '.study-selector', function() {
