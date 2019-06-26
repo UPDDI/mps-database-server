@@ -238,8 +238,11 @@ $(document).ready(function () {
     // TERRIBLE, SPAGHETTI CODE
     // TERRIBLE, SPAGHETTI CODE
     // TERRIBLE, SPAGHETTI CODE
+    // AWFUL
+    // WHY DO THIS?
     var headers = {
         // 'device': 'Device',
+        'MPS User Group': 'MPS User Group',
         'Study': 'Study',
         'Matrix': 'Matrix',
         'MPS Model': 'MPS Model',

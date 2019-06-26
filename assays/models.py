@@ -2004,13 +2004,47 @@ class AssayMatrixItem(FlaggableModel):
 
         return '\n'.join(set(compounds))
 
+    def get_compound_profile(self, matrix_item_compound_post_filters):
+        """Compound profile for determining concentration at time point"""
+        compound_profile = []
+
+        for compound in self.assaysetupcompound_set.all():
+            valid_compound = True
+
+            # Makes sure the compound doesn't violate filters
+            # This is because a compound can be excluded even if its parent matrix item isn't!
+            for filter, values in list(matrix_item_compound_post_filters.items()):
+                if str(attr_getter(compound, filter.split('__'))) not in values:
+                    valid_compound = False
+                    break
+
+            compound_profile.append({
+                'valid_compound': valid_compound,
+                'addition_time': compound.addition_time,
+                'duration': compound.duration,
+                # SCALE INITIALLY
+                'concentration': compound.concentration * compound.concentration_unit.scale_factor,
+                # JUNK
+                # 'scale_factor': compound.concentration_unit.scale_factor,
+                'name': compound.compound_instance.compound.name,
+                'base_unit': compound.concentration_unit.base_unit.unit,
+            })
+
+        return compound_profile
+
     # SPAGHETTI CODE
     # TERRIBLE, BLOATED
-    def quick_dic(self, criteria=None):
+    def quick_dic(
+        self,
+        compound_profile=False,
+        matrix_item_compound_post_filters=None,
+        criteria=None
+    ):
         if not criteria:
             criteria = {}
         dic = {
             # 'device': self.device.name,
+            'MPS User Group': self.study.group.name,
             'Study': self.get_hyperlinked_study(),
             'Matrix': self.get_hyperlinked_matrix(),
             'MPS Model': self.get_hyperlinked_model_or_device(),
@@ -2024,6 +2058,12 @@ class AssayMatrixItem(FlaggableModel):
             'Items with Same Treatment': [],
             'item_ids': []
         }
+
+        if compound_profile:
+            dic.update({
+                'compound_profile': self.get_compound_profile(matrix_item_compound_post_filters)
+            })
+
         return dic
 
     # TODO THESE ARE NOT DRY

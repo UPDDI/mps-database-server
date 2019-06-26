@@ -720,7 +720,7 @@ def get_control_data(
 
 
 # TODO WE MAY WANT THE DEFINITION OF A TREATMENT GROUP TO CHANGE, WHO KNOWS
-def get_item_groups(study, criteria, matrix_items=None):
+def get_item_groups(study, criteria, matrix_items=None, compound_profile=False, matrix_item_compound_post_filters=None):
     treatment_groups = {}
     setup_to_treatment_group = {}
     header_keys = []
@@ -745,6 +745,8 @@ def get_item_groups(study, criteria, matrix_items=None):
         'assaysetupcompound_set__compound_instance__compound',
         'assaysetupcompound_set__concentration_unit',
         'assaysetupcompound_set__addition_location',
+        # SOMEWHAT FOOLISH
+        'study__group__microphysiologycenter_set'
     )
 
     if not criteria:
@@ -759,6 +761,8 @@ def get_item_groups(study, criteria, matrix_items=None):
     if criteria.get('setup', ''):
         if 'organ_model_id' in criteria.get('setup'):
             header_keys.append('MPS Model')
+        if 'study.group_id' in criteria.get('setup'):
+            header_keys.append('MPS User Group')
         if 'study_id' in criteria.get('setup'):
             header_keys.append('Study')
         if 'matrix_id' in criteria.get('setup'):
@@ -789,7 +793,14 @@ def get_item_groups(study, criteria, matrix_items=None):
         if criteria.get('cell', ''):
             treatment_group_tuple += setup.devolved_cells(criteria.get('cell'))
 
-        current_representative = treatment_groups.setdefault(treatment_group_tuple, setup.quick_dic(criteria))
+        current_representative = treatment_groups.get(treatment_group_tuple, None)
+
+        if current_representative is None:
+            current_representative = setup.quick_dic(compound_profile=compound_profile,
+            matrix_item_compound_post_filters=matrix_item_compound_post_filters, criteria=criteria)
+            treatment_groups.update({
+                treatment_group_tuple: current_representative
+            })
 
         current_representative.get('Items with Same Treatment').append(
             setup.get_hyperlinked_name()
@@ -812,6 +823,7 @@ def get_item_groups(study, criteria, matrix_items=None):
             x.get('Settings'),
             x.get('Matrix'),
             x.get('Study'),
+            x.get('MPS User Group'),
             x.get('Items with Same Treatment')[0]
         )
     )
@@ -869,26 +881,6 @@ def get_data_points_for_charting(
     new_data - indicates whether data in raw_data is new
     additional_data - data to merge with raw_data (used when displaying individual readouts for convenience)
     """
-    # Organization is assay -> unit -> compound/tag -> field -> time -> value
-    treatment_group_representatives, setup_to_treatment_group, header_keys = get_item_groups(
-        study,
-        criteria,
-        matrix_items
-    )
-
-    final_data = {
-        'sorted_assays': [],
-        'assays': [],
-        'heatmap': {
-            'matrices': {},
-            'values': {}
-        },
-        'header_keys': header_keys,
-        'assay_ids': {}
-    }
-
-    assay_ids = final_data.get('assay_ids')
-
     intermediate_data = {}
 
     initial_data = {}
@@ -971,6 +963,30 @@ def get_data_points_for_charting(
             ] for current_filter in post_filter.get('matrix_item', {}) if current_filter.startswith('assaysetupcompound__')
         }
 
+    compound_profile = key == 'dose' or key == 'compound'
+
+    # Organization is assay -> unit -> compound/tag -> field -> time -> value
+    treatment_group_representatives, setup_to_treatment_group, header_keys = get_item_groups(
+        study,
+        criteria,
+        matrix_items,
+        compound_profile=compound_profile,
+        matrix_item_compound_post_filters=matrix_item_compound_post_filters
+    )
+
+    final_data = {
+        'sorted_assays': [],
+        'assays': [],
+        'heatmap': {
+            'matrices': {},
+            'values': {}
+        },
+        'header_keys': header_keys,
+        'assay_ids': {}
+    }
+
+    assay_ids = final_data.get('assay_ids')
+
     # Process number_for_interval
     try:
         number_for_interval = float(number_for_interval)
@@ -1031,28 +1047,22 @@ def get_data_points_for_charting(
 
                 is_control = True
 
-                for compound in raw.matrix_item.assaysetupcompound_set.all():
-                    # Makes sure the compound doesn't violate filters
-                    # This is because a compound can be excluded even if its parent matrix item isn't!
-                    valid_compound = True
+                current_compound_profile = setup_to_treatment_group.get(matrix_item_id).get('compound_profile')
 
-                    for filter, values in list(matrix_item_compound_post_filters.items()):
-                        if str(attr_getter(compound, filter.split('__'))) not in values:
-                            valid_compound = False
-                            break
-
+                for compound in current_compound_profile:
                     # TERRIBLE CONDITIONAL
-                    if (valid_compound and
-                        compound.addition_time <= raw_time and
-                        compound.addition_time + compound.duration >= raw_time
+                    if (compound.get('valid_compound') and
+                        compound.get('addition_time') <= raw_time and
+                        compound.get('addition_time') + compound.get('duration') >= raw_time
                     ):
-                        concentration = compound.concentration * compound.concentration_unit.scale_factor
+                        # THIS VALUE IS ALREADY SCALED
+                        concentration = compound.get('concentration')
                         tag.append(
                             # May need this to have float minutes, unsure
                             '{} {} {}'.format(
-                                compound.compound_instance.compound.name,
+                                compound.get('name'),
                                 concentration,
-                                compound.concentration_unit.base_unit,
+                                compound.get('base_unit')
                             )
                         )
 
@@ -1070,26 +1080,20 @@ def get_data_points_for_charting(
 
                 is_control = True
 
-                for compound in raw.matrix_item.assaysetupcompound_set.all():
-                    # Makes sure the compound doesn't violate filters
-                    # This is because a compound can be excluded even if its parent matrix item isn't!
-                    valid_compound = True
+                current_compound_profile = setup_to_treatment_group.get(matrix_item_id).get('compound_profile')
 
-                    for filter, values in list(matrix_item_compound_post_filters.items()):
-                        if str(attr_getter(compound, filter.split('__'))) not in values:
-                            valid_compound = False
-                            break
-
+                for compound in current_compound_profile:
                     # TERRIBLE CONDITIONAL
-                    if (valid_compound and
-                        compound.addition_time <= raw_time and
-                        compound.addition_time + compound.duration >= raw_time
+                    if (compound.get('valid_compound') and
+                        compound.get('addition_time') <= raw_time and
+                        compound.get('addition_time') + compound.get('duration') >= raw_time
                     ):
-                        concentration += compound.concentration * compound.concentration_unit.scale_factor
+                        # THIS VALUE IS ALREADY SCALED: SEE get_compound_profile
+                        concentration += compound.get('concentration')
                         tag.append(
                             # May need this to have float minutes, unsure
                             '{} at D{}H{}M{}'.format(
-                                compound.compound_instance.compound.name,
+                                compound.get('name'),
                                 int(raw_time / 24 / 60),
                                 int(raw_time / 60 % 24),
                                 int(raw_time % 60)
@@ -2116,6 +2120,10 @@ def acquire_post_filter(studies, assays, matrix_items, data_points):
     # Table -> Filter -> value -> [name, in_use]
     post_filter = {}
 
+    studies = studies.prefetch_related(
+        'group__microphysiologycenter_set'
+    )
+
     for study in studies:
         current = post_filter.setdefault(
             'study', {}
@@ -2125,6 +2133,12 @@ def acquire_post_filter(studies, assays, matrix_items, data_points):
             'id__in', {}
         ).update({
             study.id: '{} ({})'.format(study.name, study.group.name)
+        })
+
+        current.setdefault(
+            'group_id__in', {}
+        ).update({
+            study.group_id: '{} ({})'.format(study.group.name, study.group.microphysiologycenter_set.first().name)
         })
 
     assays = assays.prefetch_related(

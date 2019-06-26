@@ -117,6 +117,21 @@
                     {% if not intra_flag %}
                     <tr>
                         <td>
+                            <button data-parent-model='study' data-filter-relation='group_id__in' role='button' class="btn btn-sm post-filter-spawn">
+                                <span class="glyphicon glyphicon-filter"></span>
+                            </button>
+                        </td>
+                        <td>
+                            <input data-group='study.group_id' data-group-relation='setup' type="checkbox" class="grouping-checkbox">
+                            <span data-group-type="treatment"></span>
+                        </td>
+                        <td>
+                            MPS User Group
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
                             <button data-parent-model='study' data-filter-relation='id__in' role='button' class="btn btn-sm post-filter-spawn">
                                 <span class="glyphicon glyphicon-filter"></span>
                             </button>
