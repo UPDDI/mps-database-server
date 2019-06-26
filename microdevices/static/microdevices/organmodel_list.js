@@ -12,7 +12,8 @@ $(document).ready(function() {
             },
             {
                 'className': 'none',
-                'targets': [7]
+                'targets': [8]
+
             },
             // {
             //     'sortable': true,

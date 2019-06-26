@@ -9,7 +9,17 @@
 {% endblock %}
 
 {% block breadcrumbs %}
-    <li></li>
+    <li><a href="/microdevices/model">MPS Models</a></li>
+    {% if object %}
+    <li><a href="{{ object.organ_model.get_absolute_url }}update">Edit {{ object.organ_model }}</a></li>
+    <li class="active">
+        Edit {{ object }}
+    </li>
+    {% else %}
+    <li class="active">
+        Add MPS Model Version
+    </li>
+    {% endif %}
 {% endblock %}
 
 {% block content %}

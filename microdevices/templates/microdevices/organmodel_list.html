@@ -37,6 +37,7 @@
                     <th>Device</th>
                     {# REMOVED FOR NOW #}
                     {# <th>Disease</th> #}
+                    <th>Protocols</th>
                     <th>Description</th>
                     {% comment %} <th>Project</th> {% endcomment %}
                 </tr>
@@ -56,7 +57,13 @@
                     </td>
                     <td>{{ model.organ|default_if_none:"" }}</td>
                     <td><a href="/microdevices/device/{{ model.device.id }}">{{ model.device|default_if_none:"" }}</a></td>
-                    {# <td>{{ model.disease }}</td> #}
+                    <td>
+                        {% if model.organmodelprotocol_set.count %}
+                        <span class='text-success'>{{ model.organmodelprotocol_set.count }}</span>
+                        {% else %}
+                        <span class='text-danger'>{{ model.organmodelprotocol_set.count }}</span>
+                        {% endif %}
+                    </td>
                     <td>{{ model.description }}</td>
                     {% comment %} <td>
                         {% if model.mps %}
