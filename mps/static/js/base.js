@@ -1,8 +1,32 @@
+// NOT REALLY A GOOD PLACE, BUT I DEFINE SIGILS HERE
+// Sigils identify special columns for charting
+window.SIGILS = {
+    INTERVAL_SIGIL: '     ~@i',
+    // Obviously can't do this
+    // INTERVAL_1_SIGIL: window.SIGILS.INTERVAL_SIGIL + '1',
+    // INTERVAL_2_SIGIL: window.SIGILS.INTERVAL_SIGIL + '2',
+    SHAPE_SIGIL: '     ~@s',
+    TOOLTIP_SIGIL: '     ~@t',
+    COMBINED_VALUE_SIGIL: '~@|'
+};
+// Unusual, but avoids some issues
+window.SIGILS.INTERVAL_1_SIGIL = window.SIGILS.INTERVAL_SIGIL + '1';
+window.SIGILS.INTERVAL_2_SIGIL = window.SIGILS.INTERVAL_SIGIL + '2';
+
 // TODO NEEDS TO BE REVISED ALONG WITH HELP
 $(document).ready(function () {
     // Prevent CSS conflict with Bootstrap
     // CRUDE
     $.fn.button.noConflict();
+
+    // CRUDE: INJECT GET PARAM PROCESSOR INTO JQUERY
+    $.urlParam = function(name) {
+        var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+        if (results == null) {
+           return '';
+        }
+        return decodeURI(results[1]) || '';
+    };
 
     // Discern what anchor to add to the help URL by looking at current url
     var url = window.location.href;

@@ -7,16 +7,6 @@ $(document).ready(function () {
     //     });
     // };
 
-    // CRUDE: INJECT GET PARAM PROCESSOR INTO JQUERY
-    // AN ODD PLACE TO PUT THIS
-    $.urlParam = function(name) {
-        var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-        if (results == null) {
-           return '';
-        }
-        return decodeURI(results[1]) || '';
-    };
-
     $.fn.dataTable.ext.order['dom-checkbox'] = function(settings, col) {
         return settings.aoData.map(function(data, index) {
             return data._aData[0].indexOf(' checked="checked">') > -1 ? 0 : 1;

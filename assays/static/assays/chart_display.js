@@ -695,12 +695,12 @@ $(document).ready(function () {
         var truncated_at_index = null;
 
         $.each(assay_data[0].slice(1), function(index, value) {
-            if (value.indexOf('     ~@i') === -1) {
+            if (value.indexOf(window.SIGILS.INTERVAL_SIGIL) === -1) {
                 // NOTE TRUNCATE PAST 40 COLORS
                 if (num_colors >= 40) {
                     truncated_at_index = index;
 
-                    if (assay_data[0][index + 1].indexOf('     ~@i') !== -1) {
+                    if (assay_data[0][index + 1].indexOf(window.SIGILS.INTERVAL_SIGIL) !== -1) {
                         truncated_at_index += 2;
                     }
 
@@ -772,7 +772,7 @@ $(document).ready(function () {
             i = 1;
             while (i < data.getNumberOfColumns()) {
                 interval_setter.push(i);
-                if (i + 2 < data.getNumberOfColumns() && assay_data[0][i+1].indexOf('     ~@i1') > -1) {
+                if (i + 2 < data.getNumberOfColumns() && assay_data[0][i+1].indexOf(window.SIGILS.INTERVAL_1_SIGIL) > -1) {
                     interval_setter.push({sourceColumn: i + 1, role: 'interval'});
                     interval_setter.push({sourceColumn: i + 2, role: 'interval'});
                     i += 2;
@@ -1197,7 +1197,7 @@ $(document).ready(function () {
         var assays = all_data[charts].assays;
 
         for (i=0; i < assays[index][0].length; i++) {
-            if (assays[index][0][i].indexOf('     ~@i1') === -1 && assays[index][0][i].indexOf('     ~@i2') === -1) {
+            if (assays[index][0][i].indexOf(window.SIGILS.INTERVAL_1_SIGIL) === -1 && assays[index][0][i].indexOf(window.SIGILS.INTERVAL_2_SIGIL) === -1) {
                 modify_group_to_data(group_to_data, assays, charts, index, i, all_options[charts][index].ajax_data.key);
             }
         }

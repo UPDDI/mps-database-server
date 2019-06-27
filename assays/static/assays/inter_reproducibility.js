@@ -833,11 +833,11 @@ $(document).ready(function() {
                 i = 1;
                 while (i < values[0].length) {
                     interval_setter.push(i);
-                    if (i + 2 < values[0].length && values[0][i + 1].indexOf('     ~@i1') > -1) {
+                    if (i + 2 < values[0].length && values[0][i + 1].indexOf(window.SIGILS.INTERVAL_1_SIGIL) > -1) {
                         interval_setter.push({sourceColumn: i + 1, role: 'interval'});
                         interval_setter.push({sourceColumn: i + 2, role: 'interval'});
 
-                        if (i + 3 < values[0].length && values[0][i + 3].indexOf('     ~@s') > -1) {
+                        if (i + 3 < values[0].length && values[0][i + 3].indexOf(window.SIGILS.SHAPE_SIGIL) > -1) {
                             interval_setter.push({sourceColumn: i + 3, type: 'string', role: 'style'});
                             i += 1;
                         }
@@ -845,7 +845,7 @@ $(document).ready(function() {
                         i += 2;
                     }
                     // Item only
-                    if (i + 1 < values[0].length && values[0][i + 1].indexOf('     ~@t') > -1) {
+                    if (i + 1 < values[0].length && values[0][i + 1].indexOf(window.SIGILS.TOOLTIP_SIGIL) > -1) {
                         for (var row_index = 1; row_index < values.length; row_index++) {
                             var current_contents = values[row_index][i + 1];
                             if (current_contents) {

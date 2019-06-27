@@ -152,7 +152,8 @@ $(document).ready(function () {
         var assay_id = $(this).val();
         // The text of each option contains the data we need
         // It is delimited with @~|
-        var split_name = $(this).text().split('~@|');
+        // var split_name = $(this).text().split('~@|');
+        var split_name = $(this).text().split(window.SIGILS.COMBINED_VALUE_SIGIL);
         var study_id = split_name[0];
         var target = split_name[1];
         var method = split_name[2];

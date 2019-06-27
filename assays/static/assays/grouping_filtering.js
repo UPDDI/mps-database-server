@@ -560,7 +560,8 @@ $(document).ready(function () {
 
                     if (obj_name) {
                         obj_name += '';
-                        obj_name = obj_name.replace('~@|', ' ');
+                        // obj_name = obj_name.replace('~@|', ' ');
+                        obj_name = obj_name.replace(window.SIGILS.COMBINED_VALUE_SIGIL, ' ');
                     }
 
                     // WARNING: NAIVE REPLACE
