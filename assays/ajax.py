@@ -2433,12 +2433,11 @@ def acquire_post_filter(studies, assays, matrix_items, data_points):
             data_point.sample_location_id: data_point.sample_location.name
         })
 
-        # Out for now
-        # current.setdefault(
-        #     'time__in', {}
-        # ).update({
-        #     data_point.time: data_point.time
-        # })
+        current.setdefault(
+            'time__in', {}
+        ).update({
+            data_point.time: data_point.get_time_string()
+        })
 
     # STUPID, EXPEDIENT
     post_filter = json.loads(json.dumps(post_filter))
