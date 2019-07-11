@@ -1864,13 +1864,14 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                             supplier_text: supplier
                                         })
 
-                                    # Check if compound instance exists
-                                    compound_instance = compound_instances.get((compound, supplier.id, lot_text, str(receipt_date)), '')
                                     # print(compound_instances)
                                     # print((compound, supplier.id, lot_text, receipt_date))
                                     # FRUSTRATING EXCEPTION
                                     if not receipt_date:
                                         receipt_date = None
+
+                                    # Check if compound instance exists
+                                    compound_instance = compound_instances.get((compound, supplier.id, lot_text, str(receipt_date)), '')
 
                                     if not compound_instance:
                                         compound_instance = CompoundInstance(
@@ -1891,13 +1892,14 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                             errors.append(e)
 
                                         compound_instances.update({
-                                            (compound, supplier.id, lot_text, receipt_date): compound_instance
+                                            (compound, supplier.id, lot_text, str(receipt_date)): compound_instance
                                         })
 
                                     # Save the AssayCompoundInstance
                                     conflicting_assay_compound_instance = assay_compound_instances.get(
                                         (
-                                            new_item.id,
+                                            # new_item.id,
+                                            current_item_number,
                                             compound_instance.id,
                                             concentration,
                                             concentration_unit_id,
@@ -1908,7 +1910,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                     )
                                     if not conflicting_assay_compound_instance:
                                         new_compound = AssaySetupCompound(
-                                            matrix_item_id=new_item.id,
+                                            # matrix_item_id=new_item.id,
                                             compound_instance_id=compound_instance.id,
                                             concentration=concentration,
                                             concentration_unit_id=concentration_unit_id,
@@ -1929,7 +1931,8 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
                                     assay_compound_instances.update({
                                         (
-                                            new_item.id,
+                                            # new_item.id,
+                                            current_item_number,
                                             compound_instance.id,
                                             concentration,
                                             concentration_unit_id,
@@ -2018,6 +2021,26 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
 
 class AssayMatrixFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
+    # ADD test_types
+    test_type = forms.ChoiceField(
+        initial='control',
+        choices=TEST_TYPE_CHOICES
+    )
+
     class Meta(object):
         model = AssayMatrix
-        exclude = tracking + restricted + ('study',)
+        # ODD
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        """Init the Study Form
+
+        Kwargs:
+        user -- the user in question
+        """
+        # PROBABLY DON'T NEED THIS?
+        self.user = kwargs.pop('user', None)
+        super(AssayMatrixFormNew, self).__init__(*args, **kwargs)
+
+        # SLOPPY
+        self.fields['test_type'].widget.attrs['class'] = 'no-selectize test-type'

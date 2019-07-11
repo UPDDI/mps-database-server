@@ -213,7 +213,8 @@ class OrganModelAdd(SpecificGroupRequiredMixin, CreateView):
                 form=form,
                 protocol_formset=protocol_formset,
                 location_formset=location_formset,
-                reference_formset=reference_formset
+                reference_formset=reference_formset,
+                cell_formset=cell_formset,
             ))
 
 
@@ -304,7 +305,8 @@ class OrganModelUpdate(UpdateView):
                 form=form,
                 protocol_formset=protocol_formset,
                 location_formset=location_formset,
-                reference_formset=reference_formset
+                reference_formset=reference_formset,
+                cell_formset=cell_formset,
             ))
 
 
