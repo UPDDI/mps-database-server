@@ -942,44 +942,44 @@ $(document).ready(function () {
     }
 
     if (window.MASS_EDIT.matrix_id) {
+        // PROBABLY NOT NEEDED AT THE MOMENT
         // Make sure global var exists before continuing
         // ASSUMES STUDY HAS ORGAN MODEL
         // Start SPINNING
-        window.spinner.spin(
-            document.getElementById("spinner")
-        );
-
-        $.ajax({
-                url: "/assays_ajax/",
-                type: "POST",
-                dataType: "json",
-                data: {
-                call: 'fetch_matrix_setup',
-                matrix_id: window.MASS_EDIT.matrix_id,
-                csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
-            },
-            success: function (json) {
-                // Stop spinner
-                window.spinner.stop();
-
-                // console.log(json);
-
-                current_setup = $.extend(true, {}, json.current_setup);
-
-                // SET THE CURRENT SETUP
-                // SET THE CURRENT VALUES FOR THE GROUPS
-                // GENERATE THE TABLE
-                // MATCH UP TRIGGERS
-            },
-            error: function (xhr, errmsg, err) {
-                first_run = false;
-
-                // Stop spinner
-                window.spinner.stop();
-
-                console.log(xhr.status + ": " + xhr.responseText);
-            }
-        });
+        // window.spinner.spin(
+        //     document.getElementById("spinner")
+        // );
+        // $.ajax({
+        //         url: "/assays_ajax/",
+        //         type: "POST",
+        //         dataType: "json",
+        //         data: {
+        //         call: 'fetch_matrix_setup',
+        //         matrix_id: window.MASS_EDIT.matrix_id,
+        //         csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
+        //     },
+        //     success: function (json) {
+        //         // Stop spinner
+        //         window.spinner.stop();
+        //
+        //         // console.log(json);
+        //
+        //         current_setup = $.extend(true, {}, json.current_setup);
+        //
+        //         // SET THE CURRENT SETUP
+        //         // SET THE CURRENT VALUES FOR THE GROUPS
+        //         // GENERATE THE TABLE
+        //         // MATCH UP TRIGGERS
+        //     },
+        //     error: function (xhr, errmsg, err) {
+        //         first_run = false;
+        //
+        //         // Stop spinner
+        //         window.spinner.stop();
+        //
+        //         console.log(xhr.status + ": " + xhr.responseText);
+        //     }
+        // });
 
         get_groups_from_forms();
 
