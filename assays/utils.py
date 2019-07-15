@@ -216,7 +216,10 @@ def get_user_accessible_studies(user):
     Params:
     user - Django user instance
     """
-    queryset = AssayStudy.objects.all().prefetch_related(
+    queryset = AssayStudy.objects.filter(
+        # EXCLUDE ARCHIVED
+        archived=False
+    ).prefetch_related(
         'group'
     )
 

@@ -1640,6 +1640,12 @@ class AssayStudy(FlaggableModel):
         blank=True, null=True
     )
 
+    # Whether or not to show on the front end
+    archived = models.BooleanField(
+        default=False,
+        help_text='Archived Studies do not appear on the front end'
+    )
+
     # TODO
     # def get_study_types_string(self):
     #     study_types = '-'.join(

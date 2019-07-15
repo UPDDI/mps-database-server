@@ -423,13 +423,9 @@ class AssayStudyEditableList(OneGroupRequiredMixin, ListView):
     template_name = 'assays/assaystudy_list.html'
 
     def get_queryset(self):
-        queryset = AssayStudy.objects.prefetch_related(
-            'created_by',
-            'group',
-            'signed_off_by',
-            # 'study_types'
-        )
+        queryset = get_user_accessible_studies(self.request.user)
 
+        # Excessive, but not horrible
         # Display to users with either editor or viewer group or if unrestricted
         group_names = [group.name.replace(ADMIN_SUFFIX, '') for group in self.request.user.groups.all()]
 

@@ -9,7 +9,9 @@ from assays.ajax import get_data_as_list_of_lists
 def run():
     """Main function that runs the script"""
     study_list = AssayStudy.objects.filter(
-        repro_nums=''
+        repro_nums='',
+        # ONLY INCLUDE UN-ARCHIVED
+        archived=False
     ).exclude(
         signed_off_by_id=None
     )
