@@ -34,7 +34,9 @@ def run():
     signed_off_restricted_studies = AssayStudy.objects.filter(
         restricted=True,
         # PLEASE NOTE: Locking a study will prevent this script from interacting with it
-        locked=False
+        locked=False,
+        # DO NOT RELEASE ARCHIVED
+        archived=False
     ).exclude(
         signed_off_by_id=None
     )

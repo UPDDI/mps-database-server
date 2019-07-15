@@ -784,7 +784,7 @@ class AssayStudyReferenceInline(admin.TabularInline):
     extra = 1
 
 
-# TODO REMAKE FOR ASSAY STUDY
+# TODO REVISE
 class AssayStudyAdmin(LockableAdmin):
     """Admin for Studies"""
     # class Media(object):
@@ -806,6 +806,7 @@ class AssayStudyAdmin(LockableAdmin):
         'access_group_display',
         'collaborator_group_display',
         'restricted',
+        'archived',
         'locked',
         # 'description',
     )
@@ -847,7 +848,11 @@ class AssayStudyAdmin(LockableAdmin):
         (
             'Study Data Group and Access Group Info', {
                 'fields': (
-                    'group', 'restricted', 'access_groups', 'collaborator_groups'
+                    'group',
+                    'restricted',
+                    'archived',
+                    'access_groups',
+                    'collaborator_groups'
                 ),
             },
         ),

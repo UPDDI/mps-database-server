@@ -1648,10 +1648,18 @@ class AssayStudy(FlaggableModel):
         blank=True, null=True
     )
 
+
     # TODO MAKE REQUIRED
     # TODO DEAL WITH CONFLICTS
     organ_model = models.ForeignKey(OrganModel, blank=True, null=True, on_delete=models.CASCADE)
     organ_model_protocol = models.ForeignKey(OrganModelProtocol, blank=True, null=True, on_delete=models.CASCADE)
+
+    # Whether or not to show on the front end
+    archived = models.BooleanField(
+        default=False,
+        help_text='Archived Studies do not appear on the front end'
+    )
+
 
     # TODO
     # def get_study_types_string(self):

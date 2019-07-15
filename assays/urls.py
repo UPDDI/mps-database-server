@@ -67,6 +67,8 @@ urlpatterns = [
     # # Bulk Readout Upload for Studies
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/upload/$', AssayStudyDataUpload.as_view(), name='assay_study_upload'),
 
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/sign_off/$', AssayStudySignOff.as_view(), name='assay_study_sign_off'),
+
     # NEW_TO_BE_REVISED
     url(r'^assays/assaystudy/$', AssayStudyList.as_view(), name='assay_study_list'),
     url(r'^assays/assaystudy/add/$', AssayStudyAddNew.as_view(), name='assay_study_add'),
