@@ -52,18 +52,29 @@
         </table>
         <br>
         <div class="row">
-            <div class="col-sm-2 col-xs-offset-3 well">
-                <input type="radio" id="pam-cohen-d" name="pam" value="d" checked>
-                <label for="pam-cohen-d">Cohen's d</label><br>
-                <input type="radio" id="pam-glass-d" name="pam" value="D">
-                <label for="pam-glass-d">Glass's ∆</label><br>
-                <input type="radio" id="pam-hedge-g" name="pam" value="g">
-                <label for="pam-hedge-g">Hedges' g</label><br>
-                <input type="radio" id="pam-hedge-gstar" name="pam" value="gs">
-                <label for="pam-hedge-gstar">Hedges' g*</label>
+            <div class="col-xs-4 col-xs-offset-2 text-center">
+                <input type="radio" id="one-sample" name="sample-num" value="one-sample">
+                <label for="one-sample">One Sample </label>
+                <br>
+                <input type="radio" id="two-sample" name="sample-num" value="two-sample" checked>
+                <label for="two-sample">Two Sample </label>
+                <br><br>
+                <label for="sig-level">Significance Level (α)</label>
+                <input id="sig-level" type="text" name="sig-level" size="5" value="0.05">
+                <span></span>
+                <br><br>
+                <button id="power-analysis-button" class="btn btn-lg btn-primary" disabled>Run Analysis</button>
             </div>
-            <div class="col-xs-4 text-center">
-                <br><br><button id="power-analysis-button" class="btn btn-lg btn-primary" disabled>Perform Power Analysis</button>
+            <div class="col-sm-2 well">
+                <label>Effect Size Methods</label><br>
+                <input type="radio" id="pam-cohen-d" name="pam" value="d" checked>
+                <label for="pam-cohen-d">Cohen's d &nbsp;</label><br>
+                <input type="radio" id="pam-glass-d" name="pam" value="D">
+                <label for="pam-glass-d">Glass's ∆ &nbsp;&nbsp;&thinsp;</label><br>
+                <input type="radio" id="pam-hedge-g" name="pam" value="g">
+                <label for="pam-hedge-g">Hedges' g &nbsp;&thinsp;</label><br>
+                <input type="radio" id="pam-hedge-gstar" name="pam" value="gs">
+                <label for="pam-hedge-gstar">Hedges' g* </label>
             </div>
         </div>
     </div>
@@ -91,11 +102,20 @@
                 </div>
             </div>
         </div>
+        <br>
         <div class="row">
-            <div class="col-xs-12">
+            <div class="col-xs-9">
                 <div id="pa-sample-size-graph">
 
                 </div>
+            </div>
+            <div class="col-xs-2 no-padding">
+                <table id='time-points-table' class="display table-bordered">
+
+                </table>
+            </div>
+            <div class="col-xs-1">
+
             </div>
         </div>
     </div>

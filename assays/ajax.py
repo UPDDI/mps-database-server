@@ -3832,7 +3832,8 @@ def fetch_power_analysis_group_table(request):
 def fetch_power_analysis_results(request):
     power_analysis_input = json.loads(request.POST.get('full_data', ''))
     pam = request.POST.get('pam', '')
-    power_analysis_data = power_analysis(power_analysis_input, pam)
+    sig = request.POST.get('sig', '')
+    power_analysis_data = power_analysis(power_analysis_input, pam, float(sig))
 
     data = {}
     for key, current_list in power_analysis_data.items():
