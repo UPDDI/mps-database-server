@@ -370,7 +370,7 @@ class SpecificGroupRequiredMixin(object):
 
 
 class SuperuserRequiredMixin(object):
-    """This mixin checks if the user has the group neccessary to at least view the entry"""
+    """This mixin checks if the user has the group necessary to at least view the entry"""
     @method_decorator(login_required)
     @method_decorator(user_passes_test(user_is_active))
     def dispatch(self, *args, **kwargs):

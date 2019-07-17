@@ -39,6 +39,7 @@ window.GROUPING = {
     // Probably doesn't need to be global
     group_criteria: null,
     post_filter: null,
+    // PARAMS
     filters_param: '',
     group_criteria_param: '',
     post_filter_param: '',
@@ -313,6 +314,15 @@ $(document).ready(function () {
 
         window.GROUPING.group_criteria = {};
 
+        // TODO: KLUDGE TO DEAL WITH PAIRED CRITERIA (units and value)
+        // TODO: Might be a good idea to have both together in a string that gets split?
+        // TODO PLEASE AVOID MAGIC STRINGS LIKE THIS
+        var paired_criteria = {
+            'density': 'density_unit_id',
+            'concentration': 'concentration_unit_id',
+            'value': 'unit_id',
+        };
+
         grouping_checkbox_selector.each(function(index, current_checkbox) {
             if (this.checked) {
                 criteria_string.push('1');
@@ -322,6 +332,13 @@ $(document).ready(function () {
                 window.GROUPING.group_criteria[$(this).attr('data-group-relation')].push(
                     $(this).attr('data-group')
                 );
+
+                // ADD PAIRED CRITERIA IF NECESSARY
+                if (paired_criteria[$(this).attr('data-group')]) {
+                    window.GROUPING.group_criteria[$(this).attr('data-group-relation')].push(
+                        paired_criteria[$(this).attr('data-group')]
+                    );
+                }
             }
             else {
                 criteria_string.push('0');
