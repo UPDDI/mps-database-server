@@ -334,6 +334,11 @@ $(document).ready(function () {
         }
 
         setup_data_selector.val(JSON.stringify(current_setup_data));
+
+        // EXPENSIVE, BUT ULTIMATELY PROBABLY WORTH IT
+        if (is_edit_interface) {
+            apply_data_to_forms();
+        }
     }
 
     function spawn_column(prefix) {
