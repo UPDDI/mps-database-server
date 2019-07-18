@@ -731,7 +731,7 @@ $(document).ready(function () {
                         $.each(contents[prefix], function(content_index, current_contents) {
                             // MAKE A NEW FORM AS NECESSARY
                             if (!current_matrix_forms[prefix][content_index]) {
-                                var new_form = generate_form(prefix);
+                                var new_form = generate_form(prefix, {'matrix_item': item_id});
                                 add_form(prefix, new_form);
                                 current_matrix_forms[prefix].push(new_form);
                             }
