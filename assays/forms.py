@@ -1683,6 +1683,9 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
         # SLOPPY NOT DRY
         new_setup_data = {}
+        new_matrix = None
+        new_items = None
+        new_related = None
 
         errors = []
 

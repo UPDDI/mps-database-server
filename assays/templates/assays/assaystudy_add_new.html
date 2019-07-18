@@ -425,6 +425,10 @@
         {# {{ form.number_of_items }} #}
         {# {{ form.test_type }} #}
     {# </div> #}
+    {# Hidden #}
+    <div hidden>
+        {{ form.setup_data }}
+    </div>
 </form>
 
 {% include 'assays/group_editing.html' %}
