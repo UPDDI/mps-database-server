@@ -2530,7 +2530,6 @@ def power_analysis(data, type, sig):
                  'Chip ID',
                  'Value']
     )
-    power_group_data.to_csv('/home/developer/github/power_group_data.csv')
     # Four different methods for power analysis
     # If type = 'd', it's Cohen's method, this is default method
     # If type 'D', it's Glass’s ∆ method
@@ -2539,12 +2538,10 @@ def power_analysis(data, type, sig):
 
     # Call function to get the power values for the two treatments' chip replicates at each time
     power_results_report = pa_power_analysis_report(power_group_data, type=type, sig_level=sig)
-    # power_results_report.to_csv('/home/developer/github/power_results_report.csv')
 
     # Call fuction to get the predicted sample size of chip replicates at each time for given power
     power_vs_sample_size_curves_matrix = pa_power_sample_size_curves_matrix(
         power_group_data, power_inteval=0.02, type=type, sig_level=sig)
-    power_vs_sample_size_curves_matrix.to_csv('/home/developer/github/power_vs_sample_size_curves_matrix.csv')
 
     # Call Sample size prediction
     sample_size_prediction_matrix = pa_predicted_sample_size_time_series(
