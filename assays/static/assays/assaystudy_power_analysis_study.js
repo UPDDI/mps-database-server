@@ -28,7 +28,7 @@ $(document).ready(function () {
     var glass_tooltip = "Glass' Δ is the mean difference dividied by the standard deviation of the 'control' group.";
     var hedge_g_tooltip = "Hedges' g is the mean difference divided by the unbiased estimate of standard deviation for two treatment groups.";
     var hedge_gs_tooltip = "Hedges' g* is Hedges' g normalized by the gamma function of the sample size.";
-    var sig_level_tooltip = "Significance level can be any value between 0 and 1.";
+    var sig_level_tooltip = "Significance level can be any value between (but exlcuding) 0 and 1.";
 
     $('#pam-cohen-d').next().html($('#pam-cohen-d').next().html() + make_escaped_tooltip(cohen_tooltip));
     $('#pam-glass-d').next().html($('#pam-glass-d').next().html() + make_escaped_tooltip(glass_tooltip));
@@ -39,7 +39,195 @@ $(document).ready(function () {
     var active_compounds_checkboxes = 0;
     var significance_level = 0.05;
 
+    var time_points_full = [];
     var time_points_to_ignore = [];
+    var sample_size_data = [];
+
+    var group_table_columns = [
+        {
+            title: "Show Details",
+            "render": function (data, type, row, meta) {
+                if (type === 'display') {
+                    return '<input type="checkbox" class="big-checkbox power-analysis-group-checkbox" data-table-index="' + meta.row + '" data-power-analysis-group="' + row[0] + '" data-compounds-table-info="' + data_groups[row[0]][0] + '$$$$$' + data_groups[row[0]][value_unit_index] + '$$$$$' + data_group_to_organ_models[row[0]].join('<br>') + '$$$$$' + data_group_to_sample_locations[row[0]].join('<br>') + '">';
+                }
+                return '';
+            },
+            "className": "dt-body-center",
+            "createdCell": function (td, cellData, rowData, row, col) {
+                if (cellData) {
+                    $(td).css('vertical-align', 'middle');
+                }
+            },
+            "sortable": false,
+            width: '5%'
+        },
+        {
+            title: "Set",
+            type: "brute-numeric",
+            "render": function (data, type, row) {
+                return '<span class="badge badge-primary data-power-analysis-group-info">' + row[0] + '</span>';
+            },
+            width: '5%'
+        },
+        {
+            title: "Target/Analyte",
+            "render": function (data, type, row) {
+                return data_groups[row[0]][0];
+            },
+            width: '20%'
+        },
+        {
+            title: "Unit",
+            "render": function (data, type, row) {
+                return data_groups[row[0]][value_unit_index];
+            }
+        },
+        {
+            title: "MPS Models",
+            "render": function (data, type, row) {
+                return data_group_to_organ_models[row[0]].join('<br>');
+            }
+        },
+        {
+            title: "Sample Locations",
+            "render": function (data, type, row) {
+                return data_group_to_sample_locations[row[0]].join('<br>');
+            }
+        },
+        {title: "# of Chips", data: '4', width: '5%'},
+        {title: "# of Time Points", data: '5', width: '10%'}
+    ];
+
+    var compounds_table_columns = [
+        {
+            title: "Show Details",
+            "render": function (data, type, row, meta) {
+                if (type === 'display') {
+                    return '<input type="checkbox" class="big-checkbox power-analysis-compounds-checkbox" data-table-index="' + meta.row + '" data-power-analysis-compound="' + row[0] + '">';
+                }
+                return '';
+            },
+            "className": "dt-body-center",
+            "createdCell": function (td, cellData, rowData, row, col) {
+                if (cellData) {
+                    $(td).css('vertical-align', 'middle');
+                }
+            },
+            "sortable": false,
+            width: '5%'
+        },
+        {
+            title: "Compounds",
+            "render": function (data, type, row) {
+                return row[0];
+            }
+        },
+        {
+            title: "# of Chips",
+            "render": function (data, type, row) {
+                return '<span class="chip-num-cell">' + row[1] + '</span>';
+            }
+        },
+        {
+            title: "# of Time Points",
+            "render": function (data, type, row) {
+                return row[2];
+            }
+        }
+    ];
+
+    time_points_table_columns = [
+        {
+            title: "Include",
+            "render": function (data, type, row, meta) {
+                if (type === 'display') {
+                    if (time_points_to_ignore.indexOf(row) >= 0) {
+                        return '<input type="checkbox" class="big-checkbox power-analysis-time-points-checkbox" data-time-point="'+ row +'">';
+                    } else {
+                        return '<input type="checkbox" class="big-checkbox power-analysis-time-points-checkbox" data-time-point="'+ row +'" checked>';
+                    }
+                }
+                return '';
+            },
+            "className": "dt-body-center",
+            "createdCell": function (td, cellData, rowData, row, col) {
+                if (cellData) {
+                    $(td).css('vertical-align', 'middle');
+                }
+            },
+            "sortable": false,
+            width: '5%'
+        },
+        {
+            title: "Time Points",
+            "render": function (data, type, row) {
+                return row;
+            },
+            "className": "dt-body-center",
+        }
+    ];
+
+    var sample_size_google_options = {
+        // TOO SPECIFIC, OBVIOUSLY
+        title: 'Power Curves - Time (Days)',
+        interpolateNulls: true,
+        curveType: 'function',
+        titleTextStyle: {
+            fontSize: 18,
+            bold: true,
+            underline: true
+        },
+        legend: {
+            title: 'Time (Days)',
+            position: 'top',
+            maxLines: 5,
+            textStyle: {
+                // fontSize: 8,
+                bold: true
+            }
+        },
+        hAxis: {
+            // Begins empty
+            title: 'Sample Size',
+            textStyle: {
+                bold: true
+            },
+            titleTextStyle: {
+                fontSize: 14,
+                bold: true,
+                italic: false
+            },
+            scaleType: 'log'
+        },
+        vAxis: {
+            title: 'Power Value',
+            // If < 1000 and > 0.001 don't use scientific! (absolute value)
+            // y_axis_label_type
+            format: '',
+            textStyle: {
+                bold: true
+            },
+            titleTextStyle: {
+                fontSize: 14,
+                bold: true,
+                italic: false
+            },
+            // This doesn't seem to interfere with displaying negative values
+            minValue: 0,
+            viewWindowMode: 'explicit'
+            // baselineColor: 'none',
+            // ticks: []
+        },
+        pointSize: 0,
+        'chartArea': {
+            'width': '75%',
+            'height': '65%'
+        },
+        'height': 400,
+        // Individual point tooltips, not aggregate
+        focusTarget: 'datum',
+        // series: contrived_line_dict
+    }
 
     function refresh_power_analysis() {
         window.spinner.spin(
@@ -55,61 +243,6 @@ $(document).ready(function () {
         }
 
         $('#gas-table').find('body').empty();
-
-        var group_table_columns = [
-            {
-                title: "Show Details",
-                "render": function (data, type, row, meta) {
-                    if (type === 'display') {
-                        return '<input type="checkbox" class="big-checkbox power-analysis-group-checkbox" data-table-index="' + meta.row + '" data-power-analysis-group="' + row[0] + '" data-compounds-table-info="' + data_groups[row[0]][0] + '$$$$$' + data_groups[row[0]][value_unit_index] + '$$$$$' + data_group_to_organ_models[row[0]].join('<br>') + '$$$$$' + data_group_to_sample_locations[row[0]].join('<br>') + '">';
-                    }
-                    return '';
-                },
-                "className": "dt-body-center",
-                "createdCell": function (td, cellData, rowData, row, col) {
-                    if (cellData) {
-                        $(td).css('vertical-align', 'middle');
-                    }
-                },
-                "sortable": false,
-                width: '5%'
-            },
-            {
-                title: "Set",
-                type: "brute-numeric",
-                "render": function (data, type, row) {
-                    return '<span class="badge badge-primary data-power-analysis-group-info">' + row[0] + '</span>';
-                },
-                width: '5%'
-            },
-            {
-                title: "Target/Analyte",
-                "render": function (data, type, row) {
-                    return data_groups[row[0]][0];
-                },
-                width: '20%'
-            },
-            {
-                title: "Unit",
-                "render": function (data, type, row) {
-                    return data_groups[row[0]][value_unit_index];
-                }
-            },
-            {
-                title: "MPS Models",
-                "render": function (data, type, row) {
-                    return data_group_to_organ_models[row[0]].join('<br>');
-                }
-            },
-            {
-                title: "Sample Locations",
-                "render": function (data, type, row) {
-                    return data_group_to_sample_locations[row[0]].join('<br>');
-                }
-            },
-            {title: "# of Chips", data: '4', width: '5%'},
-            {title: "# of Time Points", data: '5', width: '10%'},
-        ];
 
         group_table = $('#group-table').DataTable({
             ajax: {
@@ -219,6 +352,7 @@ $(document).ready(function () {
 
     // Compounds Table Checkbox click event
     $(document).on("click", ".power-analysis-compounds-checkbox", function() {
+        time_points_to_ignore = [];
         var checkbox = $(this);
         var number = checkbox.attr('data-power-analysis-compound');
         if (active_compounds_checkboxes < 3) {
@@ -250,64 +384,16 @@ $(document).ready(function () {
     $(document).on("click", ".power-analysis-time-points-checkbox", function() {
         var checkbox = $(this);
         var time_point = checkbox.attr('data-time-point');
-        // console.log(time_point);
         if (checkbox.is(':checked')) {
-            if ($('#time-points-table input:checked').length !== 1) {
-                $('#power-analysis-button').attr('disabled', false);
-            }
-            var index = $.inArray("abc", time_points_to_ignore);
+            var index = $.inArray(time_point, time_points_to_ignore);
             if (index>=0) time_points_to_ignore.splice(index, 1);
-            // console.log($('#time-points-table input:checked').length);
         } else {
             time_points_to_ignore.push(time_point);
-            if ($('#time-points-table input:checked').length === 1) {
-                $('#power-analysis-button').attr('disabled', true);
-                // console.log("NO MORE UNCHECKING YO");
-            }
         }
-        // console.log(time_points_to_ignore);
+        draw_power_vs_sample_size_chart();
     });
 
     function make_compounds_datatable(group_num){
-        var compounds_table_columns = [
-            {
-                title: "Show Details",
-                "render": function (data, type, row, meta) {
-                    if (type === 'display') {
-                        return '<input type="checkbox" class="big-checkbox power-analysis-compounds-checkbox" data-table-index="' + meta.row + '" data-power-analysis-compound="' + row[0] + '">';
-                    }
-                    return '';
-                },
-                "className": "dt-body-center",
-                "createdCell": function (td, cellData, rowData, row, col) {
-                    if (cellData) {
-                        $(td).css('vertical-align', 'middle');
-                    }
-                },
-                "sortable": false,
-                width: '5%'
-            },
-            {
-                title: "Compounds",
-                "render": function (data, type, row) {
-                    return row[0];
-                }
-            },
-            {
-                title: "# of Chips",
-                "render": function (data, type, row) {
-                    return '<span class="chip-num-cell">' + row[1] + '</span>';
-                }
-            },
-            {
-                title: "# of Time Points",
-                "render": function (data, type, row) {
-                    return row[2];
-                }
-            },
-
-        ];
-
         compounds_table = $('#compounds-table').DataTable({
             data: compounds_table_data[group_num],
             columns: compounds_table_columns,
@@ -317,9 +403,9 @@ $(document).ready(function () {
         });
 
         $('#compounds-table tr').each(function(){
-            // console.log($(this).find('.chip-num-cell').text());
             if ($(this).find('.chip-num-cell').text() === '1') {
-                $(this).find('input').data('enabled', false);
+                $(this).find('input').attr('disabled', true);
+                $(this).find('input').attr('title', 'Cannot perform power analysis on single-chip samples.');
             }
         });
 
@@ -331,6 +417,57 @@ $(document).ready(function () {
         compounds_table.clear();
         compounds_table.destroy();
         compounds_table_container.attr('hidden', true);
+    }
+
+    function draw_power_vs_sample_size_chart() {
+        var data = $.extend(true, [], sample_size_data);
+
+        for (var x=0; x<data.length; x++) {
+            var current_time = data[x][0]/1440;
+            data[x][0] = String(current_time);
+        }
+        sample_size_data_prepped = get_pivot_array(data, 2, 0, 1);
+        sample_size_data_prepped.splice(1, 1);
+
+        for (var x=1; x<sample_size_data_prepped.length; x++) {
+            sample_size_data_prepped[x][0] = parseFloat(sample_size_data_prepped[x][0]);
+        }
+
+        // Populate full list of time points only if this is the first instance of power analysis being run on this set
+        time_points_full = sample_size_data_prepped[0].filter(
+            function(value, index, arr){
+                return value !== 'Sample Size' && value !== 'POWER';
+            }
+        )
+
+        var index_to_remove;
+        for (let i = 0; i < time_points_to_ignore.length; ++i) {
+            index_to_remove = sample_size_data_prepped[0].indexOf(time_points_to_ignore[i]);
+            if (index_to_remove >= 0) {
+                for (let j = 0; j < sample_size_data_prepped.length; ++j) {
+                    sample_size_data_prepped[j].splice(index_to_remove, 1);
+                }
+            }
+        }
+
+        var sample_size_google_data = null;
+        sample_size_google_data = google.visualization.arrayToDataTable(sample_size_data_prepped);
+
+        // TODO Replace with Original Time Points array
+        time_points_table = $('#time-points-table').DataTable({
+            data: time_points_full,
+            columns: time_points_table_columns,
+            paging: false,
+            searching: false,
+            info: false,
+            destroy: true,
+            "scrollY": "340px",
+            "order": [1, 'asc'],
+            "responsive": false,
+        });
+
+        sample_size_chart = new google.visualization.LineChart(power_analysis_sample_size_graph);
+        sample_size_chart.draw(sample_size_google_data, sample_size_google_options);
     }
 
     function make_chart(assay, unit, selector, data) {
@@ -570,9 +707,7 @@ $(document).ready(function () {
 
     $('#power-analysis-button').click(function() {
         if (time_points_table) {
-            time_points_table.clear();
-            time_points_table.destroy();
-            // time_points_table.attr('hidden', true);
+            $('#time-points-table_wrapper').hide();
         }
         fetch_power_analysis_results();
     });
@@ -590,7 +725,7 @@ $(document).ready(function () {
     // Handle changes to significance level input
     $('#sig-level').change(function() {
         significance_level = $('#sig-level').val();
-        if (significance_level < 0 || significance_level > 1 || significance_level == '') {
+        if (significance_level <= 0 || significance_level >= 1 || significance_level == '') {
             significance_level = 0.05;
             $('#sig-level').val('0.05');
         }
@@ -687,7 +822,7 @@ $(document).ready(function () {
                 var chart1_data = JSON.parse(JSON.stringify(final_chart_data[current_group]));
                 var indices_to_remove = [];
                 for (var x=0; x<chart1_data[0].length; x++){
-                    if (chart1_data[0][x] !== "Time" && chart1_data[0][x].indexOf(compound_first) === -1 && chart1_data[0][x].indexOf(compound_second) === -1) {
+                    if (chart1_data[0][x] !== "Time" && chart1_data[0][x] !== compound_first && chart1_data[0][x] !== compound_second) {
                         indices_to_remove.push(x)
                     }
                 }
@@ -710,147 +845,35 @@ $(document).ready(function () {
                 power_data.unshift(["Time", "Power"]);
 
                 // Fourth Chart - Sample Size vs Power Value
-                var sample_size_data = data['power_analysis_data']['power_vs_sample_size_curves_matrix'].sort();
-                for (var x=0; x<sample_size_data.length; x++){
-                    var current_time = sample_size_data[x][0]/1440;
-                    sample_size_data[x][0] = String(current_time);
-                }
+                sample_size_data = data['power_analysis_data']['power_vs_sample_size_curves_matrix'].sort();
 
-                sample_size_data_prepped = get_pivot_array(sample_size_data, 2, 0, 1);
-                sample_size_data_prepped.splice(1, 1);
-                for (var x=1; x<sample_size_data_prepped.length; x++){
-                    sample_size_data_prepped[x][0] = parseFloat(sample_size_data_prepped[x][0]);
-                }
+                $('#time_points_table_wrapper').show();
+
+                // TODO .8 subject to change
+                // sample_size_data_prepped[0].push('POWER');
+                // for (var x=1; x<sample_size_data_prepped.length; x++){
+                //     sample_size_data_prepped[x].push(0.8);
+                // }
+                //
+
+                //
+                // contrived_line_dict = {};
+                // contrived_line_dict[sample_size_data_prepped[0].length-2] = {
+                //     type: 'linear',
+                //     color: 'black',
+                //     visibleInLegend: false,
+                //     enableInteractivity: false,
+                //     tooltip: false,
+                //     pointShape: {
+                //         type: 'diamond',
+                //         sides: 4
+                //     }
+                // };
 
                 make_chart(row_info[0], 'Avg (Value)', power_analysis_values_graph, chart1_data);
                 make_chart(row_info[0], 'P Value', power_analysis_p_value_graph, p_value_data);
                 make_chart('', 'Power', power_analysis_power_graph, power_data);
-
-                // TODO .8 subject to change
-                sample_size_data_prepped[0].push('POWER');
-                for (var x=1; x<sample_size_data_prepped.length; x++){
-                    sample_size_data_prepped[x].push(0.8);
-                }
-
-                contrived_line_dict = {};
-                contrived_line_dict[sample_size_data_prepped[0].length-2] = {
-                    type: 'linear',
-                    color: 'black',
-                    visibleInLegend: false,
-                    enableInteractivity: false,
-                    tooltip: false,
-                    pointShape: {
-                        type: 'diamond',
-                        sides: 4
-                    }
-                };
-
-                var sample_size_google_data = google.visualization.arrayToDataTable(sample_size_data_prepped);
-                var sample_size_google_options = {
-                    // TOO SPECIFIC, OBVIOUSLY
-                    title: 'Power Curves - Time (Days)',
-                    interpolateNulls: true,
-                    curveType: 'function',
-                    titleTextStyle: {
-                        fontSize: 18,
-                        bold: true,
-                        underline: true
-                    },
-                    legend: {
-                        title: 'Time (Days)',
-                        position: 'top',
-                        maxLines: 5,
-                        textStyle: {
-                            // fontSize: 8,
-                            bold: true
-                        }
-                    },
-                    hAxis: {
-                        // Begins empty
-                        title: 'Sample Size',
-                        textStyle: {
-                            bold: true
-                        },
-                        titleTextStyle: {
-                            fontSize: 14,
-                            bold: true,
-                            italic: false
-                        }
-                    },
-                    vAxis: {
-                        title: 'Power Value',
-                        // If < 1000 and > 0.001 don't use scientific! (absolute value)
-                        // y_axis_label_type
-                        format: '',
-                        textStyle: {
-                            bold: true
-                        },
-                        titleTextStyle: {
-                            fontSize: 14,
-                            bold: true,
-                            italic: false
-                        },
-                        // This doesn't seem to interfere with displaying negative values
-                        minValue: 0,
-                        viewWindowMode: 'explicit'
-                        // baselineColor: 'none',
-                        // ticks: []
-                    },
-                    pointSize: 0,
-                    'chartArea': {
-                        'width': '75%',
-                        'height': '65%'
-                    },
-                    'height': 400,
-                    // Individual point tooltips, not aggregate
-                    focusTarget: 'datum',
-                    series: contrived_line_dict
-                }
-
-                time_points_table_columns = [
-                    {
-                        title: "Include",
-                        "render": function (data, type, row, meta) {
-                            if (type === 'display') {
-                                return '<input type="checkbox" class="big-checkbox power-analysis-time-points-checkbox" data-time-point="'+ row +'" checked>';
-                            }
-                            return '';
-                        },
-                        "className": "dt-body-center",
-                        "createdCell": function (td, cellData, rowData, row, col) {
-                            if (cellData) {
-                                $(td).css('vertical-align', 'middle');
-                            }
-                        },
-                        "sortable": false,
-                        width: '5%'
-                    },
-                    {
-                        title: "Time Points",
-                        "render": function (data, type, row) {
-                            return row;
-                        },
-                        "className": "dt-body-center",
-                    }
-                ];
-
-                time_points_table = $('#time-points-table').DataTable({
-                    data: sample_size_data_prepped[0].filter(function(value, index, arr){
-                        return value !== 'Sample Size' && value !== 'POWER'
-                    }),
-                    columns: time_points_table_columns,
-                    paging: false,
-                    searching: false,
-                    info: false,
-                    "scrollY": "360px",
-                    "order": [1, 'asc'],
-                    "responsive": true,
-                });
-
-                // time_points_to_ignore =
-
-                sample_size_chart = new google.visualization.LineChart(power_analysis_sample_size_graph);
-                sample_size_chart.draw(sample_size_google_data, sample_size_google_options);
+                draw_power_vs_sample_size_chart();
             })
             .fail(function(xhr, errmsg, err) {
                 $("#clone-container").empty();

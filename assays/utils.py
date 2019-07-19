@@ -2164,7 +2164,7 @@ def pa_power_two_sample_size(n1, n2, es_value, sig_level=0.05):
         else:
             power_value = np.NAN
     elif n1 == n2 and n1 > 1:
-        power_value = pa_power_one_sample_size(n1, es_value)
+        power_value = pa_power_one_sample_size(n1, es_value, sig_level)
     else:
         power_value = power_v
     return power_value
@@ -2369,7 +2369,7 @@ def pa_predicted_power_time_series(power_group_data, type='d', sample_size=3, si
     return power_analysis_table
 
 
-def pa_power_analysis_report(power_group_data, type='d'):
+def pa_power_analysis_report(power_group_data, type='d', sig_level=0.05):
     # Calculate and report the power analysis for two treatments' time series from replicates assay measurements
     power_group_data = power_group_data.dropna(subset=['Value'])
     # Confirm whether there are two treatments
@@ -2417,10 +2417,10 @@ def pa_power_analysis_report(power_group_data, type='d'):
                     p_value = pa_t_test(x, y)
                     # Power calculation
                 if n1 == n2 and n1 > 1:
-                    power_value = pa_power_one_sample_size(n1, es_value)
+                    power_value = pa_power_one_sample_size(n1, es_value, sig_level)
                     p_value = pa_t_test(x, y)
                 elif n1 > 1 and n2 > 1 and n1 != n2:
-                    power_value = pa_power_two_sample_size(n1, n2, es_value)
+                    power_value = pa_power_two_sample_size(n1, n2, es_value, sig_level)
                     p_value = pa_t_test(x, y)
                 else:
                     power_value = np.NAN
@@ -2438,7 +2438,7 @@ def pa_power_analysis_report(power_group_data, type='d'):
     return power_analysis_table
 
 
-def pa_power_sample_size_curves_matrix(power_group_data, power_inteval=0.02, type='d'):
+def pa_power_sample_size_curves_matrix(power_group_data, power_inteval=0.02, type='d', sig_level=0.05):
     # Calculate and report the power analysis for two treatments' time series from replicates assay measurements
     max_power = 1
     power_inteval = 0.01
@@ -2490,9 +2490,9 @@ def pa_power_sample_size_curves_matrix(power_group_data, power_inteval=0.02, typ
                     es_value = pa_effect_size(x, y, type)
                     # Power calculation
                 if n1 == n2 and n1 > 1:
-                    power_value = pa_power_one_sample_size(n1, es_value)
+                    power_value = pa_power_one_sample_size(n1, es_value, sig_level)
                 elif n1 > 1 and n2 > 1 and n1 != n2:
-                    power_value = pa_power_two_sample_size(n1, n2, es_value)
+                    power_value = pa_power_two_sample_size(n1, n2, es_value, sig_level)
                 else:
                     power_value = np.NAN
 
@@ -2507,7 +2507,7 @@ def pa_power_sample_size_curves_matrix(power_group_data, power_inteval=0.02, typ
                 for k in range(n_pc):
                     input_power = power_array[k]
                     output_sample_size = pa_predicted_sample_size(
-                        input_power, es_value)
+                        input_power, es_value, sig_level)
                     time_power_df.iloc[k, 0] = power_analysis_table['Group'][itime]
                     time_power_df.iloc[k, 1] = power_analysis_table['Time'][itime]
                     time_power_df.iloc[k, 2] = input_power
@@ -2516,7 +2516,7 @@ def pa_power_sample_size_curves_matrix(power_group_data, power_inteval=0.02, typ
                 # Append the calculate power and sample size matrix at each time
                 power_sample_curves_table = power_sample_curves_table.append(
                     time_power_df, ignore_index=True)
-    return power_sample_curves_table
+    return power_sample_curves_table.dropna()
 
 
 def power_analysis(data, type, sig):
@@ -2530,7 +2530,7 @@ def power_analysis(data, type, sig):
                  'Chip ID',
                  'Value']
     )
-    # power_group_data.to_csv('/home/developer/github/power_group_data.csv')
+    power_group_data.to_csv('/home/developer/github/power_group_data.csv')
     # Four different methods for power analysis
     # If type = 'd', it's Cohen's method, this is default method
     # If type 'D', it's Glass’s ∆ method
@@ -2538,13 +2538,13 @@ def power_analysis(data, type, sig):
     # If type 'gs' it's Hedges’s g* method
 
     # Call function to get the power values for the two treatments' chip replicates at each time
-    power_results_report = pa_power_analysis_report(power_group_data, type=type)
+    power_results_report = pa_power_analysis_report(power_group_data, type=type, sig_level=sig)
     # power_results_report.to_csv('/home/developer/github/power_results_report.csv')
 
     # Call fuction to get the predicted sample size of chip replicates at each time for given power
     power_vs_sample_size_curves_matrix = pa_power_sample_size_curves_matrix(
-        power_group_data, power_inteval=0.02, type=type)
-    # power_vs_sample_size_curves_matrix.to_csv('/home/developer/github/power_vs_sample_size_curves_matrix.csv')
+        power_group_data, power_inteval=0.02, type=type, sig_level=sig)
+    power_vs_sample_size_curves_matrix.to_csv('/home/developer/github/power_vs_sample_size_curves_matrix.csv')
 
     # Call Sample size prediction
     sample_size_prediction_matrix = pa_predicted_sample_size_time_series(
