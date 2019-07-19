@@ -140,6 +140,9 @@ urlpatterns = [
     # Help
     url(r'^help/', mps.views.mps_help),
 
+    # About
+    url(r'^about/', mps.views.mps_about),
+
     # Djangovoice for feedback
     url(r'^comments/', include('django_comments.urls')),
     url(r'^feedback/', include('djangovoice.urls')),

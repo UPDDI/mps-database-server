@@ -1,0 +1,445 @@
+{% load static %}
+{% load compress %}
+<!DOCTYPE html>
+<html lang="en">
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<head>
+    <link rel="icon"
+    type="image/png"
+    href="/static/img/glyphicons-question-sign.png">
+
+    <title>About the MPS Database</title>
+
+    {% compress js %}
+    <!-- Load JQuery -->
+    <script src="{% static "js/jquery-1.11.2.min.js" %}"></script>
+    <!-- Incorporate the Bootstrap JavaScript plugins -->
+    <script src="{% static "js/bootstrap.min.js" %}"></script>
+    <!-- DataTables -->
+    <script type="text/javascript" charset="utf-8" src="{% static "js/jquery.dataTables.min.js" %}"></script>
+    <script type="text/javascript" charset="utf-8" src="{% static "js/dataTables.responsive.min.js" %}"></script>
+    <script type="text/javascript" charset="utf-8" src="{% static "js/dataTables.buttons.min.js" %}"></script>
+    <script type="text/javascript" charset="utf-8" src="{% static "js/dataTables.fixedHeader.min.js" %}"></script>
+    <script type="text/javascript" charset="utf-8" src="{% static "js/buttons.colVis.min.js" %}"></script>
+    {# We will just be using html5 for buttons (no fallback) #}
+    {# <script type="text/javascript" charset="utf-8" src="{% static "js/buttons.flash.min.js" %}"></script>#}
+    <script type="text/javascript" charset="utf-8" src="{% static "js/buttons.html5.min.js" %}"></script>
+    <script type="text/javascript" charset="utf-8" src="{% static "js/buttons.print.min.js" %}"></script>
+    <script type="text/javascript" charset="utf-8" src="{% static "js/datatable_options.js" %}"></script>
+    <!-- Help JS -->
+    <script type="text/javascript" charset="utf-8" src="{% static "js/help.js" %}"></script>
+    {% endcompress %}
+
+    {% compress css %}
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static "css/jquery.dataTables.min.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "css/buttons.dataTables.min.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "css/fixedHeader.dataTables.min.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "css/responsive.dataTables.min.css" %}">
+    <!-- Custom CSS Rules -->
+    <link rel="stylesheet" href="{% static "css/bootstrap-overrides.css" %}">
+
+    <style>
+        .
+        .sub1-bars {font-style: italic; font-size: 180%; margin-top: 3%; font-weight: 700}
+        .sub2-bars {font-style: normal; font-size: 150%; color: DarkSlateGray; margin-top: 2%}
+
+        .collapsible1:hover { font-weight: bold; font-size: 120%}
+        .collapsible2:hover { font-weight: bold; font-size: 105%; border-color:darkgray; }
+        .collapsible3:hover { font-weight: bold; font-size: 100%; border-color:lightgray; }
+
+        .collapsible1 {background-color: SteelBlue; font-size: 120%; color: white; cursor: pointer; padding: 10px;
+            width: 100%; border: none; text-align: left; outline: none; margin-bottom: 2px; margin-top: 1px; }
+        .collapsible2{background-color: azure; font-size:105%; border-radius:5%; padding-left:10px;  padding-right:10px; display:block;
+            border-color:DarkGray; outline: none;width: 100%; margin-bottom: 3px; text-align: left; padding-top:5px; padding-bottom:5px }
+        .collapsible3{background-color: Gainsboro; font-size:100%; border-radius:5%; padding-left:10px;  padding-right:10px; display:block;
+            border-color:gray; outline: none;width: 100%; margin-bottom: 3px; text-align: left; padding-top:5px; padding-bottom:5px }
+        .content1, .content2, .content3 {display: none; transition: max-height 0.1s ease-out;}
+
+        .background2 {background-color:Azure;}
+        .background3 {background-color:lightgray;}
+
+        .filled-circle {list-style-type: disc;}
+        .open-circle {list-style-type: circle; padding-left: 20px;}
+        .list-group {margin-bottom: 4px;}
+    </style>
+    {% endcompress %}
+
+    {% if GOOGLE_ANALYTICS %}
+      <!-- Global site tag (gtag.js) - Google Analytics -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id={{ GOOGLE_ANALYTICS }}"></script>
+      <script>
+      window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '{{ GOOGLE_ANALYTICS }}');
+      </script>
+    {% endif %}
+</head>
+
+<body>
+{# <body data-spy="scroll" data-target=".navbar" data-offset="80"> #}
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+
+    {# Open class container - use Ctrl+Shift+M to jump to close#}
+    <div class="container">
+
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+
+        <div>
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav">
+
+                    <li><a href="#about_overview">Overview</a></li>
+
+                    <li><a href="#about_features">Popular Features</a></li>
+
+                    <li><a href="#about_data">Data Sources, Access, and Sharing</a></li>
+
+                    <li><a href="#about_faqs">FAQs</a></li>
+
+                </ul>
+            </div>
+        </div>
+
+    </div>
+    {# Close class container #}
+</nav>
+
+<div class="offset-help-navbar">
+
+   <div id="about_overview" class="container">
+        <h1 class="sub1-bars"> Overview </h1>
+        <div id="a_overview">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <ul class="list-unstyled">
+                        <li><b><i>Microphysiology Systems Database</i></b>
+                        <br><br>
+                        The Microphysiology Systems Database (MPS-DB) combines the loading, storage, and sharing of experimentally derived assay data and data curated from external reference sources with visualization and analysis tools to provide a powerful platform for designing experimental studies and performing data analysis and computational modeling.
+                        <br><br>
+                        The MPS-DB is funded by the National Center for Advancing Translational Sciences,
+                            <a target="_blank" href="https://ncats.nih.gov/tissuechip"> Tissue Chips Program </a> the National Center for Advancing Translational Sciences (NCATS)
+                            <a target="_blank" href="https://ncats.nih.gov/tissuechip/projects/centers"> Tissue Chip Testing Centers Program</a>, and in part by the
+                            <a target="_blank" href="http://www.vanderbilt.edu/vprompt/index.php">Vanderbilt-Pittsburgh Resource</a> for Organotypic Models for Predictive Toxicology.
+                        <br><br>
+                        The MPS Database is open an free for non-commercial use. <b>NEED BLURB FROM MARK TO GO HERE</b>
+                        <br><br>
+                        Additional information about the MPS Database, included detailed instructions for using database features and contributing data to the database, can be found on the database's <i>Help</i> page.
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+   </div>
+
+   <div id="about_features" class="container">
+        <h1 class="sub1-bars"> Popular Features </h1>
+        <div id="a_features01">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <ul class="list-unstyled">
+                        <li>
+                            <b><i>Compare Adverse Events</i></b>
+                            <br><br>
+                            Using data from the FDA Adverse Event Reporting System (FAERS) the CDC's National Ambulatory Medical Care Survey (NAMCS) database, a powerful GUI enables quick comparison of adverse events associated with one or more compounds.
+                            <br><br><img src="/static/img/about/compare_adverse_events.jpg" alt="Select Compounds, then Compare Adverse Events." height="250">
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div id="a_features02">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <ul class="list-unstyled">
+                        <li>
+                            <b><i>Learn About MPS Models Being Used in Translational Medicine </i></b>
+                            <br><br>
+                            Visit the MPS Models page to see a list of the models being used by researchers working on the leading edge of the tissue chip field. Select to view one of the models to see detailed information on model design and construction.
+                            <br><br><img src="/static/img/about/lamps_model.jpg" alt="Select Models, the View MPS Models." height="280">
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div id="a_features03">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <ul class="list-unstyled">
+                        <li>
+                            <b><i>Analyze Experimentally Derived Assay Data </i></b>
+                            <br><br>
+                            Design and setup a study, then upload assay data and use the online tools to visualize, analyze, and computationally model assay results. The database includes a robust interface for filtering and grouping data, and provides customizable tools for visualizing data. Data can be kept private, shared with a small group of colleagues, or opened to all registered database users.
+                            <br><br><img src="/static/img/about/study_summary_graph.jpg" alt="Contribute your data and use the online tools to analyze your data." height="250" >
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div id="a_features04">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <ul class="list-unstyled">
+                        <li>
+                            <b><i>Review Drug Trial Information </i></b>
+                            <br><br>
+                            Review drug trial information from multiple sources curated into one place, presented in a searchable and sortable table. Select a drug trial to view and learn more about the results of the trial and the source of the data.
+                            <br><br><img src="/static/img/about/drug_trials_list.jpg" alt="Select Compounds, then View Drug Trials." height="290">
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div id="a_features05">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <ul class="list-unstyled">
+                        <li>
+                            <b><i>Robust Searching </i></b>
+                            <br><br>The global search simplifies the process of finding information. Enter a compound, a disease, a device, or other keys word(s) to quickly search the whole database for matches.
+                            <br><br><img src="/static/img/about/global_search.jpg" alt="Select Compounds, then View Drug Trials." height="290">
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+   </div>
+
+   <div id="about_data" class="container">
+        <h1 class="sub1-bars"> Data Sources and Data Sharing </h1>
+        <div id="a_data01">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <ul class="list-unstyled">
+                        <li>
+                            <b><i>Data Sources</i></b>
+                            <br><br>
+                            Experimentally derived assay data are loaded directly into the MPS Database by researchers performing MPS tissue chips studies. Additional data needed for computation modeling, data analysis, or for designing a study are curated into the MPS Database. Data are integrated together by the compound(s) used in experimental studies.
+                            <br><br><img src="/static/img/about/data_sources_mps_hub.jpg" alt="Sources of data curated from external sources include: Health Canada, LiverTox, ToxNet, European Medicines Agency, OpenFDA, NAMCS/NHAMCS, PubChem, TogoWS, UniChem, DrugBank, ChEMBL, clinicaltrials.gov, and ctti-clinicaltrials.org. Additional reference data, needed to support some of the database features, have been curated manually from peer reviewed publications." height="200">
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div id="a_data02">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <ul class="list-unstyled">
+                        <li>
+                            <b><i>Data Access</i></b>
+                            <br><br>
+                            The MPS Database incorporates a multifaceted permission structure, allowing access to data to be granted in a multitude of configurations to match the needs of each individual user.
+                            <br><br>
+                            <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                            <thead>
+                                <tr class="active">
+                                <th> User's Role </th>
+                                <th> Access to Data and Features </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                <td> All Registered MPS Database Users   </td>
+                                <td> Can view all reference data and associated features and publicly available experimentally derived assay data. </td>
+                                </tr>
+                                <tr>
+                                <td> Data Providers  </td>
+                                <td> Can add, edit, and share study data. </td>
+                                </tr>
+                                <tr>
+                                <td> Collaborators, Stakeholders, Funders  </td>
+                                <td> Can review specific datasets prior to public release. </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div id="a_data03">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <ul class="list-unstyled">
+                        <li>
+                            <b><i>Sharing of Experimentally Derived Assay Data</i></b>
+                            <br><br>
+                            Researchers performing MPS tissue chips studies and contributing data to the MPS Database determine who can see their data. To meet the needs of the database user community, and the requirements of their funding agencies, the MPS Database offers a wide range of options for when and with whom data are shared.
+                             <br>
+                             <br>Option 1) The data provider can make their data publicly available at any time.
+                             <br>Option 2) The data provider can share their data with a select group of colleagues.
+                             <br>Option 3) The data provider <i>signs-off</i> a study to start a process of releasing data publicly after a year embargo.
+                            <br><br><img src="/static/img/about/sign_off_process.jpg" alt="The sign-off process was designed to meet the requirements of the funder of some of the database users." height="100">
+                            <br><br>
+                            Data are grouped into studies and shared on a study-by-study basis. Typically, assay results are grouped into studies to facilitate comparison of treated to untreated tissue chips.
+                            <br><br><img src="/static/img/about/study_grouping.jpg" alt="Data are grouped into studies" height="130">
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div id="a_data04">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <ul class="list-unstyled">
+                        <li>
+                            <b><i>Experimentally Derived Assay Data Sharing Status</i></b>
+                            <br><br>
+                            NOT SURE WHAT WE WANT TO DO HERE YET - maybe a summary of models with data in the database, and/or a summary of studies and assays. Perhaps even some information on planned upcoming releases to public when using Option 3 described above.
+                        </li>
+
+
+                    </ul>
+                </li>
+            </ul>
+        </div>
+   </div>
+
+   <div id="about_faqs" class="container">
+        <h1 class="sub1-bars"> Frequently Asked Questions </h1>
+        <div id="a_faqs">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <ul class="list-unstyled">
+                        <li><a href="#q01">How can I learn more about the features of the MPS Database?</a></li>
+                        <li><a href="#q02">Can I use the MPS Database to select compounds to test in my MPS Models?</a></li>
+                        <li><a href="#q03">How do I become a registered MPS Database user?</a></li>
+                        <li><a href="#q04">Is using the database free?</a></li>
+                        <li><a href="#q05">How can I add an analyze my assay data?</a></li>
+                        <li><a href="#q06">How can I review assay data submitted by another researcher?</a></li>
+                        <li><a href="#q07">I am a data "stakeholder", how can I see the data I need to review?</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+       <div id="q01">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <i><b>How can I learn more about the features of the MPS Database?</b></i>
+                    <ul class="list-unstyled">
+                        <li>The MPS Database Help page provides detailed information, and examples, of how to use all the features of the database. </li>
+                    </ul>
+                </li>
+            </ul>
+       </div>
+       <div id="q02">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <i><b>Can I use the MPS Database to select compounds to test in my MPS Models?</b></i>
+                    <ul class="list-unstyled">
+                        <li>The database offers multiple ways of looking at compound data. Some users like to review the compound list, and sort, for example, by LogP. Then, use the global search to find additional information about promising compounds (such as, drug trials associated with a specific compound).  </li>
+                    </ul>
+                </li>
+            </ul>
+       </div>
+       <div id="q03">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <i><b>How do I become a registered MPS Database user?</b></i>
+                    <ul class="list-unstyled">
+                        <li>Registration is easy and free. Just go to the
+                            <a href="https://mps.csb.pitt.edu/accounts/login/#" target="_blank" >MPS login page</a>
+                            and click on the option to register or
+                            <a href="https://mps.csb.pitt.edu/register/#" >click here</a>. </li>
+                    </ul>
+                </li>
+            </ul>
+       </div>
+       <div id="q04">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <i><b>Is using the database free?</b></i>
+                    <ul class="list-unstyled">
+                        <li>NEED BLURB FROM MARK</li>
+                    </ul>
+                </li>
+            </ul>
+       </div>
+       <div id="q05">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <i><b>How can I add an analyze my assay data?</b></i>
+                    <ul class="list-unstyled">
+                        <li>To add assay data to the database, you must be assigned to a <i>Data Group</i> and be given permissions needed to add studies to and edit studies associated with a <i>Data Group</i>. These permissions must be granted by an MPS Database Administrator. Contact an administrator by a sending an email to MPSHELP@pitt.edu with subject line "Getting Setup to Contribute Data to the MPS Database". Detailed information on how to review and analyze your data in the MPS Database is available on the database's <i>Help</i> page.  </li>
+                    </ul>
+                </li>
+            </ul>
+       </div>
+       <div id="q06">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <i><b>How can I review assay data submitted by another researcher?</b></i>
+                    <ul class="list-unstyled">
+                        <li>Researcher's who provide data are not required by the MPS Database Center to share their data. Studies that have been shared publicly will show on the
+                            <a href="https://mps.csb.pitt.edu/assays/assaystudy/#" target="_blank" >Study List Page</a>
+                             of the database. Study data can also be accessed in other ways, for example, through the inter-study analysis feature, and when reviewing the Target/Analytes and Method/Kits list that are available through the Studies->Study Components menu (review the <i>Help</i> page to learn about these features).
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+       </div>
+       <div id="q07">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <i><b>I am a data "stakeholder", how can I see the data I need to review?</b></i>
+                    <ul class="list-unstyled">
+                        <li>To access any data that is not publicly available, you must be a registered user of the MPS Database. Once you are registered, an MPS Database Administrator will assign you the appropriate permissions to view data for which you are a stakeholder. After permission has been granted, the study or studies that are waiting for your review will show on the
+                            <a href="https://mps.csb.pitt.edu/assays/assaystudy/#" target="_blank" >Study List Page</a>
+                             of the database. </li>
+                    </ul>
+                </li>
+            </ul>
+       </div>
+
+   </div>
+
+
+
+
+   <!-- Keep here for now..use as example for Data Release schedule table
+   <div id="search_section" class="container">
+   <div id="glossary" class="container padded-bottom">
+
+      <h1 class="sub1-bars"> Glossary </h1>
+      <table hidden id="glossary_table" class="display" cellspacing="0" width="100%">
+
+      <thead>
+         <tr>
+            <th>Term</th>
+            <th>Definition</th>
+            <th>Ref</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for term in glossary %}
+            <tr>
+              <td>{{ term.term }}</td>
+              <td>{{ term.definition }}</td>
+              <td>{{ term.show_url }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    -->
+
+</div>
+</body>
+</html>

@@ -119,6 +119,14 @@ def mps_help(request):
 
     return render(request, 'help.html', c)
 
+#This is an sckplaceholder
+def mps_about(request):
+    c = {
+        #'version': len(os.listdir(MEDIA_ROOT + '/excel_templates/')),
+        'glossary': Definition.objects.exclude(definition='')
+    }
+
+    return render(request, 'about.html', c)
 
 # TODO Consider defining this in URLS or either bringing the rest here
 class UnderConstruction(TemplateView):
