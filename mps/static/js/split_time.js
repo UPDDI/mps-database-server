@@ -17,6 +17,11 @@ window.SPLIT_TIME.get_split_time = function(time_in_minutes) {
         'minute': 0
     };
 
+    // Short-circuit
+    if (!time_in_minutes) {
+        return times;
+    }
+
     var time_in_minutes_remaining = time_in_minutes;
     $.each(window.SPLIT_TIME.time_conversions, function(time_unit, conversion) {
         var initial_time_for_current_field = Math.floor(time_in_minutes_remaining / conversion);

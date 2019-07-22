@@ -138,11 +138,11 @@ $(document).ready(function () {
                     current_data['cell_sample_id']
                 );
 
-                if (!is_edit_interface) {
+                if (!is_edit_interface || $.isEmptyObject(current_data)) {
                     // TODO SPECIAL EXCEPTION FOR TIMES
                     $.each(time_prefixes, function(index, current_time_prefix) {
                         var split_time = window.SPLIT_TIME.get_split_time(
-                            current_data[current_time_prefix],
+                            current_data[current_time_prefix]
                         );
 
                         $.each(split_time, function(time_name, time_value) {

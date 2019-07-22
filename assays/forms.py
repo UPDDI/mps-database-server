@@ -1646,7 +1646,8 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
     number_of_items = forms.CharField(required=False)
     test_type = forms.ChoiceField(
         initial='control',
-        choices=TEST_TYPE_CHOICES
+        choices=TEST_TYPE_CHOICES,
+        required=False
     )
 
     def __init__(self, *args, **kwargs):
@@ -1980,7 +1981,12 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         # SLOPPY: REVISE
 
         study_id = study.id
-        device_id = study.organ_model.device_id
+
+        if study.organ_model_id:
+            device_id = study.organ_model.device_id
+        else:
+            device_id = None
+
         organ_model_id = study.organ_model_id
         organ_model_protocol_id = study.organ_model_protocol_id
 
