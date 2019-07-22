@@ -47,28 +47,7 @@
     <link rel="stylesheet" href="{% static "css/bootstrap-overrides.css" %}">
 
     <style>
-        .
-        .sub1-bars {font-style: italic; font-size: 180%; margin-top: 3%; font-weight: 700}
-        .sub2-bars {font-style: normal; font-size: 150%; color: DarkSlateGray; margin-top: 2%}
 
-        .collapsible1:hover { font-weight: bold; font-size: 120%}
-        .collapsible2:hover { font-weight: bold; font-size: 105%; border-color:darkgray; }
-        .collapsible3:hover { font-weight: bold; font-size: 100%; border-color:lightgray; }
-
-        .collapsible1 {background-color: SteelBlue; font-size: 120%; color: white; cursor: pointer; padding: 10px;
-            width: 100%; border: none; text-align: left; outline: none; margin-bottom: 2px; margin-top: 1px; }
-        .collapsible2{background-color: azure; font-size:105%; border-radius:5%; padding-left:10px;  padding-right:10px; display:block;
-            border-color:DarkGray; outline: none;width: 100%; margin-bottom: 3px; text-align: left; padding-top:5px; padding-bottom:5px }
-        .collapsible3{background-color: Gainsboro; font-size:100%; border-radius:5%; padding-left:10px;  padding-right:10px; display:block;
-            border-color:gray; outline: none;width: 100%; margin-bottom: 3px; text-align: left; padding-top:5px; padding-bottom:5px }
-        .content1, .content2, .content3 {display: none; transition: max-height 0.1s ease-out;}
-
-        .background2 {background-color:Azure;}
-        .background3 {background-color:lightgray;}
-
-        .filled-circle {list-style-type: disc;}
-        .open-circle {list-style-type: circle; padding-left: 20px;}
-        .list-group {margin-bottom: 4px;}
     </style>
     {% endcompress %}
 
@@ -108,9 +87,11 @@
 
                     <li><a href="#about_features">Popular Features</a></li>
 
+                    <li><a href="#about_faqs">FAQs</a></li>
+
                     <li><a href="#about_data">Data Sources, Access, and Sharing</a></li>
 
-                    <li><a href="#about_faqs">FAQs</a></li>
+                    <li><a href="#about_releases">Data Release Schedule</a></li>
 
                 </ul>
             </div>
@@ -220,96 +201,6 @@
         </div>
    </div>
 
-   <div id="about_data" class="container">
-        <h1 class="sub1-bars"> Data Sources and Data Sharing </h1>
-        <div id="a_data01">
-            <ul class="list-group">
-                <li class="list-group-item">
-                    <ul class="list-unstyled">
-                        <li>
-                            <b><i>Data Sources</i></b>
-                            <br><br>
-                            Experimentally derived assay data are loaded directly into the MPS Database by researchers performing MPS tissue chips studies. Additional data needed for computation modeling, data analysis, or for designing a study are curated into the MPS Database. Data are integrated together by the compound(s) used in experimental studies.
-                            <br><br><img src="/static/img/about/data_sources_mps_hub.jpg" alt="Sources of data curated from external sources include: Health Canada, LiverTox, ToxNet, European Medicines Agency, OpenFDA, NAMCS/NHAMCS, PubChem, TogoWS, UniChem, DrugBank, ChEMBL, clinicaltrials.gov, and ctti-clinicaltrials.org. Additional reference data, needed to support some of the database features, have been curated manually from peer reviewed publications." height="200">
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-        <div id="a_data02">
-            <ul class="list-group">
-                <li class="list-group-item">
-                    <ul class="list-unstyled">
-                        <li>
-                            <b><i>Data Access</i></b>
-                            <br><br>
-                            The MPS Database incorporates a multifaceted permission structure, allowing access to data to be granted in a multitude of configurations to match the needs of each individual user.
-                            <br><br>
-                            <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
-                            <thead>
-                                <tr class="active">
-                                <th> User's Role </th>
-                                <th> Access to Data and Features </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                <td> All Registered MPS Database Users   </td>
-                                <td> Can view all reference data and associated features and publicly available experimentally derived assay data. </td>
-                                </tr>
-                                <tr>
-                                <td> Data Providers  </td>
-                                <td> Can add, edit, and share study data. </td>
-                                </tr>
-                                <tr>
-                                <td> Collaborators, Stakeholders, Funders  </td>
-                                <td> Can review specific datasets prior to public release. </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-        <div id="a_data03">
-            <ul class="list-group">
-                <li class="list-group-item">
-                    <ul class="list-unstyled">
-                        <li>
-                            <b><i>Sharing of Experimentally Derived Assay Data</i></b>
-                            <br><br>
-                            Researchers performing MPS tissue chips studies and contributing data to the MPS Database determine who can see their data. To meet the needs of the database user community, and the requirements of their funding agencies, the MPS Database offers a wide range of options for when and with whom data are shared.
-                             <br>
-                             <br>Option 1) The data provider can make their data publicly available at any time.
-                             <br>Option 2) The data provider can share their data with a select group of colleagues.
-                             <br>Option 3) The data provider <i>signs-off</i> a study to start a process of releasing data publicly after a year embargo.
-                            <br><br><img src="/static/img/about/sign_off_process.jpg" alt="The sign-off process was designed to meet the requirements of the funder of some of the database users." height="100">
-                            <br><br>
-                            Data are grouped into studies and shared on a study-by-study basis. Typically, assay results are grouped into studies to facilitate comparison of treated to untreated tissue chips.
-                            <br><br><img src="/static/img/about/study_grouping.jpg" alt="Data are grouped into studies" height="130">
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-        <div id="a_data04">
-            <ul class="list-group">
-                <li class="list-group-item">
-                    <ul class="list-unstyled">
-                        <li>
-                            <b><i>Experimentally Derived Assay Data Sharing Status</i></b>
-                            <br><br>
-                            NOT SURE WHAT WE WANT TO DO HERE YET - maybe a summary of models with data in the database, and/or a summary of studies and assays. Perhaps even some information on planned upcoming releases to public when using Option 3 described above.
-                        </li>
-
-
-                    </ul>
-                </li>
-            </ul>
-        </div>
-   </div>
-
    <div id="about_faqs" class="container">
         <h1 class="sub1-bars"> Frequently Asked Questions </h1>
         <div id="a_faqs">
@@ -409,36 +300,109 @@
 
    </div>
 
+   <div id="about_data" class="container">
+        <h1 class="sub1-bars"> Data Sources and Data Sharing </h1>
+        <div id="a_data01">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <ul class="list-unstyled">
+                        <li>
+                            <b><i>Data Sources</i></b>
+                            <br><br>
+                            Experimentally derived assay data are loaded directly into the MPS Database by researchers performing MPS tissue chips studies. Additional data needed for computation modeling, data analysis, or for designing a study are curated into the MPS Database. Data are integrated together by the compound(s) used in experimental studies.
+                            <br><br><img src="/static/img/about/data_sources_mps_hub.jpg" alt="Sources of data curated from external sources include: Health Canada, LiverTox, ToxNet, European Medicines Agency, OpenFDA, NAMCS/NHAMCS, PubChem, TogoWS, UniChem, DrugBank, ChEMBL, clinicaltrials.gov, and ctti-clinicaltrials.org. Additional reference data, needed to support some of the database features, have been curated manually from peer reviewed publications." height="200">
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div id="a_data02">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <ul class="list-unstyled">
+                        <li>
+                            <b><i>Data Access</i></b>
+                            <br><br>
+                            The MPS Database incorporates a multifaceted permission structure, allowing access to data to be granted in a multitude of configurations to match the needs of each individual user.
+                            <br><br>
+                            <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                            <thead>
+                                <tr class="active">
+                                <th> User's Role </th>
+                                <th> Access to Data and Features </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                <td> All Registered MPS Database Users   </td>
+                                <td> Can view all reference data and associated features and publicly available experimentally derived assay data. </td>
+                                </tr>
+                                <tr>
+                                <td> Data Providers  </td>
+                                <td> Can add, edit, and share study data. </td>
+                                </tr>
+                                <tr>
+                                <td> Collaborators, Stakeholders, Funders  </td>
+                                <td> Can review specific datasets prior to public release. </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div id="a_data03">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <ul class="list-unstyled">
+                        <li>
+                            <b><i>Sharing of Experimentally Derived Assay Data</i></b>
+                            <br><br>
+                            Researchers performing MPS tissue chips studies and contributing data to the MPS Database determine who can see their data. To meet the needs of the database user community, and the requirements of their funding agencies, the MPS Database offers a wide range of options for when and with whom data are shared.
+                             <br>
+                             <br>Option 1) The data provider can make their data publicly available at any time.
+                             <br>Option 2) The data provider can share their data with a select group of colleagues.
+                             <br>Option 3) The data provider <i>signs-off</i> a study to start a process of releasing data publicly after a year embargo.
+                            <br><br><img src="/static/img/about/sign_off_process.jpg" alt="The sign-off process was designed to meet the requirements of the funder of some of the database users." height="100">
+                            <br><br>
+                            Data are grouped into studies and shared on a study-by-study basis. Typically, assay results are grouped into studies to facilitate comparison of treated to untreated tissue chips.
+                            <br><br><img src="/static/img/about/study_grouping.jpg" alt="Data are grouped into studies" height="130">
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+   </div>
 
+   <!-- Keep here for now..use as example for Data Release schedule table  -->
 
+   <div id="about_releases" class="container padded-bottom">
 
-   <!-- Keep here for now..use as example for Data Release schedule table
-   <div id="search_section" class="container">
-   <div id="glossary" class="container padded-bottom">
-
-      <h1 class="sub1-bars"> Glossary </h1>
+      <h1 class="sub1-bars"> Studies Planned for Release in the Next 90 Days </h1>
+      <!--ask Luke about the hidden id for this...it works as glossary_table but that is from the help page-->
       <table hidden id="glossary_table" class="display" cellspacing="0" width="100%">
 
       <thead>
          <tr>
-            <th>Term</th>
-            <th>Definition</th>
-            <th>Ref</th>
+            <th>Study Name</th>
+            <th>Study Description</th>
+            <th>Sign Off Date</th>
           </tr>
         </thead>
 
         <tbody>
-          {% for term in glossary %}
+          {% for each in about_studies %}
             <tr>
-              <td>{{ term.term }}</td>
-              <td>{{ term.definition }}</td>
-              <td>{{ term.show_url }}</td>
+              <td>{{ each.name }}</td>
+              <td>{{ each.description }}</td>
+              <td>{{ each.signed_off_date }}</td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
-    </div>
-    -->
+   </div>
+
 
 </div>
 </body>

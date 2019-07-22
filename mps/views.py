@@ -1,5 +1,10 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
+
+#sck added
+from datetime import date, timedelta
+
+from assays.models import AssayStudy
 from .forms import SearchForm
 
 from haystack.query import SearchQuerySet
@@ -113,7 +118,7 @@ def custom_search(request):
 
 def mps_help(request):
     c = {
-        'version': len(os.listdir(MEDIA_ROOT + '/excel_templates/')),
+        ###'version': len(os.listdir(MEDIA_ROOT + '/excel_templates/')),
         'glossary': Definition.objects.exclude(definition='')
     }
 
@@ -121,12 +126,13 @@ def mps_help(request):
 
 #This is an sckplaceholder
 def mps_about(request):
-    c = {
-        #'version': len(os.listdir(MEDIA_ROOT + '/excel_templates/')),
-        'glossary': Definition.objects.exclude(definition='')
+    a_months_ago = date.today() - timedelta(days=365) + timedelta(days=90)
+
+    d = {
+        'about_studies': AssayStudy.objects.filter(restricted=True).exclude(group_id=21).exclude(group_id=47).exclude(group_id=109).exclude(signed_off_date__isnull=True).filter(signed_off_date__lt=a_months_ago)
     }
 
-    return render(request, 'about.html', c)
+    return render(request, 'about.html', d)
 
 # TODO Consider defining this in URLS or either bringing the rest here
 class UnderConstruction(TemplateView):
