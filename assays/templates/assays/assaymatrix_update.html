@@ -50,11 +50,66 @@
 
 {% include 'errors.html' %}
 
-{# {{ form.errors }} #}
-{# {{ item_formset.errors }} #}
-{# {{ compound_formset.errors }} #}
-{# {{ cell_formset.errors }} #}
-{# {{ setting_formset.errors }} #}
+{# NOT VERY GOOD, JUST FOR TESTING #}
+{% if item_formset.errors %}
+<legend>Chip Errors</legend>
+{% for dict in item_formset.errors %}
+    {% for key,value in dict.items %}
+        {% if key %}
+            <div class="alert alert-danger" role="alert">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error:</span>
+                {{ forloop.parentloop.counter }}.) {{ key }} : {{ value }}
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+{% endif %}
+
+{% if compound_formset.errors %}
+<legend>Compound Errors</legend>
+{% for dict in compound_formset.errors %}
+    {% for key,value in dict.items %}
+        {% if key %}
+            <div class="alert alert-danger" role="alert">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error:</span>
+                {{ forloop.parentloop.counter }}.) {{ key }} : {{ value }}
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+{% endif %}
+
+{% if cell_formset.errors %}
+<legend>Cell Errors</legend>
+{% for dict in cell_formset.errors %}
+    {% for key,value in dict.items %}
+        {% if key %}
+            <div class="alert alert-danger" role="alert">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error:</span>
+                {{ forloop.parentloop.counter }}.) {{ key }} : {{ value }}
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+{% endif %}
+
+{% if setting_formset.errors %}
+<legend>Setting Errors</legend>
+{% for dict in setting_formset.errors %}
+    {% for key,value in dict.items %}
+        {% if key %}
+            <div class="alert alert-danger" role="alert">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error:</span>
+                {{ forloop.parentloop.counter }}.) {{ key }} : {{ value }}
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+{% endif %}
 
 {% include 'tracking.html' %}
 
