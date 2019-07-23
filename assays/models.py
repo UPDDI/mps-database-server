@@ -1966,7 +1966,7 @@ class AssayMatrixItem(FlaggableModel):
         if not settings:
             settings = ['-No Extra Settings-']
 
-        return '\n'.join(set(settings))
+        return '\n'.join(collections.OrderedDict.fromkeys(settings))
 
     def devolved_cells(self, criteria=DEFAULT_CELL_CRITERIA):
         """Makes a tuple of cells (for comparison)"""
@@ -1988,7 +1988,7 @@ class AssayMatrixItem(FlaggableModel):
         if not cells:
             cells = ['-No Cell Samples-']
 
-        return '\n'.join(set(cells))
+        return '\n'.join(collections.OrderedDict.fromkeys(cells))
 
     def devolved_compounds(self, criteria=DEFAULT_COMPOUND_CRITERIA):
         """Makes a tuple of compounds (for comparison)"""
@@ -2010,7 +2010,7 @@ class AssayMatrixItem(FlaggableModel):
         if not compounds:
             compounds = ['-No Compounds-']
 
-        return '\n'.join(set(compounds))
+        return '\n'.join(collections.OrderedDict.fromkeys(compounds))
 
     def get_compound_profile(self, matrix_item_compound_post_filters):
         """Compound profile for determining concentration at time point"""
@@ -2465,6 +2465,15 @@ class AssaySetupSetting(models.Model):
                 'duration',
             )
         ]
+
+        ordering = (
+            'addition_time',
+            'setting',
+            'addition_location',
+            'unit',
+            'value',
+            'duration',
+        )
 
     # Now binds directly to items
     matrix_item = models.ForeignKey(AssayMatrixItem, on_delete=models.CASCADE)
