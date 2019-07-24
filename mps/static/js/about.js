@@ -29,57 +29,10 @@ $(document).ready(function () {
         $(initial_hash).find('button').next().first().css("display", "block");
     }
 
-
-    // sckplaceholder - use as example for other tables want to add
-    // var _alphabetSearch = '';
-    //
-    // $.fn.dataTable.ext.search.push(function(settings, searchData ) {
-    //     if (!_alphabetSearch) {
-    //         return true;
-    //     }
-    //
-    //     else if (searchData[0].charAt(0) === _alphabetSearch) {
-    //         return true;
-    //     }
-    //
-    //     return false;
-    // });
-
     // Call datatables for glossary
-    //var glossary_table = $('#glossary_table').DataTable({
-    //    dom: 'B<"row">lfrtip',
-    //    "iDisplayLength": 10,
-    //    responsive: true
-    //});
-
-    //var alphabet = $('<div class="alphabet"/>').append('Search: ');
-
-    // Add none
-    // $('<a/>')
-    //     .attr('data-letter', '')
-    //     .attr('role', 'button')
-    //     .html('None')
-    //     .addClass('btn btn-sm')
-    //     .appendTo(alphabet);
-    //
-    // for(var i=0 ; i<26 ; i++) {
-    //     var letter = String.fromCharCode(65 + i);
-    //
-    //     $('<a/>')
-    //         .attr('data-letter', letter)
-    //         .attr('role', 'button')
-    //         .html(letter)
-    //         .addClass('btn btn-sm')
-    //         .appendTo(alphabet);
-    // }
-    //
-    // alphabet.insertBefore(glossary_table.table().container());
-    //
-    // alphabet.on('click', 'a', function() {
-    //     alphabet.find('.active').removeClass('active');
-    //     $(this).addClass('active');
-    //
-    //     _alphabetSearch = $(this).attr('data-letter');
-    //     glossary_table.draw();
-    // });
+    var about_studies_for_release_table = $('#about_studies_for_release_table').DataTable({
+        dom: 'B<"row">lfrtip',
+        "iDisplayLength": 10,
+        responsive: true
+    });
 });

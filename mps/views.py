@@ -124,15 +124,27 @@ def mps_help(request):
 
     return render(request, 'help.html', c)
 
+
 #This is an sckplaceholder
 def mps_about(request):
-    a_months_ago = date.today() - timedelta(days=365) + timedelta(days=90)
+    number_of_days = 90
+    a_months_ago = date.today() - timedelta(days=365) + timedelta(days=number_of_days)
 
     d = {
-        'about_studies': AssayStudy.objects.filter(restricted=True).exclude(group_id=21).exclude(group_id=47).exclude(group_id=109).exclude(signed_off_date__isnull=True).filter(signed_off_date__lt=a_months_ago)
+        'number_of_days': number_of_days,
+        'about_studies': AssayStudy.objects.filter(
+            restricted=True,
+            locked=False,
+            signed_off_date__lt=a_months_ago
+        ).exclude(
+            group_id__in=[21, 47, 109]
+        ).exclude(
+            signed_off_date__isnull=True
+        )
     }
 
     return render(request, 'about.html', d)
+
 
 # TODO Consider defining this in URLS or either bringing the rest here
 class UnderConstruction(TemplateView):
