@@ -386,9 +386,6 @@ $(document).ready(function () {
         $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
     }
 
-    // Increase the height of the footer to ensure it is not obscured
-    $('#footer').height("+=150");
-
     // Center JQuery Dialog Window Title
     $("#ui-id-1").css('text-align', 'center').css('width','100%').css('font-size', '16px');
 

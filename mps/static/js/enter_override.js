@@ -76,9 +76,6 @@ $(document).ready(function () {
         }
     });
 
-    // Increase the height of the footer to ensure it is not obscured
-    $('#footer').height("+=150");
-
     // To track if the form has been changed
     // MAKES THE ASSUMPTION THAT THERE IS ONLY ONE FORM
     form_selector.find('input, select, textarea').change(function() {
