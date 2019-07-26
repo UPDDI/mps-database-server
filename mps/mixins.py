@@ -20,13 +20,19 @@ from mps.templatetags.custom_filters import (
 )
 
 
-# Unsemantic! Breaks PEP!
-def PermissionDenied(request, message):
+# Unsemantic! Breaks PEP! BAD!
+def PermissionDenied(request, message, log_in_link=True):
     """This function will take a string a render 403.html with that string as context"""
     template = loader.get_template('403.html')
     context = {
         'message': message
     }
+
+    if log_in_link and not request.user.is_authenticated:
+        context.update({
+            'intended_path': request.get_full_path()
+        })
+
     return HttpResponseForbidden(template.render(context, request))
 
 # def check_if_user_is_active(user):

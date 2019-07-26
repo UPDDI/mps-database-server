@@ -11,6 +11,15 @@
     <h3>You do not have permission to view this page:</h3>
     <h2 class="text-danger">{{ message }}</h2>
 
+    {% if intended_path %}
+    <div class="padded-row large-padding-top padded-bottom text-center">
+        <a class="btn btn-xlarge btn-info" href="{% url 'auth_login' %}?next={{ intended_path }}">
+            <span class="glyphicon glyphicon glyphicon-user" aria-hidden="true"></span>
+            Log In
+        </a>
+    </div>
+    {% endif %}
+
     <div class="padded-row large-padding-top padded-bottom text-center">
         <a class="btn btn-xlarge btn-warning" onclick="if(document.referrer.indexOf(window.location.host) !== -1){window.history.back()}else{window.location.href='/'};setTimeout(function(){window.location.href='/';},500);">
             <span class="glyphicon glyphicon-hand-left" aria-hidden="true"></span>
