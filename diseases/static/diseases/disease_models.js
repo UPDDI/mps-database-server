@@ -33,11 +33,19 @@ $(document).ready(function() {
             },
             {
                 "type": "numeric-comma",
-                "targets": [5, 6]
+                "targets": [5, 6, 7, 8]
+            },
+            {
+                'visible': false,
+                'targets': [7, 8, 12, 14, 15]
             },
             {
                 'className': 'none',
-                'targets': [7]
+                'targets': [9]
+            },
+            {
+                'sortable': false,
+                'targets': [10]
             }
         ]
     });

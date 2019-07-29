@@ -1,0 +1,112 @@
+{% load humanize %}
+
+{# PLEASE NOTE THAT SORTING ETC. IS NOT HERE, IT CHANGES DEPENDING ON THE PAGE #}
+{# PLEASE NOTE THAT THE ID IS CONTRIVED, ALWAYS "studies" #}
+<table hidden id="studies" class="display" cellspacing="0" width="100%">
+    <thead>
+        <tr>
+            {% if not for_study_set_list %}
+            <th>View/Edit</th>
+            {% else %}
+            <th>Select</th>
+            {% endif %}
+{#                    <th>Study ID</th>#}
+            <th>Study Name</th>
+            <th>Start Date</th>
+            <th>Study Types <span data-toggle="tooltip" title="CC = Chip Characterization, DM = Disease Model, EFF = Efficacy, TOX = Toxicity" class="glyphicon glyphicon-question-sign" aria-hidden="true" data-placement="bottom"></span></th>
+            <th>MPS Models</th>
+            <th>Data Points</th>
+            <th>Images</th>
+            <th>Videos</th>
+            <th>Supporting Data Files</th>
+{#                    <th>Integrated Study Configuration</th>#}
+            <th>Description</th>
+            <th>Intra-Study Reproducibility Status <span data-toggle="tooltip" title="Hover over pie charts for details." class="glyphicon glyphicon-question-sign" aria-hidden="true" data-placement="bottom"></span></th>
+            <th>Data Provider</th>
+            <th>Data Entry</th>
+            <th>Review</th>
+            <th>Sign Off Date</th>
+            <th>ID</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for study in studies %}
+        {% if not reproducibility or study.data_points %}
+        <tr class="study" id={{ study.id }} name={{ study.id }}>
+            {% if not for_study_set_list %}
+                {% if reproducibility %}
+                <td><a class="btn btn-primary" href="{% url 'assay_study_reproducibility' study.id %}">Reproducibility</a></td>
+                {% else %}
+                <td><a class="btn btn-primary" href="{% url 'assay_study_index' study.id %}">View/Edit</a></td>
+                {% endif %}
+            {% else %}
+                <td style="text-align:center;">
+                    <input type="checkbox" class="big-checkbox study-selector" data-table-index="{{ forloop.counter0 }}" value="{{ study.id }}">
+                </td>
+            {% endif %}
+{#                    <td>{{ study.assay_run_id }}</td>#}
+            <td style="word-wrap: break-word">{{ study.name }}</td>
+            <td>{{ study.start_date|date:"M d, Y" }}</td>
+            <td>{{ study.get_study_types_string }}</td>
+            <td>{{ study.organ_models|default:"-No MPS Models-" }}</td>
+{#                    <td>{{ study.study_configuration }}</td>#}
+            {% if study.data_points %}
+                <td class="text-success">{{ study.data_points|intcomma }}</td>
+            {% else %}
+                <td class="text-danger">0</td>
+            {% endif %}
+            {% if study.images %}
+                <td class="text-success">{{ study.images|intcomma }}</td>
+            {% else %}
+                <td class="text-danger">0</td>
+            {% endif %}
+            {% if study.videos %}
+                <td class="text-success">{{ study.videos|intcomma }}</td>
+            {% else %}
+                <td class="text-danger">0</td>
+            {% endif %}
+            {% if study.supporting_data %}
+                <td class="text-success">{{ study.supporting_data|intcomma }}</td>
+            {% else %}
+                <td class="text-danger">0</td>
+            {% endif %}
+            <td>{{ study.description }}</td>
+            <td>
+                <div id="piechart{{ forloop.counter0 }}" data-nums="{{study.repro_nums}}" class="text-center" style="width: 70px; height: 70px; margin: auto; display: block;"></div>
+            </td>
+            <td><a href='/microdevices/center/{{ study.center.id }}/' target='_blank' title="{{ study.center.name }}">{{ study.center.center_id }}</a></td>
+            <td>
+                {{ study.full_creator }}
+            </td>
+            <td>
+                {% if study.signed_off_by %}
+                    {% if study.stakeholder_sign_off and not study.restricted %}
+                        <span hidden>3</span>
+                        <span title="This study can be viewed by all registered users" class="glyphicon glyphicon-eye-open text-info" aria-hidden="true"></span>
+                    {% elif study.stakeholder_sign_off %}
+                        <span hidden>2</span>
+                        <span title="All stakeholders have approved release of this data" class="glyphicon glyphicon-pencil text-warning" aria-hidden="true"></span>
+                    {% else %}
+                        <span hidden>1</span>
+                    {% endif %}
+                    <span title="This entry was signed off by {{ study.full_reviewer }} on {{ study.signed_off_date }}: '{{ study.signed_off_notes }}'" class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+                {% endif %}
+                {% if study.flagged %}
+                    <span hidden>0</span>
+                    <span title="This entry is flagged for review: '{{ study.reason_for_flag }}'" class="glyphicon glyphicon-flag text-danger" aria-hidden="true"></span>
+                {% endif %}
+            </td>
+            <td>
+                {% if study.signed_off_date %}
+                {{ study.signed_off_date }}
+                {% endif %}
+            </td>
+            <td>
+                {{ study.id }}
+            </td>
+        </tr>
+        {% endif %}
+    {% endfor %}
+    </tbody>
+</table>

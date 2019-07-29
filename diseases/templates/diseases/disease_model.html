@@ -104,69 +104,7 @@
             </h2>
         </legend>
 
-        <table hidden id="studies" class="display" cellspacing="0" width="100%">
-            <thead>
-                <tr>
-                    <th>View/Edit</th>
-                    <th>Study Name</th>
-                    <th>Start Date</th>
-                    <th>Study Types</th>
-                    <th>MPS Models</th>
-                    <th>Data Points</th>
-                    <th>Images</th>
-                    <th>Description</th>
-                    <th>Creator</th>
-                    <th>Group</th>
-                    <th>Review</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for study in studies %}
-                {% if not reproducibility or study.data_points %}
-                <tr>
-                    <td><a target="_blank" class="btn btn-primary" href="/assays/assaystudy/{{study.id}}">View/Edit</a></td>
-                    <td style="word-wrap: break-word">{{ study }}</td>
-                    <td>{{ study.start_date|date:"M d, Y" }}</td>
-                    <td>{{ study.get_study_types_string }}</td>
-                    <td>{{ study.organ_models|default:"-No MPS Models-" }}</td>
-                    {% if study.data_points %}
-                        <td class="text-success">{{ study.data_points|intcomma }}</td>
-                    {% else %}
-                        <td class="text-danger">0</td>
-                    {% endif %}
-                    {% if study.images %}
-                        <td class="text-success">{{ study.images|intcomma }}</td>
-                    {% else %}
-                        <td class="text-danger">0</td>
-                    {% endif %}
-                    <td>{{ study.description }}</td>
-                    <td>
-                        {{ study.full_creator }}
-                    </td>
-                    <td>{{ study.group }}</td>
-                    <td>
-                        {% if study.signed_off_by %}
-                            {% if study.stakeholder_sign_off and not study.restricted %}
-                                <span hidden>3</span>
-                                <span title="This study can be viewed by all registered users" class="glyphicon glyphicon-eye-open text-info" aria-hidden="true"></span>
-                            {% elif study.stakeholder_sign_off %}
-                                <span hidden>2</span>
-                                <span title="All stakeholders have approved release of this data" class="glyphicon glyphicon-pencil text-warning" aria-hidden="true"></span>
-                            {% else %}
-                                <span hidden>1</span>
-                            {% endif %}
-                            <span title="This entry was signed off by {{ study.full_reviewer }} on {{ study.signed_off_date }}" class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
-                        {% endif %}
-                        {% if study.flagged %}
-                            <span hidden>0</span>
-                            <span title="This entry is flagged for review: '{{ study.reason_for_flag }}'" class="glyphicon glyphicon-flag text-danger" aria-hidden="true"></span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endif %}
-            {% endfor %}
-            </tbody>
-        </table>
+        {% include 'assays/study_list.html' %}
     </div>
 
 

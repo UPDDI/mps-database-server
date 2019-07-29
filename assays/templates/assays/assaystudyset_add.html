@@ -66,6 +66,10 @@
     </div>
     </h3>
 
+    {% include 'assays/study_list.html' with studies=object_list for_study_set_list="true" %}
+
+    {# TODO TO BE REMOVED #}
+    {% comment %}
     <table hidden id="studies" class="display" cellspacing="0" width="100%">
         <thead>
             <tr>
@@ -152,6 +156,7 @@
         {% endfor %}
         </tbody>
     </table>
+    {% endcomment %}
 
     <nav class="footer navbar-fixed-bottom hidden-print floating-submit-row">
         <div class="container large-padding-top">

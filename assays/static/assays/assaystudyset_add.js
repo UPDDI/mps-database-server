@@ -107,12 +107,16 @@ $(document).ready(function () {
                     width: "10%"
                 },
                 {
+                    "width": "10%",
+                    "targets": [0]
+                },
+                {
                     "type": "numeric-comma",
                     "targets": [5, 6, 7, 8]
                 },
                 {
                     'visible': false,
-                    'targets': [7, 8, 12]
+                    'targets': [7, 8, 12, 14, 15]
                 },
                 {
                     'className': 'none',
