@@ -51,7 +51,7 @@ class MicrophysiologyCenterAdmin(LockableAdmin):
         (
             'Change Tracking', {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),
@@ -86,7 +86,7 @@ class ManufacturerAdmin(LockableAdmin):
         (
             'Change Tracking', {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),
@@ -201,7 +201,7 @@ class MicrodeviceAdmin(LockableAdmin):
         (
             None, {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     'created_by',
                     'modified_by',
                     ('signed_off_by', 'signed_off_date'),
@@ -315,7 +315,7 @@ class OrganModelAdmin(LockableAdmin):
     #     (
     #         'Change Tracking', {
     #             'fields': (
-    #                 'locked',
+    #                 # 'locked',
     #                 ('created_by', 'created_on'),
     #                 ('modified_by', 'modified_on'),
     #                 ('signed_off_by', 'signed_off_date'),

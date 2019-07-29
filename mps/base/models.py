@@ -89,8 +89,8 @@ class LockableModel(TrackableModel):
 
     locked = models.BooleanField(
         default=False,
-        help_text='Check the box and save to lock the entry. '
-        'Uncheck and save to enable editing.'
+        verbose_name='Keep Private Indefinitely (Locked)',
+        help_text='Check this box to prevent this data from automatically being approved or released to public. This checkbox is currently only functional in a Study.'
     )
 
     class Meta(object):

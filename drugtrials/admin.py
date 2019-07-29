@@ -76,7 +76,7 @@ class SpeciesAdmin(LockableAdmin):
         ),
         ('Change Tracking', {
             'fields': (
-                'locked',
+                # 'locked',
                 ('created_by', 'created_on'),
                 ('modified_by', 'modified_on'),
                 ('signed_off_by', 'signed_off_date'),
@@ -109,7 +109,7 @@ class TrialSourceAdmin(LockableAdmin):
         (
             'Change Tracking', {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),
@@ -254,7 +254,7 @@ class DrugTrialAdmin(LockableAdmin):
         }),
         ('Change Tracking', {
             'fields': (
-                'locked',
+                # 'locked',
                 ('created_by', 'created_on'),
                 ('modified_by', 'modified_on'),
                 ('signed_off_by', 'signed_off_date'),
@@ -288,7 +288,7 @@ class FindingTypeAdmin(LockableAdmin):
         ),
         ('Change Tracking', {
             'fields': (
-                'locked',
+                # 'locked',
                 ('created_by', 'created_on'),
                 ('modified_by', 'modified_on'),
                 ('signed_off_by', 'signed_off_date'),
@@ -315,7 +315,7 @@ class ResultDescriptorAdmin(LockableAdmin):
         (
             'Change Tracking', {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),
@@ -352,7 +352,7 @@ class FindingAdmin(LockableAdmin):
         (
             'Change Tracking', {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),

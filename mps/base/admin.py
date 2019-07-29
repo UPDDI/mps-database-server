@@ -40,6 +40,7 @@ class TrackableAdmin(ImportExportModelAdmin):
         abstract = True
 
 
+# DEPRECATED
 class LockableAdmin(TrackableAdmin):
     """The Locking admin class
 

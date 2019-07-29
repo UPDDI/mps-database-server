@@ -32,7 +32,7 @@ class CellTypeAdmin(LockableAdmin):
         ),
         ('Change Tracking', {
             'fields': (
-                'locked',
+                # 'locked',
                 ('created_by', 'created_on'),
                 ('modified_by', 'modified_on'),
                 ('signed_off_by', 'signed_off_date'),
@@ -77,7 +77,7 @@ class OrganAdmin(LockableAdmin):
         ),
         ('Change Tracking', {
             'fields': (
-                'locked',
+                # 'locked',
                 ('created_by', 'created_on'),
                 ('modified_by', 'modified_on'),
                 ('signed_off_by', 'signed_off_date'),
@@ -109,7 +109,7 @@ class CellSubtypeAdmin(LockableAdmin):
         ),
         ('Change Tracking', {
             'fields': (
-                'locked',
+                # 'locked',
                 ('created_by', 'created_on'),
                 ('modified_by', 'modified_on'),
                 ('signed_off_by', 'signed_off_date'),
@@ -167,7 +167,7 @@ class CellSampleAdmin(LockableAdmin):
         }),
         ('Change Tracking', {
             'fields': (
-                'locked',
+                # 'locked',
                 ('created_by', 'created_on'),
                 ('modified_by', 'modified_on'),
                 ('signed_off_by', 'signed_off_date'), )
@@ -209,7 +209,7 @@ class BiosensorAdmin(LockableAdmin):
         ),
         ('Change Tracking', {
             'fields': (
-                'locked',
+                # 'locked',
                 ('created_by', 'created_on'),
                 ('modified_by', 'modified_on'),
                 ('signed_off_by', 'signed_off_date'),
@@ -238,7 +238,7 @@ class SupplierAdmin(LockableAdmin):
         ),
         ('Change Tracking', {
             'fields': (
-                'locked',
+                # 'locked',
                 ('created_by', 'created_on'),
                 ('modified_by', 'modified_on'),
                 ('signed_off_by', 'signed_off_date'),

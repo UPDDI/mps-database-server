@@ -261,7 +261,7 @@ class UnitTypeAdmin(LockableAdmin):
         ),
         ('Change Tracking', {
             'fields': (
-                'locked',
+                # 'locked',
                 ('created_by', 'created_on'),
                 ('modified_by', 'modified_on'),
                 ('signed_off_by', 'signed_off_date'),
@@ -309,7 +309,7 @@ class PhysicalUnitsAdmin(LockableAdmin):
         ),
         ('Change Tracking', {
             'fields': (
-                'locked',
+                # 'locked',
                 ('created_by', 'created_on'),
                 ('modified_by', 'modified_on'),
                 ('signed_off_by', 'signed_off_date'),
@@ -376,7 +376,7 @@ class AssayStudyConfigurationAdmin(LockableAdmin):
         (
             'Change Tracking', {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),
@@ -436,7 +436,7 @@ class AssayTargetAdmin(LockableAdmin):
         (
             'Change Tracking', {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),
@@ -507,7 +507,7 @@ class AssaySampleLocationAdmin(LockableAdmin):
         (
             'Change Tracking', {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),
@@ -579,7 +579,7 @@ class AssayMeasurementTypeAdmin(LockableAdmin):
         (
             'Change Tracking', {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),
@@ -625,7 +625,7 @@ class AssaySupplierAdmin(LockableAdmin):
         (
             'Change Tracking', {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),
@@ -684,7 +684,7 @@ class AssayMethodAdmin(LockableAdmin):
         (
             'Change Tracking', {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),
@@ -837,7 +837,7 @@ class AssayStudyAdmin(LockableAdmin):
         (
             'Change Tracking', {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),
@@ -850,6 +850,7 @@ class AssayStudyAdmin(LockableAdmin):
                 'fields': (
                     'group',
                     'restricted',
+                    'locked',
                     'archived',
                     'access_groups',
                     'collaborator_groups'

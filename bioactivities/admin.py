@@ -69,7 +69,7 @@ class TargetAdmin(LockableAdmin):
         (
             'Change Tracking', {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),
@@ -198,7 +198,7 @@ class AssayAdmin(LockableAdmin):
         (
             'Change Tracking', {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),
@@ -322,7 +322,7 @@ class BioactivityAdmin(LockableAdmin):
         'bioactivity_type',
         'value',
         'units',
-        'locked',
+        # 'locked',
     )
     search_fields = ['compound__name', 'target__name', 'bioactivity_type']
     readonly_fields = ['created_by', 'created_on', 'modified_by',
@@ -336,7 +336,7 @@ class BioactivityAdmin(LockableAdmin):
                        ('standard_name', 'standardized_value', 'standardized_units'),
                        ('activity_comment', 'reference', 'name_in_reference'),
                        ('notes', 'data_validity'),
-                       'locked',
+                       # 'locked',
                        ('created_by', 'created_on'), ('modified_by', 'modified_on'),
                        ('signed_off_by', 'signed_off_date'),)
         }),
@@ -387,7 +387,7 @@ class BioactivityTypeAdmin(LockableAdmin):
         (
             'Change Tracking', {
                 'fields': (
-                    'locked',
+                    # 'locked',
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),
