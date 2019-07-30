@@ -90,7 +90,7 @@ class LockableModel(TrackableModel):
     locked = models.BooleanField(
         default=False,
         verbose_name='Keep Private Indefinitely (Locked)',
-        help_text='Check this box to prevent this data from automatically being approved or released to public. This checkbox is currently only functional in a Study.'
+        help_text='Check the box and save to block automatic migration to *Public Access*, 1-year after sign off. Uncheck and save to enable automatic migration to *Public Access*, 1-year after sign off. While this is checked, automatic approvals for Stakeholders are also prevented.'
     )
 
     class Meta(object):
@@ -114,7 +114,7 @@ class RestrictedModel(LockableModel):
     # We seem to have decided to handle this differently
     restricted = models.BooleanField(
         default=True,
-        help_text='Check box to restrict to selected group. Unchecked sends to Level 3'
+        help_text='Check box and save to restrict *Access* to the Groups selected below. *Access* is granted to *Collaborator Group(s)*, without sign off, and to *Access Group(s)* after Data Group admin and all designated Stakeholder Group admin(s) sign off on the study. Uncheck and save to allow *Public Access*.'
     )
 
     class Meta(object):
