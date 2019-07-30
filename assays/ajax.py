@@ -2606,42 +2606,43 @@ def apply_post_filter(post_filter, studies, assays, matrix_items, data_points):
     )
 
     # Compounds
-    if post_filter.get('matrix_item', {}).get('assaysetupcompound__compound_instance__compound_id__in', {}).get(
-            '0', None
-    ):
-        matrix_items = matrix_items.filter(
-            **matrix_item_compound_post_filters
-        ) | matrix_items.filter(assaysetupcompound__isnull=True)
-    else:
-        matrix_items = matrix_items.filter(
-            **matrix_item_compound_post_filters
-        )
+    # if post_filter.get('matrix_item', {}).get('assaysetupcompound__compound_instance__compound_id__in', {}).get(
+    #         '0', None
+    # ):
+    #     matrix_items = matrix_items.filter(
+    #         **matrix_item_compound_post_filters
+    #     ) | matrix_items.filter(assaysetupcompound__isnull=True)
+    # else:
+    #     matrix_items = matrix_items.filter(
+    #         **matrix_item_compound_post_filters
+    #     )
 
     # Cells
-    if post_filter.get('matrix_item', {}).get('assaysetupcell__cell_sample_id__in', {}).get('0', None):
-        matrix_items = matrix_items.filter(
-            **matrix_item_cell_post_filters
-        ) | matrix_items.filter(assaysetupcell__isnull=True)
-    else:
-        matrix_items = matrix_items.filter(
-            **matrix_item_cell_post_filters
-        )
+    # if post_filter.get('matrix_item', {}).get('assaysetupcell__cell_sample_id__in', {}).get('0', None):
+    #     matrix_items = matrix_items.filter(
+    #         **matrix_item_cell_post_filters
+    #     ) | matrix_items.filter(assaysetupcell__isnull=True)
+    # else:
+    #     matrix_items = matrix_items.filter(
+    #         **matrix_item_cell_post_filters
+    #     )
 
     # Setting
-    if post_filter.get('matrix_item', {}).get('assaysetupsetting__setting_id__in', {}).get('0', None):
-        matrix_items = matrix_items.filter(
-            **matrix_item_setting_post_filters
-        ) | matrix_items.filter(assaysetupsetting__isnull=True)
-    else:
-        matrix_items = matrix_items.filter(
-            **matrix_item_setting_post_filters
-        )
+    # if post_filter.get('matrix_item', {}).get('assaysetupsetting__setting_id__in', {}).get('0', None):
+    #     matrix_items = matrix_items.filter(
+    #         **matrix_item_setting_post_filters
+    #     ) | matrix_items.filter(assaysetupsetting__isnull=True)
+    # else:
+    #     matrix_items = matrix_items.filter(
+    #         **matrix_item_setting_post_filters
+    #     )
 
     # COMBINED FIELDS IF NECESSARY
     # TODO TODO TODO
     # INEFFICIENT REVISE
     # ODD AND CONTRIVED: VIOLATES RO3
     # Compounds
+    compound_total = None
     if compound_concentration_filters:
         compound_total = AssayMatrixItem.objects.none()
         for index in range(len(compound_concentration_filters)):
@@ -2649,7 +2650,27 @@ def apply_post_filter(post_filter, studies, assays, matrix_items, data_points):
                 assaysetupcompound__concentration=compound_concentration_filters[index],
                 assaysetupcompound__concentration_unit_id=compound_unit_filters[index]
             )
-        matrix_items = compound_total
+
+    if post_filter.get('matrix_item', {}).get('assaysetupcompound__compound_instance__compound_id__in', {}).get(
+            '0', None
+    ):
+        if compound_total is not None:
+            matrix_items = compound_total.filter(
+                **matrix_item_compound_post_filters
+            ) | matrix_items.filter(assaysetupcompound__isnull=True)
+        else:
+            matrix_items = matrix_items.filter(
+                **matrix_item_compound_post_filters
+            ) | matrix_items.filter(assaysetupcompound__isnull=True)
+    else:
+        if compound_total is not None:
+            matrix_items = compound_total
+
+        matrix_items = matrix_items.filter(
+            **matrix_item_compound_post_filters
+        )
+
+    cell_total = None
     if cell_density_filters:
         cell_total = AssayMatrixItem.objects.none()
         for index in range(len(cell_density_filters)):
@@ -2657,7 +2678,26 @@ def apply_post_filter(post_filter, studies, assays, matrix_items, data_points):
                 assaysetupcell__density=cell_density_filters[index],
                 assaysetupcell__density_unit_id=cell_unit_filters[index]
             )
-        matrix_items = cell_total
+
+    if post_filter.get('matrix_item', {}).get('assaysetupcell__cell_sample_id__in', {}).get('0', None):
+        if cell_total is not None:
+            matrix_items = cell_total.filter(
+                **matrix_item_cell_post_filters
+            ) | matrix_items.filter(assaysetupcell__isnull=True)
+
+        else:
+            matrix_items = matrix_items.filter(
+                **matrix_item_cell_post_filters
+            ) | matrix_items.filter(assaysetupcell__isnull=True)
+    else:
+        if cell_total is not None:
+            matrix_items = cell_total
+
+        matrix_items = matrix_items.filter(
+            **matrix_item_cell_post_filters
+        )
+
+    setting_total = None
     if setting_value_filters:
         setting_total = AssayMatrixItem.objects.none()
         for index in range(len(setting_value_filters)):
@@ -2665,7 +2705,23 @@ def apply_post_filter(post_filter, studies, assays, matrix_items, data_points):
                 assaysetupsetting__value=setting_value_filters[index],
                 assaysetupsetting__unit_id=setting_unit_filters[index]
             )
-        matrix_item = setting_total
+
+    if post_filter.get('matrix_item', {}).get('assaysetupsetting__setting_id__in', {}).get('0', None):
+        if setting_total is not None:
+            matrix_items = setting_total.filter(
+                **matrix_item_setting_post_filters
+            ) | matrix_items.filter(assaysetupsetting__isnull=True)
+        else:
+            matrix_items = matrix_items.filter(
+                **matrix_item_setting_post_filters
+            ) | matrix_items.filter(assaysetupsetting__isnull=True)
+    else:
+        if setting_total is not None:
+            matrix_items = setting_total
+
+        matrix_items = matrix_items.filter(
+            **matrix_item_setting_post_filters
+        )
 
     matrix_items = matrix_items.distinct()
 
