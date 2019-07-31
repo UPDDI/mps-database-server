@@ -14,7 +14,7 @@ Link: https://mps.csb.pitt.edu{{ study.get_summary_url }}
 {% for group in new_access_group_names %}{{ group }}
 {% endfor %}{% endif %}
 {% else %}This study is now unrestricted.
-It has been released to all registered users.
+It has been released to all users.
 {% endif %}
 Thanks,
 MPS
