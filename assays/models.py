@@ -2595,6 +2595,15 @@ class AssayStudyAssay(models.Model):
     # Name of model "PhysicalUnits" should be renamed, methinks
     unit = models.ForeignKey(PhysicalUnits, on_delete=models.CASCADE)
 
+    # Add Category, but do not require it for the moment
+    category = models.ForeignKey(
+        'assays.AssayCategory',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
+    )
+
+    # TODO TODO TODO NOTE THAT ADDING CATEGORY HERE WILL INTERUPT OTHER SCRIPTS
     def __str__(self):
         return '{0}~@|{1}~@|{2}~@|{3}'.format(self.study_id, self.target, self.method, self.unit)
 
@@ -2754,10 +2763,18 @@ class AssayStudySetReference(models.Model):
     reference_for = models.ForeignKey(AssayStudySet, on_delete=models.CASCADE)
 
 
-class AssayType(FlaggableModel):
+class AssayCategory(FlaggableModel):
     """Describes a genre of assay"""
+
+    class Meta(object):
+        verbose_name = 'Assay Category'
+        verbose_name_plural = 'Assay Categories'
+
     name = models.CharField(max_length=512, unique=True)
     description = models.CharField(max_length=2000)
 
     # List of all related targets
     targets = models.ManyToManyField('assays.AssayTarget')
+
+    def __str__(self):
+        return '{}'.format(self.name)

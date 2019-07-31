@@ -46,7 +46,8 @@ from assays.models import (
     AssayReference,
     AssayStudyReference,
     AssayType,
-    AssayStudySet
+    AssayStudySet,
+    AssayCategory
 )
 from microdevices.models import MicrophysiologyCenter
 # from compounds.models import Compound
@@ -1437,3 +1438,11 @@ class AssayStudySetAdmin(ImportExportModelAdmin):
 
 
 admin.site.register(AssayStudySet, AssayStudySetAdmin)
+
+
+class AssayCategoryAdmin(ImportExportModelAdmin):
+    model = AssayCategory
+    search_fields = ('name', 'description')
+    filter_horizontal = ('targets',)
+
+admin.site.register(AssayCategory, AssayCategoryAdmin)

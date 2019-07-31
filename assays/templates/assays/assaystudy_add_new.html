@@ -340,6 +340,7 @@
     <table class="table table-striped inlines" id="{{ study_assay_formset.prefix }}-group"  name="assays">
         <thead>
             <tr>
+                <th>Assay Category*</th>
                 <th>Target/Analyte*</th>
                 <th>Method/Kit*</th>
                 <th>Readout Unit*</th>
@@ -355,6 +356,7 @@
                         <input id="id_{{ study_assay_formset.prefix }}-{{ forloop.counter0 }}-id" name="{{ study_assay_formset.prefix }}-{{ forloop.counter0 }}-id" type="hidden" value="{{ assay.id.value }}">
                     </td>
                     {% endif %}
+                    <td>{{ assay.category }}</td>
                     <td>{{ assay.target }}</td>
                     <td>{{ assay.method }}</td>
                     <td>{{ assay.unit }}</td>

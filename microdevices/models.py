@@ -284,8 +284,8 @@ class OrganModelProtocol(FlaggableModel):
     )
 
     def __str__(self):
-        # return self.name
-        return self.version
+        # return self.version
+        return self.name
 
     def get_absolute_url(self):
         return "/microdevices/protocol/{}/".format(self.id)
