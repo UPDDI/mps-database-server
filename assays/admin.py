@@ -45,7 +45,7 @@ from assays.models import (
     AssaySubtarget,
     AssayReference,
     AssayStudyReference,
-    AssayType,
+    # AssayType,
     AssayStudySet,
     AssayCategory
 )
@@ -1400,12 +1400,12 @@ class AssayReferenceAdmin(ImportExportModelAdmin):
 admin.site.register(AssayReference, AssayReferenceAdmin)
 
 
-class AssayTypeAdmin(ImportExportModelAdmin):
-    model = AssayType
-    search_fields = ('name', 'description')
-    filter_horizontal = ('targets',)
-
-admin.site.register(AssayType, AssayTypeAdmin)
+# class AssayTypeAdmin(ImportExportModelAdmin):
+#     model = AssayType
+#     search_fields = ('name', 'description')
+#     filter_horizontal = ('targets',)
+#
+# admin.site.register(AssayType, AssayTypeAdmin)
 
 
 class AssayStudySetAdminForm(forms.ModelForm):
