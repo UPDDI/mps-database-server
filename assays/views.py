@@ -1952,14 +1952,19 @@ class AssayStudySetAdd(OneGroupRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super(AssayStudySetAdd, self).get_context_data(**kwargs)
-        combined = get_user_accessible_studies(self.request.user)
+
+        # FILTER OUT STUDIES WITH NO ASSAYS
+        # PLEASE NOTE FILTER HERE
+        combined = get_user_accessible_studies(self.request.user).filter(
+            assaystudyassay__isnull=False
+        )
 
         get_queryset_with_organ_model_map(combined)
         get_queryset_with_number_of_data_points(combined)
         get_queryset_with_stakeholder_sign_off(combined)
         get_queryset_with_group_center_dictionary(combined)
 
-        context['object_list'] = combined;
+        context['object_list'] = combined
 
         if self.request.method == 'POST':
             if 'reference_formset' not in context:

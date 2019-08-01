@@ -107,10 +107,6 @@ $(document).ready(function () {
                     width: "10%"
                 },
                 {
-                    "width": "10%",
-                    "targets": [0]
-                },
-                {
                     "type": "numeric-comma",
                     "targets": [5, 6, 7, 8]
                 },
@@ -319,7 +315,7 @@ $(document).ready(function () {
             selected_studies_table_selector.append(new_row);
 
             // Select/de-select all associated assays by default
-            if (!initial) {
+            if (!initial && study_id_to_assays[study_id]) {
                 $.each(study_id_to_assays[study_id], function(index, value) {
                     assays_selector.find('option[value="' + value.id + '"]').prop('selected', true);
                 });
@@ -335,9 +331,11 @@ $(document).ready(function () {
             current.remove();
 
             // Select/de-select all associated assays by default
-            $.each(study_id_to_assays[study_id], function(index, value) {
-                assays_selector.find('option[value="' + value.id + '"]').prop('selected', false);
-            });
+            if (study_id_to_assays[study_id]) {
+                $.each(study_id_to_assays[study_id], function(index, value) {
+                    assays_selector.find('option[value="' + value.id + '"]').prop('selected', false);
+                });
+            }
         }
     }
 
