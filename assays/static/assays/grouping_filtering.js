@@ -113,6 +113,10 @@ $(document).ready(function () {
                 }
             });
         }
+
+        // Set parent_model and filter to empty string
+        current_parent_model = '';
+        current_filter = '';
     }
 
     // Semi-arbitrary at the moment
@@ -498,6 +502,12 @@ $(document).ready(function () {
             close: function () {
                 // Purge the buffer
                 filter_buffer = {};
+
+                // Set parent model and filter to empty string
+                current_parent_model = '';
+                current_filter = '';
+
+                // "Super" close
                 $.ui.dialog.prototype.options.close();
             },
             buttons: [
@@ -529,6 +539,16 @@ $(document).ready(function () {
     post_filter_spawn_selector.click(function() {
         // Parent row
         var current_title = $(this).parent().parent().find('td').eq(2).html();
+
+        // If this is the same filter as is open, close it
+        if (
+            $(this).attr('data-parent-model') === current_parent_model &&
+            $(this).attr('data-filter-relation') === current_filter
+        ) {
+            filter_popup.dialog('close');
+            // End function immediately
+            return;
+        }
 
         // Current parent model
         current_parent_model = $(this).attr('data-parent-model');
@@ -568,7 +588,8 @@ $(document).ready(function () {
                 $.each(full_post_filter_data, function (obj_val, obj_name) {
                     var row = '<tr>';
 
-                    if (current_post_filter_data[obj_val]) {
+                    // SPECIFIC TO AVOID PROBLEMS WITH 0 AND EMPTY STRING
+                    if (current_post_filter_data[obj_val] !== undefined) {
                         row += '<td><input data-table-index="' + index + '" data-obj-name="' + obj_name + '" class="big-checkbox post-filter-checkbox" type="checkbox" value="' + obj_val + '" checked="checked"></td>';
                     }
                     else {
