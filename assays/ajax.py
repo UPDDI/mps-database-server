@@ -2701,7 +2701,7 @@ def apply_post_filter(post_filter, studies, assays, matrix_items, data_points):
     if setting_value_filters:
         setting_total = AssayMatrixItem.objects.none()
         for index in range(len(setting_value_filters)):
-            setting_total = matrix_items | matrix_items.filter(
+            setting_total = setting_total | matrix_items.filter(
                 assaysetupsetting__value=setting_value_filters[index],
                 assaysetupsetting__unit_id=setting_unit_filters[index]
             )
