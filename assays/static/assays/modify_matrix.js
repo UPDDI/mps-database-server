@@ -492,6 +492,9 @@ $(document).ready(function () {
     $(document).on('click', 'a[data-clone-row-button="true"]', function() {
         current_row_index = Math.floor($(this).attr('data-row'));
         spawn_row(current_setup_data[current_row_index], true);
+
+        // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
+        change_matrix_visibility();
     });
 
     // NOT ALLOWED IN EDIT?
@@ -551,6 +554,8 @@ $(document).ready(function () {
 
     $('#add_group_button').click(function() {
         spawn_row(null, true);
+        // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
+        change_matrix_visibility();
     });
 
     // SLOPPY: PLEASE REVISE
@@ -777,7 +782,6 @@ $(document).ready(function () {
 
         if (current_setup_data.length) {
             $.each(current_setup_data, function(index, content) {
-                // console.log('HERE', content, 'Length', current_setup_data.length);
                 spawn_row(content, false);
             });
         }
@@ -791,6 +795,9 @@ $(document).ready(function () {
         if (is_edit_interface) {
             apply_data_to_forms();
         }
+
+        // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
+        change_matrix_visibility();
     }
 
     // Handling Device flow
