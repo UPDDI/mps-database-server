@@ -328,7 +328,12 @@ class OrganModelProtocolCell(models.Model):
     organ_model_protocol = models.ForeignKey(OrganModelProtocol, on_delete=models.CASCADE)
 
     cell_sample = models.ForeignKey('cellsamples.CellSample', on_delete=models.CASCADE)
-    biosensor = models.ForeignKey('cellsamples.Biosensor', on_delete=models.CASCADE)
+    biosensor = models.ForeignKey(
+        'cellsamples.Biosensor',
+        on_delete=models.CASCADE,
+        # Default is naive
+        default=2
+    )
     density = models.FloatField(verbose_name='density', default=0)
 
     density_unit = models.ForeignKey('assays.PhysicalUnits', on_delete=models.CASCADE)

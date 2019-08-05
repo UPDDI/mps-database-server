@@ -2139,7 +2139,12 @@ class AssaySetupCell(models.Model):
     # No longer bound one-to-one
     # setup = models.ForeignKey('AssaySetup', on_delete=models.CASCADE)
     cell_sample = models.ForeignKey('cellsamples.CellSample', on_delete=models.CASCADE)
-    biosensor = models.ForeignKey('cellsamples.Biosensor', on_delete=models.CASCADE)
+    biosensor = models.ForeignKey(
+        'cellsamples.Biosensor',
+        on_delete=models.CASCADE,
+        # Default is naive
+        default=2
+    )
     density = models.FloatField(verbose_name='density', default=0)
 
     # TODO THIS IS TO BE HAMMERED OUT

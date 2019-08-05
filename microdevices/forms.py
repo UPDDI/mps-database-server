@@ -14,6 +14,7 @@ from .models import (
     OrganModelProtocolCell,
     OrganModelProtocolSetting,
 )
+from cellsamples.models import CellType
 from assays.models import AssayMatrixItem, AssaySampleLocation
 from diseases.models import Disease
 from mps.forms import SignOffMixin, BootstrapForm
@@ -220,6 +221,13 @@ class OrganModelProtocolSettingForm(ModelFormSplitTime):
 
 
 class OrganModelCellForm(BootstrapForm):
+    def __init__(self, *args, **kwargs):
+        # self.static_choices = kwargs.pop('static_choices', None)
+        super(OrganModelCellForm, self).__init__(*args, **kwargs)
+
+        # Avoid N+1 problem
+        self.fields['cell_type'].queryset = CellType.objects.all().prefetch_related('organ')
+
     class Meta(object):
         model = OrganModelProtocolCell
         exclude = tracking
