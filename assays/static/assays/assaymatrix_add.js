@@ -1063,16 +1063,26 @@ $(document).ready(function () {
     change_matrix_visibility();
 
     // On shift press hide all for dragging
+    // On escape press, disable selectable temporarily
     $(document).keydown(function (e) {
+        // On shift, hide
         if (e.keyCode === 16) {
             hide_all_sections();
         }
+        // On escape, disable
+        if (e.keyCode === 27) {
+            $(item_display_class).removeClass('ui-selecting');
+            matrix_table_selector.trigger('mouseup');
+        }
     });
-
     $(document).keyup(function (e) {
+        // When shift is released, show
         if (e.keyCode === 16) {
             change_matrix_visibility();
         }
+        // When escape is released, enable
+        // if (e.keyCode === 27) {
+        // }
     });
 
     // Special operations for pre-submission
