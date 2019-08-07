@@ -207,6 +207,10 @@ class OrganModelAdd(SpecificGroupRequiredMixin, CreateView):
                 form.instance.base_model_id = form.instance.id
                 form.instance.save()
 
+            # Redirect back to edit if protcol_formset has changed
+            if protocol_formset.has_changed():
+                return redirect('{}update/'.format(self.object.get_absolute_url()))
+
             return redirect(self.object.get_post_submission_url())
         else:
             return self.render_to_response(self.get_context_data(
@@ -234,8 +238,16 @@ class OrganModelUpdate(UpdateView):
         (if there is a center listed)
         """
         self.object = self.get_object()
+
+        # Get a dic of groups
+        groups_to_check = {}
+        for current_group in self.object.center.groups.all():
+            groups_to_check.update({
+                current_group.id: True
+            })
+
         if self.request.user.groups.all().count() == 0 or self.object.center and not any(
-            i in self.object.center.groups.all() for i in self.request.user.groups.all()
+            current_group.id in groups_to_check for current_group in self.request.user.groups.all()
         ):
             return PermissionDenied(self.request, 'You must be a member of the center ' + str(self.object.center))
         return super(OrganModelUpdate, self).dispatch(*args, **kwargs)
@@ -298,6 +310,10 @@ class OrganModelUpdate(UpdateView):
             if not form.instance.base_model_id:
                 form.instance.base_model_id = form.instance.id
                 form.instance.save()
+
+            # Redirect back to edit if protcol_formset has changed
+            if protocol_formset.has_changed():
+                return redirect('{}update/'.format(self.object.get_absolute_url()))
 
             return redirect(self.object.get_post_submission_url())
         else:

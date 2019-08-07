@@ -254,7 +254,7 @@ class OrganModelProtocol(FlaggableModel):
     """
 
     class Meta(object):
-        unique_together = [('version', 'organ_model')]
+        unique_together = [('name', 'organ_model')]
         # TODO SWITCH TO THIS UNIQUE TOGETHER RESTRICTION ASAP
         # unique_together = [('name', 'organ_model')]
         verbose_name = 'MPS Model Version'
