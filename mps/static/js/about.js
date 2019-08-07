@@ -2,7 +2,8 @@ $(document).ready(function () {
     // Resolve anchors going to the incorrect location
     var offset = 60;
 
-    $(".collapsible1, .collapsible2, .collapsible3").click(function() {
+    //For Frequently Asked Questions
+    $(".collapsible1").click(function() {
         var content = this.nextElementSibling;
         if ($(content).css("display") != "none") {
             $(content).css("display", "none");
@@ -11,11 +12,38 @@ $(document).ready(function () {
         }
     });
 
+    //For Key Features
+    // $(".collapsible2").click(function() {
+    // console.log(this);
+    //     var content = $(this).find('.content2');
+    //     $('.content2').css("display", "none");
+    //     content.css("display", "block");
+    // });
+    //
+    // // Initially show the first
+    // console.log($('.collapsible2').first());
+    // $('.collapsible2').first().trigger('click');
+
+    $('.blues1').click(function() {
+        $('.content2').css('display', 'none');
+        var current_index = $('.blues1').index($(this));
+        console.log(current_index);
+        console.log($('#overview_section').find('.content2:eq("' + current_index + '")'));
+        $('#overview_section').find('.content2:eq("' + current_index + '")').css('display', 'block');
+        if (current_index==2){
+            $('.organs-and-models').css('display', 'block');
+        } else {
+            $('.organs-and-models').css('display', 'none');
+        }
+    });
+
+    $('.blues1').first().trigger('click');
+
     $('a').not("[href*='/']").click(function(event) {
         event.preventDefault();
         if ($($(this).attr('href'))[0]) {
             $('html, body').animate({
-                scrollTop: $($(this).attr('href')).offset().top -offset
+                scrollTop: $($(this).attr('href')).offset().top - offset
             }, 500);
             $($(this).attr('href')).find('button').next().first().css("display", "block");
         }
@@ -29,8 +57,20 @@ $(document).ready(function () {
         $(initial_hash).find('button').next().first().css("display", "block");
     }
 
-    // Call datatables for glossary
+    // Call datatables
     var about_studies_for_release_table = $('#about_studies_for_release_table').DataTable({
+        dom: 'B<"row">lfrtip',
+        "iDisplayLength": 10,
+        responsive: true
+    });
+
+/*    var about_models_and_centers_table = $('#about_models_and_centers_table').DataTable({
+        dom: 'B<"row">lfrtip',
+        "iDisplayLength": 10,
+        responsive: true
+    });*/
+
+    var about_models_and_centers_distinct_table = $('#about_models_and_centers_distinct_table').DataTable({
         dom: 'B<"row">lfrtip',
         "iDisplayLength": 10,
         responsive: true

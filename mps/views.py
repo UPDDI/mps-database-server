@@ -2,9 +2,15 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 
 #sck added
+from django.utils import timezone
+#from django.db.models.functions import (ExtractYear, ExtractMonth, ExtractDay)
+from django.db.models import F, ExpressionWrapper, DateField, DateTimeField, Q
 from datetime import date, timedelta
+#from django.db.models.functions import Concat
+from cellsamples.models import Organ
+#from django.db.models import Count
 
-from assays.models import AssayStudy
+from assays.models import AssayStudy, OrganModel, AssayMatrixItem
 from .forms import SearchForm
 
 from haystack.query import SearchQuerySet
@@ -23,6 +29,9 @@ from django.views.generic.base import TemplateView
 from microdevices.models import MicrophysiologyCenter
 from mps.templatetags.custom_filters import ADMIN_SUFFIX, VIEWER_SUFFIX
 import html
+
+# Spaghetti code
+from assays.views import get_queryset_with_organ_model_map
 
 
 def main(request):
@@ -125,22 +134,71 @@ def mps_help(request):
     return render(request, 'help.html', c)
 
 
-#This is an sckplaceholder
+#added sck
 def mps_about(request):
-    number_of_days = 90
+    number_of_days = 30
     a_months_ago = date.today() - timedelta(days=365) + timedelta(days=number_of_days)
+    #cellsamples_organ.organ_name
+    #microdevices_organmodel.name
+    #microdevices_microphysiologycenter.name
+
+    soon_released = AssayStudy.objects.filter(
+        restricted=True,
+        locked=False,
+        signed_off_date__lt=a_months_ago
+    ).exclude(
+        group_id__in=[21, 47, 109]
+    ).exclude(
+        signed_off_date__isnull=True
+    ).annotate(
+        scheduled_release_date=ExpressionWrapper(
+            F('signed_off_date') + timedelta(days=365.2425),
+            output_field=DateTimeField()
+        ),
+    )
+
+    get_queryset_with_organ_model_map(soon_released)
+
+    all_organ_models = OrganModel.objects.exclude(
+        name__in=['Demo-Organ']
+    ).prefetch_related('organ', 'center')
+
+    distinct_by_name_and_center = {}
+
+    for organ_model in all_organ_models:
+        distinct_by_name_and_center[
+            (organ_model.organ.organ_name, organ_model.center.name)
+        ] = distinct_by_name_and_center.setdefault(
+            (organ_model.organ.organ_name, organ_model.center.name), 0
+        ) + 1
+
+    reduce_distinct_to_list = []
+
+    for current_tuple, count in distinct_by_name_and_center.items():
+        reduce_distinct_to_list.append([current_tuple[0], current_tuple[1], count])
 
     d = {
         'number_of_days': number_of_days,
-        'about_studies': AssayStudy.objects.filter(
-            restricted=True,
-            locked=False,
-            signed_off_date__lt=a_months_ago
-        ).exclude(
-            group_id__in=[21, 47, 109]
-        ).exclude(
-            signed_off_date__isnull=True
-        )
+        'about_studies': soon_released,
+
+        #This way before added the model to the study table
+        # 'about_studies': AssayStudy.objects.filter(
+        #     restricted=True,
+        #     locked=False,
+        #     signed_off_date__lt=a_months_ago
+        # ).exclude(
+        #     group_id__in=[21, 47, 109]
+        # ).exclude(
+        #     signed_off_date__isnull=True
+        # ).annotate(
+        #     scheduled_release_date=ExpressionWrapper(
+        #         F('signed_off_date') + timedelta(days=365.2425),
+        #         output_field=DateTimeField()),
+        #     ),
+
+        'about_models_distinct': reduce_distinct_to_list,
+        #This way if do not want the distinct and want the model names
+        #'about_models': all_organ_models,
     }
 
     return render(request, 'about.html', d)
