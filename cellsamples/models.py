@@ -21,6 +21,12 @@ class Organ(LockableModel):
 
 class CellType(LockableModel):
     """CellType details a type (e.g. hepatocyte), a species, and an organ"""
+    class Meta(object):
+        verbose_name = 'Cell Type'
+        ordering = ('species', 'cell_type')
+        unique_together = ('cell_type', 'species', 'organ')
+
+
     # TODO refactor to be a FK instead, should not be using a charfield here
     SPECIESTYPE = (
         ('Human', 'Human'),
@@ -28,20 +34,20 @@ class CellType(LockableModel):
         ('Mouse', 'Mouse'),
     )
     # Unsemantic name (should just be name)
-    cell_type = models.CharField(max_length=255,
-                                 help_text='Example: hepatocyte, muscle, kidney, etc')
-    species = models.CharField(max_length=10,
-                               choices=SPECIESTYPE, default='Human',
-                               blank=True)
+    cell_type = models.CharField(
+        max_length=255,
+        help_text='Example: hepatocyte, muscle, kidney, etc'
+    )
+    species = models.CharField(
+        max_length=10,
+        choices=SPECIESTYPE,
+        default='Human',
+        blank=True
+    )
 
     # Deprecated
     # cell_subtype = models.ForeignKey('CellSubtype', null=True, blank=True, on_delete=models.CASCADE)
     organ = models.ForeignKey('Organ', on_delete=models.CASCADE)
-
-    class Meta(object):
-        verbose_name = 'Cell Type'
-        ordering = ('species', 'cell_type')
-        unique_together = [('cell_type', 'species', 'organ')]
 
     def __str__(self):
         return '{} ({} {})'.format(

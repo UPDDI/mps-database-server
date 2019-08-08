@@ -8,4 +8,12 @@
             <span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>
         </div>
     {% endif %}
+    {# Always display non field errors at the top #}
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
 {% endif %}
