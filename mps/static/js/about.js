@@ -27,10 +27,19 @@ $(document).ready(function () {
     $('.blues1').click(function() {
         $('.content2').css('display', 'none');
         var current_index = $('.blues1').index($(this));
-        console.log(current_index);
-        console.log($('#overview_section').find('.content2:eq("' + current_index + '")'));
-        $('#overview_section').find('.content2:eq("' + current_index + '")').css('display', 'block');
+        $('.blues1').css('font-weight', 'normal');
+        $('#feature_list').find('.blues1:eq("' + current_index + '")').css('font-weight', 'bold');
+        //console.log(current_index);
+        //console.log($('#feature_section').find('.content2:eq("' + current_index + '")'));
+        $('#feature_section').find('.content2:eq("' + current_index + '")').css('display', 'block');
+        if (current_index==9){
+            //console.log(current_index, "I am here in 9");
+            $('.study-releases').css('display', 'block');
+        } else {
+            $('.study-releases').css('display', 'none');
+        }
         if (current_index==2){
+            //console.log(current_index, "I am here in 2");
             $('.organs-and-models').css('display', 'block');
         } else {
             $('.organs-and-models').css('display', 'none');
