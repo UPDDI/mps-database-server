@@ -30,8 +30,8 @@ $(document).ready(function () {
 
     cellsamples_selector.DataTable({
         "iDisplayLength": -1,
-        // Initially sort on receipt date
-        "order": [ 1, "desc" ],
+        // Initially sort on ID (will be based on addition date)
+        "order": [ 0, "desc" ],
         // If one wants to display top and bottom
         "sDom": '<"wrapper"fti>'
     });

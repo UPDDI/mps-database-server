@@ -4,8 +4,8 @@ $(document).ready(function() {
         fixedHeader: {headerOffset: 50},
         responsive: true,
         "iDisplayLength": 50,
-        // Initially sort on receipt date
-        "order": [ 2, "desc" ],
+        // Initially sort on ID
+        "order": [ 1, "desc" ],
         "aoColumnDefs": [
             {
                 "bSortable": false,
