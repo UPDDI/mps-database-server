@@ -920,8 +920,10 @@ class AssaySetupCompoundFormSet(BaseModelFormSetForcedUniqueness):
                     modified_by=matrix_item.modified_by,
                     modified_on=matrix_item.modified_on
                 )
-                if commit:
-                    supplier.save()
+                # if commit:
+                #     supplier.save()
+                # Always save the supplier
+                supplier.save()
                 self.suppliers.update({
                     supplier_text: supplier
                 })
@@ -939,8 +941,10 @@ class AssaySetupCompoundFormSet(BaseModelFormSetForcedUniqueness):
                     modified_by=matrix_item.modified_by,
                     modified_on=matrix_item.modified_on
                 )
-                if commit:
-                    compound_instance.save()
+                # if commit:
+                #     compound_instance.save()
+                # ALWAYS MAKE A NEW COMPOUND INSTANCE
+                compound_instance.save()
                 self.compound_instances.update({
                     (compound_id, supplier.id, lot_text, receipt_date): compound_instance
                 })
@@ -1134,8 +1138,10 @@ class AssaySetupCompoundInlineFormSet(BaseInlineFormSet):
                     modified_by=matrix_item.modified_by,
                     modified_on=matrix_item.modified_on
                 )
-                if commit:
-                    supplier.save()
+                # if commit:
+                #     supplier.save()
+                # Always save the supplier
+                supplier.save()
                 suppliers.update({
                     supplier_text: supplier
                 })
@@ -1153,8 +1159,10 @@ class AssaySetupCompoundInlineFormSet(BaseInlineFormSet):
                     modified_by=matrix_item.modified_by,
                     modified_on=matrix_item.modified_on
                 )
-                if commit:
-                    compound_instance.save()
+                # if commit:
+                #     compound_instance.save()
+                # ALWAYS MAKE A NEW COMPOUND INSTANCE
+                compound_instance.save()
                 compound_instances.update({
                     (compound.id, supplier.id, lot_text, receipt_date): compound_instance
                 })
