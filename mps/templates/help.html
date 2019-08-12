@@ -47,23 +47,68 @@
     <link rel="stylesheet" href="{% static "css/bootstrap-overrides.css" %}">
 
     <style>
-        .sub1-bars {font-style: italic; font-size: 180%; margin-top: 3%; font-weight: 700}
-        .sub2-bars {font-style: normal; font-size: 150%; color: DarkSlateGray; margin-top: 2%}
+        .sub1-bars {font-style: italic; font-size: 180%; margin-top: 3%;
+            font-weight: 700}
+        .sub2-bars {font-style: normal; font-size: 150%; margin-top: 2%;
+            color: DarkSlateGray;}
+        .sub3-bars {font-style: normal; font-size: 120%; margin-top: 2%;
+            color: DarkSlateGray;}
+        .table-components {background-color: snow; table-layout: fixed; word-wrap: break-word;}
 
+        .special-button {
+            background-color: whitesmoke;
+            border-color: lightGray;
+            font-size: 100%;
+
+            color: darkgray;
+            cursor: pointer;
+            width: 40%;
+            text-align: center;
+            border-style: solid;
+            border-radius: 0%;
+            padding: 4px;
+            margin: 2px;
+            margin-left: 100px;
+        }
         .collapsible1:hover { font-weight: bold; font-size: 120%}
         .collapsible2:hover { font-weight: bold; font-size: 105%; border-color:darkgray; }
-        .collapsible3:hover { font-weight: bold; font-size: 100%; border-color:lightgray; }
+        .collapsible3:hover { font-weight: bold; font-size: 105%; border-color:darkgray; }
 
-        .collapsible1 {background-color: SteelBlue; font-size: 120%; color: white; cursor: pointer; padding: 10px;
-            width: 100%; border: none; text-align: left; outline: none; margin-bottom: 2px; margin-top: 1px; }
-        .collapsible2{background-color: azure; font-size:105%; border-radius:5%; padding-left:10px;  padding-right:10px; display:block;
-            border-color:DarkGray; outline: none;width: 100%; margin-bottom: 3px; text-align: left; padding-top:5px; padding-bottom:5px }
-        .collapsible3{background-color: Gainsboro; font-size:100%; border-radius:5%; padding-left:10px;  padding-right:10px; display:block;
-            border-color:gray; outline: none;width: 100%; margin-bottom: 3px; text-align: left; padding-top:5px; padding-bottom:5px }
+        .collapsible1 {
+            background-color: aliceblue;
+            border-color: lightGray;
+            font-size: 105%;
+
+            color: black;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            border-style: solid;
+            border-radius: 0%;
+            padding: 4px;
+            margin: 2px;
+            margin-left: 1px;
+        }
+        .collapsible2, .collapsible3 {
+            background-color: whitesmoke;
+            border-color: lightGray;
+            font-size:105%;
+            display: block;
+            color: black;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            border-style: solid;
+            border-radius: 0%;
+            padding: 4px;
+            margin: 2px;
+            margin-left: 1px;
+        }
+
         .content1, .content2, .content3 {display: none; transition: max-height 0.1s ease-out;}
 
-        .background2 {background-color:Azure;}
-        .background3 {background-color:lightgray;}
+        .background2 {background-color:white;}
+        .background3 {background-color:white;}
 
         .filled-circle {list-style-type: disc;}
         .open-circle {list-style-type: circle; padding-left: 20px;}
@@ -126,6 +171,8 @@
                             <li class="dropdown-header"><b>Study Data Only</b></li>
                             <li><a href="#intrastudy">Intra-Study Analysis</a></li>
                             <li><a href="#interstudy">Inter-Study Analysis</a></li>
+                            <li><a href="#studyset">Study Sets</a></li>
+                            <li><a href="#reference">References</a></li>
                             <li class="divider"></li>
                             <li class="dropdown-header"><b>Combining Study and Reference Data</b></li>
                             <li><a href="#diseasemodels">Diseases</a></li>
@@ -184,9 +231,10 @@
                             <li><a href="#physicalunits_admin">Units</a></li>
                             <li class="divider"></li>
                             <li class="dropdown-header"><b>Controlling Access</b></li>
-                            <li><a href="#add_groups_admin">Adding Groups to Database</a></li>
-                            <li><a href="#study_groups_admin">Adding Groups to Studies</a></li>
-                            <li><a href="#user_groups_admin">Adding Users to Groups</a></li>
+                            <li><a href="#access_overview_admin">Sharing Study Data Overview</a></li>
+                            <li><a href="#add_groups_admin">Add Groups to Database</a></li>
+                            <li><a href="#study_groups_admin">Add Groups to Study</a></li>
+                            <li><a href="#user_groups_admin">Add Users to Group</a></li>
                         </ul>
                     </li>
                     {% endif %}
@@ -234,21 +282,28 @@
 </nav>
 
 <div class="offset-help-navbar">
+{% comment %}
     <div id="intro_section" class="container">
         <div id="elavatordescription">
         <br>The <b>Microphysiology Systems (MPS) Database</b> combines the loading, storage, and sharing of experimentally derived assay data and data curated from external reference sources with visualization and analysis tools to provide a powerful platform for designing experimental studies and performing computational modeling.
         <br>
         </div>
     </div>
+{% endcomment %}
 
     <div id="recentupgrades_section" class="container">
         <h1 class="sub1-bars"> What's New in the MPS Database </h1>
         <div id="recentupgrades">
-            <button class="collapsible1">Summary of Recent Updates</button>
+            <button name="my_buttons" class="collapsible1">Recent Updates and Enhancements</button>
             <div class="content1">
                 <div id="recentupgradesviewer" class="viewersubtainer">
                     <ul class="list-group">
-                        <li class="list-group-item"> <b><em>Enhanced Options for Overriding the Built-in Grouping/Filtering, Plotting, and Reproducibility Analysis of Assay Data</em></b> - A left-sidebar offers a wide variety of options for dynamically changing data aggregation grouping and filtering. The sidebar can be toggled on and off to allow flexible use of screen space. An option to manually refresh data aggregation has been provided to allow users to make multiple changes without waiting for the refresh after each change. Filter buttons are now highlighted when active. The sidebars are targeted to the displayed feature (i.e. the options for the reproducibility plots are different than the options for the study summary plots), and new options for customizing individual plots have been added.
+{#                        power analysis and compuatational modeling #}
+                        <li class="list-group-item"> <b><em> References </em></b> - Allows Studies, MPS Models, Study Sets, and other study components to be linked to one or more publications.
+                            For more information on the references feature, <a href="#reference">click here</a>.   </li>
+                        <li class="list-group-item"> <b><em> Study Sets </em></b> - Designed so that multiple studies can be grouped and referenced together with one URL.
+                            For more information on the Study Sets feature, <a href="#studyset">click here</a>. </li>
+                        <li class="list-group-item"> <b><em> Data Sharing Collaborators </em></b> - Collaborator groups allow data providers (those contributing experimentally derived assay study data) to share their data with a small group of collaborators. For example, if colleagues from two different universities are working on a joint publication using data from both groups, they can join a collaborator group and share their data with each other, but no one else. Currently, collaborator groups are managed by MPS-Db administrators. If you have added study data to the MPS-Db and would like to set up a collaborator group, send an email to MPSHELP@pitt.edu with subject line "I want to make a collaborator group".</li>                                          <li class="list-group-item"> <b><em>Enhanced Options for Overriding the Built-in Grouping/Filtering,Plotting, and Reproducibility Analysis of Assay Data</em></b> - A left-sidebar offers a wide variety of options for dynamically changing data aggregation grouping and filtering. The sidebar can be toggled on and off to allow flexible use of screen space. An option to manually refresh data aggregation has been provided to allow users to make multiple changes without waiting for the refresh after each change. Filter buttons are now highlighted when active. The sidebars are targeted to the displayed feature (i.e. the options for the reproducibility plots are different than the options for the study summary plots), and new options for customizing individual plots have been added.
                             For more information on the intra-study feature, <a href="#intrastudy">click here</a>.
                             For more information on the inter-study feature, <a href="#interstudy">click here</a>.
                         </li>
@@ -284,7 +339,7 @@
         <h1 class="sub1-bars"> Overview of the MPS Database </h1>
 
         <div id="overview0">
-            <button class="collapsible1">Database Background</button>
+            <button name="my_buttons" class="collapsible1">Database Background</button>
             <div class="content1">
                 <div id="overview0viewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -301,12 +356,12 @@
         </div>
 
         <div id="overview1">
-            <button class="collapsible1">Study Components Lists </button>
+            <button name="my_buttons" class="collapsible1">Study Components Lists </button>
             <div class="content1">
                 <div id="overview1viewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
-                            <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                            <table class="table table-bordered table-condensed small table-components">
                             <thead>
                                 <tr class="active">
                                 <th> Component </th>
@@ -368,12 +423,12 @@
         </div>
 
         <div id="overview2">
-            <button class="collapsible1">Study Data Organization</button>
+            <button name="my_buttons" class="collapsible1">Study Data Organization</button>
             <div class="content1">
                 <div id="overview2viewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
-                            <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                            <table class="table table-bordered table-condensed small table-components">
                             <thead>
                                 <tr class="active">
                                 <th> Component </th>
@@ -410,12 +465,12 @@
         </div>
 
         <div id="overview3">
-            <button class="collapsible1">Database Features</button>
+            <button name="my_buttons" class="collapsible1">Database Features</button>
             <div class="content1">
                 <div id="overview3viewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
-                            <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                            <table class="table table-bordered table-condensed small table-components">
                             <thead>
                                 <tr class="active">
                                 <th> Feature </th>
@@ -432,6 +487,16 @@
                                 <tr>
                                 <td> Inter-Study Analysis (Graphing/Reproducibility) </td>
                                 <td> Enables inter-study querying and subsequent visualization and analysis. For more information on inter-study assay data analysis, <a href="#interstudy">click here</a>.</td>
+                                <td> 1</td>
+                                </tr>
+                                <tr>
+                                <td> Study Sets </td>
+                                <td> Enables multiple studies to be grouped and referenced with one URL. For more information on study sets, <a href="#studyset">click here</a>.</td>
+                                <td> 1</td>
+                                </tr>
+                                <tr>
+                                <td> References </td>
+                                <td> References to publications can be added and associated to MPS Models, Study Sets, Studies, and several other study components. For more information on references, <a href="#reference">click here</a>.</td>
                                 <td> 1</td>
                                 </tr>
                                 <tr>
@@ -488,12 +553,12 @@
         </div>
 
         <div id="overview4">
-            <button class="collapsible1">Data Sources </button>
+            <button name="my_buttons" class="collapsible1">Data Sources </button>
             <div class="content1">
                 <div id="overview4viewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
-                            <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                            <table class="table table-bordered table-condensed small table-components">
                                 <thead>
                                     <tr class="active">
                                     <th> Source # </th>
@@ -586,12 +651,12 @@
         </div>
 
         <div id="overview5">
-            <button class="collapsible1">Permission Structure </button>
+            <button name="my_buttons" class="collapsible1">Permission Structure </button>
             <div class="content1">
                 <div id="overview5viewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
-                            <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                            <table class="table table-bordered table-condensed small table-components">
                                 <thead>
                                     <tr class="active">
                                     <th> Role </th>
@@ -635,7 +700,7 @@
         <h1 class="sub1-bars"> Searching the MPS Database </h1>
 
         <div id="search">
-            <button class="collapsible1">Global Search</button>
+            <button name="my_buttons" class="collapsible1">Global Search</button>
             <div class="content1">
                 <div id="searchviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -659,7 +724,7 @@
         </div>
 
         <div id="searchbars">
-            <button class="collapsible1">Search And Sort Lists/Tables</button>
+            <button name="my_buttons" class="collapsible1">Search And Sort Lists/Tables</button>
             <div class="content1">
                 <div id="searchbarviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -696,7 +761,7 @@
         {# The tables in the next set of divs, the html, is generated using python script and SCD3 workbook#}
 
         <div id="assaymts">
-            <button class="collapsible1">Assays Used in Studies</button>
+            <button name="my_buttons" class="collapsible1">Assays Used in Studies</button>
             <div class="content1">
                 <div id="assaymtsviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -729,13 +794,13 @@
                 </div>
 
                 <div id="assaymts_editor">
-                    <button class="collapsible3">Details and Examples of Metadata Needed to Add New Assays to the MPS Database </button>
+                    <button name="my_buttons" class="collapsible3">Details and Examples of Metadata Needed to Add New Assays to the MPS Database </button>
                     <div class="content3">
                         <div id="assaymtseditor" class="editorsubtainer">
                             <ul class="list-group">
                                 <li class="list-group-item background3">
                                     To have a new assay added to the MPS Database, compile the information shown in the table and contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Assay to MPS Database").
-                                    <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                    <table class="table table-bordered table-condensed small table-components">
                                     <thead>
                                         <tr class="active">
                                         <th> Description </th>
@@ -918,7 +983,7 @@
         </div>
 
         <div id="cellsamples">
-            <button class="collapsible1">Cell Samples Used in MPS Models</button>
+            <button name="my_buttons" class="collapsible1">Cell Samples Used in MPS Models</button>
             <div class="content1">
                 <div id="cellsamplesviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -942,13 +1007,13 @@
                 </div>
 
                 <div id="cellsamples_editor">
-                    <button class="collapsible3">Details and Example of Metadata Needed to Add New Cell Samples to the MPS Database </button>
+                    <button name="my_buttons" class="collapsible3">Details and Example of Metadata Needed to Add New Cell Samples to the MPS Database </button>
                     <div class="content3">
                         <div id="cellsampleseditor" class="editorsubtainer">
                             <ul class="list-group">
                                 <li class="list-group-item background3">
                                 To have a new <b>Cell Sample</b> added to the MPS Database, compile the information shown in the table and contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Cell Sample to MPS Database").
-                                    <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                    <table class="table table-bordered table-condensed small table-components">
                                     <thead>
                                         <tr class="active">
                                         <th> Description </th>
@@ -1174,7 +1239,7 @@
         </div>
 
         <div id="chemicallist">
-            <button class="collapsible1">Compounds Used</button>
+            <button name="my_buttons" class="collapsible1">Compounds Used</button>
             <div class="content1">
                 <div id="chemicallistviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -1201,7 +1266,7 @@
         </div>
 
         <div id="devices">
-            <button class="collapsible1">Devices Used in MPS Models</button>
+            <button name="my_buttons" class="collapsible1">Devices Used in MPS Models</button>
             <div class="content1">
                 <div id="devicesviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -1224,13 +1289,13 @@
                 </div>
 
                 <div id="devices_editor">
-                    <button class="collapsible3">Details and Example of Metadata Needed to Add New Devices to the MPS Database </button>
+                    <button name="my_buttons" class="collapsible3">Details and Example of Metadata Needed to Add New Devices to the MPS Database </button>
                     <div class="content3">
                         <div id="deviceseditor" class="editorsubtainer">
                             <ul class="list-group">
                                 <li class="list-group-item background3">
                                 To have a Device added to the MPS Database, compile the information shown in the table and contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Device to MPS Database").
-                                    <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                    <table class="table table-bordered table-condensed small table-components">
                                     <thead>
                                         <tr class="active">
                                         <th> Description </th>
@@ -1381,7 +1446,7 @@
         </div>
 
         <div id="diseaselist">
-            <button class="collapsible1">Diseases in the <b>MPS Database</b> </button>
+            <button name="my_buttons" class="collapsible1">Diseases in the MPS Database</b> </button>
             <div class="content1">
                 <div id="diseaselistviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -1394,7 +1459,7 @@
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>To have a new <b>Disease</b> added, contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Disease to MPS Database") </li>
+                                        <li>To have a new <b>Disease</b> added, contact an <b>MPS-Db</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Disease to MPS-Db") </li>
                                     </ul>
                                 </li>
                             </ul>
@@ -1405,7 +1470,7 @@
         </div>
 
         <div id="mpslocations">
-            <button class="collapsible1">Locations of MPS Model Devices </button>
+            <button name="my_buttons" class="collapsible1">Locations of MPS Model Devices </button>
             <div class="content1">
                 <div id="locationsviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -1418,7 +1483,7 @@
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>To have a new <b>Location</b> added, prepare a description of the location (including the MPS Model(s) that would utilize the location) and contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Location to MPS Database")   </li>
+                                        <li>To have a new <b>Location</b> added, prepare a description of the location (including the MPS Model(s) that would utilize the location) and contact an <b>MPS-Db</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Location to MPS-Db")   </li>
                                     </ul>
                                 </li>
                             </ul>
@@ -1429,7 +1494,7 @@
         </div>
 
         <div id="mpsmodels">
-            <button class="collapsible1">MPS Models in the Database</button>
+            <button name="my_buttons" class="collapsible1">MPS Models in the Database</button>
             <div class="content1">
                 <div id="mpsmodelsviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -1452,13 +1517,13 @@
                 </div>
 
                 <div id="mpsmodels_editor">
-                    <button class="collapsible3">Details and Example of Metadata Needed to Add New MPS Models to the MPS Database </button>
+                    <button name="my_buttons" class="collapsible3">Details and Example of Metadata Needed to Add New MPS Models to the MPS-Db </button>
                     <div class="content3">
                         <div id="mpsmodelseditor" class="editorsubtainer">
                             <ul class="list-group">
                                 <li class="list-group-item background3">
-                                To have a new <b>MPS Model</b> added to the MPS Database, compile the information shown in the table and contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add MPS Model to MPS Database").
-                                    <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                To have a new <b>MPS Model</b> added to the MPS-Db, compile the information shown in the table and contact an <b>MPS-Db</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add MPS Model to MPS-Db").
+                                    <table class="table table-bordered table-condensed small table-components">
                                     <thead>
                                         <tr class="active">
                                         <th> Description </th>
@@ -1599,7 +1664,7 @@
         </div>
 
         <div id="settings">
-            <button class="collapsible1">Settings (Instrument Settings, Non-Compound Treatments, etcetera) </button>
+            <button name="my_buttons" class="collapsible1">Settings (Instrument Settings, Non-Compound Treatments, etcetera) </button>
             <div class="content1">
                 <div id="settingsviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -1617,7 +1682,7 @@
                                     <ul class="filled-circle">
                                         <li>This will only work for <b>Studies</b> that are accessible to you</li>
                                         <li>A method allowing all users to see the complete list of settings is in development</li>
-                                        <li>To have a new <b>Setting</b> added, prepare a description of the setting (including the MPS Model(s) that would utilize the setting) and contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Setting to MPS Database" </li>
+                                        <li>To have a new <b>Setting</b> added, prepare a description of the setting (including the MPS Model(s) that would utilize the setting) and contact an <b>MPS-Db</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Setting to MPS-Db" </li>
                                     </ul>
                                 </li>
                             </ul>
@@ -1628,7 +1693,7 @@
         </div>
 
         <div id="physicalunits">
-            <button class="collapsible1">Units Available for Compounds, Cells, Settings, and Assay Targets</button>
+            <button name="my_buttons" class="collapsible1">Units Available for Compounds, Cells, Settings, and Assay Targets</button>
             <div class="content1">
                 <div id="physicalunitsviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -1641,7 +1706,7 @@
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>To have a new <b>Unit</b> added, contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Unit to MPS Database")   </li>
+                                        <li>To have a new <b>Unit</b> added, contact an <b>MPS-Db</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Unit to MPS-Db")   </li>
                                     </ul>
                                 </li>
                             </ul>
@@ -1660,7 +1725,7 @@
         <h1 class="sub2-bars"> Features Based on Study Data Only </h1>
 
         <div id="intrastudy">
-            <button class="collapsible1">Intra-Study Analysis (Features Accessed from within a Specific Study)</button>
+            <button name="my_buttons" class="collapsible1">Intra-Study Analysis (Features Accessed from within a Specific Study)</button>
             <div class="content1">
                 <div id="intrastudyviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -1683,137 +1748,12 @@
                             </ul>
                         </li>
                     </ul>
-
-                    <div id="studies">
-                        <button class="collapsible2"> Using Built-in Default Grouping/Filtering by Study  </button>
-                        <div class="content2">
-                            <div id="studiesviewer" class="viewersubtainer">
-                                <ul class="list-group">
-                                    <li class="list-group-item background2">
-                                        <ul class="list-unstyled">
-                                            <li>Select <b>View All Studies</b> from the <b>Studies</b> icon or tab
-                                                <ul class="filled-circle">
-                                                    <li>Use the <b>Search</b> bar or scroll through the list to find the <b>Study</b> of interest</li>
-                                                    <li>If a green plus sign shows on the list, click it to see more details (optional) </li>
-                                                    <li>To see <b>Study</b> level annotations, hover over the <span class="glyphicon glyphicon-flag" aria-hidden="true"></span> in the <b>Review</b> column (optional) </li>
-                                                    <li>Click on the <b>View/Edit</b> button next to the <b>Study</b> of interest to be routed to the <b>Study Matrices and Items</b> list page </li>
-                                                    <li>Option 1 - Click on the <b>Study Summary</b> button - to see <b>Study</b> details and view plots
-                                                        <ul class="open-circle">
-                                                            <li>Scroll down the page to review study details and data</li>
-                                                            <li>For more information on overriding default grouping and filtering, <a href="#groupingfiltering">click here</a> </li>
-                                                            <li>For more information on plotting options, <a href="#plottingoptions">click here</a> </li>
-                                                            <li>For user paced training on navigating the <b>Study Summary</b> page, see the <b>Protocol</b> file attached to <a href='https://mps.csb.pitt.edu/assays/assaystudy/128/summary/'>this study</a> </li>
-                                                        </ul>
-                                                    </li>
-                                                    <li>Option 2 - Click on the <b>View Reproducibility</b> button - to see results of intra-study reproducibility analysis
-                                                        <ul class="open-circle">
-                                                            <li>In the results table, click to put a check in the <b>Show Details</b> box to see details and visualizations </li>
-                                                            <li>Scroll down to see the visualizations </li>
-                                                            <li>For more information on overriding default grouping and filtering, <a href="#groupingfiltering">click here</a> </li>
-                                                            <li>For more information on plotting options, <a href="#plottingoptions">click here</a> </li>
-                                                        </ul>
-                                                    </li>
-                                                    <li>Option 3 - Click on the <b>View Images</b> button - to see images and/or videos associated to the <b>Study</b>
-                                                        <ul class="open-circle">
-                                                            <li>Click on the thumbnail of the media file of interest to expand details</li>
-                                                            <li>Review media file metadata </li>
-                                                            <li>If a video, click on the play button to view the video </li>
-                                                        </ul>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                            <li><br>Notes
-                                                <ul class="filled-circle">
-                                                    <li>Media files (images and videos) have been altered for appearance in a web browser</li>
-                                                    <li>To perform comparative analysis between media files, downloading the unaltered media file is recommended </li>
-                                                    <li>The studies shown in the list are tied to user permission settings (for more information on permissions, <a href="#overview5">click here</a>) </li>
-                                                    <li>For information on viewing data across studies (inter-study), <a href="#interstudy">click here</a> </li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="matrices">
-                        <button class="collapsible2"> Built-in Default Grouping/Filtering by Matrix </button>
-                        <div class="content2">
-                            <div id="matricesviewer" class="viewersubtainer">
-                                <ul class="list-group">
-                                    <li class="list-group-item background2">
-                                        <ul class="list-unstyled">
-                                            <li>Select <b>View All Studies</b> from the <b>Studies</b> icon or tab
-                                                <ul class="filled-circle">
-                                                    <li>Use the <b>Search</b> bar or scroll through the list to find the <b>Study</b> of interest</li>
-                                                    <li>If a green plus sign shows on the list, click it to see more details (optional) </li>
-                                                    <li>Click on the <b>View/Edit</b> button next to the <b>Study</b> of interest to be routed to the <b>Study Matrices and Items</b> list page </li>
-                                                    <li>Use the <b>Search</b> bar or scroll through the list to find the <b>Matrix</b> of interest</li>
-                                                    <li>To see <b>Matrix</b> level annotations, hover over the <span class="glyphicon glyphicon-flag" aria-hidden="true"></span> in the <b>Review</b> column (optional) </li>
-                                                    <li>Click on the <b>View/Edit</b> button next to the <b>Matrix</b> of interest
-                                                        <ul class="open-circle">
-                                                            <li>To toggle settings (Show/Hide) - click on the <b>Show Settings</b> button (non-compound treatments/conditions/settings) </li>
-                                                            <li>To toggle compounds added (Show/Hide) - click on the <b>Show Compounds</b> button  </li>
-                                                            <li>To toggle cells added (Show/Hide) - click on the <b>Show Cells</b> button </li>
-                                                        </ul>
-                                                    </li>
-                                                    <li>Scroll down the page to review matrix data
-                                                        <ul class="open-circle">
-                                                            <li>For more information on overriding default grouping and filtering, <a href="#groupingfiltering">click here</a> </li>
-                                                            <li>For more information on plotting options, <a href="#plottingoptions">click here</a> </li>
-                                                        </ul>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="matrixitems">
-                        <button class="collapsible2"> Built-in Default Grouping/Filtering by Matrix Item </button>
-                        <div class="content2">
-                            <div id="matrixitemsviewer" class="viewersubtainer">
-                                <ul class="list-group">
-                                    <li class="list-group-item background2">
-                                        <ul class="list-unstyled">
-                                            <li>Select <b>View All Studies</b> from the <b>Studies</b> icon or tab
-                                                <ul class="filled-circle">
-                                                    <li>Use the <b>Search</b> bar or scroll through the list to find the <b>Study</b> of interest</li>
-                                                    <li>If a green plus sign shows on the list, click it to see more details (optional) </li>
-                                                    <li>Click on the <b>View/Edit</b> button next to the <b>Study</b> of interest to be routed to the <b>Study Matrices and Items</b> list page </li>
-                                                    <li>Use the <b>Search</b> bar or scroll through the list to find the <b>Matrix Item</b> of interest</li>
-                                                    <li>To see <b>Matrix Item</b> level annotations, hover over the <span class="glyphicon glyphicon-flag" aria-hidden="true"></span> in the <b>Review</b> column (optional) </li>
-                                                    <li>Click on the <b>View/Edit</b> button next to the <b>Matrix Item</b> of interest </li>
-                                                    <li>Scroll down the page to review matrix item details and data
-                                                        <ul class="open-circle">
-                                                            <li>For more information on overriding default grouping and filtering, <a href="#groupingfiltering">click here</a> </li>
-                                                            <li>For more information on overriding default plotting options, <a href="#plottingoptions">click here</a> </li>
-                                                        </ul>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                            <li><br>Notes
-                                                <ul class="filled-circle">
-                                                    <li>The individual <b>Matrix Item Setup and Data</b> page is the only place <b>Matrix Item</b> data are available in tabular format </li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
             </div>
         </div>
 
         <div id="interstudy">
-            <button class="collapsible1">Inter-Study Analysis (Cross-Center and/or Cross-Study) </button>
+            <button name="my_buttons" class="collapsible1">Inter-Study Analysis (Cross-Center and/or Cross-Study) </button>
             <div class="content1">
                 <div id="interstudyviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -1838,8 +1778,8 @@
                                                 <li>In the results table, click to put a check in the <b>Show Details</b> box to see details and visualizations </li>
                                                 <li>Scroll down to see the visualizations </li>
                                                 <li>For more information on overriding default grouping and filtering, <a href="#groupingfiltering">click here</a> </li>
-                                                <li>For more information on overiding default plotting options, <a href="#plottingoptions">click here</a> </li>
-                                                <li>For more information on overiding default reproducibility property options, <a href="#reproducibilityoptions">click here</a> </li>
+                                                <li>For more information on overriding default plotting options, <a href="#plottingoptions">click here</a> </li>
+                                                <li>For more information on overriding default reproducibility property options, <a href="#reproducibilityoptions">click here</a> </li>
                                             </ul>
                                         </li>
                                         <li>Option 3 - Click on the <b>Download</b> button - to download selected data  </li>
@@ -1852,14 +1792,142 @@
             </div>
         </div>
 
+        <h1 class="sub3-bars"> Using Default Query and Plot Functions (Grouping/Filtering) </h1>
+
+        <div id="studies">
+            <button name="my_buttons" class="collapsible2"> Built-in Default Grouping/Filtering by Study  </button>
+            <div class="content2">
+                <div id="studiesviewer" class="viewersubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item background2">
+                            <ul class="list-unstyled">
+                                <li>Select <b>View All Studies</b> from the <b>Studies</b> icon or tab
+                                    <ul class="filled-circle">
+                                        <li>Use the <b>Search</b> bar or scroll through the list to find the <b>Study</b> of interest</li>
+                                        <li>If a green plus sign shows on the list, click it to see more details (optional) </li>
+                                        <li>To see <b>Study</b> level annotations, hover over the <span class="glyphicon glyphicon-flag" aria-hidden="true"></span> in the <b>Review</b> column (optional) </li>
+                                        <li>Click on the <b>View/Edit</b> button next to the <b>Study</b> of interest to be routed to the <b>Study Matrices and Items</b> list page </li>
+                                        <li>Option 1 - Click on the <b>Study Summary</b> button - to see <b>Study</b> details and view plots
+                                            <ul class="open-circle">
+                                                <li>Scroll down the page to review study details and data</li>
+                                                <li>For more information on overriding default grouping and filtering, <a href="#groupingfiltering">click here</a> </li>
+                                                <li>For more information on plotting options, <a href="#plottingoptions">click here</a> </li>
+                                                <li>For user paced training on navigating the <b>Study Summary</b> page, see the <b>Protocol</b> file attached to <a href='https://mps.csb.pitt.edu/assays/assaystudy/128/summary/'>this study</a> </li>
+                                            </ul>
+                                        </li>
+                                        <li>Option 2 - Click on the <b>View Reproducibility</b> button - to see results of intra-study reproducibility analysis
+                                            <ul class="open-circle">
+                                                <li>In the results table, click to put a check in the <b>Show Details</b> box to see details and visualizations </li>
+                                                <li>Scroll down to see the visualizations </li>
+                                                <li>For more information on overriding default grouping and filtering, <a href="#groupingfiltering">click here</a> </li>
+                                                <li>For more information on plotting options, <a href="#plottingoptions">click here</a> </li>
+                                            </ul>
+                                        </li>
+                                        <li>Option 3 - Click on the <b>View Images</b> button - to see images and/or videos associated to the <b>Study</b>
+                                            <ul class="open-circle">
+                                                <li>Click on the thumbnail of the media file of interest to expand details</li>
+                                                <li>Review media file metadata </li>
+                                                <li>If a video, click on the play button to view the video </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li><br>Notes
+                                    <ul class="filled-circle">
+                                        <li>Media files (images and videos) have been altered for appearance in a web browser</li>
+                                        <li>To perform comparative analysis between media files, downloading the unaltered media file is recommended </li>
+                                        <li>The studies shown in the list are tied to user permission settings (for more information on permissions, <a href="#overview5">click here</a>) </li>
+                                        <li>For information on viewing data across studies (inter-study), <a href="#interstudy">click here</a> </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="matrices">
+            <button name="my_buttons" class="collapsible2"> Built-in Default Grouping/Filtering by Matrix </button>
+            <div class="content2">
+                <div id="matricesviewer" class="viewersubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item background2">
+                            <ul class="list-unstyled">
+                                <li>Select <b>View All Studies</b> from the <b>Studies</b> icon or tab
+                                    <ul class="filled-circle">
+                                        <li>Use the <b>Search</b> bar or scroll through the list to find the <b>Study</b> of interest</li>
+                                        <li>If a green plus sign shows on the list, click it to see more details (optional) </li>
+                                        <li>Click on the <b>View/Edit</b> button next to the <b>Study</b> of interest to be routed to the <b>Study Matrices and Items</b> list page </li>
+                                        <li>Use the <b>Search</b> bar or scroll through the list to find the <b>Matrix</b> of interest</li>
+                                        <li>To see <b>Matrix</b> level annotations, hover over the <span class="glyphicon glyphicon-flag" aria-hidden="true"></span> in the <b>Review</b> column (optional) </li>
+                                        <li>Click on the <b>View/Edit</b> button next to the <b>Matrix</b> of interest
+                                            <ul class="open-circle">
+                                                <li>To toggle settings (Show/Hide) - click on the <b>Show Settings</b> button (non-compound treatments/conditions/settings) </li>
+                                                <li>To toggle compounds added (Show/Hide) - click on the <b>Show Compounds</b> button  </li>
+                                                <li>To toggle cells added (Show/Hide) - click on the <b>Show Cells</b> button </li>
+                                            </ul>
+                                        </li>
+                                        <li>Scroll down the page to review matrix data
+                                            <ul class="open-circle">
+                                                <li>For more information on overriding default grouping and filtering, <a href="#groupingfiltering">click here</a> </li>
+                                                <li>For more information on plotting options, <a href="#plottingoptions">click here</a> </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="matrixitems">
+            <button name="my_buttons" class="collapsible2"> Built-in Default Grouping/Filtering by Matrix Item </button>
+            <div class="content2">
+                <div id="matrixitemsviewer" class="viewersubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item background2">
+                            <ul class="list-unstyled">
+                                <li>Select <b>View All Studies</b> from the <b>Studies</b> icon or tab
+                                    <ul class="filled-circle">
+                                        <li>Use the <b>Search</b> bar or scroll through the list to find the <b>Study</b> of interest</li>
+                                        <li>If a green plus sign shows on the list, click it to see more details (optional) </li>
+                                        <li>Click on the <b>View/Edit</b> button next to the <b>Study</b> of interest to be routed to the <b>Study Matrices and Items</b> list page </li>
+                                        <li>Use the <b>Search</b> bar or scroll through the list to find the <b>Matrix Item</b> of interest</li>
+                                        <li>To see <b>Matrix Item</b> level annotations, hover over the <span class="glyphicon glyphicon-flag" aria-hidden="true"></span> in the <b>Review</b> column (optional) </li>
+                                        <li>Click on the <b>View/Edit</b> button next to the <b>Matrix Item</b> of interest </li>
+                                        <li>Scroll down the page to review matrix item details and data
+                                            <ul class="open-circle">
+                                                <li>For more information on overriding default grouping and filtering, <a href="#groupingfiltering">click here</a> </li>
+                                                <li>For more information on overriding default plotting options, <a href="#plottingoptions">click here</a> </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li><br>Notes
+                                    <ul class="filled-circle">
+                                        <li>The individual <b>Matrix Item Setup and Data</b> page is the only place <b>Matrix Item</b> data are available in tabular format </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <h1 class="sub3-bars"> Customizing Queries and Plots (Overriding the Defaults) </h1>
+
         <div id="groupingfiltering">
-            <button class="collapsible3">Overriding the Built-in Default Grouping/Filtering of Assay Data</button>
+            <button name="my_buttons" class="collapsible3">Overriding the Built-in Default Grouping/Filtering of Assay Data</button>
             <div class="content3">
                 <div id="groupingfilteringviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item background3">
                             <ul class="list-unstyled">
-                                <li>Customized grouping and filtering is available in the database via a "Sidebar" where data are available for review
+                                <li>Customized grouping and filtering is available in the MPS-Db via a "Sidebar" where data are available for review
                                     <ul class="filled-circle">
                                         <li>If hidden, click the <b>Toggle Sidebar</b> button to show the sidebar</li>
                                         <li>Click on the parameter menus (Study Parameters, Cell Parameters, Compound Parameters, Setting Parameters) to see options</li>
@@ -1878,6 +1946,13 @@
                                         <li>REPEAT for all attributes to override </li>
                                     </ul>
                                 </li>
+                                <li>Additional graphing options are available on an individual plot
+                                    <ul class="filled-circle">
+                                    <li>Right click on an individual plot </li>
+                                    <li>Check the desired options</li>
+                                    <li>Click Apply to Plot</li>
+                                    </ul>
+                                </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
                                         <li>Changing groups and filters changes the way <b>Matrix Items</b> are grouped into rows in the Group table/list provided below the plots </li>
@@ -1893,7 +1968,7 @@
         </div>
 
         <div id="plottingoptions">
-            <button class="collapsible3">Overriding Plotting/Graphing Options </button>
+            <button name="my_buttons" class="collapsible3">Overriding Plotting/Graphing Options </button>
             <div class="content3">
                 <div id="plottingoptionsviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -1944,13 +2019,13 @@
         </div>
 
         <div id="reproducibilityoptions">
-            <button class="collapsible3">Overriding Reproducibility Options </button>
+            <button name="my_buttons" class="collapsible3">Overriding Reproducibility Options </button>
             <div class="content3">
                 <div id="plottingoptionsviewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item background3">
                             <ul class="list-unstyled">
-                                <li>Customized properties for reproducibility analysis are available in the database via a "Sidebar" on the inter-study reproducibility analysis page
+                                <li>Customized properties for reproducibility analysis are available in the MPS-Db via a "Sidebar" on the inter-study reproducibility analysis page
                                     <ul class="filled-circle">
                                         <li>If hidden, click the <b>Toggle Sidebar</b> button to show the sidebar
                                         <li>Make desired selections in the sidebar
@@ -1974,10 +2049,70 @@
             </div>
         </div>
 
+        <h1 class="sub3-bars"> Additional Study Features </h1>
+
+        <div id="studyset">
+            <button name="my_buttons" class="collapsible1">Study Sets</button>
+            <div class="content1">
+                <div id="intrastudyviewer" class="viewersubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <ul class="list-unstyled">
+                                <li>The <b>Study Sets</b> feature is accessed from the Studies menu
+                                    <ul class="filled-circle">
+                                        <li>To add a study set
+                                            <ul class="open-circle">
+                                                <li>Select <b>Studies</b></li>
+                                                <li>Select <b>Create Shared Study Set</b> </li>
+                                                <li>Select the studies to include in the set</li>
+                                                <li>Fill out the form</li>
+                                                <li>Submit</li>
+                                            </ul>
+                                        </li>
+                                        <li>Study sets can only be edited by MPS-DB administrators (send an email to MPSHELP@pitt.edu with subject line "Edit Study Set").
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="reference">
+            <button name="my_buttons" class="collapsible1">References</button>
+            <div class="content1">
+                <div id="intrastudyviewer" class="viewersubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <ul class="list-unstyled">
+                                <li>References can be added to the MPS-Db
+                                    <ul class="filled-circle">
+                                        <li>To add a study set
+                                            <ul class="open-circle">
+                                                <li>Select <b>Studies</b></li>
+                                                <li>Select <b>Create Shared Study Set</b> </li>
+                                                <li>Select the studies to include in the set</li>
+                                                <li>Fill out the form</li>
+                                                <li>Submit</li>
+                                            </ul>
+                                        </li>
+                                        <li>Study sets can only be edited by MPS-DB administrators (send an email to MPSHELP@pitt.edu with subject line "Edit Study Set").
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <h1 class="sub2-bars"> Features Based on Study Data Plus Curated Reference Data </h1>
 
         <div id="diseasemodels">
-            <button class="collapsible1">Diseases (Clinical Trials and Study Data Combined via a Disease)</button>
+            <button name="my_buttons" class="collapsible1">Diseases (Clinical Trials and Study Data Combined via a Disease)</button>
             <div class="content1">
                 <div id="diseaseviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -1991,7 +2126,7 @@
                                                 <li>Disease Overview - disease basics </li>
                                                 <li>Disease Biology - active links to relevant biology/genomic information </li>
                                                 <li>Clinical Data - summarized findings from clinicaltrials.gov </li>
-                                                <li>Disease Models &amp; Studies - list of disease related <b>Models</b> in the <b>MPS Database</b> and list of studies related to the disease  </li>
+                                                <li>Disease Models &amp; Studies - list of disease related <b>Models</b> in the <b>MPS-Db</b> and list of studies related to the disease  </li>
                                             </ul>
                                         </li>
                                     </ul>
@@ -2010,7 +2145,7 @@
         </div>
 
         <div id="compoundreport">
-            <button class="collapsible1">Compound Report (Chemical Properties and Study Data Combined via a Compound)</button>
+            <button name="my_buttons" class="collapsible1">Compound Report (Chemical Properties and Study Data Combined via a Compound)</button>
             <div class="content1">
                 <div id="compoundviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -2046,7 +2181,7 @@
         <h1 class="sub2-bars"> Features Based on Curated Reference Data </h1>
 
         <div id="chemicaldata">
-            <button class="collapsible1">Chemical Data</button>
+            <button name="my_buttons" class="collapsible1">Chemical Data</button>
             <div class="content1">
                 <div id="chemicaldataviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -2077,7 +2212,7 @@
         </div>
 
         <div id="bioactivities">
-            <button class="collapsible1">Bioactivities</button>
+            <button name="my_buttons" class="collapsible1">Bioactivities</button>
             <div class="content1">
                 <div id="bioactivitiesviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -2099,7 +2234,7 @@
                         </li>
                     </ul>
 
-                    <button class="collapsible3">See A Quick Search Example</button>
+                    <button name="my_buttons" class="collapsible3">See A Quick Search Example</button>
                     <div class="content3">
                         <div id="examplebioactivitiesquick" class="editorsubtainer">
                             <ul class="list-group">
@@ -2143,7 +2278,7 @@
                         </li>
                     </ul>
 
-                    <button class="collapsible3">See An Advanced Search Example</button>
+                    <button name="my_buttons" class="collapsible3">See An Advanced Search Example</button>
                     <div class="content3">
                         <div id="examplebioactivitiesadvanced" class="editorsubtainer">
                             <ul class="list-group">
@@ -2192,7 +2327,7 @@
         </div>
 
         <div id="drugtrials">
-            <button class="collapsible1">Drug Trials</button>
+            <button name="my_buttons" class="collapsible1">Drug Trials</button>
             <div class="content1">
                 <div id="drugtrialsviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -2218,7 +2353,7 @@
         </div>
 
         <div id="adverseevents">
-            <button class="collapsible1">Adverse Events</button>
+            <button name="my_buttons" class="collapsible1">Adverse Events</button>
             <div class="content1">
                 <div id="adverseeventsviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -2257,7 +2392,7 @@
         </div>
 
         <div id="compareadverseevents">
-            <button class="collapsible1">Compare Adverse Events</button>
+            <button name="my_buttons" class="collapsible1">Compare Adverse Events</button>
             <div class="content1">
                 <div id="compareadverseeventsviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -2295,7 +2430,7 @@
         </div>
 
         <div id="heatmap">
-            <button class="collapsible1">Heatmap of Bioactivities</button>
+            <button name="my_buttons" class="collapsible1">Heatmap of Bioactivities</button>
             <div class="content1">
                 <div id="heatmapviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -2326,7 +2461,7 @@
                         </li>
                     </ul>
 
-                    <button class="collapsible3">See An Example</button>
+                    <button name="my_buttons" class="collapsible3">See An Example</button>
                     <div class="content3">
                         <div id="exampleheatmap" class="editorsubtainer">
                             <ul class="list-group">
@@ -2374,7 +2509,7 @@
         </div>
 
         <div id="cluster">
-            <button class="collapsible1">Compound Clustering</button>
+            <button name="my_buttons" class="collapsible1">Compound Clustering</button>
             <div class="content1">
                 <div id="clusterviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -2403,7 +2538,7 @@
                         </li>
                     </ul>
 
-                    <button class="collapsible3">See An Example</button>
+                    <button name="my_buttons" class="collapsible3">See An Example</button>
                     <div class="content3">
                         <div id="examplecluster" class="editorsubtainer">
                             <ul class="list-group">
@@ -2455,16 +2590,16 @@
         <h1 class="sub1-bars">Instructions for Data Providers</h1>
 
         <div id="studies_editor">
-            <button class="collapsible1">Adding Assay Data Step 1 - Add/Edit Study </button>
+            <button name="my_buttons" class="collapsible1">Adding Assay Data Step 1 - Add/Edit Study </button>
             <div class="content1">
 
-                <button class="collapsible3">See Helpful Information for New Data Providers (Reviewing/Adding Study Components and the SCD3 Workbook) </button>
+                <button name="my_buttons" class="collapsible3">See Helpful Information for New Data Providers (Reviewing/Adding Study Components and the SCD3 Workbook) </button>
                 <div class="content3">
                     <div id="scd3notes" class="editorsubtainer">
                         <ul class="list-group">
                             <li class="list-group-item background3">
                                 <ul class="list-unstyled">
-                                    <li>Data and metadata collected for inclusion in the MPS Database are categorized based on when and how they are incorporated into the database. These categories are: <br>
+                                    <li>Data and metadata collected for inclusion in the MPS-Db are categorized based on when and how they are incorporated into the database. These categories are: <br>
                                         <ul class="filled-circle">
                                             <li> Study Context – information about the MPS Models, assays, compounds, and cells used in the study (these become options in the study component lists) </li>
                                             <li> Study Description – the study level details (start date, purpose, methods, and description of the results) </li>
@@ -2473,47 +2608,47 @@
                                         </ul>
                                     </li>
                                     <li><br>It should be noted that there is some overlap between these categories, for example, some study design information will likely be included in the model protocol. </li>
-                                    <li><br>The Study Description, Study Design, and Study Data can be added directly to the database by a data provider (a registered user who has been granted permission to add study data to the database). Adding new components to the study component lists requires special permission that is not typically granted to data providers. </li>
+                                    <li><br>The Study Description, Study Design, and Study Data can be added directly to the MPS-Db by a data provider (a registered user who has been granted permission to add study data to the MPS-Db). Adding new components to the study component lists requires special permission that is not typically granted to data providers. </li>
                                     <li><br>To learn how to review Study Components and request new components be added, click on the link to the component
-                                    <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                    <table class="table table-bordered table-condensed small table-components">
                                     <thead>
                                         <tr class="active">
                                         <th> Link in Help </th>
-                                        <th> Link in Database </th>
+                                        <th> Link in MPS-Db </th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
                                             <td> <a href="#assaymts">Assays (Methods/Kits) </a> </td>
-                                            <td> <a href="https://mps.csb.pitt.edu/assays/methods/#" target="_blank" >See List of Methods/Kits in Database</a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/assays/methods/#" target="_blank" >See List of Methods/Kits in MPS-Db</a> </td>
                                         </tr>
                                         <tr>
                                             <td> <a href="#assaymts">Assays (Targets/Analytes) </a> </td>
-                                            <td> <a href="https://mps.csb.pitt.edu/assays/targets/#" target="_blank" >See List of Targets/Analytes in Database</a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/assays/targets/#" target="_blank" >See List of Targets/Analytes in MPS-Db</a> </td>
                                         </tr>
                                         <tr>
                                             <td> <a href="#cellsamples">Cell Samples </a> </td>
-                                            <td> <a href="https://mps.csb.pitt.edu/cellsamples/cellsample/" target="_blank" >See List of Cell Samples in Database</a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/cellsamples/cellsample/" target="_blank" >See List of Cell Samples in MPS-Db</a> </td>
                                         </tr>
                                         <tr>
                                             <td> <a href="#chemicallist">Compounds </a> </td>
-                                            <td> <a href="https://mps.csb.pitt.edu/compounds/" target="_blank" >See List of Compounds in Database</a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/compounds/" target="_blank" >See List of Compounds in MPS-Db</a> </td>
                                         </tr>
                                         <tr>
                                             <td> <a href="#devices">Devices </a> </td>
-                                            <td> <a href="https://mps.csb.pitt.edu/microdevices/device/" target="_blank" >See List of Devices in Database</a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/microdevices/device/" target="_blank" >See List of Devices in MPS-Db</a> </td>
                                         </tr>
                                         <tr>
                                             <td> <a href="#diseaselist">Diseases </a> </td>
-                                            <td> <a href="https://mps.csb.pitt.edu/diseases/" target="_blank" >See List of Diseases in Database</a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/diseases/" target="_blank" >See List of Diseases in MPS-Db</a> </td>
                                         </tr>
                                         <tr>
                                             <td> <a href="#mpslocations">Location of MPS Models </a> </td>
-                                            <td> <a href="https://mps.csb.pitt.edu/assays/locations/" target="_blank" >See List of Locations in Database</a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/assays/locations/" target="_blank" >See List of Locations in MPS-Db</a> </td>
                                         </tr>
                                         <tr>
                                             <td> <a href="#mpsmodels">Models </a> </td>
-                                            <td> <a href="https://mps.csb.pitt.edu/microdevices/model/" target="_blank" >See List of MPS Models in Database</a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/microdevices/model/" target="_blank" >See List of MPS Models in MPS-Db</a> </td>
                                         </tr>
                                         <tr>
                                             <td> <a href="#settings">Settings </a> </td>
@@ -2521,29 +2656,29 @@
                                         </tr>
                                         <tr>
                                             <td> <a href="#physicalunits">Units </a> </td>
-                                            <td> <a href="https://mps.csb.pitt.edu/assays/units/" target="_blank" >See List of Units in Database</a> </td>
+                                            <td> <a href="https://mps.csb.pitt.edu/assays/units/" target="_blank" >See List of Units in MPS-Db</a> </td>
                                         </tr>
                                     </tbody>
                                     </table>
                                     </li>
                                     <li><br>Notes
                                         <ul class="filled-circle">
-                                            <li> The MPS Database Center has prepared an Excel file (the SCD3 Workbook) that describes <b>Study</b> data and metadata stored in the MPS Database </li>
+                                            <li> The MPS-Db Center has prepared an Excel file (the SCD3 Workbook) that describes <b>Study</b> data and metadata stored in the MPS-Db </li>
                                             <li> To download the latest version of the SCD3 Workbook, <a href="/media/excel_templates/SCD3Workbook.xlsx">click here</a></li>
                                             <li> We are here to help - send email to MPSHELP@pitt.edu with subject line "Help with the SCD3 Workbook" </li>
                                             <li> The optimal data contribution workflow
                                                 <ul class="open-circle">
-                                                    <li>Data Provider registers as database user and notifies MPS Database Center that they wish to contribute data  </li>
-                                                    <li>MPS Database Center makes a Data Group for the Data Provider, adds the Data Provider to the Group, and notifies the Data Provider </li>
-                                                    <li>Data Provider reviews study component lists and identifies if/what new components need added to the database </li>
+                                                    <li>Data Provider registers as MPS-Db user and notifies MPS-Db Center that they wish to contribute data  </li>
+                                                    <li>MPS-Db Center makes a Data Group for the Data Provider, adds the Data Provider to the Group, and notifies the Data Provider </li>
+                                                    <li>Data Provider reviews study component lists and identifies if/what new components need added to the MPS-Db </li>
                                                     <li>Data Provider downloads SCD3 Workbook and completes the Study Context tabs for needed new components </li>
-                                                    <li>Data Provider submits completed Study Context tabs to the MPS Database Center </li>
-                                                    <li>MPS Database Center adds needed components and notifies Data Provider </li>
+                                                    <li>Data Provider submits completed Study Context tabs to the MPS-Db Center </li>
+                                                    <li>MPS-Db Center adds needed components and notifies Data Provider </li>
                                                     <li>Data Provider reviews the SCD3 Workbook and gathers/prepares information </li>
-                                                    <li>Data Provider creates a study and enters the Study Description information directly into the MPS Database via the MPS-GUI </li>
-                                                    <li>Data Provider creates a Matrix, adds Items to the Matrix, and adds all appropriate information to each Item directly in the MPS Database via the MPS-GUI </li>
-                                                    <li>Data Provider prepares and uploads MIF-C-assay data directly in the MPS Database via the MPS-GUI </li>
-                                                    <li>If providing videos/images, Data Provider prepares the MIF-C-image file and submits it, along with the media files to the MPS Database Center (via shared box)  </li>
+                                                    <li>Data Provider creates a study and enters the Study Description information directly into the MPS-Db via the MPS-GUI </li>
+                                                    <li>Data Provider creates a Matrix, adds Items to the Matrix, and adds all appropriate information to each Item directly in the MPS-Db via the MPS-GUI </li>
+                                                    <li>Data Provider prepares and uploads MIF-C-assay data directly in the MPS-Db via the MPS-GUI </li>
+                                                    <li>If providing videos/images, Data Provider prepares the MIF-C-image file and submits it, along with the media files to the MPS-Db Center (via shared box)  </li>
                                                     <li>Data Provider reviews and signs off a study </li>
                                                 </ul>
                                             </li>
@@ -2577,12 +2712,12 @@
                                         <li>Additional information can be added now or later (IMPORTANT: the Assay section must be completed PRIOR to uploading assay data)
                                             <ul class="open-circle">
                                                 <li>Description - informative description (purpose, methods, results)</li>
-                                                <li>Use in Calculations - checking <b>Use in Calculations</b> tells the database to use this study's data in predictive modeling and other calculations  </li>
+                                                <li>Use in Calculations - checking <b>Use in Calculations</b> tells the MPS-Db to use this study's data in predictive modeling and other calculations  </li>
                                                 <li>Protocol File – a Word or pdf file containing the <b>Study</b> protocol </li>
                                                 <li>Image to Clarify A <b>Study</b> – recommend a picture of the setup or an illustration of the experimental protocol </li>
                                                 <!-- <li>For Integrated Chip Studies – select configuration if performing an integrated <b>Study</b>  </li> -->
                                                 <li>Assays – for each combination of assay Method/Kit, Target/Analyte, and Unit used, add a row  </li>
-                                                <li>Supporting Data – attach files that will assist other database users in understanding the <b>Study</b> design and/or assay data (other than the protocol file, which is added separately)  </li>
+                                                <li>Supporting Data – attach files that will assist other MPS-Db users in understanding the <b>Study</b> design and/or assay data (other than the protocol file, which is added separately)  </li>
                                             </ul>
                                         </li>
                                         <li>Click the <b>Submit</b> button to save changes</li>
@@ -2607,7 +2742,7 @@
                     </ul>
                 </div>
 
-                <button class="collapsible3">See a Note About Flags</button>
+                <button name="my_buttons" class="collapsible3">See a Note About Flags</button>
                 <div class="content3">
                     <div id="flagsnotes" class="editorsubtainer">
                         <ul class="list-group">
@@ -2634,7 +2769,7 @@
                     </div>
                 </div>
 
-                <button class="collapsible3">See a Note about Sign Off and Validation</button>
+                <button name="my_buttons" class="collapsible3">See a Note about Sign Off and Validation</button>
                 <div class="content3">
                     <div id="validation" class="editorsubtainer">
                         <ul class="list-group">
@@ -2653,7 +2788,7 @@
                     </div>
                 </div>
 
-                <!-- <button class="collapsible3">See a Note About Integrated Studies</button>
+                <!-- <button name="my_buttons" class="collapsible3">See a Note About Integrated Studies</button>
                 <div class="content3">
                     <div id="studyconfigurations" class="editorsubtainer">
                         <ul class="list-group">
@@ -2677,13 +2812,13 @@
                 </div>
                 -->
                 <div id="studyleveldetails_editor">
-                    <button class="collapsible3">Getting Help With Study Level Details (Example Provided) </button>
+                    <button name="my_buttons" class="collapsible3">Getting Help With Study Level Details (Example Provided) </button>
                     <div class="content3">
                         <div id="studyleveldetailseditor" class="editorsubtainer">
                             <ul class="list-group">
                                 <li class="list-group-item background3">
-                                To have an <b>MPS Database Admin</b> assist you, prepare the information shown in the table.
-                                    <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                To have an <b>MPS-Db Admin</b> assist you, prepare the information shown in the table.
+                                    <table class="table table-bordered table-condensed small table-components">
                                     <thead>
                                         <tr class="active">
                                         <th> Description </th>
@@ -2725,7 +2860,7 @@ Methods: add the methods used in the study.
 Results: add a summary of the study results. </td>
                                         </tr>
                                         <tr>
-                                            <td> Is it okay to use data in Calculations (Database Features)? (yes or no) </td>
+                                            <td> Is it okay to use data in Calculations (MPS-Db Features)? (yes or no) </td>
                                             <td> yes </td>
                                             <td> no </td>
                                         </tr>
@@ -2761,7 +2896,7 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="matrices_editor">
-            <button class="collapsible1">Adding Assay Data Step 2 - Matrices Setup </button>
+            <button name="my_buttons" class="collapsible1">Adding Assay Data Step 2 - Matrices Setup </button>
             <div class="content1">
                 <div id="matriceseditor" class="editorsubtainer">
                     <ul class="list-group">
@@ -2823,15 +2958,15 @@ Results: add a summary of the study results. </td>
                 </div>
 
                 <div id="matricessetupdetails_editor">
-                    <button class="collapsible3">Getting Help With Matrix and Matrix Item Setup (Example Provided) </button>
+                    <button name="my_buttons" class="collapsible3">Getting Help With Matrix and Matrix Item Setup (Example Provided) </button>
                     <div class="content3">
                         <div id="studyleveldetailseditor" class="editorsubtainer">
                             <ul class="list-group">
                                 <li class="list-group-item background3">
-                                    To have an <b>MPS Database Admin</b> assist you with setting up <b>Matrix Items</b>, prepare the information shown in the tables.
+                                    To have an <b>MPS-Db Admin</b> assist you with setting up <b>Matrix Items</b>, prepare the information shown in the tables.
                                     <br><br><b><em>Media Setup Data and Metadata</em></b>
 
-                                    <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                    <table class="table table-bordered table-condensed small table-components">
                                     <thead>
                                         <tr class="active">
                                         <th> Description </th>
@@ -2960,7 +3095,7 @@ Results: add a summary of the study results. </td>
 
                                     <br><b><em>Setting Setup Data and Metadata</em></b>
 
-                                    <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                    <table class="table table-bordered table-condensed small table-components">
                                     <thead>
                                         <tr class="active">
                                         <th> Description </th>
@@ -3089,7 +3224,7 @@ Results: add a summary of the study results. </td>
 
                                     <br><b><em>Cell Setup Data and Metadata</em></b>
 
-                                    <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                    <table class="table table-bordered table-condensed small table-components">
                                     <thead>
                                         <tr class="active">
                                         <th> Description </th>
@@ -3298,7 +3433,7 @@ Results: add a summary of the study results. </td>
 
                                     <br><b><em>Compound Setup Data and Metadata</em></b>
 
-                                    <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                    <table class="table table-bordered table-condensed small table-components">
                                     <thead>
                                         <tr class="active">
                                         <th> Description </th>
@@ -3427,7 +3562,7 @@ Results: add a summary of the study results. </td>
 
                                     <br><b><em>Matrix Item Setup (Combining the Media, Setting, Cell, and Compound Setup)</em></b>
 
-                                    <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                    <table class="table table-bordered table-condensed small table-components">
                                     <thead>
                                         <tr class="active">
                                         <th> Matrix Item Name </th>
@@ -3565,7 +3700,7 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="matrixitems_editor">
-            <button class="collapsible1">Adding Assay Data Step 3 - Matrix Items Update (Optional)</button>
+            <button name="my_buttons" class="collapsible1">Adding Assay Data Step 3 - Matrix Items Update (Optional)</button>
             <div class="content1">
                 <div id="matrixitemseditor" class="editorsubtainer">
                     <ul class="list-group">
@@ -3625,7 +3760,7 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="assaydata_editor">
-            <button class="collapsible1">Adding Assay Data Step 4 - Upload Assay Data</button>
+            <button name="my_buttons" class="collapsible1">Adding Assay Data Step 4 - Upload Assay Data</button>
             <div class="content1">
                 <div id="assaydataeditor" class="editorsubtainer">
                     <ul class="list-group">
@@ -3639,13 +3774,13 @@ Results: add a summary of the study results. </td>
                                         <li>Confirm that all combinations of Method/Kit, Target/Analyte, and Unit must be included in the <i>Assays</i> section of the <b>Study Level Details</b> page PRIOR to uploading assay data points for that combination</li>
 
                                         <li>Click on the <b>Upload Data</b> button </li>
-                                        <li>Click on the <b>Submit</b> button to save data to the <b>MPS Database</b> </li>
+                                        <li>Click on the <b>Submit</b> button to save data to the <b>MPS-Db</b> </li>
                                     </ul>
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
                                         <li>The ONLY assay data that are editable in the MPS-GUI is the <b>Exclude</b> field (editable on the <b>Matrix Item</b> edit page) </li>
-                                        <li>Contact an <b>MPS Database</b> Administrator for guidance on preparing data files</li>
+                                        <li>Contact an <b>MPS-Db</b> Administrator for guidance on preparing data files</li>
                                         <li>To replace assay data values with new values, correct the values in the MIF-C-a file and re-upload
                                         <ul class="open-circle">
                                             <li>Changes made to the <b>Exclude</b> field using the MPS-GUI will be lost when data are re-uploaded</li>
@@ -3664,7 +3799,7 @@ Results: add a summary of the study results. </td>
                     </ul>
                 </div>
 
-                <button class="collapsible3">Assay Data File Format (MIF-C-a)</button>
+                <button name="my_buttons" class="collapsible3">Assay Data File Format (MIF-C-a)</button>
                 <div class="content3">
                     <div id="uploadingdata" class="editorsubtainer">
                         <ul class="list-group">
@@ -3678,7 +3813,7 @@ Results: add a summary of the study results. </td>
                                         </ul>
                                     </li>
                                 </ul>
-                                <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                <table class="table table-bordered table-condensed small table-components">
                                 <thead>
                                     <tr class="active">
                                         <th>Chip ID</th>
@@ -3747,7 +3882,7 @@ Results: add a summary of the study results. </td>
                 </div>
 
                 <div id="filespecifications_editor">
-                    <button class="collapsible3">Detailed Specifications for MIF-C-a and MIF-C-i Files (with Examples) </button>
+                    <button name="my_buttons" class="collapsible3">Detailed Specifications for MIF-C-a and MIF-C-i Files (with Examples) </button>
                     <div class="content3">
                         <div id="filespecifications" class="editorsubtainer">
                             <ul class="list-group">
@@ -3761,7 +3896,7 @@ Results: add a summary of the study results. </td>
                                         </ul>
                                     </li>
                                 </ul>
-                                    <table class="table table-bordered table-condensed small" style="background-color: #F0FFFF;">
+                                    <table class="table table-bordered table-condensed small table-components">
                                     <thead>
                                         <tr class="active">
                                             <th> Column Header </th>
@@ -3806,7 +3941,7 @@ Results: add a summary of the study results. </td>
                                             <td> MIF-C-a and MIF-C-i </td>
                                             <td> yes </td>
                                             <td> yes </td>
-                                            <td> Indicates the method (e.g., SW-846 for a group of metals) or kit (e.g., Ammoniagenesis (Abcam: ab83360) used to measure a Target/Analyte. Must be in MPS Database list. In the case of a kit, the kit, and, if the kit can be used with different options, the option used should be specified. </td>
+                                            <td> Indicates the method (e.g., SW-846 for a group of metals) or kit (e.g., Ammoniagenesis (Abcam: ab83360) used to measure a Target/Analyte. Must be in MPS-Db list. In the case of a kit, the kit, and, if the kit can be used with different options, the option used should be specified. </td>
                                             <td> Ammonia Assay Kit (abcam: ab83360) </td>
                                             <td> LIVE/DEAD Viability/Cytotoxicity Kit for mammalian cells (Molecular Probes: 03224 - Calcein AM/EthD-1), Hoechst, Phase Contrast </td>
                                         </tr>
@@ -3815,7 +3950,7 @@ Results: add a summary of the study results. </td>
                                             <td> MIF-C-a and MIF-C-i </td>
                                             <td> yes </td>
                                             <td> yes </td>
-                                            <td> The focus of an assay, as in, what is being measured. Examples include: Albumin, Lactate Dehydrogenase, TNF-Alpha. Must be in MPS Database list. </td>
+                                            <td> The focus of an assay, as in, what is being measured. Examples include: Albumin, Lactate Dehydrogenase, TNF-Alpha. Must be in MPS-Db list. </td>
                                             <td> Ammonium </td>
                                             <td> Nucleus | Live Cells | Dead Cells | Tissue Structure </td>
                                         </tr>
@@ -3833,7 +3968,7 @@ Results: add a summary of the study results. </td>
                                             <td> MIF-C-a and MIF-C-i </td>
                                             <td> yes </td>
                                             <td> yes </td>
-                                            <td> Specifies a compartment in the Organ Model such as: brain, vascular, neural, apical, basal. Must be in MPS Database llist. When  a sample is collected from the Organ Model, the compartment should be combined with a prefix indicating where the sample was collected, such as “effluent-brain” or “stock-brain”. Note that, when a chamber is image, no prefix would be used. </td>
+                                            <td> Specifies a compartment in the Organ Model such as: brain, vascular, neural, apical, basal. Must be in MPS-Db llist. When  a sample is collected from the Organ Model, the compartment should be combined with a prefix indicating where the sample was collected, such as “effluent-brain” or “stock-brain”. Note that, when a chamber is image, no prefix would be used. </td>
                                             <td> effluent-apical </td>
                                             <td> Apical </td>
                                         </tr>
@@ -3896,7 +4031,7 @@ Results: add a summary of the study results. </td>
                                             <td> MIF-C-a </td>
                                             <td> no </td>
                                             <td> no </td>
-                                            <td> When the Exclude field of the database is populated (X), that data point will not shown, by default, in graphs or be provided in exports from the database.  </td>
+                                            <td> When the Exclude field of the MPS-Db is populated (X), that data point will not shown, by default, in graphs or be provided in exports from the MPS-Db.  </td>
                                             <td> X </td>
                                             <td> na </td>
                                         </tr>
@@ -3986,7 +4121,7 @@ Results: add a summary of the study results. </td>
                                             <td> MIF-C-i </td>
                                             <td> yes </td>
                                             <td> yes </td>
-                                            <td> The file name of the image that will be provided to the MPS Database Center via a drop box or exteral storage device. The naming of the file is up to the data provider, but a descriptive naming protocol is highly recommended. </td>
+                                            <td> The file name of the image that will be provided to the MPS-Db Center via a drop box or exteral storage device. The naming of the file is up to the data provider, but a descriptive naming protocol is highly recommended. </td>
                                             <td> na </td>
                                             <td> Tamu_PT_UW_d24h0m0_C00039_S01_W5.tif </td>
                                         </tr>
@@ -4040,7 +4175,7 @@ Results: add a summary of the study results. </td>
                                             <td> MIF-C-i </td>
                                             <td> yes </td>
                                             <td> yes </td>
-                                            <td> The dye/stain that will cause the fluorescence observed in the image. Must exist in MPS Database Sample Label list. </td>
+                                            <td> The dye/stain that will cause the fluorescence observed in the image. Must exist in MPS-Db Sample Label list. </td>
                                             <td> na </td>
                                             <td> Hoechst | Calcein AM | EthD-1 | Unlabeled </td>
                                         </tr>
@@ -4092,7 +4227,7 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="assayimages_editor">
-            <button class="collapsible1">Adding Assay Data Step 5 -  Adding Assay Images and Videos</button>
+            <button name="my_buttons" class="collapsible1">Adding Assay Data Step 5 -  Adding Assay Images and Videos</button>
             <div class="content1">
                 <div id="imageseditor" class="editorsubtainer">
                     <ul class="list-group">
@@ -4102,14 +4237,14 @@ Results: add a summary of the study results. </td>
                                     <ul class="filled-circle">
                                         <li>Prepare the image/video file</li>
                                         <li>Prepare an image/video metadata file (MIF-C-i) </li>
-                                        <li>Contact an <b>MPS Database</b> Administrator to make arrangements for submitting the files</li>
+                                        <li>Contact an <b>MPS-Db</b> Administrator to make arrangements for submitting the files</li>
                                     </ul>
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>Contact an <b>MPS Database</b> Administrator for guidance on preparing media metadata files</li>
+                                        <li>Contact an <b>MPS-Db</b> Administrator for guidance on preparing media metadata files</li>
                                         <li>For details on the required file format of the media metadata file, <a href="#assaydata_editor">click here</a> and click to view the detailed specifications for MIF-C-a and MIF-C-i files </li>
-                                        <li>To remove media files, contact an <b>MPS Database</b> Administrator for assistance</li>
+                                        <li>To remove media files, contact an <b>MPS-Db</b> Administrator for assistance</li>
                                     </ul>
                                 </li>
                             </ul>
@@ -4121,26 +4256,25 @@ Results: add a summary of the study results. </td>
 
     </div>
 
-
     {% if user.is_superuser %}
     <div id="component_admin_section" class="container">
 
-        <h1 class="sub1-bars"> MPS Database Admins </h1>
+        <h1 class="sub1-bars"> MPS-Db Admins </h1>
 
-        <h1 class="sub2-bars"> Adding/Editing Items to Pick Lists for Database Admins </h1>
+        <h1 class="sub2-bars"> Adding/Editing Items to Pick Lists for MPS-Db Admins </h1>
 
         <div id="methods_admin">
-            <button class="collapsible1">Assay Methods/Kits</button>
+            <button name="my_buttons" class="collapsible1">Assay Methods/Kits</button>
             <div class="content1">
                 <div id="methodssadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
-                                <li>To Add/Edit, go to the MPS Database Admin
+                                <li>To Add/Edit, go to the MPS-Db Admin
                                     <ul class="filled-circle">
                                         <li>Go to the MPS ASSAYS Section</li>
                                         <li>Click on Assay Methods </li>
-                                        <li>Search to find the method to edit or search to confirm the method needed is not already available in the database </li>
+                                        <li>Search to find the method to edit or search to confirm the method needed is not already available in the MPS-Db </li>
                                         <li>Click on the method to edit or click the <b>ADD ASSAY METHOD</b> button to add a new method </li>
                                         <li>Provide all the requested information, including a pdf of the method </li>
                                         <li>Click the <b>Save</b> button to save the changes </li>
@@ -4159,17 +4293,17 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="targets_admin">
-            <button class="collapsible1">Assay Targets/Analytes</button>
+            <button name="my_buttons" class="collapsible1">Assay Targets/Analytes</button>
             <div class="content1">
                 <div id="targetsadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
-                                <li>To Add/Edit, go to the MPS Database Admin
+                                <li>To Add/Edit, go to the MPS-Db Admin
                                     <ul class="filled-circle">
                                         <li>Go to the MPS ASSAYS Section</li>
                                         <li>Click on Assay targets </li>
-                                        <li>Search to find the target to edit or search to confirm the target needed is not already available in the database </li>
+                                        <li>Search to find the target to edit or search to confirm the target needed is not already available in the MPS-Db </li>
                                         <li>Click on the target to edit or click the <b>ADD ASSAY TARGET</b> button to add a new target </li>
                                         <li>Provide all the requested information </li>
                                         <li>Click the <b>Save</b> button to save the changes </li>
@@ -4189,7 +4323,7 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="devices_admin">
-            <button class="collapsible1">Devices Used in MPS Models</button>
+            <button name="my_buttons" class="collapsible1">Devices Used in MPS Models</button>
             <div class="content1">
                 <div id="devicesadmin" class="adminsubtainer">
                     <ul class="list-group">
@@ -4218,13 +4352,13 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="diseaselist_admin">
-            <button class="collapsible1">Diseases in the <b>MPS Database</b> </button>
+            <button name="my_buttons" class="collapsible1">Diseases in the MPS-Db </button>
             <div class="content1">
                 <div id="diseaselistadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
-                                <li>To Add/Edit diseases, go to the MPS Database Admin
+                                <li>To Add/Edit diseases, go to the MPS-Db Admin
                                     <ul class="filled-circle">
                                         <li>Go to the DISEASES Section </li>
                                         <li>Click on Diseases </li>
@@ -4245,7 +4379,7 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="cellsamples_admin">
-            <button class="collapsible1">Cell Samples Used in MPS Models</button>
+            <button name="my_buttons" class="collapsible1">Cell Samples Used in MPS Models</button>
             <div class="content1">
                 <div id="cellsamplesadmin" class="adminsubtainer">
                     <ul class="list-group">
@@ -4277,17 +4411,17 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="chemicaldata_admin">
-            <button class="collapsible1">Chemical Data</button>
+            <button name="my_buttons" class="collapsible1">Chemical Data</button>
             <div class="content1">
                 <div id="chemicaldataeditor" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
-                                <li>To Add, go to the MPS Database Admin
+                                <li>To Add, go to the MPS-Db Admin
                                     <ul class="filled-circle">
                                         <li>Go to the COMPOUND Section</li>
                                         <li>Click on Compounds/Drugs </li>
-                                        <li>Search to confirm the Compound needed is not already available in the database </li>
+                                        <li>Search to confirm the Compound needed is not already available in the MPS-Db </li>
                                         <li>Click the <b>ADD COMPOUND</b> button to add a new compound </li>
                                         <li>Enter the ChEMBL ID of the compound to add (e.g., CHEMBL1319459) </li>
                                         <li>Click the <b>Retrieve</b> button </li>
@@ -4309,13 +4443,13 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="mpslocations_admin">
-            <button class="collapsible1">Locations of MPS Model Devices </button>
+            <button name="my_buttons" class="collapsible1">Locations of MPS Model Devices </button>
             <div class="content1">
                 <div id="locationadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
-                                <li>To Add/Edit, go to the MPS Database Admin
+                                <li>To Add/Edit, go to the MPS-Db Admin
                                     <ul class="filled-circle">
                                         <li>Go to the MPS ASSAYS Section </li>
                                         <li>Click on Assay Sample Locations </li>
@@ -4331,7 +4465,7 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="mpsmodels_admin">
-            <button class="collapsible1">Models in the Database</button>
+            <button name="my_buttons" class="collapsible1">Models in the MPS-Db</button>
             <div class="content1">
                 <div id="mpsmodelsadmin" class="adminsubtainer">
                     <ul class="list-group">
@@ -4360,13 +4494,13 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="settings_admin">
-            <button class="collapsible1">Settings (Instrument Settings, Non-Compound Treatments, etcetera) </button>
+            <button name="my_buttons" class="collapsible1">Settings (Instrument Settings, Non-Compound Treatments, etcetera) </button>
             <div class="content1">
                 <div id="settingsadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
-                                <li>To Add/Edit, go to the MPS Database Admin
+                                <li>To Add/Edit, go to the MPS-Db Admin
                                     <ul class="filled-circle">
                                         <li>Go to the MPS ASSAYS Section </li>
                                         <li>Click on Assay Settings </li>
@@ -4382,13 +4516,13 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="physicalunits_admin">
-            <button class="collapsible1">Units Available for Compounds, Cells, Settings, and Assay Targets</button>
+            <button name="my_buttons" class="collapsible1">Units Available for Compounds, Cells, Settings, and Assay Targets</button>
             <div class="content1">
                 <div id="physicalunitsadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
-                                <li>To Add/Edit, go to the MPS Database Admin
+                                <li>To Add/Edit, go to the MPS-Db Admin
                                     <ul class="filled-circle">
                                         <li>Go to the MPS ASSAYS Section </li>
                                         <li>Click on Physical Units </li>
@@ -4404,24 +4538,66 @@ Results: add a summary of the study results. </td>
         </div>
 
         <h1 class="sub2-bars"> Controlling User Access </h1>
+        <div id="access_overview_admin">
+            <button name="my_buttons" class="collapsible1">Sharing Study Data Overview</button>
+            <div class="content1">
+                <div id="accessoverviewadmin" class="adminsubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <ul class="list-unstyled">
+                                <li> There are now a lot of options for controlling and sharing data in the MPS-Db.</li>
+                                <li> All of the options work on a "study" (not on individual data points).</li>
+                                <li> Access is controlled by assigning permissions to users and by assigning groups to studies. </li>
+                                <li> Looking first at setting permissions to a study, in the admin, in the MPS Assays section, select Studies. Notice in the list the fields: Signed Off By, Stakeholder Display, Access Group Display, Collaboration Group Display, Restricted, Keep Private Indefinitely (Locked). These summarize if and how each study is being shared. </li>
+                                <li> <br>Examining each field:<br></li>
+                                <ul class="filled-circle">
+                                    <li> Signed Off By - If this has a user name in it, it means that the study is following the sign off, acknowledgement, embargo process. A sign off does not open the study to the public, even if there is no stakeholder. If there is no stakeholder, the study is open to Access Groups. </li>
+                                    <li> Stakeholder Display - If there is something here, it means there is a stakeholder for the study.  </li>
+                                    <li> Access Group Display - If there is something here, users in these groups can see the study after sign off (if there are not stakeholders) or after stakeholder acknowledgement. </li>
+                                    <li> Collaboration Group Display - This is a special feature that allows sharing a study, at any time, to users in these groups. </li>
+                                    <li> Restricted - Until this is unchecked, a study is closed to the public. It can be unchecked by an admin at <b>any time</b>. Studies in the embargo period (after sign off and acknowledgement) will be unchecked one year and two weeks after sign off (automated process), UNLESS the study is 'locked'. </li>
+                                    <li> Keep Private Indefinitely (Locked) - Locking a study stops the study from being released to the next level (blocks automatic migration to public access - public if acknowledged, access if stakeholders, stakeholders if signed off). </li>
+                                </ul>
+
+
+                                <li><br>Notes
+                                    <ul class="filled-circle">
+                                        <li> What happens if the 'Use in Calculations' box is check? The study becomes available in the Compound Report. </li>
+                                        <li> Collaborator groups are completely controlled by the admins (no front-end GUI).</li>
+                                        <li> To open a study to the public immediately (i.e. bypass sign off, acknowledgment, embargo) must by done by the admin (uncheck the restricted box), but data providers can check the 'Use in Calculations' box.</li>
+                                        <li> While the use is sometimes indicated in the group name, there is no real difference between groups (data, stakeholder, access, collaborator). Use caution. Even though a data group and a stakeholder group is associated with the same institution, the users in the groups maybe different. </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
 
         <div id="add_groups_admin">
-            <button class="collapsible1">Adding New Data Groups</button>
+            <button name="my_buttons" class="collapsible1">Adding New Data Groups</button>
             <div class="content1">
                 <div id="addgroupsadmin" class="adminsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
-                                <li> A <b>Group</b> is actually a trio of groups. The following is an example for <b>Data Group Rusyn_TAMU</b>
+                                <li> A <b>Group</b> (Data, Stakeholder, Access) is actually a trio of groups. The following is an example for <b>Data Group Rusyn_TAMU</b>
                                     <ul class="filled-circle">
                                         <li> <b>Rusyn_TAMU</b> - this is the editor group, sometimes referred to as the group proper </li>
                                         <li> <b>Rusyn_TAMU Admin</b> - admins can edit and sign off (or acknowledge for TCD groups) studies</li>
                                         <li> <b>Rusyn_TAMU Viewer</b> - can view studies prior to sign off (or acknowledgement for TCD groups) </li>
                                     </ul>
                                 </li>
+                                <li> <br> A <b>Collaborator Group</b> is two groups, one, the group proper, and one for viewers. The following is an example for the <b> SQL-SAL_1.5</b> group
+                                    <ul class="filled-circle">
+                                        <li> <b>SQL-SAL_1.5 </b> - add this <b>Collaborator Group</b> to studies to share </li>
+                                        <li> <b>SQL-SAL_1.5 Viewer </b> - add the collaborators to this group </li>
+                                    </ul>
+                                </li>
                                 <li>To create and prepare a new <b>Group</b>
                                     <ul class="filled-circle">
-                                        <li>Go to the MPS Database admin (https://mps.csb.pitt.edu/admin/) </li>
+                                        <li>Go to the MPS-Db admin (https://mps.csb.pitt.edu/admin/) </li>
                                         <li>Go to the MPS Authentication and Authorization Section</li>
                                         <li>Click on Groups and scroll down to review how groups are named</li>
                                         <li>Click on the ADD GROUP button on the top right side</li>
@@ -4452,7 +4628,7 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="study_groups_admin">
-            <button class="collapsible1">Assigning Groups to Studies</button>
+            <button name="my_buttons" class="collapsible1">Assigning Groups to Studies</button>
             <div class="content1">
                 <div id="studygroupsadmin" class="adminsubtainer">
                     <ul class="list-group">
@@ -4460,23 +4636,35 @@ Results: add a summary of the study results. </td>
                             <ul class="list-unstyled">
                                 <li>To assign groups to a <b>Study</b>
                                     <ul class="filled-circle">
-                                        <li>Go to the MPS Database admin</li>
-                                        <li>Go to the MPS Assays Section</li>
+                                        <li>Go to the MPS-Db admin</li>
+                                        <li>Go to the MPS ASSAYS Section</li>
                                         <li>Click on Studies</li>
-                                        <li>Scroll through the groups or use the search bar to find the study</li>
+                                        <li>Scroll through the study list and locate the study of interest</li>
                                         <li>Click to open the study</li>
-                                        <li>Scroll to the Study Data Group and Access Group Info Section (the Data Group should already be selected) </li>
-                                        <li>Select all Access Groups (add the group proper - not admin or viewer) </li>
-                                        <li>Scroll to the Assay Study Stakeholders Section</li>
-                                        <li>Add the stakeholder group(s) (add the group proper - not admin or viewer) </li>
+                                        <li>Scroll to the group section of interest (Data, Access, Collaborator, Stakeholder)</li>
+                                        <li>Select group(s) for each section (note: the Data Group is selected when the study is added, but it could be edited here) </li>
+                                        <li>Add the <b>group proper</b> (not the admin or viewer groups) to the study</li>
+                                        <li>Save the changes</li>
                                     </ul>
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>Best practice would be to assign appropriate groups at the time of study creation. </li>
+                                        <li>Best practice would be to assign appropriate groups (Stakeholder and Access) at the time of study creation. </li>
                                         <li>Data Group Admins and Editors can create a study, but cannot add/edit special permission groups to a study</li>
-                                        <li>Data Providers must work with MPS Database Admins to set up appropriate groups when/if needed. </li>
-                                        <li>Clicking on the button to <b>Change Group Access for this Study</b> from the <b>Study Matrices and Items List</b> page will route the user to the <b>Change Study</b> page of the GUI Admin.
+                                        <li> Collaborator groups bypass the tri-level sign-off, review, and release protocol </li>
+                                        <li>Data Providers must work with MPS-Db Admins to set up appropriate groups when/if needed. </li>
+                                        <li>Clicking on the button to <b>Change Group Access for this Study</b> from the <b>Study Matrices and Items List</b> page will route the user to the <b>Change Study</b> page of the GUI Admin.</li>
+                                        <li>IMPORTANT: studies should always be assigned to the <b>group proper</b>, that is, the editor group (not admin or viewer)! </li>
+                                    </ul>
+                                </li>
+                                <li><br>To quickly see what studies are in a <b>Collaborator Group</b>
+                                    <ul class="filled-circle">
+                                        <li> Go to the MPS-Db admin</li>
+                                        <li> Go to the Authentication and Authorization Section</li>
+                                        <li> Click on Groups</li>
+                                        <li> Look in the Collaborator Group Display column </li>
+                                        <li> Scroll through the groups or use the search bar</li>
+                                        <li> Click on the Show/Hide Collaborator Studies link</li>
                                     </ul>
                                 </li>
                             </ul>
@@ -4487,7 +4675,7 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="user_groups_admin">
-            <button class="collapsible1">Assigning Users To Groups (Data Group, Stakeholder Group, Access Group)</button>
+            <button name="my_buttons" class="collapsible1">Assigning Users To Groups (Data, Stakeholder, Access, and Collaborator)</button>
             <div class="content1">
                 <div id="usergroupsadmin" class="adminsubtainer">
                     <ul class="list-group">
@@ -4495,7 +4683,7 @@ Results: add a summary of the study results. </td>
                             <ul class="list-unstyled">
                                 <li>To assign users to a <b>Group</b>
                                     <ul class="filled-circle">
-                                        <li> Go to the MPS Database admin</li>
+                                        <li> Go to the MPS-Db admin</li>
                                         <li> Go to the Authentication and Authorization Section</li>
                                         <li> Click on Users</li>
                                         <li> Scroll through the users or use the search bar</li>
@@ -4508,27 +4696,34 @@ Results: add a summary of the study results. </td>
                                     <ul class="filled-circle">
                                         <li> Users should be assigned to appropriate groups when they register</li>
                                         <li> Users may have different roles in different groups</li>
+                                        <li> <b>All users of collaborator groups should be Viewers</b></li>
                                     </ul>
                                 </li>
-                                <li> <br> The term <b>Data Group</b> actually refers to three groups, one group for each role. The following is an example for <b>Data Group Rusyn_TAMU</b>
+                                <li> <br> The term <b>Data Group</b> actually refers to three groups, one group for each role. The following is an example for <b>Data Group Rusyn_TAMU</b> group
                                     <ul class="filled-circle">
                                         <li> <b>Rusyn_TAMU</b> - this is the editor group, sometimes referred to as the group proper </li>
                                         <li> <b>Rusyn_TAMU Admin</b> - admins can edit and sign off studies</li>
                                         <li> <b>Rusyn_TAMU Viewer</b> - can view studies prior to sign off</li>
                                     </ul>
                                 </li>
-                                <li> <br> The term <b>Stakeholder Group</b> also refers to three groups, one group for each role. The following is an example for <b>TCD_BBB_Vandy</b>
+                                <li> <br> The term <b>Stakeholder Group</b> also refers to three groups, one group for each role. The following is an example for <b>TCD_BBB_Vandy</b> group
                                     <ul class="filled-circle">
                                         <li> <b>TCD_BBB_Vandy </b> - this group must be present, but should not have members </li>
                                         <li> <b>TCD_BBB_Vandy Admin</b> – members are users who can acknowledge a study </li>
                                         <li> <b>TCD_BBB_Vandy Viewer</b> - members are users who can see a study but cannot acknowledge it </li>
                                     </ul>
                                 </li>
-                                <li> <br> The term <b>Access Group</b> also refers to three groups, one group for each role. The following is an example for the <b> TCD_BBB_Vandy</b>
+                                <li> <br> The term <b>Access Group</b> also refers to three groups, one group for each role. The following is an example for the <b> NCATS</b> group
                                     <ul class="filled-circle">
                                         <li> <b>NCATS </b> - group must be present, but should not have members </li>
                                         <li> <b>NCATS Admin</b> -  group should not have members </li>
                                         <li> <b>NCATS Viewer</b> - members are users with special access </li>
+                                    </ul>
+                                </li>
+                                <li> <br> The term <b>Collaborator Group</b> refers to two groups, one group editors and one for viewers. The following is an example for the <b> SQL-SAL_1.5</b> group
+                                    <ul class="filled-circle">
+                                        <li> <b>SQL-SAL_1.5 </b> - add this <b>Collaborator Group</b> to studies to share </li>
+                                        <li> <b>SQL-SAL_1.5 Viewer </b> - add the collaborators to this group </li>
                                     </ul>
                                 </li>
                             </ul>
@@ -4537,7 +4732,6 @@ Results: add a summary of the study results. </td>
                 </div>
             </div>
         </div>
-
 
     </div>
     {% endif %}
@@ -4566,6 +4760,9 @@ Results: add a summary of the study results. </td>
         </tbody>
       </table>
     </div>
+
+    <div id="expand_all" class="special-button">Click Here to Expand All Sections of Help</div>
+
 </div>
 </body>
 </html>
