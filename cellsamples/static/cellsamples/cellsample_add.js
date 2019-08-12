@@ -34,13 +34,22 @@ $(function() {
             success: function (json) {
                 var options = json.dropdown;
                 var current_value = subtype.val();
-                subtype.html(options);
-                if (current_value && $('#id_cell_subtype option[value='+current_value+']')[0]) {
-                    subtype.val(current_value);
+
+                subtype[0].selectize.clear();
+                subtype[0].selectize.clearOptions();
+                subtype[0].selectize.addOption(options);
+
+                if (current_value) {
+                    subtype[0].selectize.setValue(current_value);
                 }
-                else {
-                    subtype.val('');
-                }
+
+                // subtype.html(options);
+                // if (current_value && $('#id_cell_subtype option[value='+current_value+']')[0]) {
+                //     subtype.val(current_value);
+                // }
+                // else {
+                //     subtype.val('');
+                // }
             },
             error: function (xhr, errmsg, err) {
                 console.log(xhr.status + ": " + xhr.responseText);

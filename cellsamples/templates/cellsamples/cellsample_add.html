@@ -84,6 +84,7 @@
         <label for="cell_subtype" class="col-sm-2 control-label">Cell Origin*</label>
         <div class="col-sm-10">
             {{ form.cell_subtype }}
+            {# SLOPPY #}
             <br>
             <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
             If the Cell Origin is a cell line, please select the associated Cell Type first.
@@ -110,6 +111,9 @@
         <label for="receipt_date" class="col-sm-2 control-label">Receipt Date</label>
         <div class="col-sm-10">
           {{ form.receipt_date }}
+          <br>
+          <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+          If the Cell Origin is iPSC-derived, please specify a Receipt Date
         </div>
     </div>
 

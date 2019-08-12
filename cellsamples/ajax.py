@@ -14,7 +14,9 @@ def main(request):
 def get_cell_subtypes(request):
     """Acquires all available Cell Origins for the given cell type"""
 
-    dropdown = '<option value="">---------</option>'
+    # dropdown = '<option value="">---------</option>'
+
+    dropdown = [{'value': "", 'text': '---------'}]
 
     cell_type = request.POST.get('cell_type', '')
 
@@ -28,7 +30,8 @@ def get_cell_subtypes(request):
     for finding in findings:
         # match value to the desired subject ID
         value = str(finding.id)
-        dropdown += '<option value="' + value + '">' + str(finding) + '</option>'
+        # dropdown += '<option value="' + value + '">' + str(finding) + '</option>'
+        dropdown.append({'value': value, 'text': str(finding)})
 
     data = {}
 
