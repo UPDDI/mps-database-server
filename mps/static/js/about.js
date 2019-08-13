@@ -32,13 +32,13 @@ $(document).ready(function () {
         //console.log(current_index);
         //console.log($('#feature_section').find('.content2:eq("' + current_index + '")'));
         $('#feature_section').find('.content2:eq("' + current_index + '")').css('display', 'block');
-        if (current_index==9){
+        if (current_index==3){
             //console.log(current_index, "I am here in 9");
             $('.study-releases').css('display', 'block');
         } else {
             $('.study-releases').css('display', 'none');
         }
-        if (current_index==2){
+        if (current_index==1){
             //console.log(current_index, "I am here in 2");
             $('.organs-and-models').css('display', 'block');
         } else {
