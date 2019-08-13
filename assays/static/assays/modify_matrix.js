@@ -580,6 +580,15 @@ $(document).ready(function () {
     // }
 
     function set_new_protocol() {
+        // See if the table can be displayed
+        // Sloppy
+        if (protocol.val()) {
+            $('#study_setup_table_section').show('slow');
+        }
+        else {
+            $('#study_setup_table_section').hide('slow');
+        }
+
         // console.log('SET NEW PROTOCOL', first_run, keep_current);
         // TERMINATE EARLY IF FIRST RUN
         if (first_run) {
@@ -653,6 +662,15 @@ $(document).ready(function () {
         }
 
         // console.log(current_setup_data);
+
+        // See if the table can be displayed
+        // Sloppy
+        if (protocol.val()) {
+            $('#study_setup_table_section').show('slow');
+        }
+        else {
+            $('#study_setup_table_section').hide('slow');
+        }
 
         window.spinner.stop();
     }
