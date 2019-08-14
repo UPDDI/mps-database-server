@@ -17,7 +17,7 @@
 {% endblock %}
 
 {% block sidebar %}
-    {% include 'assays/grouping_filtering.html' %}
+    {% include 'assays/grouping_filtering.html' with power_analysis="true" intra_flag="true" %}
 {% endblock %}
 
 {% block fluid-content %}
@@ -39,6 +39,10 @@
 
     </table>
 
+    {# Hidden tables of selection parameters #}
+    <div id="data_group_selections" hidden>
+    </div>
+
     <hr>
 
     <div id='compounds-table-container' hidden>
@@ -52,12 +56,33 @@
         </table>
         <br>
         <div class="row">
-            <div class="col-xs-4 col-xs-offset-2 text-center">
-                <input type="radio" id="one-sample" name="sample-num" value="one-sample">
-                <label for="one-sample">One Sample </label>
-                <br>
-                <input type="radio" id="two-sample" name="sample-num" value="two-sample" checked>
-                <label for="two-sample">Two Sample </label>
+            <div class="col-xs-5 no-padding">
+                <div id="pa-value-graph" style="display: inline-block; width: 100%">
+
+                </div>
+            </div>
+            <div class="col-xs-2 no-padding">
+                <div id="power-analysis-method" class="well" style="margin-top: 75px">
+                    <label>Effect Size Methods</label><br>
+                    <input type="radio" id="pam-cohen-d" name="pam" value="d" checked>
+                    <label for="pam-cohen-d">Cohen's d &nbsp;</label><br>
+                    <input type="radio" id="pam-glass-d" name="pam" value="D">
+                    <label for="pam-glass-d">Glass's ∆ &nbsp;&nbsp;&thinsp;</label><br>
+                    <input type="radio" id="pam-hedge-g" name="pam" value="g">
+                    <label for="pam-hedge-g">Hedges' g &nbsp;&thinsp;</label><br>
+                    <input type="radio" id="pam-hedge-gstar" name="pam" value="gs">
+                    <label for="pam-hedge-gstar">Hedges' g* </label>
+                </div>
+                <table id='one-sample-time-points-table' class="display table-bordered" hidden>
+
+                </table>
+            </div>
+            <div id="power-analysis-options" class="col-xs-4 text-center" style="margin-top: 75px">
+                <!-- <input type="radio" id="one-sample" name="sample-num" value="one-sample">
+                <label for="one-sample">One Sample </label> -->
+                <!-- <br> -->
+                <input type="radio" id="two-sample" name="sample-num" value="two-sample" checked hidden>
+                <label for="two-sample" hidden>Two Sample </label>
                 <br><br>
                 <label for="sig-level">Significance Level (α)</label>
                 <input id="sig-level" type="text" name="sig-level" size="5" value="0.05">
@@ -65,44 +90,22 @@
                 <br><br>
                 <button id="power-analysis-button" class="btn btn-lg btn-primary" disabled>Run Analysis</button>
             </div>
-            <div class="col-sm-2 well">
-                <label>Effect Size Methods</label><br>
-                <input type="radio" id="pam-cohen-d" name="pam" value="d" checked>
-                <label for="pam-cohen-d">Cohen's d &nbsp;</label><br>
-                <input type="radio" id="pam-glass-d" name="pam" value="D">
-                <label for="pam-glass-d">Glass's ∆ &nbsp;&nbsp;&thinsp;</label><br>
-                <input type="radio" id="pam-hedge-g" name="pam" value="g">
-                <label for="pam-hedge-g">Hedges' g &nbsp;&thinsp;</label><br>
-                <input type="radio" id="pam-hedge-gstar" name="pam" value="gs">
-                <label for="pam-hedge-gstar">Hedges' g* </label>
-            </div>
         </div>
     </div>
-    <div id='power-analysis-container' hidden>
+    <div id='two-sample-power-analysis-container' hidden>
         <div class="row">
-            <div class="col-xs-6">
-                <div id="pa-value-graph">
+            <div class="col-xs-6 no-padding">
+                <div id="pa-p-value-graph">
 
                 </div>
             </div>
-            <div class="col-xs-6">
-                <div class="row">
-                    <div class="col-xs-12">
-                        <div id="pa-p-value-graph">
+            <div class="col-xs-6 no-padding">
+                <div id="pa-power-graph">
 
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-xs-12">
-                        <div id="pa-power-graph">
-
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
-        <br>
+        <br><br><br>
         <div class="row">
             <div class="col-xs-9">
                 <div id="pa-sample-size-graph">
@@ -119,7 +122,74 @@
             </div>
         </div>
     </div>
+    <div id='one-sample-power-analysis-container' hidden>
+        <div class="row">
+            <div class="col-xs-4">
+                <table id='one-sample-summary-table' class="display table table-bordered table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Time (day)</th>
+                            <th>Number of Samples</th>
+                            <th>Mean</th>
+                            <th>Standard Deviation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="summary-time">&nbsp;</td>
+                            <td id="summary-sample-number">&nbsp;</td>
+                            <td id="summary-mean">&nbsp;</td>
+                            <td id="summary-std">&nbsp;</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br>
+                <label>Note: Enter two values to determine the third OR one value to see a plot of the other two.</label>
+                <table id='one-sample-power-analysis-report' class="display table table-bordered table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Differences</th>
+                            <th>% Change (from mean)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input id="one-sample-diff" type="text" style="display:table-cell; width:100%"></td>
+                            <td><input id="one-sample-percent" type="text" style="display:table-cell; width:100%"></td>
+                        </tr>
+                    </tbody>
+                    <thead>
+                        <tr>
+                            <th>Sample Size</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input id="one-sample-size" type="text" style="display:table-cell; width:100%"></td>
+                        </tr>
+                    </tbody>
+                    <thead>
+                        <tr>
+                            <th>Power</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input id="one-sample-power" type="text" value="0.8" style="display:table-cell; width:100%"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-xs-8">
+                <div id="one-sample-multi-graph">
+
+                </div>
+            </div>
+        </div>
+    </div>
 
     {# Just a spacer (and yes, inline styles are ugly)#}
     <div style="padding-bottom: 250px;"></div>
+
+    <div hidden id="data_group_info_table_display" class="container hidden-print bg-warning ui-dialog">
 {% endblock %}

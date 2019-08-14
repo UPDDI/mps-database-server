@@ -465,8 +465,11 @@
     </li>
 
 
-
+    {% if not power_analysis %}
     <li>
+    {% else %}
+    <li hidden>
+    {% endif %}
         <a href="#compound_metadata" class="text-center collapsed" data-toggle="collapse" aria-expanded="false">
             Compound Parameters
         </a>

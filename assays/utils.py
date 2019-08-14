@@ -33,6 +33,7 @@ from scipy.interpolate import CubicSpline
 from scipy import integrate
 from sympy import gamma
 import rpy2.robjects as robjects
+from rpy2.robjects import FloatVector
 
 import csv
 import codecs
@@ -2171,18 +2172,21 @@ def pa_power_two_sample_size(n1, n2, es_value, sig_level=0.05):
 
 
 def pa_t_test(x, y):
-    xp = robjects.FloatVector(x)
-    yp = robjects.FloatVector(y)
-    rstring = """
-    function(x,y){
-    t_pvalue<-t.test(x,y)$p.value
-    t_pvalue
-    }
-    """
-    rfunc = robjects.r(rstring)
-    r_result = rfunc(xp, yp)
-    pr = tuple(r_result)
-    p_value = pr[0]
+    if (x.std() == 0.0 or y.std() == 0.0):
+        p_value = None
+    else:
+        xp = robjects.FloatVector(x)
+        yp = robjects.FloatVector(y)
+        rstring = """
+        function(x,y){
+        t_pvalue<-t.test(x,y)$p.value
+        t_pvalue
+        }
+        """
+        rfunc = robjects.r(rstring)
+        r_result = rfunc(xp, yp)
+        pr = tuple(r_result)
+        p_value = pr[0]
     return p_value
 
 
@@ -2519,7 +2523,7 @@ def pa_power_sample_size_curves_matrix(power_group_data, power_inteval=0.02, typ
     return power_sample_curves_table.dropna()
 
 
-def power_analysis(data, type, sig):
+def two_sample_power_analysis(data, type, sig):
     # Initialize a workbook
     # Load the summary data into the dataframe
     power_group_data = pd.DataFrame(
@@ -2623,3 +2627,207 @@ def create_power_analysis_group_table(group_count, study_data):
     power_analysis_group_table = power_analysis_group_table.fillna('')
 
     return power_analysis_group_table.to_dict('split')
+
+# One Sample Power Analysis
+def pa1_predict_sample_size_given_delta_and_power(delta, power, sig_level, sd):
+    if power > 0 and power < 1:
+        pdata=FloatVector([delta, sd, power, sig_level])
+
+        rstring = """
+        function(pdata){
+        pp <- try(power.t.test(n = NULL, delta =pdata[1], sd=pdata[2],sig.level =pdata[4], power =pdata[3] ,
+                type = "one.sample",alternative = "two.sided"),silent = TRUE)
+              if (!inherits(pp,"try-error")){
+                sample_size<-pp$n}
+              else
+                sample_size<-0
+        sample_size
+        }
+        """
+        rfunc = robjects.r(rstring)
+        r_result = rfunc(pdata)
+        pr = tuple(r_result)
+        sample_size = pr[0]
+        if sample_size != 0:
+            sample_size = sample_size
+        else:
+            sample_size = np.NAN
+    else:
+        sample_size = np.NAN
+    return sample_size
+
+
+def pa1_predicted_power_given_delta_and_sample_size(delta, sample_size, sig_level, sd):
+    if sig_level > 0 and sig_level < 1:
+        pdata = FloatVector([delta, sd, sample_size, sig_level])
+
+        rstring = """
+        function(pdata){
+        pp <- try(power.t.test(n = pdata[3], delta =pdata[1], sd=pdata[2],sig.level =pdata[4], power = NULL,
+                type = "one.sample",alternative = "two.sided"),silent = TRUE)
+              if (!inherits(pp,"try-error")){
+                power_value<-pp$power}
+              else
+                power_value<-0
+        power_value
+        }
+        """
+        rfunc = robjects.r(rstring)
+        r_result = rfunc(pdata)
+        pr = tuple(r_result)
+        power_value = pr[0]
+        if power_value != 0:
+            power_value = power_value
+        else:
+            power_value = np.NAN
+    else:
+        power_value = np.NAN
+    return power_value
+
+
+def pa1_predicted_delta_given_sample_size_and_power(sample_size, power, sig_level, sd):
+    if power > 0 and power < 1:
+        pdata = FloatVector([sd, sample_size, power, sig_level])
+
+        rstring = """
+        function(pdata){
+        pp <- try(power.t.test(n = pdata[2], delta = NULL, sd=pdata[1],sig.level =pdata[4], power = pdata[3],
+                type = "one.sample",alternative = "two.sided"),silent = TRUE)
+              if (!inherits(pp,"try-error")){
+                delta<-pp$delta}
+              else
+                delta<-0
+        delta
+        }
+        """
+        rfunc = robjects.r(rstring)
+        r_result = rfunc(pdata)
+        pr = tuple(r_result)
+        delta = pr[0]
+        if delta != 0:
+            delta = delta
+        else:
+            delta = np.NAN
+    else:
+        delta = np.NAN
+    return delta
+
+
+def one_sample_power_analysis_calculation(sample_data, sig_level, differences, sample_size, power):
+
+    # Calculate the standard deviation of sample data
+    sd=np.std(sample_data, ddof=1)
+    if np.isnan(differences) and np.isnan(power) and np.isnan(sample_size):
+        power_analysis_result='The differences,sample_size and power are null for all.'
+    else:
+        ##############Given Diffrences
+        if ~np.isnan(differences):
+            if np.isnan(power) and np.isnan(sample_size):
+                pw_columns = ['Sample Size', 'Power']
+                sample_size_array = np.arange(2, 101, 1)  # Sample size is up to 100
+                power_analysis_result = pd.DataFrame(index=range(len(sample_size_array)),columns=pw_columns)
+                for i_size in range(len(sample_size_array)):
+                    sample_size_loc=sample_size_array[i_size]
+                    power_value = pa1_predicted_power_given_delta_and_sample_size(differences, sample_size_loc, sig_level, sd)
+                    power_analysis_result.iloc[i_size, 0] = sample_size_loc
+                    power_analysis_result.iloc[i_size, 1] = power_value
+
+        #################### Given sample size
+        if ~np.isnan(sample_size):
+            if np.isnan(differences) and np.isnan(power):
+                pw_columns = ['Differences', 'Power']
+                power_array = np.arange(0, 1, 0.01)  # power is between 0 and 1
+                power_analysis_result = pd.DataFrame(index=range(len(power_array)), columns=pw_columns)
+                for i_size in range(len(power_array)):
+                    power_loc = power_array[i_size]
+                    differences_value = pa1_predicted_delta_given_sample_size_and_power(sample_size, power_loc, sig_level, sd)
+                    if differences_value > 0:
+                        power_analysis_result.iloc[i_size, 0] = differences_value
+                    power_analysis_result.iloc[i_size, 1] = power_loc
+
+        #################### Given power
+        if ~np.isnan(power):
+            if np.isnan(differences) and np.isnan(sample_size):
+                pw_columns = ['Sample Size', 'Differences']
+                sample_size_array = np.arange(2, 101, 1)  # power is between 0 and 1
+                power_analysis_result = pd.DataFrame(index=range(len(sample_size_array)), columns=pw_columns)
+                for i_size in range(len(sample_size_array)):
+                    sample_size_loc = sample_size_array[i_size]
+                    differences_value = pa1_predicted_delta_given_sample_size_and_power(sample_size_loc, power, sig_level, sd)
+                    if differences_value > 0:
+                        power_analysis_result.iloc[i_size, 1] = differences_value
+                    power_analysis_result.iloc[i_size, 0] = sample_size_loc
+
+        ####### Given power and sample size predict differences
+        if (np.isnan(differences)) and (~np.isnan(power)) and (~np.isnan(sample_size)):
+            power_analysis_result = pa1_predicted_delta_given_sample_size_and_power(sample_size, power, sig_level, sd)
+
+        ####### Given differences and sample size predict power
+        if (~np.isnan(differences)) and (np.isnan(power)) and (~np.isnan(sample_size)):
+            power_analysis_result=pa1_predicted_power_given_delta_and_sample_size(differences, sample_size, sig_level, sd)
+
+        ######## Given differences and power predict sample size
+        if (~np.isnan(differences)) and (~np.isnan(power)) and (np.isnan(sample_size)):
+            power_analysis_result = round(pa1_predict_sample_size_given_delta_and_power(differences, power, sig_level, sd))
+
+    return power_analysis_result
+
+
+def one_sample_power_analysis(one_sample_data, sig_level, one_sample_compound, one_sample_tp):
+    # Load the summary data into the dataframe
+    power_group_data = pd.DataFrame(
+        one_sample_data,
+        columns=['Group',
+                 'Time',
+                 'Compound Treatment(s)',
+                 'Chip ID',
+                 'Value']
+    )
+
+    power_group_data = power_group_data.dropna(subset=['Value'])
+    # number of unique compounds
+    compound_group = power_group_data[["Compound Treatment(s)"]]
+    compound_unique_group = compound_group.drop_duplicates()
+    # select compound
+    compound_index = 2
+
+    # query the target data for selected compound
+    # compound_data = power_group_data[power_group_data['Compound Treatment(s)'] == compound_unique_group.iloc[compound_index, 0]]
+    compound_data = power_group_data[power_group_data['Compound Treatment(s)'] == one_sample_compound]
+
+    # Get unique time points for selected compound data
+    compound_time = compound_data[["Time"]]
+    time_unique_group = compound_time.drop_duplicates()
+
+    # Select time point
+    # Row of the user's selected time point - PASSED after selection in the the power curves table
+    time = int(one_sample_tp*1440)
+
+    # Query sample data series for selected compound and time point
+    sample_data = compound_data[compound_data['Time'] == time]['Value']
+    # sample_data = compound_data[compound_data['Time'] == time_unique_group.iloc[time_index, 0]]['Value']
+    sample_mean = np.mean(sample_data)
+
+    # Sample population size4_Or_More
+    number_sample_population = len(sample_data)
+    # The power analysis will be exceuted only when the sample population has more than one sample
+    # Based the GUI's setting, return the power analysis results by calculated data or 2D curve
+    # At defined significance level, given Differences, predict sample size vs power curve
+
+    if number_sample_population < 2:
+        print('Less than 2 samples')
+    else:
+        ########################One Sample Power Analysis Parameter Setting   ###############################
+        opt_percent_change = 'No'  # set input option for differences
+
+        percent_change = 20  # percentage change from the sample population mean
+        if opt_percent_change == 'Yes':
+            differences = sample_mean*percent_change/100
+        else:
+            differences = 800  # If you want to predict differences, set it to be np.NAN otherwise input the dirrences or percentage change from the mean
+
+        sample_size = np.NAN  # If you want to predict sample size, set it to be np.NAN otherwise input your sample size
+        power = 0.7          # If you want to predict power, set it to be np.NAN otherwise input the power value between 0 and 1
+
+        # Power analysis results will be returned by user's input
+        power_analysis_result = one_sample_power_analysis_calculation(sample_data, sig_level, differences, sample_size, power)

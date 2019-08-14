@@ -54,7 +54,8 @@ from .utils import (
     # NO_CELLS_STRING,
     # NO_SETTINGS_STRING,
     intra_status_for_inter,
-    power_analysis,
+    two_sample_power_analysis,
+    one_sample_power_analysis,
     create_power_analysis_group_table
 )
 
@@ -3164,6 +3165,8 @@ def get_inter_study_reproducibility(
         'Value',
         'MPS User Group',
         # NAME THIS SOMETHING ELSE
+        # THIS IS A DATA GROUP, NOT A TREATMENT GROUP
+        # TREATMENT GROUPS = ITEMS, DATA GROUP = DATA POINTS
         'Treatment Group'
     ])
 
@@ -3840,7 +3843,17 @@ def fetch_power_analysis_group_table(request):
             point.time / 1440.0, []
         ).append(point.value)
 
-        pass_to_power_analysis_dict.setdefault(point.data_group, {}).setdefault(compound_table_current_compounds, []).append([point.data_group, point.time, compound_table_current_compounds, point.matrix_item.name, point.value])
+        pass_to_power_analysis_dict.setdefault(
+            point.data_group, {}
+        ).setdefault(
+            compound_table_current_compounds, []
+        ).append([
+            point.data_group,
+            point.time,
+            compound_table_current_compounds,
+            point.matrix_item.name,
+            point.value
+        ])
 
     # TODO BAD NOT DRY
     for chart_group, legends in list(initial_chart_data.items()):
@@ -3930,7 +3943,11 @@ def fetch_power_analysis_group_table(request):
     data['data_group_to_sample_locations'] = final_data_group_to_sample_locations
     data['data_group_to_organ_models'] = final_data_group_to_organ_models
 
-    data['header_keys'] = data_header_keys
+    # data['header_keys'] = data_header_keys
+    data['header_keys'] = {
+        'treatment': treatment_header_keys,
+        'data': data_header_keys
+    }
 
     data['treatment_groups'] = treatment_group_representatives
 
@@ -3944,11 +3961,11 @@ def fetch_power_analysis_group_table(request):
                         content_type='application/json')
 
 
-def fetch_power_analysis_results(request):
+def fetch_two_sample_power_analysis_results(request):
     power_analysis_input = json.loads(request.POST.get('full_data', ''))
     pam = request.POST.get('pam', '')
     sig = request.POST.get('sig', '')
-    power_analysis_data = power_analysis(power_analysis_input, pam, float(sig))
+    power_analysis_data = two_sample_power_analysis(power_analysis_input, pam, float(sig))
 
     data = {}
     for key, current_list in power_analysis_data.items():
@@ -3960,6 +3977,20 @@ def fetch_power_analysis_results(request):
     data['power_analysis_data'] = power_analysis_data
 
     return HttpResponse(json.dumps(data), content_type='application/json')
+
+
+def fetch_one_sample_power_analysis_results(request):
+    power_analysis_input = json.loads(request.POST.get('full_data', ''))
+    one_sample_compound = request.POST.get('one_sample_compound', '')
+    sig = request.POST.get('sig', '')
+    one_sample_tp = request.POST.get('one_sample_tp', '')
+    power_analysis_data = one_sample_power_analysis(power_analysis_input, float(sig), one_sample_compound, float(one_sample_tp))
+
+    data = {}
+    data['power_analysis_data'] = power_analysis_data
+
+    return HttpResponse(json.dumps(data), content_type='application/json')
+
 
 def get_pubmed_reference_data(request):
     """Returns a dictionary of PubMed data given a PubMed ID"""
@@ -4061,8 +4092,11 @@ switch = {
     'fetch_power_analysis_group_table': {
         'call': fetch_power_analysis_group_table
     },
-    'fetch_power_analysis_results': {
-        'call': fetch_power_analysis_results
+    'fetch_two_sample_power_analysis_results': {
+        'call': fetch_two_sample_power_analysis_results
+    },
+    'fetch_one_sample_power_analysis_results': {
+        'call': fetch_one_sample_power_analysis_results
     },
     'fetch_data_points_from_study_set': {
         'call': fetch_data_points_from_study_set
