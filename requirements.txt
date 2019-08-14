@@ -3,7 +3,7 @@
 # uwsgi
 # django-uwsgi-cache
 networkx
-Django==2.1.10
+Django==2.1.11
 Jinja2
 Markdown
 MarkupSafe

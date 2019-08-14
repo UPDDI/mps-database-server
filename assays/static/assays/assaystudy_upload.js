@@ -24,6 +24,9 @@ $(document).ready(function () {
     window.CHARTS.study_id = study_id;
 
     // PROCESS GET PARAMS INITIALLY
+    window.GROUPING.process_get_params();
+
+    // PROCESS GET PARAMS INITIALLY
     // window.GROUPING.process_get_params();
     // window.GROUPING.generate_get_params();
 

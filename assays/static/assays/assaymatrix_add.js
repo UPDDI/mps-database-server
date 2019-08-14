@@ -504,7 +504,11 @@ $(document).ready(function () {
                 var errors_display = null;
                 var errors_list = null;
 
-                var item_was_marked_deleted = $(this).find('input[name$="DELETE"]').prop('checked');
+                var item_was_marked_deleted = false;
+
+                if (prefix === 'item') {
+                    item_was_marked_deleted = $(this).find('input[name$="DELETE"]').prop('checked');
+                }
 
                 if (errors.length > 0 && !item_was_marked_deleted) {
                     errors_display = $('#empty_error_html').children().clone();
