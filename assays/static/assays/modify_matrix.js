@@ -382,8 +382,16 @@ $(document).ready(function () {
             buttons_to_add = create_clone_button(row_index) + create_delete_button('row', row_index);
             new_row.append(
                 $('<td>').html(
-                    buttons_to_add
+                    '<div class="no-wrap">' + buttons_to_add + '</div>'
                 ).append(
+                    $('<h3>').append($('<span>')
+                        .addClass('label label-primary')
+                        .text('Group ' + (row_index + 1))
+                    )
+                )
+            );
+            new_row.append(
+                $('<td>').append(
                     $('#id_number_of_items')
                         .clone()
                         .removeAttr('id')
@@ -392,6 +400,14 @@ $(document).ready(function () {
             );
         }
         else {
+            new_row.append(
+                $('<td>').append(
+                    $('<h3>').append($('<span>')
+                        .addClass('label label-primary')
+                        .text('Group ' + row_index)
+                    )
+                )
+            );
             new_row.append(
                 $('<td>')
                 .append(

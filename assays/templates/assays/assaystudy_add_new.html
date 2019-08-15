@@ -231,7 +231,7 @@
     {% endcomment %}
 
     {# TODO PUT MODEL SELECTION STUFF HERE #}
-    <legend>Setup Information</legend>
+    <legend>Study Setup</legend>
 
     {% include 'generic_field.html' with field=form.organ_model label="MPS Model" %}
     {% include 'generic_field.html' with field=form.organ_model_protocol label="MPS Model Version" %}
@@ -323,7 +323,7 @@
 
         {# Set of buttons for adding cells, compounds, settings etc. #}
         <div class="padded-bottom">
-        <a role="button" class="btn btn-success" id="add_group_button"><span class="glyphicon glyphicon-plus-sign"></span>Add Group</a>
+        <a role="button" class="btn btn-success" id="add_group_button"><span class="glyphicon glyphicon-plus-sign"></span>Add Setup Group</a>
         </div>
 
         <div class="padded-bottom">
@@ -335,6 +335,7 @@
 
         <table class="table table-striped table-bordered table-nonfluid" id="study_setup_table">
             <thead>
+                <th>Setup Group</th>
                 <th>Number of Chips</th>
                 <th>Test Type</th>
                 <th hidden class="cell_start"></th>

@@ -1673,13 +1673,18 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         super(AssayStudyFormNew, self).__init__(*args, **kwargs)
         self.fields['group'].queryset = self.groups
 
+        # Make sure there are only organ models with versions
+        self.fields['organ_model'].queryset = OrganModel.objects.filter(
+            organmodelprotocol__isnull=False
+        )
+
         # SLOPPY
         self.fields['test_type'].widget.attrs['class'] += ' no-selectize test-type'
         # Bad
         self.fields['test_type'].widget.attrs['style'] = 'width:100px;'
         self.fields['number_of_items'].widget.attrs['class'] = 'form-control number-of-items'
         # Bad
-        self.fields['number_of_items'].widget.attrs['style'] = 'margin-top:10px;'
+        # self.fields['number_of_items'].widget.attrs['style'] = 'margin-top:10px;'
 
     class Meta(object):
         model = AssayStudy
