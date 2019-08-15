@@ -672,6 +672,10 @@ class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
         self.fields['matrix_item_full_organ_model'].widget.attrs['class'] = 'no-selectize'
         self.fields['matrix_item_full_organ_model_protocol'].widget.attrs['class'] = 'no-selectize'
 
+        # No selectize on action either (hides things, looks odd)
+        # CONTRIVED
+        self.fields['action'].widget.attrs['class'] += ' no-selectize'
+
     ### ADDITIONAL MATRIX FIELDS (unsaved)
     number_of_items = forms.IntegerField(required=False)
 
@@ -1670,8 +1674,12 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         self.fields['group'].queryset = self.groups
 
         # SLOPPY
-        self.fields['test_type'].widget.attrs['class'] = 'no-selectize test-type'
+        self.fields['test_type'].widget.attrs['class'] += ' no-selectize test-type'
+        # Bad
+        self.fields['test_type'].widget.attrs['style'] = 'width:100px;'
         self.fields['number_of_items'].widget.attrs['class'] = 'form-control number-of-items'
+        # Bad
+        self.fields['number_of_items'].widget.attrs['style'] = 'margin-top:10px;'
 
     class Meta(object):
         model = AssayStudy
@@ -2081,4 +2089,6 @@ class AssayMatrixFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         super(AssayMatrixFormNew, self).__init__(*args, **kwargs)
 
         # SLOPPY
-        self.fields['test_type'].widget.attrs['class'] = 'no-selectize test-type'
+        self.fields['test_type'].widget.attrs['class'] += ' no-selectize test-type'
+        # Bad
+        self.fields['test_type'].widget.attrs['style'] = 'width:100px;'

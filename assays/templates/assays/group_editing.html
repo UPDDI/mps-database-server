@@ -1,3 +1,65 @@
+{# Only in Matrix interface #}
+<div style="display: none;">
+    <table>
+    <tr id="empty_matrix_item_html">
+    <td data-prefix="{{ item_formset.prefix }}" class="matrix_item-td">
+        <div class="error-message-section error-display matrix_item-setup_set_section important-display">
+        </div>
+        <div align="center">
+            <span><a disabled href="#" class="matrix_item-name lead matrix_item-setup_set_section"></a></span>
+    {#            <span class="matrix_item-current_setup"></span>#}
+    {#            <a class="pull-right btn btn-xs">#}
+    {#                <span class="glyphicon glyphicon-pencil"></span>#}
+    {#            </a>#}
+        </div>
+        {% if detail %}
+        <div class="well matrix_item-display no-margins">
+        {% else %}
+        <div class="well matrix_item-display">
+        {% endif %}
+            <div>
+                <span class="matrix_item-setup_date matrix_item-setup_set_section"></span>
+                {% if not detail %}
+                <a class="pull-right btn btn-xs form-delete">
+                    <span class="glyphicon glyphicon-remove text-danger"></span>
+                </a>
+                {% endif %}
+    {#                <a class="pull-right btn btn-xs form-view">#}
+    {#                    <span class="glyphicon glyphicon-eye-open"></span>#}
+    {#                </a>#}
+            </div>
+            <div>
+                <span class="matrix_item-test_type matrix_item-setup_set_section"></span>
+            </div>
+            <div class="matrix_item-failure">
+                <span class="matrix_item-failure_time matrix_item-setup_set_section"></span>
+                <span class="matrix_item-failure_reason matrix_item-setup_set_section"></span>
+            </div>
+            <div class="matrix_item-setup_section">
+                <div>
+                    <span class="matrix_item-organ_model matrix_item-setup_set_section"></span>
+                    <span class="matrix_item-organ_model_protocol matrix_item-setup_set_section"></span>
+                </div>
+                <div class="matrix_item-device matrix_item-setup_set_section"></div>
+                <div>
+                    <span class="matrix_item-variance_from_organ_model_protocol matrix_item-setup_set_section"></span>
+                </div>
+            </div>
+            <div class="matrix_item-notes_section">
+                <span class="matrix_item-scientist matrix_item-setup_set_section"></span>
+                <span class="matrix_item-notebook matrix_item-setup_set_section"></span>
+                <span class="matrix_item-notebook_page matrix_item-setup_set_section"></span>
+                <span class="matrix_item-notes matrix_item-setup_set_section"></span>
+            </div>
+        </div>
+        <div class="matrix_item-cell matrix_item-setup_set_section"></div>
+        <div class="matrix_item-compound matrix_item-setup_set_section"></div>
+        <div class="matrix_item-setting matrix_item-setup_set_section"></div>
+    </td>
+    </tr>
+    </table>
+</div>
+
 {# Compound #}
 <div hidden id="compound_dialog" title="Edit a Compound">
     <div class="row">
@@ -230,13 +292,18 @@
     {% else %}
     <div data-prefix="{{ cell_formset.prefix }}" class="alert alert-success force-off-black-text cell-display">
     {% endif %}
-        <div class="error-message-section error-display">
+        <div class="error-message-section error-display important-display">
         </div>
-        <div>
-            <span class="cell-cell_sample"></span>
-            <a class="pull-right btn btn-xs subform-delete">
+        <div class="important-display no-wrap">
+            <a class="btn btn-xs subform-edit">
+                <span class="glyphicon glyphicon-pencil text-warning"></span>
+            </a>
+            <a class="btn btn-xs subform-delete">
                 <span class="glyphicon glyphicon-remove text-danger"></span>
             </a>
+        </div>
+        <div class="important-display">
+            <span class="cell-cell_sample"></span>
         </div>
         <div>Passage: <span class="cell-passage"></span></div>
         <div>Biosensor: <span class="cell-biosensor"></span></div>
@@ -265,15 +332,20 @@
     {% else %}
     <div data-prefix="{{ compound_formset.prefix }}" class="alert alert-info force-off-black-text compound-display">
     {% endif %}
-        <div class="error-message-section error-display">
+        <div class="error-message-section error-display important-display">
         </div>
-        <div>
+        <div class="important-display no-wrap">
+            <a class="btn btn-xs subform-edit">
+                <span class="glyphicon glyphicon-pencil text-warning"></span>
+            </a>
+            <a class="btn btn-xs subform-delete">
+                <span class="glyphicon glyphicon-remove text-danger"></span>
+            </a>
+        </div>
+        <div class="important-display">
             <span class="compound-compound"></span>
             <span class="compound-concentration"></span>
             <span class="compound-concentration_unit"></span>
-            <a class="pull-right btn btn-xs subform-delete">
-                <span class="glyphicon glyphicon-remove text-danger"></span>
-            </a>
         </div>
         <div>
             <span class="compound-supplier_text"></span>
@@ -309,15 +381,20 @@
     {% else %}
     <div data-prefix="{{ setting_formset.prefix }}" class="alert alert-warning force-off-black-text setting-display">
     {% endif %}
-        <div class="error-message-section error-display">
+        <div class="error-message-section error-display important-display">
         </div>
-        <div>
+        <div class="important-display no-wrap">
+            <a class="btn btn-xs subform-edit">
+                <span class="glyphicon glyphicon-pencil text-warning"></span>
+            </a>
+            <a class="btn btn-xs subform-delete">
+                <span class="glyphicon glyphicon-remove text-danger"></span>
+            </a>
+        </div>
+        <div class="important-display">
             <span class="setting-setting"></span>
             <span class="setting-value"></span>
             <span class="setting-unit"></span>
-            <a class="pull-right btn btn-xs subform-delete">
-                <span class="glyphicon glyphicon-remove text-danger"></span>
-            </a>
         </div>
         <div class="setting-addition_time_section">
             <span>Added on D</span>

@@ -287,6 +287,40 @@
             </div>
             </div>
 
+            <div class="row">
+                <div class="col-md-4 col-lg-3">
+                    <div class="fancy-checkbox table-filter padded-bottom" align="left">
+                        {# useless value #}
+                        <input type="checkbox" name="show_details" id="show_details" value=".full_details" />
+                        <div class="btn-group">
+                            <label for="show_settings" class="btn btn-default">
+                                <span class="glyphicon glyphicon-ok"></span>
+                                <span> </span>
+                            </label>
+                            <label for="show_details" class="btn btn-default active">
+                                Show Full Details
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3" hidden>
+                    <div class="fancy-checkbox table-filter padded-bottom" align="left">
+                        <input class="visibility-checkbox" type="checkbox" name="show_errors" id="show_errors" value=".error-display" checked/>
+                        <div class="btn-group">
+                            <label for="show_settings" class="btn btn-warning">
+                                <span class="glyphicon glyphicon-ok"></span>
+                                <span> </span>
+                            </label>
+                            <label for="show_errors" class="btn btn-danger active">
+                                Show Errors
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                {# Spacer, contrived #}
+                <div class="col-md-4 col-lg-3"></div>
+            </div>
+
         {# Set of buttons for adding cells, compounds, settings etc. #}
         <div class="padded-bottom">
         <a role="button" class="btn btn-success" id="add_group_button"><span class="glyphicon glyphicon-plus-sign"></span>Add Group</a>

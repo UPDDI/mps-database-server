@@ -254,9 +254,7 @@ $(document).ready(function () {
 
     // TODO NEEDS MAJOR REVISION
     function get_content_display(prefix, row_index, column_index, content) {
-        var html_contents = [
-            create_edit_button(prefix, row_index, column_index)
-        ];
+        var html_contents = [];
 
         var new_display = empty_html[prefix].clone();
 
@@ -264,6 +262,9 @@ $(document).ready(function () {
         new_display.find('.subform-delete').attr('data-prefix', prefix).attr('data-row', row_index).attr('data-column', column_index);
 
         if (content && Object.keys(content).length) {
+            // Hide 'edit' button
+            html_contents.push(create_edit_button(prefix, row_index, column_index, true));
+
             $.each(content, function(key, value) {
                 // html_contents.push(key + ': ' + value);
                 // I will need to think about invalid fields
@@ -286,6 +287,10 @@ $(document).ready(function () {
 
             html_contents.push(new_display.html());
         }
+        else {
+            // Show 'edit' button
+            html_contents.push(create_edit_button(prefix, row_index, column_index, false));
+        }
 
         html_contents = html_contents.join('<br>');
 
@@ -303,21 +308,29 @@ $(document).ready(function () {
     var study_setup_head = study_setup_table.find('thead').find('tr');
     var study_setup_body = study_setup_table.find('tbody');
 
-    function create_edit_button(prefix, row_index, column_index) {
-        return '<a data-edit-button="true" data-row="' + row_index + '" data-prefix="' + prefix + '" data-column="' + column_index + '" role="button" class="btn btn-primary">Edit</a>';
+    // MISNOMER, NOW MORE OF AN ADD BUTTON
+    function create_edit_button(prefix, row_index, column_index, hidden) {
+        // Sloppy
+        if (hidden) {
+            return '<a data-edit-button="true" data-row="' + row_index + '" data-prefix="' + prefix + '" data-column="' + column_index + '" role="button" class="btn btn-success collapse">Add</a>';
+        }
+        else {
+            return '<a data-edit-button="true" data-row="' + row_index + '" data-prefix="' + prefix + '" data-column="' + column_index + '" role="button" class="btn btn-success">Add</a>';
+        }
     }
 
     function create_delete_button(prefix, index) {
         if (prefix === 'row') {
-            return '<a data-delete-row-button="true" data-row="' + index + '" role="button" class="btn btn-danger">Delete</a>';
+            return '<a data-delete-row-button="true" data-row="' + index + '" role="button" class="btn btn-danger" style="margin-left: 5px;"><span class="glyphicon glyphicon-remove"></span></a>';
         }
+        // NOTE UNFORTUNATE INLINE STYLE
         else {
-            return '<a data-delete-column-button="true" data-column="' + index + '" data-prefix="' + prefix + '" role="button" class="btn btn-danger">Delete</a>';
+            return '<a data-delete-column-button="true" data-column="' + index + '" data-prefix="' + prefix + '" role="button" class="btn btn-danger" style="margin-left: 5px;"><span class="glyphicon glyphicon-remove"></span></a>';
         }
     }
 
     function create_clone_button(index) {
-        return '<a data-clone-row-button="true" data-row="' + index + '" role="button" class="btn btn-info">Clone</a>';
+        return '<a data-clone-row-button="true" data-row="' + index + '" role="button" class="btn btn-info"><span class="glyphicon glyphicon-duplicate"></span></a>';
     }
 
     function replace_setup_data() {
@@ -344,11 +357,11 @@ $(document).ready(function () {
     function spawn_column(prefix) {
         var column_index = number_of_columns[prefix];
         // UGLY
-        study_setup_head.find('.' + prefix + '_start').last().after('<th class="new_column ' + prefix + '_start' + '">' + prefix[0].toUpperCase() + prefix.slice(1) + ' ' + (column_index + 1) + '<br>' + create_delete_button(prefix, column_index) +'</th>');
+        study_setup_head.find('.' + prefix + '_start').last().after('<th class="new_column ' + prefix + '_start' + '">' + prefix[0].toUpperCase() + prefix.slice(1) + ' ' + (column_index + 1) + create_delete_button(prefix, column_index) +'</th>');
 
         // ADD TO EXISTING ROWS AS EMPTY
         study_setup_body.find('tr').each(function(row_index) {
-            $(this).find('.' + prefix + '_start').last().after('<td class="' + prefix + '_start' + '">' + create_edit_button(prefix, row_index, column_index) + '</td>');
+            $(this).find('.' + prefix + '_start').last().after('<td class="' + prefix + '_start' + '">' + create_edit_button(prefix, row_index, column_index) + '</td>', false);
         });
 
         number_of_columns[prefix] += 1;
@@ -394,7 +407,7 @@ $(document).ready(function () {
                 $('#id_test_type')
                     .clone()
                     .removeAttr('id')
-                    .removeAttr('style')
+                    // .removeAttr('style')
                     .attr('data-row', row_index)
             )
         );
@@ -413,7 +426,7 @@ $(document).ready(function () {
                     for (var i = 0; i < number_of_columns[prefix]; i++) {
                         new_row.append(
                             $('<td>')
-                                .html(create_edit_button(prefix, row_index, i))
+                                .html(create_edit_button(prefix, row_index, i), false)
                                 .addClass(prefix + '_start')
                         );
                     }
@@ -548,6 +561,11 @@ $(document).ready(function () {
         rebuild_table();
     });
 
+    $(document).on('click', '.subform-edit', function() {
+        // Chaining parents this way is foolish
+        $(this).parent().parent().parent().find('a[data-edit-button="true"]').trigger('click');
+    });
+
     $('a[data-add-new-button="true"]').click(function() {
         spawn_column($(this).attr('data-prefix'));
     });
@@ -574,6 +592,34 @@ $(document).ready(function () {
 
     $('.visibility-checkbox').change(change_matrix_visibility);
     change_matrix_visibility();
+
+    // Show details
+    function show_hide_full_details() {
+        var current_value_show_details = $('#show_details').prop('checked');
+
+        // Hide all contents of "bubbles"
+        // Bad selector
+        $.each(prefixes, function(prefix_index, prefix) {
+            $('.' + prefix + '-display').children().hide();
+        });
+
+        // If checked, unhide all
+        if (current_value_show_details) {
+            // Bad selector
+            $.each(prefixes, function(prefix_index, prefix) {
+                $('.' + prefix + '-display').children().show();
+            });
+        }
+        // Otherwise, just unhide the first line of the "bubble"
+        else {
+            $('.important-display').show();
+        }
+
+        change_matrix_visibility();
+    }
+
+    $('#show_details').change(show_hide_full_details);
+    show_hide_full_details();
 
     // function apply_protocol_setup_to_row() {
     //
