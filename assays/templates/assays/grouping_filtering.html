@@ -35,23 +35,27 @@
         background: #fff;
     }
 
-    #sidebar ul li.active > a, a[aria-expanded="true"] {
+    #sidebar ul li.active > a, #sidebar a[aria-expanded="true"] {
         background: #f8f8ff;
     }
 
-    a[data-toggle="collapse"] {
+    #sidebar a[data-toggle="collapse"] {
         position: relative;
     }
 
-    a[aria-expanded="false"]::before {
+    #sidebar a[aria-expanded="false"]::before {
         content: "\e259";
         display: block;
         position: absolute;
         right: 20px;
         font-family: "Glyphicons Halflings";
     }
-    a.collapsed::before {
+    #sidebar a[aria-expanded="true"]::before {
         content: "\e260";
+        display: block;
+        position: absolute;
+        right: 20px;
+        font-family: "Glyphicons Halflings";
     }
 
     #page {
