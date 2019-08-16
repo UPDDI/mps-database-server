@@ -112,7 +112,7 @@ $(document).ready(function () {
                 setTimeout(function() {
                     // Blur all
                     $('.ui-dialog').find('input, select, button').blur();
-                }, 250);
+                }, 150);
 
                 // Populate the fields
                 var current_data = $.extend(true, {}, current_setup_data[current_row_index][current_prefix][current_column_index]);

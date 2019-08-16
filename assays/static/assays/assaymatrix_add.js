@@ -1108,6 +1108,160 @@ $(document).ready(function () {
         // }
     });
 
+    // SLOPPY ADDITIONS FROM modify_matrix
+    // NEEDS BETTER INTEGRATION
+    // Add show details
+    // NOT DRY
+    // Show details
+    function show_hide_full_details() {
+        var current_value_show_details = $('#show_details').prop('checked');
+
+        // Hide all contents of "bubbles"
+        // Bad selector
+        $.each(prefixes, function(prefix_index, prefix) {
+            $('.' + prefix + '-display').children().hide();
+        });
+
+        // If checked, unhide all
+        if (current_value_show_details) {
+            // Bad selector
+            $.each(prefixes, function(prefix_index, prefix) {
+                $('.' + prefix + '-display').children().show();
+            });
+        }
+        // Otherwise, just unhide the first line of the "bubble"
+        else {
+            $('.important-display').show();
+        }
+
+        change_matrix_visibility();
+    }
+
+    $('#show_details').change(show_hide_full_details);
+    show_hide_full_details();
+
+    // Add editing functionality
+    var current_edit_prefix = null;
+    var current_edit_subform_index = null;
+    var current_edit_form_index = null;
+
+    var time_prefixes = [
+        'addition_time',
+        'duration'
+    ]
+
+    // CREATE DIALOGS
+    // NOT DRY
+    // STRANGE NOT GOOD
+    $.each(prefixes, function(index, prefix) {
+        var current_dialog = $('#' + prefix + '_dialog');
+        current_dialog.dialog({
+            width: 825,
+            open: function() {
+                $.ui.dialog.prototype.options.open();
+                // BAD
+                setTimeout(function() {
+                    // Blur all
+                    $('.ui-dialog').find('input, select, button').blur();
+                }, 150);
+
+                // Populate the fields
+                var subform_identifier = current_edit_prefix + '-' + current_edit_subform_index;
+                var current_fields = $('#' + subform_identifier).find('select, input, textarea').not('[id$="-selectized"]');
+
+                var current_data = {};
+
+                current_fields.each(function() {
+                    current_data[$(this).attr('name').replace(subform_identifier + '-', '')] = $(this).val();
+                });
+
+                var this_popup = $(this);
+
+                this_popup.find('input').each(function() {
+                    if ($(this).attr('name')) {
+                        $(this).val(current_data[$(this).attr('name').replace(current_edit_prefix + '_', '')]);
+                    }
+                });
+
+                this_popup.find('select').each(function() {
+                    if ($(this).attr('name')) {
+                        this.selectize.setValue(current_data[$(this).attr('name').replace(current_edit_prefix + '_', '')]);
+                    }
+                });
+
+                // TODO SPECIAL EXCEPTION FOR CELL SAMPLE
+                this_popup.find('input[name="' + prefix + '_cell_sample"]').val(
+                    current_data['cell_sample']
+                );
+
+                if ($.isEmptyObject(current_data)) {
+                    // TODO SPECIAL EXCEPTION FOR TIMES
+                    $.each(time_prefixes, function(index, current_time_prefix) {
+                        var split_time = window.SPLIT_TIME.get_split_time(
+                            current_data[current_time_prefix]
+                        );
+
+                        $.each(split_time, function(time_name, time_value) {
+                            this_popup.find('input[name="' + prefix + '_' + current_time_prefix + '_' + time_name + '"]').val(time_value);
+                        });
+                    });
+                }
+            },
+            buttons: [
+            {
+                text: 'Apply',
+                click: function() {
+                    // ACTUALLY MAKE THE CHANGE TO THE RESPECTIVE ENTITY
+                    // TODO TODO TODO
+
+                    // Modify the data
+                    // ITERATE OVER EVERY VALUE IN THE FORM AND MODIFY
+                    // Populate the fields
+                    var subform_identifier = current_edit_prefix + '-' + current_edit_subform_index;
+
+                    // REVISE REVISE REIVSE
+                    $(this).find('input, select').each(function() {
+                        if ($(this).attr('name')) {
+                            $('#id_' + subform_identifier + '-' + $(this).attr('name').replace(current_edit_prefix + '_', '')).val($(this).val());
+                            console.log($('#id_' + subform_identifier + '-' + $(this).attr('name').replace(current_edit_prefix + '_', '')));
+                        }
+                    });
+
+                    // TODO SPECIAL EXCEPTION FOR CELL SAMPLE
+                    if (current_edit_prefix === 'cell') {
+                        $('#id_' + subform_identifier + '-' + prefix + '_cell_sample').val(
+                            $(this).find('[name="cell_sample"]').val()
+                        );
+
+                        console.log($('#id_' + subform_identifier + '-' + prefix + '_cell_sample'));
+                    }
+
+                    // REFRESH
+                    // SLOW, EXCESSIVE
+                    refresh_all_contents_from_forms();
+
+                    $(this).dialog("close");
+                }
+            },
+            {
+                text: 'Cancel',
+                click: function() {
+                   $(this).dialog("close");
+                }
+            }]
+        });
+        current_dialog.removeProp('hidden');
+    });
+
+    $(document).on('click', '.subform-edit', function() {
+        // Ugly acquisition
+        var current_edit_section = $(this).parent().parent();
+        current_edit_prefix = current_edit_section.attr('data-prefix');
+        current_edit_subform_index = current_edit_section.attr('data-subform-index');
+        current_edit_form_index = current_edit_section.attr('data-form-index');
+        $('#' + current_edit_prefix + '_dialog').dialog('open');
+    });
+
     // Special operations for pre-submission
     $('form').submit(function() {
         // Iterate over every Matrix Item form
