@@ -411,6 +411,20 @@ $(document).ready(function () {
             fixedHeader: {headerOffset: 50},
             deferRender: true,
         });
+
+        active_compounds_checkboxes = 0;
+        unmake_compounds_datatable();
+        avg_val_graph_check();
+        empty_graph_containers();
+    }
+
+    function empty_graph_containers() {
+        // Empty old graph containers
+        $(power_analysis_p_value_graph).empty();
+        $(power_analysis_power_graph).empty();
+        $(power_analysis_sample_size_graph).empty();
+        $('#time-points-table_wrapper').hide();
+        avg_val_graph_check();
     }
 
     function escapeHtml(html) {
@@ -454,6 +468,8 @@ $(document).ready(function () {
         $('[data-toggle="tooltip"]').tooltip({container:"body", html: true});
         // Recalc Fixed Headers
         $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+
+        empty_graph_containers();
     });
 
     // Compounds Table Checkbox click event
@@ -518,11 +534,7 @@ $(document).ready(function () {
             }
         }
 
-        // Empty old graph containers
-        $(power_analysis_p_value_graph).empty();
-        $(power_analysis_power_graph).empty();
-        $(power_analysis_sample_size_graph).empty();
-        $('#time-points-table_wrapper').hide();
+        empty_graph_containers();
 
         avg_val_graph_check();
     });
@@ -953,11 +965,7 @@ $(document).ready(function () {
                 });
             }
 
-            // Empty old graph containers
-            $(power_analysis_p_value_graph).empty();
-            $(power_analysis_power_graph).empty();
-            $(power_analysis_sample_size_graph).empty();
-            $('#time-points-table_wrapper').hide();
+            empty_graph_containers();
 
             avg_val_graph_check();
         }
@@ -1122,11 +1130,7 @@ $(document).ready(function () {
 
         var power_analysis_method = $("input[name='pam']:checked").val();
 
-        // Empty old graph containers
-        $(power_analysis_p_value_graph).empty();
-        $(power_analysis_power_graph).empty();
-        $(power_analysis_sample_size_graph).empty();
-        $('#time-points-table_wrapper').hide();
+        empty_graph_containers();
 
         window.spinner.spin(
             document.getElementById("spinner")
@@ -1197,11 +1201,7 @@ $(document).ready(function () {
     //     var current_group = $('.power-analysis-group-checkbox:visible').first().attr('data-power-analysis-group');
     //     var compound_only = $('.power-analysis-compounds-checkbox:visible').first().attr('data-power-analysis-compound');
     //
-    //     // Empty old graph containers
-    //     $(power_analysis_p_value_graph).empty();
-    //     $(power_analysis_power_graph).empty();
-    //     $(power_analysis_sample_size_graph).empty();
-    //     $('#time-points-table_wrapper').hide();
+    //     empty_graph_containers();
     //
     //     window.spinner.spin(
     //         document.getElementById("spinner")
