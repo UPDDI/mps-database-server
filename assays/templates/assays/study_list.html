@@ -99,7 +99,7 @@
             </td>
             <td>
                 {% if study.signed_off_date %}
-                {{ study.signed_off_date }}
+                {{ study.signed_off_date|date:"M d, Y" }}
                 {% endif %}
             </td>
             <td>

@@ -178,9 +178,12 @@
                     </td>
                     <td>
                         {% if object.medchem_alerts%}
+                            {% comment %}
                             <a class="glyphicon glyphicon-flag text-danger"
                                href="https://www.ebi.ac.uk/chembl/compound/structural_alerts/{{ object.chemblid }}"
                                aria-hidden="true"></a>
+                            {% endcomment %}
+                            <span class="glyphicon glyphicon-flag text-danger"></span>
                         {% else %}
                             <span class="text-success">None</span>
                         {% endif %}
