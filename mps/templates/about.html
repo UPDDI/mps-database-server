@@ -1,8 +1,6 @@
+{% extends "base.html" %}
 {% load static %}
 {% load compress %}
-<!DOCTYPE html>
-<html lang="en">
-
 
 {% comment %}
 sck note - branch on dell virtual box - sandra_about_mv
@@ -10,7 +8,7 @@ branch on origin and upstream sandra_about
 not updated on dell linux box, last sandra_about (images need replaced too)
 
 Overview
-Icon Driven Interface
+Icon-Driven Interface
 Learn about MPS Models
 Add and Analyze Study Data<
 Share Study Data
@@ -37,55 +35,17 @@ about/disease_portal.jpg
 about/global_search.jpg
 {% endcomment %}
 
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+{% block load_js %}
+    <script src="{% static 'js/about.js' %}"></script>
+{% endblock %}
 
-<head>
-    <link rel="icon"
-    type="image/png"
-    href="/static/img/glyphicons-question-sign.png">
-
-    <title>About the MPS-Db</title>
-
-    {% compress js %}
-    <!-- Load JQuery -->
-    <script src="{% static "js/jquery-1.11.2.min.js" %}"></script>
-    <!-- Incorporate the Bootstrap JavaScript plugins -->
-    <script src="{% static "js/bootstrap.min.js" %}"></script>
-    <!-- DataTables -->
-    <script type="text/javascript" charset="utf-8" src="{% static "js/jquery.dataTables.min.js" %}"></script>
-    <script type="text/javascript" charset="utf-8" src="{% static "js/dataTables.responsive.min.js" %}"></script>
-    <script type="text/javascript" charset="utf-8" src="{% static "js/dataTables.buttons.min.js" %}"></script>
-    <script type="text/javascript" charset="utf-8" src="{% static "js/dataTables.fixedHeader.min.js" %}"></script>
-    <script type="text/javascript" charset="utf-8" src="{% static "js/buttons.colVis.min.js" %}"></script>
-    {# We will just be using html5 for buttons (no fallback) #}
-    {# <script type="text/javascript" charset="utf-8" src="{% static "js/buttons.flash.min.js" %}"></script>#}
-    <script type="text/javascript" charset="utf-8" src="{% static "js/buttons.html5.min.js" %}"></script>
-    <script type="text/javascript" charset="utf-8" src="{% static "js/buttons.print.min.js" %}"></script>
-    <script type="text/javascript" charset="utf-8" src="{% static "js/datatable_options.js" %}"></script>
-    <!-- About JS -->
-    <script type="text/javascript" charset="utf-8" src="{% static "js/about.js" %}"></script>
-    {% endcompress %}
-
-    {% compress css %}
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}">
-    <link rel="stylesheet" href="{% static "css/bootstrap-theme.min.css" %}">
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" type="text/css" href="{% static "css/jquery.dataTables.min.css" %}">
-    <link rel="stylesheet" type="text/css" href="{% static "css/buttons.dataTables.min.css" %}">
-    <link rel="stylesheet" type="text/css" href="{% static "css/fixedHeader.dataTables.min.css" %}">
-    <link rel="stylesheet" type="text/css" href="{% static "css/responsive.dataTables.min.css" %}">
-    <!-- Custom CSS Rules -->
-    <link rel="stylesheet" href="{% static "css/bootstrap-overrides.css" %}">
-
+{% block extra_head %}
     <style>
-    .sub1-bars {font-style: normal; font-size: 180%; margin-top: 3%; font-weight: 700}
+    .sub1-bars {font-style: normal; font-size: 240%; margin-top: 3%; font-weight: 700}
     .blues1 {font-size: 106%; color: steelblue; cursor: pointer;
     text-align: left; margin: 0px; vertical-align:bottom;
-    font-style: italic; padding-top: 2px; padding-bottom: 5px; display: inline-block; line-height: 100%}
-    .grays1 {font-size: 106%; color: steelblue;
+    font-style: italic; padding-top: 2px; padding-bottom: 5px; display: block; line-height: 100%}
+    .grays1 {font-size: 106%;
     text-align: left; margin: 0px; vertical-align:bottom;
     font-style: normal; padding-top: 2px; padding-bottom: 5px; display: inline-block; line-height: 100%}
     .slide-header {background-color: white; text-align: center;
@@ -94,528 +54,375 @@ about/global_search.jpg
     width: 100%; border: none; text-align: left; outline: none; margin-bottom: 2px; margin-top: 1px; }
     .content1 {display: none; transition: max-height 0.1s ease-out;}
     .content2 {display: none; transition: max-height 0.1s ease-out;}
-    .organs-and-models {display: none;}
-    .study-releases {display: none;}
-    .center-overview {  width: auto; max-height: 320px;  margin-left: auto; margin-right: auto; }
+    .center-overview {  width: auto; max-height: 420px;  margin-left: auto; margin-right: auto; }
     .center {  width: auto; max-height: 310px;  margin-left: auto; margin-right: auto; }
     .center-short {  width: auto; max-height: 150px;  margin-left: auto; margin-right: auto; }
     .list-group {margin-bottom: 1px; padding-right: 1px;}
     .list-group-item {padding-right: 8px;}
     </style>
-    {% endcompress %}
+{% endblock %}
 
-    {% if GOOGLE_ANALYTICS %}
-      <!-- Global site tag (gtag.js) - Google Analytics -->
-      <script async src="https://www.googletagmanager.com/gtag/js?id={{ GOOGLE_ANALYTICS }}"></script>
-      <script>
-      window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', '{{ GOOGLE_ANALYTICS }}');
-      </script>
-    {% endif %}
-</head>
+{% block breadcrumbs %}
+    <li class="active">About</li>
+{% endblock %}
 
-<body>
-{# <body data-spy="scroll" data-target=".navbar" data-offset="80"> #}
-
-<nav class="navbar navbar-inverse navbar-fixed-top">
-
-    <div class="container">
-
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-        </div>
-
-        <div>
-            <div class="collapse navbar-collapse" id="myNavbar">
-                <ul class="nav navbar-nav">
-
-                    <li><a href="#about_overview">Overview</a></li>
-
-                    <li><a href="#about_features">Key Features</a></li>
-
-{#                    These get opened on a click from the list....not in the navi menu anymore #}
-{#                    <li><a href="#about_models_and_centers">MPS Models</a></li>#}
-
-{#                    <li><a href="#about_releases">Scheduled Study Releases</a></li>#}
-
-                    <li><a href="#about_faqs">FAQs</a></li>
-
-                </ul>
+{% block content %}
+    <div>
+        <div id="about_overview" class="container">
+            <h1 class="sub1-bars text-center">The Microphysiology Systems Database (MPS-Db) is key<br> for the development and application of MPS</h1>
+            <div id="a_overview">
+                <img src="/static/img/about/overview.jpg" alt="Database Overview" class="img-responsive center-overview" height="100" width="350">
+                The MPS-Db aggregates MPS data with linked preclinical and clinical databases for analysis in the context of human exposure. Built in tools enable the assessment of the reproducibility and transferability of MPS models, while computational models are being developed to enhance the value of MPS models for understanding disease mechanisms, compound toxicity, and prediction of drug pharmacokinetics (PK)
+                (<a target="_blank" href="https://www.liebertpub.com/doi/abs/10.1089/aivt.2016.0011">Gough et al. 2016</a>).
+                <br><h4>For a quick look at what the database offers, click through the list of <i><b>Key Features</b></i>.</h4>
             </div>
-        </div>
-    </div>
-</nav>
+       </div>
 
-<div class="offset-help-navbar">
+        <div id="about_features" class="container">
+            <h1 class="sub1-bars">Key Features </h1>
+            <div id="a_features">
+                <div class="row">
+                    <div id='feature_list' class="col-sm-3">
+                        <div>
+                            <a class="blues1"><br>Icon-Driven Interface</a>
 
-    <div id="about_overview" class="container">
-        <h1 class="sub1-bars"> Overview of the MPS Systems Database</h1>
-        <div id="a_overview">
-            <ul class="list-group">
-                <li class="list-group-item">
-                    <ul class="list-unstyled">
-                        <li>The Microphysiology Systems Database (MPS-Db) is key for the development and application of MPS.  This a web-based system that aggregates experimental MPS data, and preclinical and clinical data from various databases enabling the analysis of MPS experimental data in the context of pre-clinical and clinical information. Tools have been built into the MPS-Db to enable the assessment of the reproducibility and transferability of MPS experimental models, and computational models are being developed to enable the utilization of MPS experimental models for understanding mechanisms of disease, compound toxicity, and predicting PK behavior of drugs
-                        (<a target="_blank" href="https://www.liebertpub.com/doi/abs/10.1089/aivt.2016.0011">Gough et al. 2016</a>).
-                        <br><br><img src="/static/img/about/overview.jpg"
-                                 alt="Database Overview"
-                                 class="img-responsive center-overview"
-                                 height="100" width="350">
-                        <br>
-                        For a quick look at what the database offers, click through the list of <i><b>Key Features</b></i>.
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-   </div>
+                            {# Set in .js and must be 1 to open table below key features #}
+                            <a class="blues1"><br>Learn about MPS Models</a>
 
-    <div id="about_features" class="container">
-        <h1 class="sub1-bars"> Key Features </h1>
-        <div id="a_features">
-            <ul class="list-group">
-                <li class="list-group-item">
-                    <ul class="list-unstyled">
-                        <div class="row" >
-                            <div id='feature_list' class="col-sm-3">
-                                <div>
-                                    <table>
-                                    <tbody >
-                                        <tr> <td> <a class="blues1"><br>Icon Driven Interface</a> </td> </tr>
+                            <a class="blues1"><br>Add and Analyze Study Data</a>
 
-{#                                      Set in .js and must be 1 to open table below key features   #}
-                                        <tr> <td> <a class="blues1"><br>Learn about MPS Models</a> </td> </tr>
+                            {# Set in .js and must be 3 to open table below key features #}
+                            <a class="blues1"><br>Share Study Data </a>
 
-                                        <tr> <td> <a class="blues1"><br>Add and Analyze Study Data</a> </td> </tr>
+                            <a class="blues1"><br>Reproducibility Metrics </a>
 
-{#                                      Set in .js and must be 3 to open table below key features    #}
-                                        <tr> <td> <a class="blues1"><br>Share Study Data </a> </td> </tr>
+                            <p class="grays1"><br> Select Test Compounds Based on:</p>
+                            <ul>
+                                <li><a class="blues1">Search Drug Trials</a></li>
+                                <li><a class="blues1">Identify Adverse Events</a></li>
+                                <li><a class="blues1">Compare Adverse Events</a></li>
+                                <li><a class="blues1">View Compound Targets</a></li>
+                            </ul>
 
-                                        <tr> <td> <a class="blues1"><br>Reproducibility Metrics </a> </td> </tr>
+                            <a class="blues1"><br>Disease Portal</a>
 
-                                        <tr> <td class="grays1"><br> Select Test Compounds Based on:    </td> </tr>
-                                        <tr> <td> <a class="blues1">--Search Drug Trials  </a> </td> </tr>
-                                        <tr> <td> <a class="blues1">--Identify Adverse Events </a> </td> </tr>
-                                        <tr> <td> <a class="blues1">--Compare Adverse Events</a> </td> </tr>
-                                        <tr> <td> <a class="blues1">--View Compound Targets</a> </td> </tr>
-
-                                        <tr> <td ><a class="blues1"><br>Disease Portal</a></td> </tr>
-
-{#                                        <tr> <td><a class="blues1"><br>Toxicology Portals</a></td> </tr>#}
-{#                                        Mark thinks we will add these later, but not current features    #}
-{#                                        <tr> <td><a class="blues1"><br>Computational Modeling</a></td> </tr>#}
-
-                                        <tr> <td><a class="blues1"><br>Global Search Function</a></td> </tr>
-
-                                    </tbody>
-                                  </table>
-                                </div>
-                            </div>
-
-                            <div id='feature_section' class="col-sm-9" >
-
-                                <div class="content2" id="icon_driven">
-                                    <ul class="list-group">
-                                        <li class="list-group-item">
-                                            <ul class="list-unstyled">
-                                                <p class="slide-header">
-                                                An Icon Driven Interface Provides Intuitive Workflow
-                                                </p>
-                                                <img src="/static/img/about/home_icons.jpg"
-                                                     alt="Icon Drive Interface"
-                                                     class="img-responsive center"
-                                                     height="400" width="620" >
-                                                <br>An icon driven interface assists in designing a study, capturing data and metadata, and analyzing assay data. Icons are arranged on the
-                                                <a href="https://mps.csb.pitt.edu/" target="_blank" >Home</a>
-                                                page to provide an intuitive workflow (A.
-                                                Review
-                                                <a href="https://mps.csb.pitt.edu/microdevices/model/" target="_blank" >models</a>,
-                                                <a href="https://mps.csb.pitt.edu/microdevices/device/" target="_blank" >devices</a>,
-                                                <a href="https://mps.csb.pitt.edu/compounds/" target="_blank" >compounds</a>, and
-                                                <a href="https://mps.csb.pitt.edu/cellsamples/cellsample/" target="_blank" >cell samples</a>; B.
-                                                <a href="https://mps.csb.pitt.edu/assays/assaystudy/" target="_blank" >Add study data</a>; C.
-                                                <a href="https://mps.csb.pitt.edu/assays/graphing_reproducibility/" target="_blank" >Perform data analysis</a>; D.
-                                                Perform computational modeling).
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div class="content2" id="mps_models">
-                                    <ul class="list-group">
-                                        <li class="list-group-item">
-                                            <ul class="list-unstyled">
-                                                <p class="slide-header">
-                                                Learn About MPS Models Being Used in Translational Medicine
-                                                </p>
-                                                <img src="/static/img/about/lamps_model.jpg"
-                                                     alt="Select Models, the View MPS Models"
-                                                     class="img-responsive center"
-                                                     height="330" width="520" >
-                                                <br>The
-                                                <a href="https://mps.csb.pitt.edu/microdevices/model/" target="_blank" >MPS Models</a>
-                                                page provides a list of models being used by researchers working at the leading edge of the field. Selecting <i>View</i> next to an MPS model shows detailed information on a model's design and construction.
-
-                                                <br><br>Scroll down to the <b>Organs and Centers</b> table below to see a list of institutions with models in the MPS-Db.
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div class="content2" id="add_analyze">
-                                    <ul class="list-group">
-                                        <li class="list-group-item">
-                                            <ul class="list-unstyled">
-                                                <p class="slide-header">
-                                                Add and Analyze Experimentally Derived Assay Study Data
-                                                </p>
-                                                <img src="/static/img/about/study_summary_graph.jpg"
-                                                         alt="Contribute your data"
-                                                         class="img-responsive center"
-                                                         height="230" width="480">
-                                                <br>Design and
-                                                <a href="https://mps.csb.pitt.edu/assays/assaystudy/add/" target="_blank" >Add a Study</a>
-                                                to the MPS-Db, add chip treatment information, then upload assay data and use the online tools to visualize, analyze, and computationally model the results. The database includes a comprehensive interface for filtering and grouping data. Data can be grouped by user selected parameters to facilitate comparisons, such as treated vs untreated tissue chips, and filters can be applied to limit data included in visualizations or used in analysis and computational modeling. The MPS-Db accommodates assay data from all types of MPS organ models and assays (e.g., biosensors, ELISA, high content imaging, mass spec analysis).
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div class="content2" id="data_sharing">
-                                    <ul class="list-group">
-                                        <li class="list-group-item">
-                                            <ul class="list-unstyled">
-                                                <p class="slide-header">
-                                                Controlled Sharing of Experimentally Derived Assay Study Data
-                                                </p>
-                                                <img src="/static/img/about/data_sharing.jpg"
-                                                         alt="Data Sharing"
-                                                         class="img-responsive center-short"
-                                                         height="120" width="400">
-                                                <br>Researchers providing experimental data determine when and with whom study data are shared. Data can be kept private, shared within an institution or with a small group of collaborators, opened to the public, and/or opened through a process that includes an embargo period.
-                                                <br><br> Scroll down to the <b>Scheduled Study Releases</b> table below to see a list of studies that are scheduled to be released in the next {{ number_of_days }} days.
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div class="content2" id="reproducibility">
-                                    <ul class="list-group">
-                                        <li class="list-group-item">
-                                            <ul class="list-unstyled">
-                                                <p class="slide-header">
-                                                Reproducibility Metrics
-                                                </p>
-                                                <br><img src="/static/img/about/reproducibility.jpg"
-                                                         alt="Analyze data"
-                                                         class="img-responsive center"
-                                                         height="230" width="480">
-                                                <br>Reproducibility and transferability of MPS experimental models can be assessed using the reproducibility analysis tool. The tool can be accessed from within a single study to assess the intra-study reproducibility, or through the
-                                                (<a href="https://mps.csb.pitt.edu/assays/graphing_reproducibility/" target="_blank"><i>Inter-Study Graphing/Reproducibility</i></a>)
-                                                feature to assess reproducibility across studies and/or across laboratories.
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div class="content2" id="drug_trials">
-                                    <ul class="list-group">
-                                        <li class="list-group-item">
-                                            <ul class="list-unstyled">
-                                                <p class="slide-header">
-                                                Search Drug Trial Information
-                                                </p>
-                                                <br><img src="/static/img/about/drug_trials.jpg"
-                                                         alt="Drug Trials"
-                                                         class="img-responsive center"
-                                                         height="380" width="620">
-                                                <br>Review
-                                                <a href="https://mps.csb.pitt.edu/drugtrials/" target="_blank" >Drug Trial</a>
-                                                information, aggregated together from multiple sources, presented in a searchable and sortable table. Click <i>View</i> to select a specific drug trial and learn more about the results of the trial and the source of the data.
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div class="content2" id="adverse_events">
-                                    <ul class="list-group">
-                                        <li class="list-group-item">
-                                            <ul class="list-unstyled">
-                                                <p class="slide-header">
-                                                Adverse Events
-                                                </p>
-                                                <img src="/static/img/about/adverse_events.jpg"
-                                                     alt="Adverse Events"
-                                                     class="img-responsive center"
-                                                     height="250" width="500" >
-                                                <br>Using data from the FDA Adverse Event Reporting System (FAERS) and the CDC's National Ambulatory Medical Care Survey (NAMCS), the
-                                                <a href="https://mps.csb.pitt.edu/adverse_events/" target="_blank" >Adverse Events</a>
-                                                feature presents reported adverse events in a sortable and searchable table. Search for a compound, then order by number of reported events to evaluate potential test compounds.
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div class="content2" id="compare_adverse_events">
-                                    <ul class="list-group">
-                                        <li class="list-group-item">
-                                            <ul class="list-unstyled">
-                                                <p class="slide-header">
-                                                Compare Adverse Drug Related Events
-                                                </p>
-                                                <img src="/static/img/about/compare_adverse_events.jpg"
-                                                     alt="Compare Adverse Events"
-                                                     class="img-responsive center"
-                                                     height="250" width="500" >
-                                                <br>Using data from the FDA Adverse Event Reporting System (FAERS) and the CDC's National Ambulatory Medical Care Survey (NAMCS), the
-                                                <a href="https://mps.csb.pitt.edu/compare_adverse_events/" target="_blank" >Compare Adverse Events</a> feature enables quick comparison of reported adverse events associated to multiple compounds. Sort and search tools facilitate rapid identification of compounds and events, and selections are made by simply checking boxes.
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div class="content2" id="compounds_targets">
-                                    <ul class="list-group">
-                                        <li class="list-group-item">
-                                            <ul class="list-unstyled">
-                                                <p class="slide-header">
-                                                View Compound Summaries and Targets
-                                                </p>
-                                                <img src="/static/img/about/compound_targets.jpg"
-                                                     alt="Compound Targets"
-                                                     class="img-responsive center"
-                                                     height="380" width="620">
-                                                <br>Access the
-                                                <a href="https://mps.csb.pitt.edu/compounds/" target="_blank" >Compound List</a>
-                                                page to review compound information, including LogP, molecular weight, and compound synonyms, presented in a searchable and sortable table. Click the <i>View</i> button next to a compound for additional information, including summaries of pre-clinical and clinical findings and targets associated with the compound. Review data sources in the
-                                                <a href="https://mps.csb.pitt.edu/help/#overview3" target="_blank" >Overview of Database Features</a>
-                                                table of the Help page.
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div class="content2" id="disease_portal">
-                                    <ul class="list-group">
-                                        <li class="list-group-item">
-                                            <ul class="list-unstyled">
-                                                <p  class="slide-header">
-                                                Learn About a Disease and Studies in the MPS-Db Relating to a Disease
-                                                </p>
-                                                <br><img src="/static/img/about/disease_portal.jpg" alt="The disease portal." class="img-responsive center" height="230" width="480">
-                                                <br>The <a href="https://mps.csb.pitt.edu/diseases/" target="_blank"><i>Disease Portal</i></a>
-                                                summarizes the number of studies in the MPS-Db relating to a specific disease, and provides links with additional information about the disease, including a
-                                                <a href="https://mps.csb.pitt.edu/diseases/25/" target="_blank">Disease Overview</a>,
-                                                <a href="https://mps.csb.pitt.edu/diseases/25/biology/" target="_blank">Disease Biology</a>,
-                                                <a href="https://mps.csb.pitt.edu/diseases/25/clinicaldata/" target="_blank">Clinical Data</a>
-                                                associated with the disease, and links to
-                                                <a href="https://mps.csb.pitt.edu/diseases/25/model/" target="_blank">Disease Models & Studies</a>
-                                                studies relating to the disease.
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div class="content2" id="global_search">
-                                    <ul class="list-group">
-                                        <li class="list-group-item">
-                                            <ul class="list-unstyled">
-                                                <p class="slide-header">
-                                                Find Information Quickly Using the Global Search Function
-                                                </p>
-                                                <img src="/static/img/about/global_search.jpg"
-                                                     alt="Global Search Function"
-                                                     class="img-responsive center"
-                                                     height="330" width="520">
-                                                <br>The Global Search function, available on the
-                                                <a href="https://mps.csb.pitt.edu/" target="_blank" >Home</a>
-                                                page, simplifies the process of finding information. Enter a compound, a disease, a device, or other key word(s) (e.g., Cmax) in the global search box and click <i>Search</i> to quickly locate matching content in the database.
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                            </div>
+                            <a class="blues1"><br>Global Search Function</a>
                         </div>
-                    </ul>
-                </li>
-            </ul>
+                    </div>
+
+                    <div id='feature_section' class="col-sm-9">
+                        <div class="content2" id="icon_driven">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <p class="slide-header">
+                                    An Icon-Driven Interface Provides Intuitive Workflow
+                                    </p>
+                                    <img src="/static/img/about/home_icons.jpg"
+                                         alt="Icon Drive Interface"
+                                         class="img-responsive center"
+                                         height="400" width="620">
+                                    <br>An icon-driven workflow guides the user in selecting study components (A), creating and reviewing studies (B), analyzing data (C), and performing computational modeling (D).
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="content2" id="mps_models">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <p class="slide-header">
+                                    Learn About MPS Models Being Used in Translational Medicine
+                                    </p>
+                                    <img src="/static/img/about/lamps_model.jpg"
+                                         alt="Select Models, the View MPS Models"
+                                         class="img-responsive center"
+                                         height="330" width="520">
+                                    <br>The
+                                    <a href="https://mps.csb.pitt.edu/microdevices/model/" target="_blank">MPS Models</a>
+                                    page provides a list of models being used by researchers working at the leading edge of the field. Selecting <i>View</i> next to an MPS model shows detailed information on a model's design and construction.
+
+                                    <br><br>Scroll down to the <b>Organs and Centers</b> table below to see a list of institutions with models in the MPS-Db.
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="content2" id="add_analyze">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <p class="slide-header">
+                                    Add and Analyze Experimentally Derived Assay Study Data
+                                    </p>
+                                    <img src="/static/img/about/study_summary_graph.jpg"
+                                             alt="Contribute your data"
+                                             class="img-responsive center"
+                                             height="230" width="480">
+                                    <br>Design and
+                                    <a href="https://mps.csb.pitt.edu/assays/assaystudy/add/" target="_blank">Add a Study</a>
+                                    to the MPS-Db, add chip treatment information, then upload assay data and use the online tools to visualize, analyze, and computationally model the results. The database includes a comprehensive interface for filtering and grouping data. Data can be grouped by user selected parameters to facilitate comparisons, such as treated vs untreated tissue chips, and filters can be applied to limit data included in visualizations or used in analysis and computational modeling. The MPS-Db accommodates assay data from all types of MPS organ models and assays (e.g., biosensors, ELISA, high content imaging, mass spec analysis).
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="content2" id="data_sharing">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <p class="slide-header">
+                                    Controlled Sharing of Experimentally Derived Assay Study Data
+                                    </p>
+                                    <img src="/static/img/about/data_sharing.jpg"
+                                             alt="Data Sharing"
+                                             class="img-responsive center-short"
+                                             height="120" width="400">
+                                    <br>Researchers providing experimental data determine when and with whom study data are shared. Data can be kept private, shared within an institution or with a small group of collaborators, opened to the public, and/or opened through a process that includes an embargo period.
+                                    <br><br> Scroll down to the <b>Scheduled Study Releases</b> table below to see a list of studies that are scheduled to be released in the next {{ number_of_days }} days.
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="content2" id="reproducibility">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <p class="slide-header">
+                                    Reproducibility Metrics
+                                    </p>
+                                    <br><img src="/static/img/about/reproducibility.jpg"
+                                             alt="Analyze data"
+                                             class="img-responsive center"
+                                             height="230" width="480">
+                                    <br>Reproducibility and transferability of MPS experimental models can be assessed using the reproducibility analysis tool. The tool can be accessed from within a single study to assess the intra-study reproducibility, or through the
+                                    (<a href="https://mps.csb.pitt.edu/assays/graphing_reproducibility/" target="_blank"><i>Inter-Study Graphing/Reproducibility</i></a>)
+                                    feature to assess reproducibility across studies and/or across laboratories.
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="content2" id="drug_trials">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <p class="slide-header">
+                                    Search Drug Trial Information
+                                    </p>
+                                    <br><img src="/static/img/about/drug_trials.jpg"
+                                             alt="Drug Trials"
+                                             class="img-responsive center"
+                                             height="380" width="620">
+                                    <br>Review
+                                    <a href="https://mps.csb.pitt.edu/drugtrials/" target="_blank">Drug Trial</a>
+                                    information, aggregated together from multiple sources, presented in a searchable and sortable table. Click <i>View</i> to select a specific drug trial and learn more about the results of the trial and the source of the data.
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="content2" id="adverse_events">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <p class="slide-header">
+                                    Adverse Events
+                                    </p>
+                                    <img src="/static/img/about/adverse_events.jpg"
+                                         alt="Adverse Events"
+                                         class="img-responsive center"
+                                         height="250" width="500">
+                                    <br>Using data from the FDA Adverse Event Reporting System (FAERS) and the CDC's National Ambulatory Medical Care Survey (NAMCS), the
+                                    <a href="https://mps.csb.pitt.edu/adverse_events/" target="_blank">Adverse Events</a>
+                                    feature presents reported adverse events in a sortable and searchable table. Search for a compound, then order by number of reported events to evaluate potential test compounds.
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="content2" id="compare_adverse_events">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <p class="slide-header">
+                                    Compare Adverse Drug Related Events
+                                    </p>
+                                    <img src="/static/img/about/compare_adverse_events.jpg"
+                                         alt="Compare Adverse Events"
+                                         class="img-responsive center"
+                                         height="250" width="500">
+                                    <br>Using data from the FDA Adverse Event Reporting System (FAERS) and the CDC's National Ambulatory Medical Care Survey (NAMCS), the
+                                    <a href="https://mps.csb.pitt.edu/compare_adverse_events/" target="_blank">Compare Adverse Events</a> feature enables quick comparison of reported adverse events associated to multiple compounds. Sort and search tools facilitate rapid identification of compounds and events, and selections are made by simply checking boxes.
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="content2" id="compounds_targets">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <p class="slide-header">
+                                    View Compound Summaries and Targets
+                                    </p>
+                                    <img src="/static/img/about/compound_targets.jpg"
+                                         alt="Compound Targets"
+                                         class="img-responsive center"
+                                         height="380" width="620">
+                                    <br>Access the
+                                    <a href="https://mps.csb.pitt.edu/compounds/" target="_blank">Compound List</a>
+                                    page to review compound information, including LogP, molecular weight, and compound synonyms, presented in a searchable and sortable table. Click the <i>View</i> button next to a compound for additional information, including summaries of pre-clinical and clinical findings and targets associated with the compound. Review data sources in the
+                                    <a href="#" onclick="window.open('/help/#overview3', 'win', 'toolbars=0,width=1000,height=760,left=200,top=200,scrollbars=1,resizable=1')" target="_blank">Overview of Database Features</a>
+                                    table of the Help page.
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="content2" id="disease_portal">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <p class="slide-header">
+                                    Learn About a Disease and Studies in the MPS-Db Relating to a Disease
+                                    </p>
+                                    <br><img src="/static/img/about/disease_portal.jpg" alt="The disease portal." class="img-responsive center" height="230" width="480">
+                                    <br>The <a href="https://mps.csb.pitt.edu/diseases/" target="_blank"><i>Disease Portal</i></a>
+                                    summarizes the number of studies in the MPS-Db relating to a specific disease, and provides links with additional information about the disease, including a
+                                    <a href="https://mps.csb.pitt.edu/diseases/25/" target="_blank">Disease Overview</a>,
+                                    <a href="https://mps.csb.pitt.edu/diseases/25/biology/" target="_blank">Disease Biology</a>,
+                                    <a href="https://mps.csb.pitt.edu/diseases/25/clinicaldata/" target="_blank">Clinical Data</a>
+                                    associated with the disease, and links to
+                                    <a href="https://mps.csb.pitt.edu/diseases/25/model/" target="_blank">Disease Models & Studies</a>
+                                    studies relating to the disease.
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="content2" id="global_search">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <p class="slide-header">
+                                    Find Information Quickly Using the Global Search Function
+                                    </p>
+                                    <img src="/static/img/about/global_search.jpg"
+                                         alt="Global Search Function"
+                                         class="img-responsive center"
+                                         height="330" width="520">
+                                    <br>The Global Search function, available on the
+                                    <a href="https://mps.csb.pitt.edu/" target="_blank">Home</a>
+                                    page, simplifies the process of finding information. Enter a compound, a disease, a device, or other key word(s) (e.g., Cmax) in the global search box and click <i>Search</i> to quickly locate matching content in the database.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <h1 class="sub1-bars">Coming Soon:</h1>
+        <ul>
+            <li>A streamlined workflow to ease the application of the database in the laboratory is scheduled to be released on September 30th, 2019.</li>
+            <li>We will be providing a hands-on demonstration of the MPS-Db at the Tissue Chip Consortium meeting on October 10th and 11th, 2019.</li>
+        </ul>
+
+       <div id="about_releases" class="container padded-bottom">
+             <h1 class="sub1-bars"> Scheduled Study Releases in Next {{ number_of_days }} Days </h1>
+             <table hidden id="about_studies_for_release_table" class="display" cellspacing="0" width="100%">
+             <thead>
+                 <tr>
+                    <th>Study Name</th>
+                    <th>Study Description</th>
+                    <th>MPS Models</th>
+                    <th>Scheduled Release</th>
+                 </tr>
+             </thead>
+             <tbody>
+             {% for each3 in about_studies %}
+                 <tr>
+                     <td>{{ each3.name }}</td>
+                     <td>{{ each3.description }}</td>
+                     <td>{{ each3.organ_models|default:"-No MPS Models-" }}</td>
+                     <td>{{ each3.scheduled_release_date|date:'m-d-Y' }} </td>
+                 </tr>
+             {% endfor %}
+             </tbody>
+             </table>
+       </div>
+
+       <div id="about_models_distinct" class="container padded-bottom">
+            <h1 class="sub1-bars"> Organs and Centers </h1>
+            <table hidden id="about_models_and_centers_distinct_table" class="display" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th>Organ</th>
+                    <th>Center</th>
+                    <th>Number of MPS Models</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for each2 in about_models_distinct %}
+                <tr>
+                    <td>{{ each2.0 }}</td>
+                    <td>{{ each2.1 }}</td>
+                    <td>{{ each2.2 }} </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+       </div>
+
+       <div id="about_faqs" class="container">
+            <h1 class="sub1-bars"> Frequently Asked Questions</h1>
+            <div id="a_faqs">
+                <button class="collapsible1">How do I become a registered MPS-Db user?</button>
+                <div class="content1">
+                    Registration is easy. Just go to the
+                    <a href="https://mps.csb.pitt.edu/accounts/login/#" target="_blank">MPS Login</a>
+                    page and click on the option to register, or just
+                    <a href="https://mps.csb.pitt.edu/register/#">click here</a>.
+                </div>
+                <button class="collapsible1">How can I learn more about the features of the MPS-Db?</button>
+                <div class="content1">
+                    The MPS-Db
+                    <a target="_blank" href="#" onclick="window.open('/help/', 'win', 'toolbars=0,width=1000,height=760,left=200,top=200,scrollbars=1,resizable=1')">Help</a>
+                    page provides detailed information and step-by-step examples on how to use the features of the MPS-Db.
+                </div>
+                <button class="collapsible1">Can I use the MPS-Db to select compounds to test in my MPS Models?</button>
+                <div class="content1">
+                    Yes. The database offers multiple ways of looking at compound data. Chemical, biological, and clinical information is available through the Compounds icon. The Global Search feature can also be helpful for finding information about a specific compound.
+                </div>
+                <button class="collapsible1">Is there a cost associated with using the MPS-Db?</button>
+                <div class="content1">
+                    All use of the MPS-Db and content is free for non-profit research applications provided any published works reference the MPS Database website. The current version of the code is also available for non-profit use and can be downloaded from GitHub. All registered users have free access to the public content and tools; however use of the data or tools in for-profit applications requires a license. The MPS-Db code will be made available to corporations for internal use for a nominal fee to help support maintenance and extension of the MPS-Db. The publicly accessible content of the MPS-DB can also be provided as a PostgreSQL database to nonprofit organizations, and for a license fee to for-profit corporations. For more information, send an email to
+                    <a href="mailto:MPSHELP@pitt.edu">MPSHELP@pitt.edu</a>
+                    with "For-profit Use of the MPS-Db" in the subject line.
+                </div>
+                <button class="collapsible1">How can I add and analyze my experimentally derived assay study data? </button>
+                <div class="content1">
+                    To add assay data to the database, you must be a registered user, assigned to a Data Group. Contact an administrator by sending an email to
+                    <a href="mailto:MPSHELP@pitt.edu">MPSHELP@pitt.edu</a>
+                    with "Getting Set Up to Contribute Data to the MPS-Db" in the subject line. Detailed information on how to add, review and analyze data in the MPS-Db is available on the database's
+                    <a target="_blank" href="#" onclick="window.open('/help/#interstudy', 'win', 'toolbars=0,width=1000,height=760,left=200,top=200,scrollbars=1,resizable=1')">Help</a> page.
+                </div>
+                <button class="collapsible1">How can I review assay data submitted by another researcher? </button>
+                <div class="content1">
+                    Data contributors are not required by the MPS-Db Center to share their data. Studies that have been shared publicly, or for which you are designated as a <i>Data Group</i> member or collaborator, will show on the
+                    <a href="https://mps.csb.pitt.edu/assays/assaystudy/#" target="_blank">Study List</a>
+                    page of the database. These studies can also be accessed through the inter-study analysis feature and the disease portal, and when reviewing the Target/Analytes and Method/Kits lists (available through the Studies->Study Components menu). Review the <a target="_blank" href="#" onclick="window.open('/help/', 'win', 'toolbars=0,width=1000,height=760,left=200,top=200,scrollbars=1,resizable=1')">Help</a> page to learn about these features.
+                </div>
+                <button class="collapsible1"> I am a data "stakeholder", how can I see the data I need to review? </button>
+                <div class="content1">
+                    Data “stakeholders” are designated by the data contributor as users that have a vested interest in the MPS Model or data, such as a model developer. Stakeholders have the opportunity to review studies for which they have been designated as a stakeholder, following sign off by the data contributor and prior to the data being made accessible to any other user groups. To review these studies, stakeholders must be registered MPS-Db users and granted permission to review and acknowledge that you have reviewed the relevant study data. The study (or studies) to be reviewed can be found on the
+                    <a href="https://mps.csb.pitt.edu/assays/assaystudy/#" target="_blank">Study List</a>
+                    page. Look for studies with a check mark, but without an ‘eye’ or a ‘pencil’ icon in the Review column.
+                </div>
+                <button class="collapsible1"> How is the MPS-Db funded? </button>
+                <div class="content1">
+                    The MPS-Db is funded by the National Center for Advancing Translational Sciences
+                    <a target="_blank" href="https://ncats.nih.gov/tissuechip"> Tissue Chips Program</a>, the National Center for Advancing Translational Sciences (NCATS)
+                    <a target="_blank" href="https://ncats.nih.gov/tissuechip/projects/centers"> Tissue Chip Testing Centers Program</a>, and in part by the
+                    <a target="_blank" href="http://www.vanderbilt.edu/vprompt/index.php">Vanderbilt-Pittsburgh Resource</a> for Organotypic Models for Predictive Toxicology.
+                </div>
+                <button class="collapsible1"> Who can I contact for help with the database? </button>
+                <div class="content1">
+                    Questions and comments should be directed to
+                    <a href="mailto:MPSHELP@pitt.edu">MPSHELP@pitt.edu</a>.
+                    Detailed instructions for using database features and contributing data to the database can be found on the
+                    <a target="_blank" href="#" onclick="window.open('/help/', 'win', 'toolbars=0,width=1000,height=760,left=200,top=200,scrollbars=1,resizable=1')">Help</a>
+                    page.
+                    The MPS-Db website is managed by the
+                    <a target="_blank" href="https://www.upddi.pitt.edu/">University of Pittsburgh Drug Discovery Institute</a>.
+                </div>
+            </div>
+       </div>
     </div>
 
-    <div id="about_models_distinct" class="container padded-bottom organs-and-models">
-         <h1 class="sub1-bars"> Organs and Centers </h1>
-         <table hidden id="about_models_and_centers_distinct_table" class="display" cellspacing="0" width="100%">
-         <thead>
-             <tr>
-                 <th>Organ</th>
-                 <th>Center</th>
-                 <th>Number of MPS Models</th>
-             </tr>
-         </thead>
-         <tbody>
-         {% for each2 in about_models_distinct %}
-             <tr>
-                 <td>{{ each2.0 }}</td>
-                 <td>{{ each2.1 }}</td>
-                 <td>{{ each2.2 }} </td>
-             </tr>
-         {% endfor %}
-         </tbody>
-         </table>
-    </div>
+    {# Just a spacer (and yes, inline styles are ugly)#}
+    <div style="padding-bottom: 250px;"></div>
 
-   <div id="about_releases" class="container padded-bottom study-releases">
-         <h1 class="sub1-bars"> Scheduled Study Releases in Next {{ number_of_days }} Days </h1>
-         <table hidden id="about_studies_for_release_table" class="display" cellspacing="0" width="100%">
-         <thead>
-             <tr>
-                <th>Study Name</th>
-                <th>Study Description</th>
-                <th>MPS Models</th>
-                <th>Scheduled Release</th>
-             </tr>
-         </thead>
-         <tbody>
-         {% for each3 in about_studies %}
-             <tr>
-                 <td>{{ each3.name }}</td>
-                 <td>{{ each3.description }}</td>
-                 <td>{{ each3.organ_models|default:"-No MPS Models-" }}</td>
-                 <td>{{ each3.scheduled_release_date|date:'m-d-Y' }} </td>
-             </tr>
-         {% endfor %}
-         </tbody>
-         </table>
-   </div>
-
-   <div id="about_faqs" class="container">
-        <h1 class="sub1-bars"> Frequently Asked Questions </h1>
-        <div id="a_faqs">
-            <button class="collapsible1">How do I become a registered MPS-Db user? </button>
-            <div class="content1">
-                <ul class="list-group">
-                    <li class="list-group-item">
-                        <ul class="list-unstyled">
-                        Registration is easy. Just go to the
-                            <a href="https://mps.csb.pitt.edu/accounts/login/#" target="_blank" >MPS Login</a>
-                            page and click on the option to register, or just
-                            <a href="https://mps.csb.pitt.edu/register/#" >click here</a>.
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-            <button class="collapsible1">How can I learn more about the features of the MPS-Db? </button>
-            <div class="content1">
-                <ul class="list-group">
-                    <li class="list-group-item">
-                        <ul class="list-unstyled">
-                        The MPS-Db
-                            <a target="_blank" href="https://mps.csb.pitt.edu/help/">Help</a>
-                            page provides detailed information and step-by-step examples on how to use the features of the MPS-Db.
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-            <button class="collapsible1">Can I use the MPS-Db to select compounds to test in my MPS Models? </button>
-            <div class="content1">
-                <ul class="list-group">
-                    <li class="list-group-item">
-                        <ul class="list-unstyled">
-                        Yes. The database offers multiple ways of looking at compound data. Chemical, biological, and clinical information is available through the Compounds icon. The Global Search feature can also be helpful for finding information about a specific compound.
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-            <button class="collapsible1">Is there a cost associated with using the MPS-Db? </button>
-            <div class="content1">
-                <ul class="list-group">
-                    <li class="list-group-item">
-                        <ul class="list-unstyled">
-                        All use of the MPS-Db and content is free for non-profit research applications provided any published works reference the MPS Database website. The current version of the code is also available for non-profit use and can be downloaded from GitHub. All registered users have free access to the public content and tools; however use of the data or tools in for-profit applications requires a license. The MPS-Db code will be made available to corporations for internal use for a nominal fee to help support maintenance and extension of the MPS-Db. The publicly accessible content of the MPS-DB can also be provided as a PostgreSQL database to nonprofit organizations, and for a license fee to for-profit corporations. For more information, send an email to
-                            <a href="mailto:MPSHELP@pitt.edu">MPSHELP@pitt.edu</a>
-                            with "For-profit Use of the MPS-Db" in the subject line.
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-            <button class="collapsible1">How can I add and analyze my experimentally derived assay study data? </button>
-            <div class="content1">
-                <ul class="list-group">
-                    <li class="list-group-item">
-                        <ul class="list-unstyled">
-                        To add assay data to the database, you must be a registered user, assigned to a Data Group. Contact an administrator by sending an email to
-                            <a href="mailto:MPSHELP@pitt.edu">MPSHELP@pitt.edu</a>
-                            with "Getting Set Up to Contribute Data to the MPS-Db" in the subject line. Detailed information on how to add, review and analyze data in the MPS-Db is available on the database's
-                            <a target="_blank" href="https://mps.csb.pitt.edu/help/#interstudy">Help</a> page.
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-            <button class="collapsible1">How can I review assay data submitted by another researcher? </button>
-            <div class="content1">
-                <ul class="list-group">
-                    <li class="list-group-item">
-                        <ul class="list-unstyled">
-                            Data contributors are not required by the MPS-Db Center to share their data. Studies that have been shared publicly, or for which you are designated as a <i>Data Group</i> member or collaborator, will show on the
-                            <a href="https://mps.csb.pitt.edu/assays/assaystudy/#" target="_blank" >Study List</a>
-                            page of the database. These studies can also be accessed through the inter-study analysis feature and the disease portal, and when reviewing the Target/Analytes and Method/Kits lists (available through the Studies->Study Components menu). Review the <a target="_blank" href="https://mps.csb.pitt.edu/help/">Help</a> page to learn about these features.
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-            <button class="collapsible1"> I am a data "stakeholder", how can I see the data I need to review? </button>
-            <div class="content1">
-                <ul class="list-group">
-                    <li class="list-group-item">
-                        <ul class="list-unstyled">
-                        Data “stakeholders” are designated by the data contributor as users that have a vested interest in the MPS Model or data, such as a model developer. Stakeholders have the opportunity to review studies for which they have been designated as a stakeholder, following sign off by the data contributor and prior to the data being made accessible to any other user groups. To review these studies, stakeholders must be registered MPS-Db users and granted permission to review and acknowledge that you have reviewed the relevant study data. The study (or studies) to be reviewed can be found on the
-                            <a href="https://mps.csb.pitt.edu/assays/assaystudy/#" target="_blank" >Study List</a>
-                            page. Look for studies with a check mark, but without an ‘eye’ or a ‘pencil’ icon in the Review column.
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-            <button class="collapsible1"> How is the MPS-Db funded? </button>
-            <div class="content1">
-                <ul class="list-group">
-                    <li class="list-group-item">
-                        <ul class="list-unstyled">
-                        The MPS-Db is funded by the National Center for Advancing Translational Sciences
-                            <a target="_blank" href="https://ncats.nih.gov/tissuechip"> Tissue Chips Program</a>, the National Center for Advancing Translational Sciences (NCATS)
-                            <a target="_blank" href="https://ncats.nih.gov/tissuechip/projects/centers"> Tissue Chip Testing Centers Program</a>, and in part by the
-                            <a target="_blank" href="http://www.vanderbilt.edu/vprompt/index.php">Vanderbilt-Pittsburgh Resource</a> for Organotypic Models for Predictive Toxicology.
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-            <button class="collapsible1"> Who can I contact for help with the database? </button>
-            <div class="content1">
-                <ul class="list-group">
-                    <li class="list-group-item">
-                        <ul class="list-unstyled">
-                        Questions and comments should be directed to
-                            <a href="mailto:MPSHELP@pitt.edu">MPSHELP@pitt.edu</a>.
-                            Detailed instructions for using database features and contributing data to the database can be found on the
-                            <a target="_blank" href="https://mps.csb.pitt.edu/help/">Help</a>
-                            page.
-                            The MPS-Db website is managed by the
-                            <a target="_blank" href="https://www.upddi.pitt.edu/">University of Pittsburgh Drug Discovery Institute</a>.
-
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-            <h1><br><br><br><br></h1>
-        </div>
-   </div>
-
-</div>
-
-</body>
-</html>
+{% endblock %}

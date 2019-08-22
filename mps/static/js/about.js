@@ -6,8 +6,10 @@ $(document).ready(function () {
     $(".collapsible1").click(function() {
         var content = this.nextElementSibling;
         if ($(content).css("display") != "none") {
+            $(this).css('font-weight', 'normal');
             $(content).css("display", "none");
         } else {
+            $(this).css('font-weight', 'bold');
             $(content).css("display", "block");
         }
     });
@@ -32,13 +34,13 @@ $(document).ready(function () {
         //console.log(current_index);
         //console.log($('#feature_section').find('.content2:eq("' + current_index + '")'));
         $('#feature_section').find('.content2:eq("' + current_index + '")').css('display', 'block');
-        if (current_index==3){
+        if (current_index === 3) {
             //console.log(current_index, "I am here in 9");
             $('.study-releases').css('display', 'block');
         } else {
             $('.study-releases').css('display', 'none');
         }
-        if (current_index==1){
+        if (current_index === 1) {
             //console.log(current_index, "I am here in 2");
             $('.organs-and-models').css('display', 'block');
         } else {
