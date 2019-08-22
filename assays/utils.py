@@ -2390,6 +2390,7 @@ def pa_power_analysis_report(power_group_data, type='d', sig_level=0.05):
         header_list = power_analysis_table.columns.values.tolist()
         header_list.append('Power')
         header_list.append('P Value')
+        header_list.append('Sample Size')
 
         # Define all columns of power analysis report table
         power_analysis_table = power_analysis_table.reindex(
@@ -2422,13 +2423,16 @@ def pa_power_analysis_report(power_group_data, type='d', sig_level=0.05):
                     # Power calculation
                 if n1 == n2 and n1 > 1:
                     power_value = pa_power_one_sample_size(n1, es_value, sig_level)
+                    sample_size = n1
                     p_value = pa_t_test(x, y)
                 elif n1 > 1 and n2 > 1 and n1 != n2:
                     power_value = pa_power_two_sample_size(n1, n2, es_value, sig_level)
+                    sample_size = min(n1, n2)
                     p_value = pa_t_test(x, y)
                 else:
                     power_value = np.NAN
                     p_value = np.NAN
+                    sample_size = np.NAN
 
                 power_analysis_table.iloc[
                     itime,
@@ -2438,6 +2442,8 @@ def pa_power_analysis_report(power_group_data, type='d', sig_level=0.05):
                     itime,
                     power_analysis_table.columns.get_loc('P Value')
                 ] = p_value
+
+                power_analysis_table.iloc[itime, power_analysis_table.columns.get_loc('Sample Size')] = sample_size
 
     return power_analysis_table
 
@@ -2464,6 +2470,7 @@ def pa_power_sample_size_curves_matrix(power_group_data, power_inteval=0.02, typ
         header_list = power_analysis_table.columns.values.tolist()
         header_list.append('Power')
         header_list.append('Sample Size')
+        header_list.append('Note')
 
         power_analysis_table.index = pd.RangeIndex(len(power_analysis_table.index))
 
@@ -2477,7 +2484,9 @@ def pa_power_sample_size_curves_matrix(power_group_data, power_inteval=0.02, typ
             print(err_msg)
         else:
             chip_data = power_group_data.groupby(
-                ['Compound Treatment(s)', 'Chip ID', 'Time'], as_index=False)['Value'].mean()
+                ['Compound Treatment(s)', 'Chip ID', 'Time'],
+                as_index=False
+            )['Value'].mean()
             cltr_data = chip_data[chip_data['Compound Treatment(s)'] == study_unique_group.iloc[0, 0]]
             treat_data = chip_data[chip_data['Compound Treatment(s)'] == study_unique_group.iloc[1, 0]]
             for itime in range(time_count):
@@ -2488,11 +2497,10 @@ def pa_power_sample_size_curves_matrix(power_group_data, power_inteval=0.02, typ
                 n1 = len(x)
                 y = treat_data[treat_data['Time'] == power_analysis_table['Time'][itime]]['Value']
                 n2 = len(y)
-                es_value = pa_effect_size(x, y, type)
                 if n1 > 1 and n2 > 1:
-                    # effect size for power analysis calculation
                     es_value = pa_effect_size(x, y, type)
-                    # Power calculation
+                else:
+                    es_value = np.NAN
                 if n1 == n2 and n1 > 1:
                     power_value = pa_power_one_sample_size(n1, es_value, sig_level)
                 elif n1 > 1 and n2 > 1 and n1 != n2:
@@ -2507,20 +2515,44 @@ def pa_power_sample_size_curves_matrix(power_group_data, power_inteval=0.02, typ
                 n_pc = len(power_array)
                 # create dataframe for each time point
                 time_power_df = pd.DataFrame(
-                    index=range(n_pc), columns=header_list)
-                for k in range(n_pc):
-                    input_power = power_array[k]
-                    output_sample_size = pa_predicted_sample_size(
-                        input_power, es_value, sig_level)
-                    time_power_df.iloc[k, 0] = power_analysis_table['Group'][itime]
-                    time_power_df.iloc[k, 1] = power_analysis_table['Time'][itime]
-                    time_power_df.iloc[k, 2] = input_power
-                    time_power_df.iloc[k, 3] = output_sample_size
+                    index=range(n_pc), columns=header_list
+                )
+                if es_value > 0:
+                    for k in range(n_pc):
+                        input_power = power_array[k]
+                        output_sample_size = pa_predicted_sample_size(
+                            input_power, es_value, sig_level
+                        )
+                        time_power_df.iloc[k, 0] = power_analysis_table['Group'][itime]
+                        time_power_df.iloc[k, 1] = power_analysis_table['Time'][itime]
+                        time_power_df.iloc[k, 2] = input_power
+                        time_power_df.iloc[k, 3] = output_sample_size
 
                 # Append the calculate power and sample size matrix at each time
                 power_sample_curves_table = power_sample_curves_table.append(
-                    time_power_df, ignore_index=True)
-    return power_sample_curves_table.dropna()
+                    time_power_df, ignore_index=True
+                )
+
+            power_sample_curves_table = power_sample_curves_table[pd.notnull(power_sample_curves_table['Sample Size'])]
+
+            power_results_report = pa_power_analysis_report(power_group_data,type,sig_level=sig_level)
+            sample_size_prediction_matrix = pa_predicted_sample_size_time_series(power_group_data, type, power=0.8, sig_level=sig_level)
+            for itime in range(time_count):
+                if power_results_report['Power'][itime] > 0.99 and np.isnan(sample_size_prediction_matrix['Sample Size'][itime]):
+                    cur_group = power_results_report['Group'][itime]
+                    cur_time = power_results_report['Time'][itime]
+                    cur_power = 1.0
+                    cur_sample_size = power_results_report['Sample Size'][itime]
+                    cur_note = 'There is no power-sample curve at this time point because the power is close to 1'
+                    power_sample_curves_table = power_sample_curves_table.append({
+                        'Group':  cur_group,
+                        'Time': cur_time,
+                        'Power': cur_power,
+                        'Sample Size': float(cur_sample_size),
+                        'Note': cur_note
+                    }, ignore_index=True)
+
+    return power_sample_curves_table
 
 
 def two_sample_power_analysis(data, type, sig):

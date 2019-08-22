@@ -3769,18 +3769,11 @@ def fetch_power_analysis_group_table(request):
         )
         point.data_group = current_group
         if current_group not in treatment_group_table:
-            if point.study_assay.unit.base_unit_id:
-                treatment_group_table.update({
-                    current_group: [str(x) for x in list(
-                        data_point_attribute_getter_base_values(point)
-                    ) + [setup_to_treatment_group.get(item_id).get('index')]]
-                })
-            else:
-                treatment_group_table.update({
-                    current_group: [str(x) for x in list(
-                        data_point_attribute_getter_current_values(point)
-                    ) + [setup_to_treatment_group.get(item_id).get('index')]]
-                })
+            treatment_group_table.update({
+                current_group: [str(x) for x in list(
+                    data_point_attribute_getter_current_values(point)
+                ) + [setup_to_treatment_group.get(item_id).get('index')]]
+            })
 
         compound_table_key = current_group
         current_time = point.time

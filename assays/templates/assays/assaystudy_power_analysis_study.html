@@ -56,12 +56,14 @@
         </table>
         <br>
         <div class="row">
-            <div class="col-xs-5 no-padding">
-                <div id="pa-value-graph" style="display: inline-block; width: 100%">
+            <div class="col-xs-12 no-padding">
+                <div id="pa-value-graph">
 
                 </div>
             </div>
-            <div class="col-xs-2 no-padding">
+        </div>
+        <div class="row">
+            <div class="col-sm-12 ml-4 col-lg-2 col-lg-offset-4">
                 <div id="power-analysis-method" class="well" style="margin-top: 75px">
                     <label>Effect Size Methods</label><br>
                     <input type="radio" id="pam-cohen-d" name="pam" value="d" checked>
@@ -73,19 +75,19 @@
                     <input type="radio" id="pam-hedge-gstar" name="pam" value="gs">
                     <label for="pam-hedge-gstar">Hedges' g* </label>
                 </div>
-                <table id='one-sample-time-points-table' class="display table-bordered" hidden>
+                <!-- <table id='one-sample-time-points-table' class="display table-bordered" hidden> -->
 
-                </table>
+                <!-- </table> -->
             </div>
-            <div id="power-analysis-options" class="col-xs-4 text-center" style="margin-top: 75px">
+            <div id="power-analysis-options" class="col-sm-12 col-lg-2 text-center" style="margin-top: 55px;">
                 <!-- <input type="radio" id="one-sample" name="sample-num" value="one-sample">
-                <label for="one-sample">One Sample </label> -->
-                <!-- <br> -->
+                <label for="one-sample">One Sample </label>
+                <br> -->
                 <input type="radio" id="two-sample" name="sample-num" value="two-sample" checked hidden>
                 <label for="two-sample" hidden>Two Sample </label>
                 <br><br>
-                <label for="sig-level">Significance Level (α)</label>
-                <input id="sig-level" type="text" name="sig-level" size="5" value="0.05">
+                <label for="sig-level">Significance Level (α)</label><br>
+                <input id="sig-level" type="text" name="sig-level" size="5" value="0.05" style="margin: 10px 0px 0px 20px;">
                 <span></span>
                 <br><br>
                 <button id="power-analysis-button" class="btn btn-lg btn-primary" disabled>Run Analysis</button>
@@ -94,12 +96,12 @@
     </div>
     <div id='two-sample-power-analysis-container' hidden>
         <div class="row">
-            <div class="col-xs-6 no-padding">
+            <div class="col-sm-12 col-lg-6 no-padding">
                 <div id="pa-p-value-graph">
 
                 </div>
             </div>
-            <div class="col-xs-6 no-padding">
+            <div class="col-sm-12 col-lg-6 no-padding">
                 <div id="pa-power-graph">
 
                 </div>
@@ -107,12 +109,12 @@
         </div>
         <br><br><br>
         <div class="row">
-            <div class="col-xs-9">
+            <div class="col-sm-12 col-lg-9">
                 <div id="pa-sample-size-graph">
 
                 </div>
             </div>
-            <div class="col-xs-2 no-padding">
+            <div class="col-sm-2 col-sm-offset-5 col-lg-2 no-padding">
                 <table id='time-points-table' class="display table-bordered">
 
                 </table>
@@ -122,7 +124,7 @@
             </div>
         </div>
     </div>
-    <div id='one-sample-power-analysis-container' hidden>
+    <!-- <div id='one-sample-power-analysis-container' hidden>
         <div class="row">
             <div class="col-xs-4">
                 <table id='one-sample-summary-table' class="display table table-bordered table-condensed">
@@ -186,7 +188,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     {# Just a spacer (and yes, inline styles are ugly)#}
     <div style="padding-bottom: 250px;"></div>

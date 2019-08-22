@@ -34,6 +34,7 @@ $(document).ready(function () {
     var hedge_g_tooltip = "Hedges' g is the mean difference divided by the unbiased estimate of standard deviation for two treatment groups.";
     var hedge_gs_tooltip = "Hedges' g* is Hedges' g normalized by the gamma function of the sample size.";
     var sig_level_tooltip = "Significance level can be any value between (but exlcuding) 0 and 1.";
+    var power_near_one_tooltip = "There is no power-sample curve at this time point because the power is too close to 1."
 
     $('#pam-cohen-d').next().html($('#pam-cohen-d').next().html() + make_escaped_tooltip(cohen_tooltip));
     $('#pam-glass-d').next().html($('#pam-glass-d').next().html() + make_escaped_tooltip(glass_tooltip));
@@ -413,7 +414,9 @@ $(document).ready(function () {
         });
 
         active_compounds_checkboxes = 0;
-        unmake_compounds_datatable();
+        if (compounds_table) {
+            unmake_compounds_datatable();
+        }
         avg_val_graph_check();
         empty_graph_containers();
     }
@@ -624,11 +627,18 @@ $(document).ready(function () {
 
     function draw_power_vs_sample_size_chart() {
         var sample_size_data_copy = $.extend(true, [], sample_size_data);
-
+        var special_tps = [];
         for (var x=0; x<sample_size_data_copy.length; x++) {
             var current_time = sample_size_data_copy[x][0]/1440;
             if (current_time % 1 !== 0) {
                 current_time = current_time.toFixed(3);
+            }
+            if (sample_size_data_copy[x][3] !== null) {
+                // Don't ask
+                sample_size_data_copy[x][1] = sample_size_data_copy[x][1]+.002-.002;
+                sample_size_data_copy[x][2] = sample_size_data_copy[x][2]+.002-.002;
+
+                special_tps.push((sample_size_data_copy[x][0]/1440).toString());
             }
             sample_size_data_copy[x][0] = "Day " + String(current_time);
         }
@@ -674,11 +684,16 @@ $(document).ready(function () {
 
         sample_size_chart = new google.visualization.LineChart(power_analysis_sample_size_graph);
         sample_size_chart.draw(sample_size_google_data, sample_size_google_options);
-        google.visualization.events.addListener(sample_size_chart, 'ready', legend_adjustment)
-    }
 
-    function legend_adjustment() {
-        $('#pa-sample-size-graph > div > div > div > svg > rect > g > g text').html("TEST");
+        // Add tooltip to near-1 power value days
+        $('.power-analysis-time-points-checkbox').each(function() {
+            if (special_tps.indexOf($(this).parent().next().html()) !== -1) {
+                $(this).parent().next().html($(this).parent().next().html() + ' ' + make_escaped_tooltip(power_near_one_tooltip));
+            }
+        });
+
+        // Activates Bootstrap tooltips
+        $('[data-toggle="tooltip"]').tooltip({container:"body", html: true});
     }
 
     function make_chart(assay, unit, selector, data) {
@@ -708,6 +723,9 @@ $(document).ready(function () {
             // TOO SPECIFIC, OBVIOUSLY
             // title: assay,
             interpolateNulls: true,
+            tooltip: {
+                isHtml: true
+            },
             titleTextStyle: {
                 fontSize: 18,
                 bold: true,
@@ -1074,10 +1092,27 @@ $(document).ready(function () {
         // Values vs Time
         var chart_data = JSON.parse(JSON.stringify(final_chart_data[current_group]));
         var compounds_to_keep = [comp1, comp1+'     ~@i1', comp1+'     ~@i2', comp2, comp2+'     ~@i1', comp2+'     ~@i2']
-        for (var x=chart_data[0].length; x>0; x--){
-            if (chart_data[0][x] !== "Time" && compounds_to_keep.indexOf(chart_data[0][x]) === -1) {
+        var current_header;
+        var header_list = [];
+        for (var x = chart_data[0].length; x > 0; x--){
+            current_header = chart_data[0][x];
+            if (current_header !== "Time" && compounds_to_keep.indexOf(current_header) === -1) {
                 remove_col(chart_data, x);
+            } else {
+                for (var y = 0; y < current_header.split('\n').length; y+=2) {
+                    header_list.push(current_header.split('\n')[y]+'; ');
+                }
+                if (current_header.indexOf('     ~@i1') !== -1) {
+                    header_list[header_list.length-1] += '     ~@i1';
+                } else if (current_header.indexOf('     ~@i2') !== -1) {
+                    header_list[header_list.length-1] += '     ~@i2';
+                }
+                chart_data[0][x] = header_list.join('');
+                //
+                // FIX THE LENGTH OF THE BITS IN THE LEGEND HERE TOO
+                //
             }
+            header_list = [];
         }
         make_chart(row_info[0], 'Avg (Value)', power_analysis_values_graph, chart_data);
     }
@@ -1167,10 +1202,12 @@ $(document).ready(function () {
                 var p_value_data = JSON.parse(JSON.stringify(data.power_analysis_data.power_results_report));
                 var power_data = JSON.parse(JSON.stringify(data.power_analysis_data.power_results_report));
                 remove_col(p_value_data, 1);
+                remove_col(p_value_data, 2);
+                remove_col(power_data, 2);
                 remove_col(power_data, 2);
                 p_value_data.sort(timeSortFunction);
                 power_data.sort(timeSortFunction);
-                for (var x=0; x<p_value_data.length; x++){
+                for (var x = 0; x < p_value_data.length; x++){
                     p_value_data[x][0] = p_value_data[x][0]/1440;
                     power_data[x][0] = power_data[x][0]/1440;
                 }
