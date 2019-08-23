@@ -50,23 +50,15 @@ $(document).ready(function () {
 
     $('.blues1').first().trigger('click');
 
-    $('a').not("[href*='/']").click(function(event) {
-        event.preventDefault();
-        if ($($(this).attr('href'))[0]) {
-            $('html, body').animate({
-                scrollTop: $($(this).attr('href')).offset().top - offset
-            }, 500);
-            $($(this).attr('href')).find('button').next().first().css("display", "block");
-        }
-    });
-
-    var initial_hash = window.location.hash;
-    if (initial_hash) {
-        $('html, body').animate({
-            scrollTop: $(initial_hash).offset().top - offset
-        }, 500);
-        $(initial_hash).find('button').next().first().css("display", "block");
-    }
+    // $('a').not("[href*='/']").click(function(event) {
+    //     event.preventDefault();
+    //     if ($($(this).attr('href'))[0]) {
+    //         $('html, body').animate({
+    //             scrollTop: $($(this).attr('href')).offset().top - offset
+    //         }, 500);
+    //         $($(this).attr('href')).find('button').next().first().css("display", "block");
+    //     }
+    // });
 
     // Call datatables
     var about_studies_for_release_table = $('#about_studies_for_release_table').DataTable({
@@ -84,6 +76,21 @@ $(document).ready(function () {
     var about_models_and_centers_distinct_table = $('#about_models_and_centers_distinct_table').DataTable({
         dom: 'B<"row">lfrtip',
         "iDisplayLength": 10,
-        responsive: true
+        responsive: true,
+        initComplete: function() {
+            var initial_hash = window.location.hash;
+            if (initial_hash) {
+                if (initial_hash === '#anchor_models_distinct') {
+                    $('html, body').animate({
+                        scrollTop: 2800
+                    }, 500);
+                } else {
+                    $('html, body').animate({
+                        scrollTop: $(initial_hash).offset().top - offset
+                    }, 500);
+                    $(initial_hash).find('button').next().first().css("display", "block");
+                }
+            }
+        }
     });
 });

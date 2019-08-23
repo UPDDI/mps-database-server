@@ -241,9 +241,21 @@
           <li title="Add cell sample (i.e. THLE-3 Human Liver Epithelial Cells (ATCC® CRL-11233™))"><a href="/cellsamples/cellsample/add/">Add Cell Sample</a></li>
         </ul>
         </li>
-        <li title="About the MPS Database">
-            <a class="navbar-about" href="/about/" target="_blank">About</a>
+        <li title="About the MPS Database" class="dropdown">
+        <a class="dropdown-toggle navbar-about" data-toggle="dropdown">About<span class="caret"></span></a>
+        <ul title="" class="dropdown-menu" role="menu">
+            <li title="View and edit cell types"><a href="/about/">Overview</a></li>
+            <li title="View and edit cell types"><a href="/about/#anchor_features">Key Features</a></li>
+            <li title="View and edit cell types"><a href="/about/#anchor_coming_soon">Coming Soon</a></li>
+            <li title="View and edit cell types"><a href="/about/#anchor_releases">Studies Releasing Soon</a></li>
+            <li title="View and edit cell types"><a href="/about/#anchor_models_distinct">Organ Models and Centers</a></li>
+            <li title="View and edit cell types"><a href="/about/#anchor_faqs">FAQs</a></li>
+        </ul>
         </li>
+
+        <!-- <li title="About the MPS Database">
+            <a class="navbar-about" href="/about/" target="_blank">About</a>
+        </li> -->
         <li title="View help">
             <a id="view_help" class="navbar-help"
                onclick="window.open('/help/',
