@@ -2532,13 +2532,17 @@ def pa_power_sample_size_curves_matrix(power_group_data, power_inteval=0.02, typ
                 power_sample_curves_table = power_sample_curves_table.append(
                     time_power_df, ignore_index=True
                 )
+            power_sample_curves_table = power_sample_curves_table.dropna(subset=['Sample Size'])
+            power_sample_curves_table.index = pd.RangeIndex(len(power_sample_curves_table.index))
 
-            power_sample_curves_table = power_sample_curves_table[pd.notnull(power_sample_curves_table['Sample Size'])]
+            # power_sample_curves_table = power_sample_curves_table[pd.notnull(power_sample_curves_table['Sample Size'])]
 
-            power_results_report = pa_power_analysis_report(power_group_data,type,sig_level=sig_level)
-            sample_size_prediction_matrix = pa_predicted_sample_size_time_series(power_group_data, type, power=0.8, sig_level=sig_level)
+            power_results_report = pa_power_analysis_report(power_group_data, type, sig_level=sig_level)
+
             for itime in range(time_count):
-                if power_results_report['Power'][itime] > 0.99 and np.isnan(sample_size_prediction_matrix['Sample Size'][itime]):
+                power_curve_set = power_sample_curves_table[power_sample_curves_table['Time'] == power_results_report['Time'][itime]]
+                power_curve_row_count = power_curve_set.shape[0]
+                if power_results_report['Power'][itime] > 0.99 and power_curve_row_count < 1:
                     cur_group = power_results_report['Group'][itime]
                     cur_time = power_results_report['Time'][itime]
                     cur_power = 1.0
