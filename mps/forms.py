@@ -18,6 +18,8 @@ WIDGETS_TO_ADD_FORM_CONTROL_TO = {
 
 DATE_INPUT_WIDGET = "<class 'django.forms.widgets.DateInput'>"
 
+FILE_INPUT_WIDGET = "<class 'django.forms.widgets.ClearableFileInput'>"
+
 WIDGETS_WITH_AUTOCOMPLETE_OFF = {
     "<class 'django.forms.widgets.DateInput'>": True,
 }
@@ -34,6 +36,8 @@ class BootstrapForm(forms.ModelForm):
                 self.fields[field].widget.attrs['autocomplete'] = 'off'
             if widget_type == DATE_INPUT_WIDGET:
                 self.fields[field].widget.attrs['class'] += ' datepicker-input'
+            if widget_type == FILE_INPUT_WIDGET:
+                self.fields[field].widget.attrs['class'] = 'btn btn-primary btn-lg'
 
 
 class SignOffMixin(BootstrapForm):

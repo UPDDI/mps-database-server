@@ -17,19 +17,31 @@
         {% else %}
         <div class="well matrix_item-display">
         {% endif %}
+            {% if not detail %}
+            <div class="important-display no-wrap">
+                <a class="btn btn-xs subform-edit">
+                    <span class="glyphicon glyphicon-pencil text-warning"></span>
+                </a>
+                <a class="btn btn-xs subform-delete">
+                    <span class="glyphicon glyphicon-remove text-danger"></span>
+                </a>
+            </div>
+            {% endif %}
+            <div class="important-display">
+                <span class="matrix_item-test_type matrix_item-setup_set_section"></span>
+            </div>
             <div>
                 <span class="matrix_item-setup_date matrix_item-setup_set_section"></span>
+                {% comment %}
                 {% if not detail %}
                 <a class="pull-right btn btn-xs form-delete">
                     <span class="glyphicon glyphicon-remove text-danger"></span>
                 </a>
                 {% endif %}
+                {% endcomment %}
     {#                <a class="pull-right btn btn-xs form-view">#}
     {#                    <span class="glyphicon glyphicon-eye-open"></span>#}
     {#                </a>#}
-            </div>
-            <div class="important-display">
-                <span class="matrix_item-test_type matrix_item-setup_set_section"></span>
             </div>
             <div class="matrix_item-failure">
                 <span class="matrix_item-failure_time matrix_item-setup_set_section"></span>
@@ -58,6 +70,51 @@
     </td>
     </tr>
     </table>
+</div>
+
+{# Matrix Item #}
+<div hidden id="matrix_item_dialog" title="Edit a Matrix Item">
+    <div class="row">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-11">
+    <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+    <tr>
+        <th colspan="3">Name*</th>
+    </tr>
+    <tr>
+        <td colspan="3">{{ form.matrix_item_name }}</td>
+    </tr>
+    <tr>
+        <th colspan="3">Setup Date*</th>
+    </tr>
+    <tr>
+        <td colspan="3">{{ form.matrix_item_setup_date_popup }}</td>
+    </tr>
+    <tr>
+        <th colspan="3">Test Type*</th>
+    </tr>
+    <tr>
+        <td colspan="3">{{ form.matrix_item_test_type }}</td>
+    </tr>
+    <tr>
+        <th>Scientist</th>
+        <th>Notebook</th>
+        <th>Notebook Page</th>
+    </tr>
+    <tr>
+        <td>{{ form.matrix_item_scientist }}</td>
+        <td>{{ form.matrix_item_notebook }}</td>
+        <td>{{ form.matrix_item_notebook_page }}</td>
+    </tr>
+    <tr>
+        <th colspan="3">Notes</th>
+    </tr>
+    <tr>
+        <td colspan="3">{{ form.matrix_item_notes }}</td>
+    </tr>
+    </table>
+    </div>
+    </div>
 </div>
 
 {# Compound #}

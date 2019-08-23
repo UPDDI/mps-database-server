@@ -49,6 +49,7 @@ COLUMN_HEADERS = (
     'DAY',
     'HOUR',
     'MINUTE',
+    'ASSAY CATEGORY',
     'TARGET/ANALYTE',
     'SUBTARGET',
     'METHOD/KIT',
@@ -63,11 +64,14 @@ COLUMN_HEADERS = (
 )
 REQUIRED_COLUMN_HEADERS = (
     'CHIP ID',
-    'ASSAY PLATE ID',
-    'ASSAY WELL ID',
+    # REMOVE THESE?
+    # 'ASSAY PLATE ID',
+    # 'ASSAY WELL ID',
     'DAY',
-    'HOUR',
-    'MINUTE',
+    # REMOVE THESE?
+    # 'HOUR',
+    # 'MINUTE',
+    'ASSAY CATEGORY',
     'TARGET/ANALYTE',
     'METHOD/KIT',
     'SAMPLE LOCATION',
@@ -86,6 +90,7 @@ DEFAULT_CSV_HEADER = (
     'Day',
     'Hour',
     'Minute',
+    'Assay Category',
     'Target/Analyte',
     'Subtarget',
     'Method/Kit',
@@ -110,6 +115,7 @@ CSV_HEADER_WITH_COMPOUNDS_AND_STUDY = (
     'MPS Model',
     'Cells',
     'Compound Treatment(s)',
+    'Assay Category',
     'Target/Analyte',
     'Method/Kit',
     'Sample Location',
@@ -136,6 +142,7 @@ DEFAULT_EXPORT_HEADER = (
     'Settings',
     'Cells',
     'Compound Treatment(s)',
+    'Assay Category',
     'Target/Analyte',
     'Subtarget',
     'Method/Kit',
@@ -438,6 +445,7 @@ class AssayFileProcessor:
         study_assays = AssayStudyAssay.objects.filter(
             study_id=self.study.id
         ).prefetch_related(
+            'category',
             'target',
             'method',
             'unit',
@@ -446,8 +454,8 @@ class AssayFileProcessor:
         # Note that the names are in uppercase
         for assay in study_assays:
             assay_data.update({
-                (assay.target.name.upper(), assay.method.name.upper(), assay.unit.unit): assay,
-                (assay.target.short_name.upper(), assay.method.name.upper(), assay.unit.unit): assay,
+                (assay.category.name.upper(), assay.target.name.upper(), assay.method.name.upper(), assay.unit.unit): assay,
+                (assay.category.name.upper(), assay.target.short_name.upper(), assay.method.name.upper(), assay.unit.unit): assay,
             })
 
         # Get matrix item name
@@ -560,6 +568,7 @@ class AssayFileProcessor:
             time = 0
 
             # Note that the names are in uppercase
+            category_name = line[header_indices.get('ASSAY CATEGORY')].strip()
             target_name = line[header_indices.get('TARGET/ANALYTE')].strip()
             method_name = line[header_indices.get('METHOD/KIT')].strip()
             sample_location_name = line[header_indices.get('SAMPLE LOCATION')].strip()
@@ -646,6 +655,7 @@ class AssayFileProcessor:
 
             # Raise error when an assay does not exist
             study_assay = assay_data.get((
+                category_name.upper(),
                 target_name.upper(),
                 method_name.upper(),
                 value_unit_name
@@ -655,9 +665,10 @@ class AssayFileProcessor:
             if not study_assay:
                 self.errors.append(
                     str(
-                        sheet + '{0}: No assay with the target "{1}", the method "{2}", and the unit "{3}" exists. '
-                                'Please review your data and add this assay to your study if necessary.').format(
+                        sheet + '{0}: No assay with the category "{1}", the target "{2}", the method "{3}", and the unit "{4}" exists. Please review your data and add this assay to your study if necessary.'
+                    ).format(
                         matrix_item_name,
+                        category_name,
                         target_name,
                         method_name,
                         value_unit_name
@@ -872,7 +883,7 @@ class AssayFileProcessor:
                 at_least_one_valid_sheet = True
 
         if not at_least_one_valid_sheet:
-            self.errors.append(
+            raise forms.ValidationError(
                 'No valid sheets were detected in the file. Please check to make sure your headers are correct and start in the top-left corner.'
             )
 
@@ -888,7 +899,7 @@ class AssayFileProcessor:
 
         # IF NOT VALID, THROW ERROR
         else:
-            self.errors.append('The file is not formatted correctly. Please check the header of the file.')
+            raise forms.ValidationError('The file is not formatted correctly. Please check the header of the file.')
 
     def process_file(self):
         # Save the data upload if necessary (ostensibly save should only run after validation)

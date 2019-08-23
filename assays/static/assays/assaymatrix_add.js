@@ -1167,6 +1167,12 @@ $(document).ready(function () {
 
                 // Populate the fields
                 var subform_identifier = current_edit_prefix + '-' + current_edit_subform_index;
+
+                // FOR ITEM
+                if (!current_edit_subform_index) {
+                    subform_identifier = current_edit_prefix + '-' + current_edit_form_index;
+                }
+
                 var current_fields = $('#' + subform_identifier).find('select, input, textarea').not('[id$="-selectized"]');
 
                 var current_data = {};
@@ -1177,7 +1183,8 @@ $(document).ready(function () {
 
                 var this_popup = $(this);
 
-                this_popup.find('input').each(function() {
+                // BE SURE TO INCLUDE TEXTAREA
+                this_popup.find('input, textarea').each(function() {
                     if ($(this).attr('name')) {
                         $(this).val(current_data[$(this).attr('name').replace(current_edit_prefix + '_', '')]);
                     }
@@ -1189,10 +1196,12 @@ $(document).ready(function () {
                     }
                 });
 
-                // TODO SPECIAL EXCEPTION FOR CELL SAMPLE
-                this_popup.find('input[name="' + prefix + '_cell_sample"]').val(
-                    current_data['cell_sample']
-                );
+                // TODO SPECIAL EXCEPTION FOR DATEPICKER
+                if (this_popup.find('#id_matrix_item_setup_date_popup')) {
+                    var date_picker = this_popup.find('#id_matrix_item_setup_date_popup');
+                    var curr_date = current_data['setup_date'];
+                    date_picker.datepicker('setDate', curr_date);
+                }
 
                 if ($.isEmptyObject(current_data)) {
                     // TODO SPECIAL EXCEPTION FOR TIMES
@@ -1219,21 +1228,27 @@ $(document).ready(function () {
                     // Populate the fields
                     var subform_identifier = current_edit_prefix + '-' + current_edit_subform_index;
 
+                    // FOR ITEM
+                    if (!current_edit_subform_index) {
+                        subform_identifier = current_edit_prefix + '-' + current_edit_form_index;
+                    }
+
                     // REVISE REVISE REIVSE
-                    $(this).find('input, select').each(function() {
+                    // BE SURE TO INCLUDE TEXAREA
+                    $(this).find('input, select, textarea').each(function() {
                         if ($(this).attr('name')) {
                             $('#id_' + subform_identifier + '-' + $(this).attr('name').replace(current_edit_prefix + '_', '')).val($(this).val());
-                            console.log($('#id_' + subform_identifier + '-' + $(this).attr('name').replace(current_edit_prefix + '_', '')));
                         }
                     });
 
-                    // TODO SPECIAL EXCEPTION FOR CELL SAMPLE
-                    if (current_edit_prefix === 'cell') {
-                        $('#id_' + subform_identifier + '-' + prefix + '_cell_sample').val(
-                            $(this).find('[name="cell_sample"]').val()
+                    // TODO SPECIAL EXCEPTION FOR DATEPICKER
+                    // SLOPPY
+                    if ($('#id_matrix_item_setup_date_popup')) {
+                        var date_picker = $('#id_matrix_item_setup_date_popup');
+                        var curr_date = date_picker.val();
+                        $('#id_' + subform_identifier + '-setup_date').val(
+                            curr_date
                         );
-
-                        console.log($('#id_' + subform_identifier + '-' + prefix + '_cell_sample'));
                     }
 
                     // REFRESH
@@ -1259,6 +1274,13 @@ $(document).ready(function () {
         current_edit_prefix = current_edit_section.attr('data-prefix');
         current_edit_subform_index = current_edit_section.attr('data-subform-index');
         current_edit_form_index = current_edit_section.attr('data-form-index');
+
+        // IF THIS IS FOR AN ITEM
+        if (!current_edit_form_index && !current_edit_prefix) {
+            current_edit_form_index = current_edit_section.parent().attr('data-form-index');
+            current_edit_prefix = 'matrix_item';
+        }
+
         $('#' + current_edit_prefix + '_dialog').dialog('open');
     });
 

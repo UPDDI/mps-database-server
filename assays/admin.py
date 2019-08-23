@@ -86,7 +86,7 @@ from django.utils.safestring import mark_safe
 
 
 def modify_templates():
-    """Writes totally new templates for chips and both types of plates"""
+    """Writes totally new templates based on the dropdowns"""
     # Where will I store the templates?
     template_root = MEDIA_ROOT + '/excel_templates/'
 
@@ -107,11 +107,11 @@ def modify_templates():
     # Write the base files
     chip_initial = [
         DEFAULT_CSV_HEADER,
-        [''] * 17
+        [''] * 18
     ]
 
     chip_initial_format = [
-        [chip_red] * 17,
+        [chip_red] * 18,
         [
             None,
             None,
@@ -120,6 +120,7 @@ def modify_templates():
             None,
             None,
             None,
+            chip_green,
             chip_green,
             None,
             chip_green,
@@ -148,16 +149,19 @@ def modify_templates():
     chip_sheet.set_column('E:E', 10)
     chip_sheet.set_column('F:F', 10)
     chip_sheet.set_column('G:G', 10)
+    # Category
     chip_sheet.set_column('H:H', 20)
-    chip_sheet.set_column('I:I', 10)
-    chip_sheet.set_column('J:J', 20)
-    chip_sheet.set_column('K:K', 15)
-    chip_sheet.set_column('L:L', 10)
+    # Target
+    chip_sheet.set_column('I:I', 20)
+    chip_sheet.set_column('J:J', 10)
+    chip_sheet.set_column('K:K', 20)
+    chip_sheet.set_column('L:L', 15)
     chip_sheet.set_column('M:M', 10)
     chip_sheet.set_column('N:N', 10)
     chip_sheet.set_column('O:O', 10)
-    chip_sheet.set_column('P:P', 10)
-    chip_sheet.set_column('Q:Q', 100)
+    chip_sheet.set_column('P:P', 15)
+    chip_sheet.set_column('Q:Q', 10)
+    chip_sheet.set_column('S:S', 100)
     # chip_sheet.set_column('I:I', 20)
     # chip_sheet.set_column('J:J', 15)
     # chip_sheet.set_column('K:K', 10)
@@ -167,7 +171,7 @@ def modify_templates():
     # chip_sheet.set_column('O:O', 10)
     # chip_sheet.set_column('P:P', 100)
 
-    chip_sheet.set_column('BA:BD', 30)
+    chip_sheet.set_column('BA:BE', 30)
 
     # Get list of value units  (TODO CHANGE ORDER_BY)
     value_units = PhysicalUnits.objects.filter(
@@ -192,6 +196,13 @@ def modify_templates():
         'name'
     ).values_list('name', flat=True)
 
+    categories = AssayCategory.objects.all().order_by(
+        'name'
+    ).values_list('name', flat=True)
+
+    for index, value in enumerate(categories):
+        chip_sheet.write(index, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX + 4, value)
+
     for index, value in enumerate(sample_locations):
         chip_sheet.write(index, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX + 3, value)
 
@@ -210,14 +221,43 @@ def modify_templates():
     methods_range = '=$BC$1:$BC$' + str(len(methods))
     sample_locations_range = '=$BD$1:$BD$' + str(len(sample_locations))
 
-    chip_sheet.data_validation('H2', {'validate': 'list',
-                                      'source': targets_range})
-    chip_sheet.data_validation('J2', {'validate': 'list',
-                               'source': methods_range})
-    chip_sheet.data_validation('K2', {'validate': 'list',
-                               'source': sample_locations_range})
-    chip_sheet.data_validation('M2', {'validate': 'list',
-                               'source': value_units_range})
+    categories_range = '=$BE$1:$BE$' + str(len(categories))
+
+    chip_sheet.data_validation(
+        'I2',
+        {
+            'validate': 'list',
+            'source': targets_range
+        }
+    )
+    chip_sheet.data_validation(
+        'K2',
+        {
+            'validate': 'list',
+            'source': methods_range
+        }
+    )
+    chip_sheet.data_validation(
+        'L2',
+        {
+            'validate': 'list',
+            'source': sample_locations_range
+        }
+    )
+    chip_sheet.data_validation(
+        'N2',
+        {
+            'validate': 'list',
+            'source': value_units_range
+        }
+    )
+    chip_sheet.data_validation(
+        'H2',
+        {
+            'validate': 'list',
+            'source': categories_range
+        }
+    )
 
     # Save
     chip.close()
@@ -1444,5 +1484,31 @@ class AssayCategoryAdmin(ImportExportModelAdmin):
     model = AssayCategory
     search_fields = ('name', 'description')
     filter_horizontal = ('targets',)
+
+    def save_model(self, request, obj, form, change):
+        template_change = False
+
+        # Strip the name
+        form.instance.name = form.instance.name.strip()
+        obj.name = obj.name.strip()
+
+        # Check whether template needs to change
+        # Change if assay name has changed or it is new
+        if obj.pk is not None:
+            original = AssayCategory.objects.get(pk=obj.pk)
+            if original.name != obj.name:
+                template_change = True
+        else:
+            template_change = True
+
+        if change:
+            obj.modified_by = request.user
+        else:
+            obj.modified_by = obj.created_by = request.user
+
+        obj.save()
+
+        if template_change:
+            modify_templates()
 
 admin.site.register(AssayCategory, AssayCategoryAdmin)

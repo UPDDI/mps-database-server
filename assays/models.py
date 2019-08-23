@@ -19,7 +19,9 @@ from django.utils.safestring import mark_safe
 import urllib.request, urllib.parse, urllib.error
 import collections
 
-# TODO REORGANIZE
+import django.forms as forms
+
+
 # These are here to avoid potentially messy imports, may change later
 def attr_getter(item, attributes):
     """attribute getter for individual items"""
@@ -2411,6 +2413,11 @@ class AssaySetupCompound(models.Model):
         else:
             return str(self)
 
+    def clean(self):
+        # PREVENT DURATION OF 0
+        if not self.duration or self.duration <= 0:
+            raise forms.ValidationError({'duration': ['Duration cannot be zero or negative.']})
+
     def __str__(self):
         if self.addition_location:
             return '{0} ({1} {2})\nAdded on: {3}; Duration of: {4}; Added to: {5}'.format(
@@ -2538,6 +2545,11 @@ class AssaySetupSetting(models.Model):
             return '{}; '.format(' '.join(full_string))
         else:
             return str(self)
+
+    def clean(self):
+        # PREVENT DURATION OF 0
+        if not self.duration or self.duration <= 0:
+            raise forms.ValidationError({'duration': ['Duration cannot be zero or negative.']})
 
     def __str__(self):
         return '{} {} {}'.format(self.setting.name, self.value, self.unit)

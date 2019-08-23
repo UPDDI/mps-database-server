@@ -11,7 +11,7 @@
     <script src="{% static "js/flag.js" %}"></script>
     <script src="{% static "assays/organ_model_filter.js" %}"></script>
     <script src="{% static "assays/modify_matrix.js" %}"></script>
-    <script src="{% static "assays/assaystudy_add_new.js" %}"></script>
+    <script src="{% static "assays/assaystudy_add.js" %}"></script>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -293,7 +293,7 @@
                         {# useless value #}
                         <input type="checkbox" name="show_details" id="show_details" value=".full_details" />
                         <div class="btn-group">
-                            <label for="show_settings" class="btn btn-default">
+                            <label for="show_details" class="btn btn-default">
                                 <span class="glyphicon glyphicon-ok"></span>
                                 <span> </span>
                             </label>

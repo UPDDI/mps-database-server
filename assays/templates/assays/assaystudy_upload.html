@@ -63,6 +63,8 @@
         </div>
     </div>
 
+    <a class="btn btn-info btn-lg" role="button" href="/media/excel_templates/chip_template-{{ version }}.xlsx">Click Here For Upload Template</a>
+
     {# NOT DRY #}
     {{ supporting_data_formset.management_form }}
     <legend>Supporting Data</legend>
@@ -120,10 +122,6 @@
 {#    <div hidden>#}
 {#    {% include 'generic_field.html' with field=form.overwrite_option label="Overwrite Option*" %}#}
 {#    </div>#}
-
-    <p>
-        <a href="/media/excel_templates/chip_template-{{ version }}.xlsx">Click Here For Upload Template</a>
-    </p>
 
     {% include 'assays/assaydatafileupload_table.html' with show_delete="true" group=object.group.name %}
 

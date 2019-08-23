@@ -19,6 +19,8 @@ from .models import (
     AssayPlateReadoutAssay,
     AssaySetupCompound,
     AssayStudySet,
+    AssayCategory,
+    AssayTarget,
     DEFAULT_SETUP_CRITERIA,
     DEFAULT_SETTING_CRITERIA,
     DEFAULT_COMPOUND_CRITERIA,
@@ -335,6 +337,7 @@ def get_data_as_list_of_lists(ids, data_points=None, both_assay_names=False, inc
             'matrix_item__device',
             'matrix_item__organ_model',
             'matrix_item__matrix',
+            'study_assay__category',
             'study_assay__target',
             'study_assay__method',
             'study_assay__unit',
@@ -382,6 +385,7 @@ def get_data_as_list_of_lists(ids, data_points=None, both_assay_names=False, inc
         time_in_minutes = data_point.time
         times = get_split_times(time_in_minutes)
 
+        category = data_point.study_assay.category.name
         target = data_point.study_assay.target.name
         method = data_point.study_assay.method.name
         sample_location = data_point.sample_location.name
@@ -437,6 +441,7 @@ def get_data_as_list_of_lists(ids, data_points=None, both_assay_names=False, inc
                     settings,
                     cells,
                     compounds,
+                    category,
                     target,
                     subtarget,
                     method,
@@ -3591,6 +3596,54 @@ def fetch_matrix_setup(request):
     )
 
 
+def fetch_assay_associations(request):
+    data = {
+        'category_to_targets': {},
+        'target_to_methods': {}
+    }
+    category_to_targets = data.get('category_to_targets')
+    target_to_methods = data.get('target_to_methods')
+
+    categories = AssayCategory.objects.all().prefetch_related('targets')
+
+    for category in categories:
+        current_dropdown = [{'value': "", 'text': '---------'}]
+
+        for target in category.targets.all():
+            # match value to the desired subject ID
+            value = str(target.id)
+            # dropdown += '<option value="' + value + '">' + str(finding) + '</option>'
+            current_dropdown.append({'value': value, 'text': str(target)})
+
+        current_dropdown = sorted(current_dropdown, key=lambda k: k['text'])
+
+        category_to_targets.update({
+            category.id: current_dropdown
+        })
+
+    targets = AssayTarget.objects.all().prefetch_related('methods')
+
+    for target in targets:
+        current_dropdown = [{'value': "", 'text': '---------'}]
+
+        for method in target.methods.all():
+            # match value to the desired subject ID
+            value = str(method.id)
+            # dropdown += '<option value="' + value + '">' + str(finding) + '</option>'
+            current_dropdown.append({'value': value, 'text': str(method)})
+
+        current_dropdown = sorted(current_dropdown, key=lambda k: k['text'])
+
+        target_to_methods.update({
+            target.id: current_dropdown
+        })
+
+    return HttpResponse(
+        json.dumps(data),
+        content_type='application/json'
+    )
+
+
 def study_viewer_validation(request):
     study = None
     if request.POST.get('study', ''):
@@ -4102,6 +4155,9 @@ switch = {
     },
     'fetch_matrix_setup': {
         'call': fetch_matrix_setup
+    },
+    'fetch_assay_associations': {
+        'call': fetch_assay_associations
     },
 }
 

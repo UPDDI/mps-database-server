@@ -179,8 +179,9 @@ class ModelFormSplitTime(BootstrapForm):
                     'duration': cleaned_data.get('duration') + cleaned_data.get('duration_' + time_unit, 0) * conversion
                 })
 
-            if self.fields.get('duration', None) is not None and cleaned_data.get('duration') <= 0:
-                raise forms.ValidationError({'duration': ['Duration cannot be zero or negative.']})
+            # NOW IN MODEL
+            # if self.fields.get('duration', None) is not None and cleaned_data.get('duration') <= 0:
+            #     raise forms.ValidationError({'duration': ['Duration cannot be zero or negative.']})
 
         return cleaned_data
 
@@ -705,6 +706,8 @@ class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
     )
 
     matrix_item_setup_date = forms.DateField(required=False)
+    # Foolish!
+    matrix_item_setup_date_popup = forms.DateField(required=False)
 
     matrix_item_test_type = forms.ChoiceField(required=False, choices=TEST_TYPE_CHOICES)
 
@@ -1757,7 +1760,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
             try:
                 new_matrix.full_clean(exclude=['study'])
-            except Exception as e:
+            except forms.ValidationError as e:
                 print('MATRIX')
                 print(e)
                 # raise forms.ValidationError(e)
@@ -1825,7 +1828,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                         ])
                         new_items.append(new_item)
 
-                    except Exception as e:
+                    except forms.ValidationError as e:
                         print('ITEM')
                         print(e)
                         # raise forms.ValidationError(e)
@@ -1848,7 +1851,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                     try:
                                         new_cell.full_clean(exclude=['matrix_item'])
                                         current_related_list.append(new_cell)
-                                    except Exception as e:
+                                    except forms.ValidationError as e:
                                         print('CELL')
                                         print(e)
                                         # raise forms.ValidationError(e)
@@ -1859,7 +1862,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                     try:
                                         new_setting.full_clean(exclude=['matrix_item'])
                                         current_related_list.append(new_setting)
-                                    except Exception as e:
+                                    except forms.ValidationError as e:
                                         print('SETTING')
                                         print(e)
                                         # raise forms.ValidationError(e)
@@ -1902,7 +1905,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                         try:
                                             supplier.full_clean()
                                             supplier.save()
-                                        except Exception as e:
+                                        except forms.ValidationError as e:
                                             # raise forms.ValidationError(e)
                                             current_errors.append(e)
 
@@ -1933,7 +1936,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                         try:
                                             compound_instance.full_clean()
                                             compound_instance.save()
-                                        except Exception as e:
+                                        except forms.ValidationError as e:
                                             # raise forms.ValidationError(e)
                                             current_errors.append(e)
 
@@ -1968,7 +1971,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                         try:
                                             new_compound.full_clean(exclude=['matrix_item'])
                                             current_related_list.append(new_compound)
-                                        except Exception as e:
+                                        except forms.ValidationError as e:
                                             print('COMPOUND')
                                             print(e)
                                             # raise forms.ValidationError(e)
@@ -1991,7 +1994,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                     current_item_number += 1
 
         if current_errors:
-            raise forms.ValidationError(current_errors)
+            raise forms.ValidationError(errors)
 
         new_setup_data.update({
             'new_matrix': new_matrix,
