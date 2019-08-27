@@ -234,10 +234,13 @@
     <legend>Study Setup</legend>
 
     {% include 'generic_field.html' with field=form.organ_model label="MPS Model" %}
+    {# Use the show/hide from organ_model_filtering #}
+    <div id="protocol_div">
     {% include 'generic_field.html' with field=form.organ_model_protocol label="MPS Model Version" %}
+    </div>
 
     {# TODO PUT THE TABLE THING HERE #}
-    <div id="study_setup_table_section">
+    <div hidden id="study_setup_table_section">
             {# Section for visibility checkboxes #}
             {# A litle awkward #}
             <div class="row large-padding-top">

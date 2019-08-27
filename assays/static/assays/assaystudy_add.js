@@ -69,7 +69,7 @@ $(document).ready(function () {
         var current_target_id = current_target.val();
 
         var possible_targets = category_to_targets[current_category_id];
-        current_target[0].selectize.clear();
+        current_target[0].selectize.clear(true);
         current_target[0].selectize.clearOptions();
         if (possible_targets) {
             current_target[0].selectize.addOption(possible_targets);
@@ -81,15 +81,17 @@ $(document).ready(function () {
             current_target[0].selectize.addOption(default_dropdown);
         }
 
-        apply_target_to_row(current_row_id, current_target_id);
+        apply_target_to_row(current_row_id);
     }
 
-    function apply_target_to_row(current_row_id, current_target_id) {
+    function apply_target_to_row(current_row_id) {
+        var current_target_id = $('#id_' + assay_table_inline_string + '-' + current_row_id + '-target').val();
+
         var current_method = $('#id_' + assay_table_inline_string + '-' + current_row_id + '-method');
         var current_method_id = current_method.val();
 
         var possible_methods = target_to_methods[current_target_id];
-        current_method[0].selectize.clear();
+        current_method[0].selectize.clear(true);
         current_method[0].selectize.clearOptions();
         if (possible_methods) {
             current_method[0].selectize.addOption(possible_methods);
@@ -131,7 +133,7 @@ $(document).ready(function () {
     $(document).on('change', '.inline select[name$="-target"]', function() {
         var current_row_id = $(this).parent().parent().attr('id').split('-')[1];
 
-        apply_target_to_row(current_row_id, $(this).val());
+        apply_target_to_row(current_row_id);
     });
 
     // BAD TRIGGER

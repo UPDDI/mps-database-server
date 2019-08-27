@@ -39,9 +39,6 @@ $(document).ready(function () {
         keep_current = true;
     }
 
-    // DATA FOR THE VERSION
-    var current_setup = {};
-
     // CRUDE AND BAD
     // If I am going to use these, they should be ALL CAPS to indicate global status
     var item_prefix = 'matrix_item';
@@ -59,7 +56,18 @@ $(document).ready(function () {
     var time_prefixes = [
         'addition_time',
         'duration'
-    ]
+    ];
+
+    // DATA FOR THE VERSION
+    var current_setup = {};
+
+    // CRUDE
+    // MAKE SURE ALL PREFIXES ARE PRESENT
+    $.each(prefixes, function(index, prefix) {
+        if(!current_setup[prefix]) {
+          current_setup[prefix] = [];
+        }
+    });
 
     // SOMEWHAT TASTELESS USE OF VARIABLES TO TRACK WHAT IS BEING EDITED
     var current_prefix = '';
@@ -212,6 +220,21 @@ $(document).ready(function () {
         });
         current_dialog.removeProp('hidden');
     });
+
+    function reset_current_setup(reset_data) {
+        current_setup = {};
+
+        // MAKE SURE ALL PREFIXES ARE PRESENT
+        $.each(prefixes, function(index, prefix) {
+            if(!current_setup[prefix]) {
+              current_setup[prefix] = [];
+            }
+        });
+
+        if (reset_data) {
+            current_setup_data = [];
+        }
+    }
 
     function get_display_for_field(field_name, field_value, prefix) {
         // NOTE: SPECIAL EXCEPTION FOR CELL SAMPLES
@@ -645,12 +668,13 @@ $(document).ready(function () {
     function set_new_protocol() {
         // See if the table can be displayed
         // Sloppy
-        if (protocol.val()) {
-            $('#study_setup_table_section').show('slow');
-        }
-        else {
-            $('#study_setup_table_section').hide('slow');
-        }
+        // MOVED TO ORGAN MODEL
+        // if (protocol.val()) {
+        //     $('#study_setup_table_section').show('slow');
+        // }
+        // else {
+        //     $('#study_setup_table_section').hide('slow');
+        // }
 
         // console.log('SET NEW PROTOCOL', first_run, keep_current);
         // TERMINATE EARLY IF FIRST RUN
@@ -659,83 +683,84 @@ $(document).ready(function () {
             return;
         }
 
-        // Start SPINNING
-        window.spinner.spin(
-            document.getElementById("spinner")
-        );
-
         // console.log('CHECK', protocol.val(), current_protocol);
 
-        current_setup = {};
+        reset_current_setup();
 
         if (protocol.val() && protocol.val() != current_protocol || protocol.val() && !Object.keys(current_setup).length) {
-          // Swap to new protocol
-          current_protocol = protocol.val();
+            // Start SPINNING
+            window.spinner.spin(
+                document.getElementById("spinner")
+            );
 
-          $.ajax({
-              url: "/assays_ajax/",
-              type: "POST",
-              dataType: "json",
-              data: {
-                  call: 'fetch_organ_model_protocol_setup',
-                  organ_model_protocol_id: protocol.val(),
-                  csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
-              },
-              success: function (json) {
-                  // Stop spinner
-                  window.spinner.stop();
+            // Swap to new protocol
+            current_protocol = protocol.val();
 
-                  // console.log(json);
-                  current_setup = $.extend(true, {}, json);
+            $.ajax({
+                url: "/assays_ajax/",
+                type: "POST",
+                dataType: "json",
+                data: {
+                    call: 'fetch_organ_model_protocol_setup',
+                    organ_model_protocol_id: protocol.val(),
+                    csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
+                },
+                success: function (json) {
+                    // Stop spinner
+                    window.spinner.stop();
 
-                  // MAKE SURE ALL PREFIXES ARE PRESENT
-                  $.each(prefixes, function(index, prefix) {
-                      if(!current_setup[prefix]) {
+                    // console.log(json);
+                    current_setup = $.extend(true, {}, json);
+
+                    // MAKE SURE ALL PREFIXES ARE PRESENT
+                    $.each(prefixes, function(index, prefix) {
+                        if(!current_setup[prefix]) {
                           current_setup[prefix] = [];
-                      }
-                  });
+                        }
+                    });
 
-                  // console.log(current_setup);
+                    // console.log(current_setup);
 
-                  // FORCE INITIAL TO BE CONTROL
-                  current_setup['test_type'] = 'control';
+                    // FORCE INITIAL TO BE CONTROL
+                    current_setup['test_type'] = 'control';
 
-                  // console.log('KEEP CURRENT 1', keep_current);
-                  if (keep_current) {
-                      keep_current = false;
-                  }
-                  else {
-                      current_setup_data = [];
-                  }
-                  // console.log('KEEP CURRENT 2', keep_current);
+                    // console.log('KEEP CURRENT 1', keep_current);
+                    if (keep_current) {
+                        keep_current = false;
+                    }
+                    else {
+                        current_setup_data = [];
+                    }
+                    // console.log('KEEP CURRENT 2', keep_current);
 
-                  rebuild_table();
-              },
-              error: function (xhr, errmsg, err) {
-                  // Stop spinner
-                  window.spinner.stop();
+                    rebuild_table();
+                    },
+                    error: function (xhr, errmsg, err) {
+                      // Stop spinner
+                      window.spinner.stop();
 
-                  console.log(xhr.status + ": " + xhr.responseText);
-              }
-          });
-        }
-        else if (!current_protocol) {
-            current_setup_data = [];
-            rebuild_table();
-        }
+                      console.log(xhr.status + ": " + xhr.responseText);
+                    }
+                });
+            }
+            else if (!protocol.val()) {
+                current_protocol = protocol.val();
+                reset_current_setup(true);
+                rebuild_table();
+            }
 
         // console.log(current_setup_data);
 
         // See if the table can be displayed
         // Sloppy
-        if (protocol.val()) {
-            $('#study_setup_table_section').show('slow');
-        }
-        else {
-            $('#study_setup_table_section').hide('slow');
-        }
-
-        window.spinner.stop();
+        // if (protocol.val()) {
+        //     $('#study_setup_table_section').show('slow');
+        // }
+        // else {
+        //     $('#study_setup_table_section').hide('slow');
+        // }
+        //
+        // window.spinner.stop();
     }
 
     function add_form(prefix, form) {
@@ -885,8 +910,23 @@ $(document).ready(function () {
     // Make sure global var exists before continuing
     if (window.get_organ_models) {
         organ_model.change(function() {
+            // Reset the current setup
+            reset_current_setup(true);
+
             // Get and display correct protocol options
+            // Asynchronous
             window.get_protocols(organ_model.val());
+
+            // Show the table if there is an organ model
+            if (organ_model.val()) {
+                $('#study_setup_table_section').show('slow');
+            }
+            else {
+                $('#study_setup_table_section').hide('slow');
+            }
+
+            // Make the table
+            rebuild_table();
         });
 
         window.get_protocols(organ_model.val());

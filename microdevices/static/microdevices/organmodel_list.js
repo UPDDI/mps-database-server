@@ -4,7 +4,7 @@ $(document).ready(function() {
         "sDom": '<B<"row">lfrtip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
-        "order": [[5, "asc"], [4, "asc"], [2, "asc"]],
+        "order": [[5, "asc"], [4, "asc"], [2, "desc"]],
         "aoColumnDefs": [
             {
                 "bSortable": false,

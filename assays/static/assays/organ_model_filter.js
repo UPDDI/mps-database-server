@@ -83,7 +83,14 @@ $(document).ready(function() {
                         variance_div.hide('fast');
                     }
 
-                    protocol_div.show('fast');
+                    // Don't show an empty protocol div
+                    if (options.length <= 1) {
+                        protocol_div.hide('fast');
+                    }
+                    else {
+                        protocol_div.show('fast');
+                    }
+
                     window.display_protocol(window.organ_model_protocol.val());
                 },
                 error: function (xhr, errmsg, err) {

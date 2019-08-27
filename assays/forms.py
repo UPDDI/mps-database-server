@@ -1677,9 +1677,10 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         self.fields['group'].queryset = self.groups
 
         # Make sure there are only organ models with versions
-        self.fields['organ_model'].queryset = OrganModel.objects.filter(
-            organmodelprotocol__isnull=False
-        ).distinct()
+        # Removed for now
+        # self.fields['organ_model'].queryset = OrganModel.objects.filter(
+        #     organmodelprotocol__isnull=False
+        # ).distinct()
 
         # SLOPPY
         self.fields['test_type'].widget.attrs['class'] += ' no-selectize test-type'
