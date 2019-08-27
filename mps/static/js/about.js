@@ -84,6 +84,10 @@ $(document).ready(function () {
                     $('html, body').animate({
                         scrollTop: 2800
                     }, 500);
+                } else if (initial_hash === '#anchor_faqs') {
+                    $('html, body').animate({
+                        scrollTop: 3500
+                    }, 500);
                 } else {
                     $('html, body').animate({
                         scrollTop: $(initial_hash).offset().top - offset
