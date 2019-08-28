@@ -345,8 +345,6 @@ $(document).ready(function () {
             $('.fixedHeader-locked').remove();
         }
 
-        $('#gas-table').find('body').empty();
-
         group_table = $('#group-table').DataTable({
             ajax: {
                 url: '/assays_ajax/',
@@ -359,8 +357,6 @@ $(document).ready(function () {
                 },
                 type: 'POST',
                 dataSrc: function(json) {
-                    $("#clone-container").empty();
-
                     data_groups = json.data_groups;
                     header_keys = json.header_keys;
                     data_groups = json.data_groups;
@@ -378,7 +374,6 @@ $(document).ready(function () {
                     cells_index = header_keys.data.indexOf('Cells');
                     target_index = header_keys.data.indexOf('Target');
 
-
                     // post_filter setup
                     window.GROUPING.set_grouping_filtering(json.post_filter);
 
@@ -391,8 +386,6 @@ $(document).ready(function () {
                 },
                 // Error callback
                 error: function (xhr, errmsg, err) {
-                    $("#clone-container").empty();
-
                     // Stop spinner
                     window.spinner.stop();
 
@@ -615,20 +608,20 @@ $(document).ready(function () {
             }
         });
 
-        // selection_parameters_table_container.removeAttr('hidden');
-        compounds_table_container.removeAttr('hidden');
+        compounds_table_container.show();
     }
 
     function unmake_compounds_datatable() {
         compounds_table.clear();
         compounds_table.destroy();
-        compounds_table_container.attr('hidden', true);
+        compounds_table_container.hide();
+        compounds_table = null;
     }
 
     function draw_power_vs_sample_size_chart() {
         var sample_size_data_copy = $.extend(true, [], sample_size_data);
         var special_tps = [];
-        for (var x=0; x<sample_size_data_copy.length; x++) {
+        for (var x = 0; x < sample_size_data_copy.length; x++) {
             var current_time = sample_size_data_copy[x][0]/1440;
             if (current_time % 1 !== 0) {
                 current_time = current_time.toFixed(3);
@@ -645,9 +638,21 @@ $(document).ready(function () {
         sample_size_data_prepped = get_pivot_array(sample_size_data_copy, 2, 0, 1);
         sample_size_data_prepped.splice(1, 1);
 
-        for (x=1; x<sample_size_data_prepped.length; x++) {
+        for (x = 1; x < sample_size_data_prepped.length; x++) {
             sample_size_data_prepped[x][0] = parseFloat(sample_size_data_prepped[x][0]);
         }
+
+        var column_to_check = [];
+        for (x = 0; x < sample_size_data_prepped[0].length; x++) {
+            for (y = 1; y < sample_size_data_prepped.length; y++) {
+                column_to_check.push(sample_size_data_prepped[y][x])
+            }
+            if (column_to_check.join('').length === 0) {
+                remove_col(sample_size_data_prepped, x);
+            }
+            column_to_check = [];
+        }
+        column_to_check = [];
 
         // Populate full list of time points only if this is the first instance of power analysis being run on this set
         time_points_full = sample_size_data_prepped[0].filter(
@@ -664,6 +669,10 @@ $(document).ready(function () {
                     sample_size_data_prepped[j].splice(index_to_remove, 1);
                 }
             }
+        }
+
+        if (sample_size_data_prepped.length < 2) {
+            return null;
         }
 
         var sample_size_google_data = null;
@@ -1222,10 +1231,15 @@ $(document).ready(function () {
                 make_chart('P Value for ' + row_info[0], 'P Value', power_analysis_p_value_graph, p_value_data);
                 make_chart('Power for ' + row_info[0], 'Power', power_analysis_power_graph, power_data);
                 draw_power_vs_sample_size_chart();
+
+                if ($('div[id^="google-visualization-errors-all"]')[0]) {
+                    power_analysis_two_sample_container_selector.hide();
+                    $('#error-container').show();
+                } else {
+                    $('#error-container').hide();
+                }
             })
             .fail(function(xhr, errmsg, err) {
-                $("#clone-container").empty();
-
                 // Stop spinner
                 window.spinner.stop();
 
@@ -1271,8 +1285,6 @@ $(document).ready(function () {
     //             power_analysis_one_sample_container_selector.attr('hidden', false);
     //         })
     //         .fail(function(xhr, errmsg, err) {
-    //             $("#clone-container").empty();
-    //
     //             // Stop spinner
     //             window.spinner.stop();
     //

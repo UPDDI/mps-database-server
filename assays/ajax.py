@@ -3855,11 +3855,18 @@ def fetch_power_analysis_group_table(request):
             point.sample_location.name: True
         })
 
-        data_group_to_organ_models.setdefault(
-            current_group, {}
-        ).update({
-            point.matrix_item.organ_model.name: True
-        })
+        if point.matrix_item.organ_model_id:
+            data_group_to_organ_models.setdefault(
+                current_group, {}
+            ).update({
+                point.matrix_item.organ_model.name: True
+            })
+        else:
+            data_group_to_organ_models.setdefault(
+                current_group, {}
+            ).update({
+                '-No Device-': True
+            })
 
         power_analysis_input.append([
             point.data_group,
