@@ -459,8 +459,8 @@
                         </td>
                     {% endif %}
                     <td>
-                    	<input class="cell-sample-id-field" readonly="readonly" id="id_{{ cell_formset.prefix }}-{{ forloop.counter0 }}-cell_sample"
-                               name="{{ cell_formset.prefix }}-{{ forloop.counter0 }}-cell_sample" size="5" value="{{ cell.cell_sample.value|default_if_none:'' }}">
+                        <input class="cell-sample-id-field form-control" readonly="readonly" id="id_{{ cell_formset.prefix }}-{{ forloop.counter0 }}-cell_sample"
+                               name="{{ cell_formset.prefix }}-{{ forloop.counter0 }}-cell_sample" style="width: 70px; display: inline;" value="{{ cell.cell_sample.value|default_if_none:'' }}">
                         <button id='search-{{ forloop.counter0 }}-' type="button" class="btn btn-xs btn-primary open-cell-sample-dialog">
                             <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
                         </button>

@@ -211,7 +211,7 @@ class OrganModelProtocolCellForm(ModelFormSplitTime):
         self.fields['cell_sample'].widget.attrs['style'] = 'width:75px;'
         self.fields['passage'].widget.attrs['style'] = 'width:75px;'
 
-        self.fields['density_unit'].queryset = PhysicalUnits.objects.filter(availability__contains='cell')
+        self.fields['density_unit'].queryset = PhysicalUnits.objects.filter(availability__contains='cell').order_by('unit')
 
 
 class OrganModelProtocolSettingForm(ModelFormSplitTime):

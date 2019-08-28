@@ -177,7 +177,7 @@ def modify_templates():
     value_units = PhysicalUnits.objects.filter(
         availability__contains='readout'
     ).order_by(
-        'base_unit',
+        'base_unit__unit',
         'scale_factor'
     ).values_list('unit', flat=True)
 
@@ -781,7 +781,7 @@ class AssayStudyAssayInline(admin.TabularInline):
         elif db_field.name == 'unit':
             unit_queryset = PhysicalUnits.objects.filter(
                 availability__icontains='readout'
-            ).order_by('unit_type', 'base_unit', 'scale_factor')
+            ).order_by('unit_type__unit_type', 'base_unit__unit', 'scale_factor')
             kwargs["queryset"] = unit_queryset
         return super(AssayStudyAssayInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
