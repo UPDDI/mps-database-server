@@ -1548,10 +1548,14 @@ class AssayMatrixItemUpdate(StudyGroupMixin, UpdateView):
                 # matrix=self.object
             )
 
-        cellsamples = get_cell_samples_for_selection(self.request.user)
+        # cellsamples = get_cell_samples_for_selection(self.request.user)
 
         # Cellsamples will always be the same
-        context['cellsamples'] = cellsamples
+        context['cellsamples'] = CellSample.objects.all().prefetch_related(
+            'cell_type__organ',
+            'supplier',
+            'cell_subtype__cell_type'
+        )
 
         context['update'] = True
 
