@@ -22,7 +22,7 @@
                 <a class="btn btn-xs subform-edit">
                     <span class="glyphicon glyphicon-pencil text-warning"></span>
                 </a>
-                <a class="btn btn-xs subform-delete">
+                <a class="btn btn-xs form-delete">
                     <span class="glyphicon glyphicon-remove text-danger"></span>
                 </a>
             </div>
@@ -95,6 +95,18 @@
     </tr>
     <tr>
         <td colspan="3">{{ form.matrix_item_test_type }}</td>
+    </tr>
+    <tr>
+        <th colspan="3">Device*</th>
+    </tr>
+    <tr>
+        <td colspan="3">{{ form.matrix_item_device }}</td>
+    </tr>
+    <tr>
+        <th colspan="3">MPS Model*</th>
+    </tr>
+    <tr>
+        <td colspan="3">{{ form.matrix_item_organ_model }}</td>
     </tr>
     <tr>
         <th>Scientist</th>
@@ -351,6 +363,7 @@
     {% endif %}
         <div class="error-message-section error-display important-display">
         </div>
+        {% if not detail %}
         <div class="important-display no-wrap">
             <a class="btn btn-xs subform-edit">
                 <span class="glyphicon glyphicon-pencil text-warning"></span>
@@ -359,6 +372,7 @@
                 <span class="glyphicon glyphicon-remove text-danger"></span>
             </a>
         </div>
+        {% endif %}
         <div class="important-display">
             <span class="cell-cell_sample"></span>
         </div>
@@ -391,6 +405,7 @@
     {% endif %}
         <div class="error-message-section error-display important-display">
         </div>
+        {% if not detail %}
         <div class="important-display no-wrap">
             <a class="btn btn-xs subform-edit">
                 <span class="glyphicon glyphicon-pencil text-warning"></span>
@@ -399,6 +414,7 @@
                 <span class="glyphicon glyphicon-remove text-danger"></span>
             </a>
         </div>
+        {% endif %}
         <div class="important-display">
             <span class="compound-compound"></span>
             <span class="compound-concentration"></span>
@@ -440,6 +456,7 @@
     {% endif %}
         <div class="error-message-section error-display important-display">
         </div>
+        {% if not detail %}
         <div class="important-display no-wrap">
             <a class="btn btn-xs subform-edit">
                 <span class="glyphicon glyphicon-pencil text-warning"></span>
@@ -448,6 +465,7 @@
                 <span class="glyphicon glyphicon-remove text-danger"></span>
             </a>
         </div>
+        {% endif %}
         <div class="important-display">
             <span class="setting-setting"></span>
             <span class="setting-value"></span>

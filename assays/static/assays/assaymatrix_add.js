@@ -494,19 +494,19 @@ $(document).ready(function () {
                 });
 
                 // Hide deletes for forms without names
-                if (!$(this).find('input[name$="-name"]').val()) {
-                    display.find('.form-delete').hide();
-                }
-                else {
-                    display.find('.form-delete').show();
-                }
+                // if (!$(this).find('input[name$="-name"]').val()) {
+                //     display.find('.form-delete').hide();
+                // }
+                // else {
+                //     display.find('.form-delete').show();
+                // }
 
                 var errors_display = null;
                 var errors_list = null;
 
                 var item_was_marked_deleted = false;
 
-                if (prefix === 'item') {
+                if (prefix === 'matrix_item') {
                     item_was_marked_deleted = $(this).find('input[name$="DELETE"]').prop('checked');
                 }
 
