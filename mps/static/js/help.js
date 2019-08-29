@@ -2,7 +2,7 @@ $(document).ready(function () {
     // Resolve anchors going to the incorrect location
     var offset = 60;
 
-    $(".collapsible1, .collapsible2, .collapsible3").click(function() {
+    $(".collapsible1, .collapsible2, .collapsible3, .collapsible4").click(function() {
         var content = this.nextElementSibling;
         if ($(content).css("display") != "none") {
             $(content).css("display", "none");

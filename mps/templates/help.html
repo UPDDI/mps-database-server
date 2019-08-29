@@ -47,6 +47,23 @@
     <link rel="stylesheet" href="{% static "css/bootstrap-overrides.css" %}">
 
     <style>
+        {#https://stackoverflow.com/questions/17838607/making-an-iframe-responsive  #}
+        .myIframe {
+             position: relative;
+             padding-bottom: 65.25%;
+             padding-top: 30px;
+             height: 0;
+             overflow: auto;
+             -webkit-overflow-scrolling:touch;
+             border: solid black 1px;
+        }
+        .myIframe iframe {
+             position: absolute;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+        }
         .sub1-bars {font-style: italic; font-size: 180%; margin-top: 3%;
             font-weight: 700}
         .sub2-bars {font-style: normal; font-size: 150%; margin-top: 2%;
@@ -73,6 +90,7 @@
         .collapsible1:hover { font-weight: bold; font-size: 120%}
         .collapsible2:hover { font-weight: bold; font-size: 105%; border-color:darkgray; }
         .collapsible3:hover { font-weight: bold; font-size: 105%; border-color:darkgray; }
+        .collapsible4:hover { font-weight: bold; font-size: 100%; border-color:gray; }
 
         .collapsible1 {
             background-color: aliceblue;
@@ -104,8 +122,22 @@
             margin: 2px;
             margin-left: 1px;
         }
-
-        .content1, .content2, .content3 {display: none; transition: max-height 0.1s ease-out;}
+        .collapsible4 {
+            background-color: LightGray;
+            border-color: lightGray;
+            font-size:100%;
+            display: block;
+            color: black;
+            cursor: pointer;
+            width: 75%;
+            text-align: left;
+            border-style: solid;
+            border-radius: 0%;
+            padding: 2px;
+            margin: 2px;
+            margin-left: 1px;
+        }
+        .content1, .content2, .content3, .content4 {display: none; transition: max-height 0.1s ease-out;}
 
         .background2 {background-color:white;}
         .background3 {background-color:white;}
@@ -128,10 +160,14 @@
     {% endif %}
 </head>
 
+<<<<<<< HEAD
 {# TODO DRAFT VERSION -  NEEDS TO BE REVIEWED  #}
 
 <body>
 {# <body data-spy="scroll" data-target=".navbar" data-offset="80"> #}
+=======
+<body data-spy="scroll" data-target=".navbar" data-offset="80">
+>>>>>>> sandra_help
 
 <nav class="navbar navbar-inverse navbar-fixed-top">
 
@@ -166,11 +202,24 @@
                     </li>
 
                     <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Presentations<span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#video_demo_5">Study Sets, Controlled Sharing, References - 20190620</a></li>
+                            <li><a href="#video_demo_4">NCATS Data Sharing Workflow - 20190620 </a></li>
+                            <li><a href="#video_demo_3">Looking at Kidney Study Data - 20190418</a></li>
+                            <li><a href="#video_demo_2">Reproducibility, Customized Plots - 20190221</a></li>
+                            <li><a href="#video_demo_1">Adverse Events Analysis - 20190117</a></li>
+                            <li><a href="#video_demo_0">Study Data Loading - 20181220 </a></li>
+                        </ul>
+                    </li>
+
+                    <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Features<span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li class="dropdown-header"><b>Study Data Only</b></li>
                             <li><a href="#intrastudy">Intra-Study Analysis</a></li>
                             <li><a href="#interstudy">Inter-Study Analysis</a></li>
+                            <li><a href="#customization"><i>Customizing Intra- and Inter-Study Analyses</i></a></li>
                             <li><a href="#studyset">Study Sets</a></li>
                             <li><a href="#reference">References</a></li>
                             <li class="divider"></li>
@@ -298,7 +347,9 @@
             <div class="content1">
                 <div id="recentupgradesviewer" class="viewersubtainer">
                     <ul class="list-group">
-{#                        power analysis and compuatational modeling #}
+{#TODO:                        compuatational modeling, new workflow #}
+                        <li class="list-group-item"> <b><em> Power Analysis </em></b> - ...need to add a sentence here....
+                            For more information on the power analysis feature, <a href="#power_analysis">click here</a>.   </li>
                         <li class="list-group-item"> <b><em> References </em></b> - Allows Studies, MPS Models, Study Sets, and other study components to be linked to one or more publications.
                             For more information on the references feature, <a href="#reference">click here</a>.   </li>
                         <li class="list-group-item"> <b><em> Study Sets </em></b> - Designed so that multiple studies can be grouped and referenced together with one URL.
@@ -687,6 +738,108 @@
                                 </tbody>
                             </table>
                             Note: Additional permissions can be granted in a multitude of configurations to match individual user needs. For example, any registered user could be granted permission to add/edit <b>Cell Samples</b>, <b>Compounds</b>, <b>MPS Models</b>, etc.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="video_presentation_section" class="container">
+
+        <h1 class="sub1-bars"> Recorded Videos Demonstrating Database Features </h1>
+
+        <div id="video_demo_5">
+            <button name="my_buttons" class="collapsible1">Study Sets, Controlled Sharing, and References</button>
+            <div class="content1">
+                <div id="video_demo_5viewer" class="viewersubtainer">
+                    <ul class="list-group">
+                        <div class="list-group-item">
+                            UPDDI's Albert Gough shows how study sets can be used to share data with external collaborators and how study sets can be assigned URLs that can be referenced in publications. Video was recorded on June 20, 2019 and is approximately 25 minutes long.
+                            <div class="myIframe">
+                                <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=d60edd40-c668-417d-9c66-aab7016bcb36&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                            </div>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="video_demo_4">
+            <button name="my_buttons" class="collapsible1">NCATS Data Sharing Workflow</button>
+            <div class="content1">
+                <div id="video_demo_4viewer" class="viewersubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            NCATS explains their data release workflow. Video was recorded on June 20, 2019 and is approximately 3 minutes long.
+                            <div class="myIframe">
+                                <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=15ab44cb-8f16-4df4-a14f-aab7016aba8b&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="video_demo_3">
+            <button name="my_buttons" class="collapsible1">Exploring Kidney Study Data</button>
+            <div class="content1">
+                <div id="video_demo_3viewer" class="viewersubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            UPDDI toxicologist Larry Vernetti explores data associated with kidney tissue chips. Video was recorded on April 18, 2019 and is approximately 30 minutes long.
+                            <div class="myIframe">
+                                <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=68a51114-b2a0-4d77-8b88-aab7016aba2b&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+         <div id="video_demo_2">
+            <button name="my_buttons" class="collapsible1">Reproducibility and Customized Plots</button>
+            <div class="content1">
+                <div id="video_demo_2viewer" class="viewersubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            UPDDI's Albert Gough shows how to use the inter- and intra-study reproducibility feature and how to use customize queries and plots. Video was recorded on February 21, 2019 and is approximately 30 minutes long.
+                            <div class="myIframe">
+                                <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=79a38a9c-697b-49af-8c29-aab7016aba5d&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="video_demo_1">
+            <button name="my_buttons" class="collapsible1">Adverse Events Analysis</button>
+            <div class="content1">
+                <div id="video_demo_1viewer" class="viewersubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            UPDDI toxicologist Larry Vernetti walks through the process of using the MPS-Db to help design an <i>in-vitro</i> toxicology study for liver toxicity. Video was recorded on January 17, 2019 and is approximately 30 minutes long.
+                            <div class="myIframe">
+                                <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=90d94705-ba7b-452e-a17a-aab7016f60ba&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="video_demo_0">
+            <button name="my_buttons" class="collapsible1">Data Loading Workflow</button>
+            <div class="content1">
+                <div id="video_demo_0viewer" class="viewersubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            Members of the UPDDI Database Center and Texas A&M University tissue chip team demonstrate the process used to transfer and upload data into the MPS-Db used from 2016 to 2018. Video was recorded on December 20, 2018 and is approximately 40 minutes long.
+                            <div class="myIframe">
+                                <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=9e71a7c0-0349-4d10-87f2-aab7016ab9f1&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                            </div>
                         </li>
                     </ul>
                 </div>
@@ -1741,6 +1894,7 @@
                                             </ul>
                                         </li>
                                         <li>Performing reproducibility analysis on <b>Assay</b> Data associated to the <b>Study</b> </li>
+                                        <li>Performing power analysis on <b>Assay</b> Data associated to the <b>Study</b> </li>
                                         <li>Displaying Images and/or Videos associated to the <b>Study</b> </li>
                                         <li>Reviewing annotations associated to a <b>Study</b>, a <b>Matrix</b>, and/or a <b>Matrix Item</b> </li>
                                     </ul>
@@ -1918,7 +2072,7 @@
             </div>
         </div>
 
-        <h1 class="sub3-bars"> Customizing Queries and Plots (Overriding the Defaults) </h1>
+        <h1 id="customization" class="sub3-bars"> Customizing Queries, Plots, and Analyses (Overriding the Defaults) </h1>
 
         <div id="groupingfiltering">
             <button name="my_buttons" class="collapsible3">Overriding the Built-in Default Grouping/Filtering of Assay Data</button>
@@ -2042,6 +2196,41 @@
                                         <li>By default, the screen will automatically refresh, to refresh manually, check the <b>Manually Refresh</b> box, make the desired changes, then click on the <b>Refresh</b> button to apply changes </li>
                                     </ul>
                                 </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="power_analysis">
+            <button name="my_buttons" class="collapsible3">Understanding and Overriding Power Analysis Options </button>
+            <div class="content3">
+                <div id="power_analysis_viewer" class="viewersubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item background3">
+                            <ul class="list-unstyled">
+                                {#TODO: power analysis stuff#}
+                                .....Need to add some information here.....
+
+{% comment %}                                <li>Customized properties for reproducibility analysis are available in the MPS-Db via a "Sidebar" on the inter-study reproducibility analysis page
+                                    <ul class="filled-circle">
+                                        <li>If hidden, click the <b>Toggle Sidebar</b> button to show the sidebar
+                                        <li>Make desired selections in the sidebar
+                                            <ul class="open-circle">
+                                            <li>Reproducibility Comparison within Selected Data Sets - By Center (Center to Center) or By Study (Study to Study)</li>
+                                            <li>Normalize by Median - helpful if trends are similar but values are on different scales </li>
+                                            <li>Maximum Interpolation Size - maximum number of data points that can be interpolated, between experimental measurements, to allow for comparison within selected data sets, center to center or study to study (shown as stars on the reproducibility plots)</li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li><br>Notes
+                                    <ul class="filled-circle">
+                                        <li>By default, the screen will automatically refresh, to refresh manually, check the <b>Manually Refresh</b> box, make the desired changes, then click on the <b>Refresh</b> button to apply changes </li>
+                                    </ul>
+                                </li>{% endcomment %}
+
                             </ul>
                         </li>
                     </ul>
@@ -2701,7 +2890,13 @@
                                         <li>Click on the <b>Add Study</b> button to be routed to the <b>Study Level Details</b> page, or
                                         click the <b>View/Edit</b> button next to the <b>Study</b> of interest to be routed to the <b>Study Matrices and Items</b> list page, then
                                         click on the <b>Edit This Study</b> button </li>
-                                        <li> Add or Edit the required information <a href="https://youtu.be/yXP00_AJjq8" target="_blank"> (video tutorial) </a>
+                                        <li> Add or Edit the required information </li>
+                                            <button name="my_buttons" class="collapsible4">Show/Hide Video Tutorial: Add/Edit Study </button>
+                                            <div class="content4">
+                                                  <div class="myIframe">
+                                                    <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=8cbb6ad6-8ba6-4e06-9052-aab7016a7617&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                                                </div>
+                                            </div>
                                             <ul class="open-circle">
                                                 <li>Group – select a Data Group (the team performing the study) </li>
                                                 <li>Study Type – indicate the general purpose of the <b>Study</b> (one is required; check all that apply) </li>
@@ -2733,7 +2928,13 @@
                                 </li>
                                  <li><br>Additional Video Tutorial(s)
                                     <ul class="filled-circle">
-                                        <li> Returning to an existing <b>Study</b> <a href="https://youtu.be/ZuQDpF9zhQU" target="_blank"> (video tutorial) </a> </li>
+                                        <li> Returning to an existing <b>Study</b> </li>
+                                        <button name="my_buttons" class="collapsible4">Show/Hide Video Tutorial: Returning to an Existing Study </button>
+                                            <div class="content4">
+                                                  <div class="myIframe">
+                                                    <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=bdf9abe6-1b45-4aab-82d3-aab7016a6c66&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                                                </div>
+                                            </div>
 
                                     </ul>
                                 </li>
@@ -2902,7 +3103,13 @@ Results: add a summary of the study results. </td>
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
-                                <li>To Add/Edit a <b>Matrix</b>, from the <b>Study Matrices and Items</b> list page <a href="https://youtu.be/QUGIyhIifgg" target="_blank"> (video tutorial) </a>
+                                <li>To Add/Edit a <b>Matrix</b>, from the <b>Study Matrices and Items</b> list page </li>
+                                        <button name="my_buttons" class="collapsible4">Show/Hide Video Tutorial: Add/Edit a Matrix </button>
+                                            <div class="content4">
+                                                  <div class="myIframe">
+                                                    <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=d3b2f27a-d4fc-4791-bc34-aab7016a6552&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                                                </div>
+                                            </div>
                                     <ul class="filled-circle">
                                         <li>To add - click the <b>Add Matrix</b> button</li>
                                         <li>To edit - click on the <b>View/Edit</b> button next to the <b>Matrix</b> of interest</li>
@@ -2913,7 +3120,13 @@ Results: add a summary of the study results. </td>
                                         <li>Matrix Name – enter something descriptive</li>
                                         <li>Notes – free text field for describing the matrix</li>
                                         <li>Representation – select from the options in the list </li>
-                                        <li>If multiple chips -  select number of Items, Rows, and Columns <a href="https://youtu.be/XhICJH2_PMw" target="_blank"> (video tutorial) </a> </li>
+                                        <li>If multiple chips -  select number of Items, Rows, and Columns </li>
+                                        <button name="my_buttons" class="collapsible4">Show/Hide Video Tutorial: Global Matrix Information </button>
+                                            <div class="content4">
+                                                  <div class="myIframe">
+                                                    <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=55ae8f01-201b-4eb4-bb59-aab7016a59cf&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                                                </div>
+                                            </div>
                                         <li>If Plate - select the applicable device </li>
                                     </ul>
                                 </li>
@@ -2922,10 +3135,34 @@ Results: add a summary of the study results. </td>
                                         <li>Click in the <i>Action</i> Box</li>
                                         <li>Select an <i>Action</i>
                                             <ul class="filled-circle">
-                                                <li> For each <b>Matrix Item</b>, the Name/ID, Test Type, Setup Date, and Device/Model are required <a href="https://youtu.be/bVVxJ_0wIHI" target="_blank"> (video tutorial) </a> </li>
-                                                <li> Adding Settings <a href="https://youtu.be/X9rrAcdLOHI" target="_blank"> (video tutorial) </a>  </li>
-                                                <li> Adding Compounds <a href="https://youtu.be/zzHyKdVe8cY" target="_blank"> (video tutorial) </a>  </li>
-                                                <li> Adding Cells <a href="https://youtu.be/38fycWl5vOo" target="_blank"> (video tutorial) </a>  </li>
+                                                <li> For each <b>Matrix Item</b>, the Name/ID, Test Type, Setup Date, and Device/Model are required </li>
+                                                    <button name="my_buttons" class="collapsible4">Show/Hide Video Tutorial: Four Required Matrix Actions </button>
+                                                        <div class="content4">
+                                                              <div class="myIframe">
+                                                                <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=2be5c3f0-fc70-4892-9ff5-aab7016a3464&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                                                            </div>
+                                                        </div>
+                                                <li> Adding Settings </li>
+                                                    <button name="my_buttons" class="collapsible4">Show/Hide Video Tutorial: Add Settings </button>
+                                                        <div class="content4">
+                                                              <div class="myIframe">
+                                                                <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=9b5dba11-33e0-4478-ab60-aab7016a34bb&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                                                              </div>
+                                                        </div>
+                                                <li> Adding Compounds </li>
+                                                    <button name="my_buttons" class="collapsible4">Show/Hide Video Tutorial: Add Compounds </button>
+                                                        <div class="content4">
+                                                              <div class="myIframe">
+                                                                <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=2a054863-5dc9-4bb0-8f66-aab7016a34e0&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                                                              </div>
+                                                        </div>
+                                                <li> Adding Cells </li>
+                                                    <button name="my_buttons" class="collapsible4">Show/Hide Video Tutorial: Add Cells </button>
+                                                        <div class="content4">
+                                                              <div class="myIframe">
+                                                                <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=56abdf20-9042-478f-a923-aab7016a348c&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                                                              </div>
+                                                        </div>
                                             </ul>
                                         </li>
                                         <li>Enter applicable information in the box below the <i>Action</i> </li>
@@ -2945,10 +3182,22 @@ Results: add a summary of the study results. </td>
                                 </li>
                                 <li><br>Additional Video Tutorial(s)
                                     <ul class="filled-circle">
-                                        <li> Removing item settings, compounds, and/or cells <a href="https://youtu.be/GGKOJ5o4gvY" target="_blank"> (video tutorial) </a> </li>
+                                        <li> Removing item settings, compounds, and/or cells </li>
+                                                    <button name="my_buttons" class="collapsible4">Show/Hide Video Tutorial: Removing Settings, Compounds, or Cells </button>
+                                                        <div class="content4">
+                                                              <div class="myIframe">
+                                                                <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=a92b7779-ca88-44d8-bd3d-aab7016a45a3&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                                                              </div>
+                                                        </div>
                                         <!-- <li> Removing items from a matrix <a href="https://youtu.be/" target="_blank" > (video tutorial) </a> </li>
                                         <li> Removing a matrix from a study <a href="https://youtu.be/" target="_blank" > (video tutorial) </a> </li>  -->
-                                        <li> Options for naming items <a href="https://youtu.be/d4fty0ZRXv8" target="_blank" > (video tutorial) </a> </li>
+                                        <li> Options for naming items </li>
+                                                    <button name="my_buttons" class="collapsible4">Show/Hide Video Tutorial: Exploring Shortcuts for Naming Chips </button>
+                                                        <div class="content4">
+                                                              <div class="myIframe">
+                                                                <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=a643b676-5f4e-42a2-8e44-aab7016a503f&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                                                              </div>
+                                                        </div>
 
                                     </ul>
                                 </li>
