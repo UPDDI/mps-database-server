@@ -2,15 +2,14 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 
 #sck added
-from django.utils import timezone
-#from django.db.models.functions import (ExtractYear, ExtractMonth, ExtractDay)
 from django.db.models import F, ExpressionWrapper, DateField, DateTimeField, Q
-from datetime import date, timedelta
+from datetime import datetime, timedelta
+import pytz
 #from django.db.models.functions import Concat
 from cellsamples.models import Organ
 #from django.db.models import Count
 
-from assays.models import AssayStudy, OrganModel, AssayMatrixItem
+from assays.models import AssayStudy, OrganModel, AssayMatrixItem, AssayStudyStakeholder
 from .forms import SearchForm
 
 from haystack.query import SearchQuerySet
@@ -137,27 +136,62 @@ def mps_help(request):
 #added sck
 def mps_about(request):
     number_of_days = 30
-    a_months_ago = date.today() - timedelta(days=365) + timedelta(days=number_of_days)
-    #cellsamples_organ.organ_name
-    #microdevices_organmodel.name
-    #microdevices_microphysiologycenter.name
 
-    soon_released = AssayStudy.objects.filter(
+    # Needed to make minimum timezone aware
+    minimum_datetime = datetime.min.replace(tzinfo=pytz.UTC)
+    datetime_now = datetime.now().replace(tzinfo=pytz.UTC)
+
+    signed_off_restricted_studies = AssayStudy.objects.filter(
         restricted=True,
-        locked=False,
-        signed_off_date__lt=a_months_ago
-    ).exclude(
-        group_id__in=[21, 47, 109]
+        # PLEASE NOTE: Locking a study will prevent this script from interacting with it
+        locked=False
     ).exclude(
         signed_off_date__isnull=True
-    ).annotate(
-        scheduled_release_date=ExpressionWrapper(
-            F('signed_off_date') + timedelta(days=365.2425),
-            output_field=DateTimeField()
-        ),
+    ).exclude(
+        signed_off_by_id=None
     )
 
-    get_queryset_with_organ_model_map(soon_released)
+    # Contains as a datetime the lastest approval for a study
+    latest_approval = {}
+
+    approved_stakeholders = AssayStudyStakeholder.objects.filter(
+        sign_off_required=True,
+        study__id__in=signed_off_restricted_studies
+    ).exclude(
+        signed_off_date__isnull=True
+    ).exclude(
+        signed_off_by_id=None
+    )
+
+    for stakeholder in approved_stakeholders:
+        # Compare to minimum if no date at the moment
+        if stakeholder.signed_off_date > latest_approval.get(stakeholder.study_id, minimum_datetime):
+            latest_approval.update({
+                stakeholder.study_id: stakeholder.signed_off_date
+            })
+
+    soon_released = {}
+
+    for study in signed_off_restricted_studies:
+        # If there are no stakeholders, just use the sign off date
+        if study.id not in latest_approval:
+            # Days are approximated for a year
+            scheduled_release_date = study.signed_off_date + timedelta(days=365.2425)
+        else:
+            # Days are approximated for a year
+            scheduled_release_date = latest_approval.get(study.id) + timedelta(days=365.2425)
+
+        if scheduled_release_date <= datetime_now + timedelta(days=number_of_days):
+            soon_released.update({
+                study.id: scheduled_release_date
+            })
+
+    signed_off_restricted_studies = signed_off_restricted_studies.filter(id__in=soon_released.keys())
+
+    get_queryset_with_organ_model_map(signed_off_restricted_studies)
+
+    for study in signed_off_restricted_studies:
+        study.scheduled_release_date = soon_released.get(study.id)
 
     all_organ_models = OrganModel.objects.exclude(
         name__in=['Demo-Organ']
@@ -177,31 +211,13 @@ def mps_about(request):
     for current_tuple, count in distinct_by_name_and_center.items():
         reduce_distinct_to_list.append([current_tuple[0], current_tuple[1], count])
 
-    d = {
+    full_context = {
         'number_of_days': number_of_days,
-        'about_studies': soon_released,
-
-        #This way before added the model to the study table
-        # 'about_studies': AssayStudy.objects.filter(
-        #     restricted=True,
-        #     locked=False,
-        #     signed_off_date__lt=a_months_ago
-        # ).exclude(
-        #     group_id__in=[21, 47, 109]
-        # ).exclude(
-        #     signed_off_date__isnull=True
-        # ).annotate(
-        #     scheduled_release_date=ExpressionWrapper(
-        #         F('signed_off_date') + timedelta(days=365.2425),
-        #         output_field=DateTimeField()),
-        #     ),
-
+        'about_studies': signed_off_restricted_studies,
         'about_models_distinct': reduce_distinct_to_list,
-        #This way if do not want the distinct and want the model names
-        #'about_models': all_organ_models,
     }
 
-    return render(request, 'about.html', d)
+    return render(request, 'about.html', full_context)
 
 
 # TODO Consider defining this in URLS or either bringing the rest here
