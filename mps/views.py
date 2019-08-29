@@ -134,6 +134,7 @@ def mps_help(request):
 
 
 #added sck
+# TODO NOT DRY
 def mps_about(request):
     number_of_days = 30
 
@@ -150,6 +151,20 @@ def mps_about(request):
     ).exclude(
         signed_off_by_id=None
     )
+
+    # Indicates whether there are required stakeholders that have not approved
+    required_stakeholder_map = {}
+
+    relevant_required_stakeholders_without_approval = AssayStudyStakeholder.objects.filter(
+        sign_off_required=True,
+        signed_off_by_id=None,
+        study__id__in=signed_off_restricted_studies
+    )
+
+    for stakeholder in relevant_required_stakeholders_without_approval:
+        required_stakeholder_map.update({
+            stakeholder.study_id: True
+        })
 
     # Contains as a datetime the lastest approval for a study
     latest_approval = {}
@@ -181,7 +196,9 @@ def mps_about(request):
             # Days are approximated for a year
             scheduled_release_date = latest_approval.get(study.id) + timedelta(days=365.2425)
 
-        if scheduled_release_date <= datetime_now + timedelta(days=number_of_days):
+        stakeholders_without_approval = required_stakeholder_map.get(study.id, False)
+
+        if not stakeholders_without_approval and scheduled_release_date <= datetime_now + timedelta(days=number_of_days):
             soon_released.update({
                 study.id: scheduled_release_date
             })
