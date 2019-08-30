@@ -13,6 +13,7 @@ from assays.models import (
     AssayStudySupportingData,
     AssayStudyAssay,
     AssayMatrix,
+    AssayCategory,
     TEST_TYPE_CHOICES,
     PhysicalUnits,
     AssaySampleLocation,
@@ -400,10 +401,18 @@ class AssayStudyAssayInlineFormSet(BaseInlineFormSet):
             availability__icontains='readout'
         ).order_by('unit_type__unit_type', 'base_unit__unit', 'scale_factor')
 
+        category_queryset = AssayCategory.objects.all().order_by('name')
+
         for form in self.forms:
             form.fields['target'].queryset = target_queryset
             form.fields['method'].queryset = method_queryset
             form.fields['unit'].queryset = unit_queryset
+
+            form.fields['category'] = forms.ModelChoiceField(
+                queryset=category_queryset,
+                required=False,
+                empty_label='All'
+            )
 
 
 class ReadyForSignOffForm(forms.Form):
@@ -1657,6 +1666,25 @@ AssayStudySetReferenceFormSetFactory = inlineformset_factory(
 )
 
 
+# Convoluted
+def process_error_for_study_new(prefix, row, column, full_error):
+    current_error = dict(full_error)
+    modified_error = []
+
+    for error_field, error_values in current_error.items():
+        for error_value in error_values:
+            modified_error.append([
+                '|'.join([str(x) for x in [
+                    prefix,
+                    row,
+                    column,
+                    error_field
+                ]]) + '-' + error_value
+            ])
+
+    return modified_error
+
+
 class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
     setup_data = forms.CharField(required=False)
     processed_setup_data = forms.CharField(required=False)
@@ -1715,14 +1743,28 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         new_items = None
         new_related = None
 
-        errors = {'organ_model': []}
-        current_errors = errors.get('organ_model')
+        errors = {'organ_model': [], 'setup_data': []}
+        current_errors = errors.get('setup_data')
 
         study = super(AssayStudyFormNew, self).save(commit=False)
 
         if self.cleaned_data.get('setup_data', None):
             all_setup_data = json.loads(self.cleaned_data.get('setup_data', '[]'))
         else:
+            all_setup_data = []
+
+        # Never consider if no model
+        if not self.cleaned_data.get('organ_model', None):
+            all_setup_data = []
+
+        # Catch technically empty setup data
+        setup_data_is_empty = True
+
+        for group_set in all_setup_data:
+            if group_set:
+                setup_data_is_empty = not any(group_set.values())
+
+        if setup_data_is_empty:
             all_setup_data = []
 
         # if commit and all_setup_data:
@@ -1746,7 +1788,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                     number_of_columns = int(setup_group.get('number_of_items', '0'))
 
             new_matrix = AssayMatrix(
-                name=data.get('name'),
+                name=data.get('name', ''),
                 # Does not work with plates at the moment
                 representation='chips',
                 # study=self.instance,
@@ -1764,10 +1806,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
             try:
                 new_matrix.full_clean(exclude=['study'])
             except forms.ValidationError as e:
-                print('MATRIX')
-                print(e)
-                # raise forms.ValidationError(e)
-                current_errors.append(e)
+                errors.get('organ_model').append(e.values())
 
             # new_matrix.save()
 
@@ -1801,13 +1840,17 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
             for setup_row, setup_group in enumerate(all_setup_data):
                 items_in_group = int(setup_group.pop('number_of_items', '0'))
                 test_type = setup_group.get('test_type', '')
+
+                # To break out to prevent repeat errors
+                group_has_error = False
+
                 for iteration in range(items_in_group):
                     new_item = AssayMatrixItem(
                         # study=study,
                         # matrix=new_matrix,
                         name=str(current_item_number),
                         # JUST MAKE SETUP DATE THE STUDY DATE FOR NOW
-                        setup_date=data.get('start_date'),
+                        setup_date=data.get('start_date', ''),
                         row_index=setup_row,
                         column_index=iteration,
                         # column_index=current_item_number-1,
@@ -1832,10 +1875,9 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                         new_items.append(new_item)
 
                     except forms.ValidationError as e:
-                        print('ITEM')
-                        print(e)
                         # raise forms.ValidationError(e)
-                        current_errors.append(e)
+                        errors.get('organ_model').append(e.values())
+                        group_has_error = True
 
                     current_related_list = new_related.setdefault(
                         str(len(new_items)), []
@@ -1843,7 +1885,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
                     # new_item.save()
                     for prefix, current_objects in setup_group.items():
-                        for current_object in current_objects:
+                        for setup_column, current_object in enumerate(current_objects):
                             if prefix in ['cell', 'compound', 'setting'] and current_object:
                                 current_object.update({
                                     'matrix_item': new_item,
@@ -1855,10 +1897,17 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                         new_cell.full_clean(exclude=['matrix_item'])
                                         current_related_list.append(new_cell)
                                     except forms.ValidationError as e:
-                                        print('CELL')
-                                        print(e)
                                         # raise forms.ValidationError(e)
-                                        current_errors.append(e)
+                                        current_errors.append(
+                                            process_error_for_study_new(
+                                                prefix,
+                                                setup_row,
+                                                setup_column,
+                                                e
+                                            )
+                                        )
+                                        group_has_error = True
+
                                     # new_cell.save()
                                 elif prefix == 'setting':
                                     new_setting = AssaySetupSetting(**current_object)
@@ -1866,18 +1915,24 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                         new_setting.full_clean(exclude=['matrix_item'])
                                         current_related_list.append(new_setting)
                                     except forms.ValidationError as e:
-                                        print('SETTING')
-                                        print(e)
                                         # raise forms.ValidationError(e)
-                                        current_errors.append(e)
+                                        current_errors.append(
+                                            process_error_for_study_new(
+                                                prefix,
+                                                setup_row,
+                                                setup_column,
+                                                e
+                                            )
+                                        )
+                                        group_has_error = True
+
                                     # new_setting.save()
                                 elif prefix == 'compound':
                                     # CONFUSING NOT DRY BAD
-                                    # print(current_object)
-                                    compound = int(current_object.get('compound_id'))
-                                    supplier_text = current_object.get('supplier_text').strip()
-                                    lot_text = current_object.get('lot_text').strip()
-                                    receipt_date = current_object.get('receipt_date')
+                                    compound = int(current_object.get('compound_id', '0'))
+                                    supplier_text = current_object.get('supplier_text', 'N/A').strip()
+                                    lot_text = current_object.get('lot_text', 'N/A').strip()
+                                    receipt_date = current_object.get('receipt_date', '')
 
                                     # NOTE THE DEFAULT, PLEASE DO THIS IN A WAY THAT IS MORE DRY
                                     if not supplier_text:
@@ -1889,12 +1944,27 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                     # Check if the supplier already exists
                                     supplier = suppliers.get(supplier_text, '')
 
-                                    concentration = float(current_object.get('concentration'))
-                                    concentration_unit_id = int(current_object.get('concentration_unit_id'))
-                                    addition_location_id = int(current_object.get('addition_location_id'))
+                                    concentration = current_object.get('concentration', '0')
+                                    # Annoying, bad
+                                    if not concentration:
+                                        concentration = 0.0
+                                    else:
+                                        concentration = float(concentration)
+                                    concentration_unit_id = int(current_object.get('concentration_unit_id', '0'))
+                                    addition_location_id = int(current_object.get('addition_location_id', '0'))
 
-                                    addition_time = float(current_object.get('addition_time'))
-                                    duration = float(current_object.get('duration'))
+                                    addition_time = current_object.get('addition_time', '0')
+                                    duration = current_object.get('duration', '0')
+
+                                    if not addition_time:
+                                        addition_time = 0.0
+                                    else:
+                                        addition_time = float(addition_time)
+
+                                    if not duration:
+                                        duration = 0.0
+                                    else:
+                                        duration = float(duration)
 
                                     # Otherwise create the supplier
                                     if not supplier:
@@ -1910,14 +1980,20 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                             supplier.save()
                                         except forms.ValidationError as e:
                                             # raise forms.ValidationError(e)
-                                            current_errors.append(e)
+                                            current_errors.append(
+                                                process_error_for_study_new(
+                                                    prefix,
+                                                    setup_row,
+                                                    setup_column,
+                                                    e
+                                                )
+                                            )
+                                            group_has_error = True
 
                                         suppliers.update({
                                             supplier_text: supplier
                                         })
 
-                                    # print(compound_instances)
-                                    # print((compound, supplier.id, lot_text, receipt_date))
                                     # FRUSTRATING EXCEPTION
                                     if not receipt_date:
                                         receipt_date = None
@@ -1941,7 +2017,15 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                             compound_instance.save()
                                         except forms.ValidationError as e:
                                             # raise forms.ValidationError(e)
-                                            current_errors.append(e)
+                                            current_errors.append(
+                                                process_error_for_study_new(
+                                                    prefix,
+                                                    setup_row,
+                                                    setup_column,
+                                                    e
+                                                )
+                                            )
+                                            group_has_error = True
 
                                         compound_instances.update({
                                             (compound, supplier.id, lot_text, str(receipt_date)): compound_instance
@@ -1975,10 +2059,17 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                             new_compound.full_clean(exclude=['matrix_item'])
                                             current_related_list.append(new_compound)
                                         except forms.ValidationError as e:
-                                            print('COMPOUND')
-                                            print(e)
                                             # raise forms.ValidationError(e)
-                                            current_errors.append(e)
+                                            current_errors.append(
+                                                process_error_for_study_new(
+                                                    prefix,
+                                                    setup_row,
+                                                    setup_column,
+                                                    e
+                                                )
+                                            )
+                                            group_has_error = True
+
                                         # new_compound.save()
 
                                     assay_compound_instances.update({
@@ -1996,7 +2087,12 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
                     current_item_number += 1
 
+                    # Don't keep iterating through this group if there is a problem
+                    if group_has_error:
+                        break
+
         if current_errors:
+            errors.get('organ_model').append(['Please review the table below for errors.'])
             raise forms.ValidationError(errors)
 
         new_setup_data.update({

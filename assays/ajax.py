@@ -337,7 +337,6 @@ def get_data_as_list_of_lists(ids, data_points=None, both_assay_names=False, inc
             'matrix_item__device',
             'matrix_item__organ_model',
             'matrix_item__matrix',
-            'study_assay__category',
             'study_assay__target',
             'study_assay__method',
             'study_assay__unit',
@@ -385,7 +384,6 @@ def get_data_as_list_of_lists(ids, data_points=None, both_assay_names=False, inc
         time_in_minutes = data_point.time
         times = get_split_times(time_in_minutes)
 
-        category = data_point.study_assay.category.name
         target = data_point.study_assay.target.name
         method = data_point.study_assay.method.name
         sample_location = data_point.sample_location.name
@@ -441,7 +439,6 @@ def get_data_as_list_of_lists(ids, data_points=None, both_assay_names=False, inc
                     settings,
                     cells,
                     compounds,
-                    category,
                     target,
                     subtarget,
                     method,
@@ -3605,6 +3602,22 @@ def fetch_assay_associations(request):
     target_to_methods = data.get('target_to_methods')
 
     categories = AssayCategory.objects.all().prefetch_related('targets')
+
+    # CONTRIVED FOR "ALL" CATEGORY
+    current_dropdown = [{'value': "", 'text': '---------'}]
+
+    for target in AssayTarget.objects.all():
+        # match value to the desired subject ID
+        value = str(target.id)
+        # dropdown += '<option value="' + value + '">' + str(finding) + '</option>'
+        current_dropdown.append({'value': value, 'text': str(target)})
+
+    current_dropdown = sorted(current_dropdown, key=lambda k: k['text'])
+
+    category_to_targets.update({
+        '': current_dropdown
+    })
+    # END "ALL" CATEGORY
 
     for category in categories:
         current_dropdown = [{'value': "", 'text': '---------'}]

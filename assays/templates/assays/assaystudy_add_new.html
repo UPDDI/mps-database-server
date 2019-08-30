@@ -324,6 +324,10 @@
                 <div class="col-md-4 col-lg-3"></div>
             </div>
 
+        <div id="setup_table_errors" hidden>
+            {{ form.setup_data.errors }}
+        </div>
+
         {# Set of buttons for adding cells, compounds, settings etc. #}
         <div class="padded-bottom">
         <a role="button" class="btn btn-success" id="add_group_button"><span class="glyphicon glyphicon-plus-sign"></span>Add Setup Group</a>

@@ -2614,13 +2614,13 @@ class AssayStudyAssay(models.Model):
     # Name of model "PhysicalUnits" should be renamed, methinks
     unit = models.ForeignKey(PhysicalUnits, on_delete=models.CASCADE)
 
-    # Add Category, but do not require it for the moment
-    category = models.ForeignKey(
-        'assays.AssayCategory',
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE
-    )
+    # CATEGORY IS NOT ACTUALLY STORED
+    # category = models.ForeignKey(
+    #     'assays.AssayCategory',
+    #     null=True,
+    #     blank=True,
+    #     on_delete=models.CASCADE
+    # )
 
     # TODO TODO TODO NOTE THAT ADDING CATEGORY HERE WILL INTERUPT OTHER SCRIPTS
     def __str__(self):

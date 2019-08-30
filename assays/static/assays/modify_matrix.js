@@ -18,6 +18,22 @@ $(document).ready(function () {
     // FULL DATA
     var current_setup_data = [];
 
+    // FOR ADD INTERFACE ONLY
+    // ERRORS
+    var setup_table_errors_selector = $('#setup_table_errors').find('.errorlist');
+
+    var table_errors = {}
+
+    setup_table_errors_selector.find('li').each(function() {
+        var current_text = $(this).text();
+        var split_info = current_text.split('-')[0];
+        // var prefix = split_info[0];
+        // var row_index = split_info[1];
+        // var column_index = split_info[2];
+        var error_message = current_text.split('-').slice(1).join('-');
+        table_errors[split_info] = error_message;
+    });
+
     // FOR EDITING INTERFACE ONLY
     var form_slated_for_deletion = [];
 
@@ -34,7 +50,7 @@ $(document).ready(function () {
     var keep_current = false;
 
     // TRICKY
-    if (protocol.val() && setup_data_selector.val()) {
+    if (organ_model.val() && setup_data_selector.val()) {
         current_setup_data = JSON.parse(setup_data_selector.val());
         keep_current = true;
     }
@@ -81,6 +97,7 @@ $(document).ready(function () {
     var empty_compound_html = $('#empty_compound_html');
     var empty_cell_html = $('#empty_cell_html');
     var empty_setting_html = $('#empty_setting_html');
+    var empty_error_html = $('#empty_error_html').children();
     empty_html[compound_prefix] = empty_compound_html;
     empty_html[cell_prefix] = empty_cell_html;
     empty_html[setting_prefix] = empty_setting_html;
@@ -414,12 +431,16 @@ $(document).ready(function () {
                 )
             );
             new_row.append(
-                $('<td>').append(
+                $('<td>')
+                .html(
+                    '<div class="error-message-section error-display important-display"></div>'
+                )
+                .append(
                     $('#id_number_of_items')
                         .clone()
                         .removeAttr('id')
                         .attr('data-row', row_index)
-                        .attr('required', 'required')
+                        // .attr('required', 'required')
                 )
             );
         }
@@ -433,7 +454,9 @@ $(document).ready(function () {
                 )
             );
             new_row.append(
-                $('<td>')
+                $('<td>').html(
+                    '<div class="error-message-section error-display important-display"></div>'
+                )
                 .append(
                     $('<span>')
                         .attr('data-row', row_index)
@@ -745,7 +768,9 @@ $(document).ready(function () {
             }
             else if (!protocol.val()) {
                 current_protocol = protocol.val();
-                reset_current_setup(true);
+                // NO LONGER PURGES DATA
+                // reset_current_setup(true);
+                reset_current_setup();
                 rebuild_table();
             }
 
@@ -904,14 +929,27 @@ $(document).ready(function () {
 
         // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
         change_matrix_visibility();
+
+        // Show errors if necessary
+        if (Object.keys(table_errors).length) {
+            $.each(table_errors, function(current_id, error) {
+                var split_info = current_id.split('|');
+                var prefix = split_info[0];
+                var row_index = split_info[1];
+                var column_index = split_info[2];
+                var field = split_info[3];
+                var current_bubble = $('.subform-delete[data-prefix="' + prefix +'"][data-row="' + row_index + '"][data-column="' + column_index + '"]').parent().parent();
+                current_bubble.find('.error-message-section').append(empty_error_html.clone().text(field + ': ' + error));
+            });
+        }
     }
 
     // Handling Device flow
     // Make sure global var exists before continuing
     if (window.get_organ_models) {
         organ_model.change(function() {
-            // Reset the current setup
-            reset_current_setup(true);
+            // NO LONGER ALWAYS RESETS
+            // reset_current_setup(true);
 
             // Get and display correct protocol options
             // Asynchronous
@@ -927,9 +965,7 @@ $(document).ready(function () {
 
             // Make the table
             rebuild_table();
-        });
-
-        window.get_protocols(organ_model.val());
+        }).trigger('change');
 
         // NOTE THAT THIS IS TRIGGERED ON LOAD
         protocol.change(function() {
@@ -1072,6 +1108,9 @@ $(document).ready(function () {
         // console.log(group_index_to_item_name);
 
         rebuild_table();
+
+        // Show the table
+        $('#study_setup_table_section').show('slow');
     }
 
     if (window.MASS_EDIT.matrix_id) {
