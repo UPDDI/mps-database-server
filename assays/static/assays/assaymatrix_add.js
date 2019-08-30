@@ -1,6 +1,7 @@
 // Functions for displaying Assay Matrices
 // TODO WE MAY WANT THIS IN MULTIPLE LOCATIONS, BUT AT THE MOMENT I AM ASSUMING ADD ONLY
 // TODO THIS FILE IS A MESS
+// TODO PLEASE TRY TO USE ':input' WHEN POSSIBLE TO AVOID MANUALLY LISTSING THE DIFFERENT TYPES OF INPUTS (select, textarea, etc.)
 $(document).ready(function () {
     // TODO TODO TODO IN THE FUTURE FILE-SCOPE CONSTANTS SHOULD BE IN ALL-CAPS
     // The matrix's ID
@@ -1289,7 +1290,6 @@ $(document).ready(function () {
         // Iterate over every Matrix Item form
         // EXCEEDINGLY NAIVE, PLEASE REVISE
         $('.' + item_prefix).each(function(form_index) {
-            // Removed the notion of shadow deleting "empty" items
             var empty = true;
 
             var current_name = $(this).find('input[name$="-name"]').val();

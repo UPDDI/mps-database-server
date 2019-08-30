@@ -11,8 +11,6 @@ $(document).ready(function () {
         is_edit_interface = true;
     }
 
-    // console.log(is_edit_interface);
-
     var setup_data_selector = $('#id_setup_data');
 
     // FULL DATA
@@ -142,8 +140,6 @@ $(document).ready(function () {
                 // Populate the fields
                 var current_data = $.extend(true, {}, current_setup_data[current_row_index][current_prefix][current_column_index]);
 
-                // console.log('CURRENT_DATA', current_data);
-
                 var this_popup = $(this);
 
                 this_popup.find('input').each(function() {
@@ -269,13 +265,10 @@ $(document).ready(function () {
             if (origin.prop('tagName') === 'SELECT') {
                 // Convert to integer if possible, thanks
                 var possible_int = Math.floor(field_value);
-                // console.log(possible_int);
                 if (possible_int) {
-                    // console.log(origin[0].selectize.options[possible_int].text);
                     return origin[0].selectize.options[possible_int].text;
                 }
                 else {
-                    // console.log(origin[0].selectize.options[field_value].text);
                     return origin[0].selectize.options[field_value].text;
                 }
                 // THIS IS BROKEN, FOR PRE-SELECTIZE ERA
@@ -374,7 +367,6 @@ $(document).ready(function () {
     }
 
     function replace_setup_data() {
-        // console.log(current_setup_data);
         setup_data_selector.val(JSON.stringify(current_setup_data));
     }
 
@@ -523,8 +515,6 @@ $(document).ready(function () {
             );
         }
 
-        // console.log(add_new_row, current_setup_data.length);
-
         setup_data_selector.val(JSON.stringify(current_setup_data));
     }
 
@@ -580,8 +570,6 @@ $(document).ready(function () {
         // JUST FLAT OUT DELETE THE ROW
         current_setup_data.splice(current_row_index, 1);
 
-        // console.log('DELETE', current_row_index, current_setup_data);
-
         rebuild_table();
     });
 
@@ -593,14 +581,10 @@ $(document).ready(function () {
 
         var item_ids = group_index_to_item_id[current_row_index];
 
-        // console.log('IDS', item_ids);
-
         $.each(item_ids, function(i, item_id) {
             var current_form = item_id_to_relevant_forms[item_id][current_prefix][current_column_index].find('input[name$="-DELETE"]');
             var current_status = current_form.prop('checked');
             current_form.prop('checked', !current_status);
-
-            // console.log(current_form);
         });
     }
 
@@ -618,8 +602,6 @@ $(document).ready(function () {
         else {
             current_setup_data[current_row_index][current_prefix][current_column_index] = {};
         }
-
-        // console.log('DELETE', current_row_index, current_setup_data);
 
         rebuild_table();
     });
@@ -699,14 +681,11 @@ $(document).ready(function () {
         //     $('#study_setup_table_section').hide('slow');
         // }
 
-        // console.log('SET NEW PROTOCOL', first_run, keep_current);
         // TERMINATE EARLY IF FIRST RUN
         if (first_run) {
             first_run = false;
             return;
         }
-
-        // console.log('CHECK', protocol.val(), current_protocol);
 
         reset_current_setup();
 
@@ -732,7 +711,6 @@ $(document).ready(function () {
                     // Stop spinner
                     window.spinner.stop();
 
-                    // console.log(json);
                     current_setup = $.extend(true, {}, json);
 
                     // MAKE SURE ALL PREFIXES ARE PRESENT
@@ -742,19 +720,15 @@ $(document).ready(function () {
                         }
                     });
 
-                    // console.log(current_setup);
-
                     // FORCE INITIAL TO BE CONTROL
                     current_setup['test_type'] = 'control';
 
-                    // console.log('KEEP CURRENT 1', keep_current);
                     if (keep_current) {
                         keep_current = false;
                     }
                     else {
                         current_setup_data = [];
                     }
-                    // console.log('KEEP CURRENT 2', keep_current);
 
                     rebuild_table();
                     },
@@ -773,8 +747,6 @@ $(document).ready(function () {
                 reset_current_setup();
                 rebuild_table();
             }
-
-        // console.log(current_setup_data);
 
         // See if the table can be displayed
         // Sloppy
@@ -887,8 +859,6 @@ $(document).ready(function () {
             }
         });
 
-        // console.log(form_slated_for_deletion);
-
         $.each(form_slated_for_deletion, function(group_index, content) {
             $.each(content, function(prefix, current_content) {
                 $.each(current_content, function(content_index, mark) {
@@ -930,7 +900,7 @@ $(document).ready(function () {
         // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
         change_matrix_visibility();
 
-        // Show errors if necessary
+        // Show errors if necessary (ADD)
         if (Object.keys(table_errors).length) {
             $.each(table_errors, function(current_id, error) {
                 var split_info = current_id.split('|');
@@ -1027,7 +997,6 @@ $(document).ready(function () {
         // Split into prefixes
         var unique_entities = {};
         var full_setups = {};
-        full_setups = {};
         var setup_to_group = {};
 
         var setup_id_to_name = {};
@@ -1047,17 +1016,29 @@ $(document).ready(function () {
             }
         });
 
+        var all_errors = {};
+
         // Get every prefix
         $.each(prefixes, function(index, prefix) {
             // For every form
             $('.' + prefix).each(function() {
                 var current_setup_id = $(this).find('input[name$="-matrix_item"]').val();
+
                 if (current_setup_id) {
                     var current_setup_data = full_setups[current_setup_id][prefix];
 
                     var data_to_add = {};
 
-                    $(this).find('input, select').each(function() {
+                    // List of errors to add in a ul at the top of a display
+                    if (!all_errors[current_setup_id]) {
+                        all_errors[current_setup_id] = {};
+                    }
+                    if (!all_errors[current_setup_id][prefix] ) {
+                        all_errors[current_setup_id][prefix] = [];
+                    }
+                    var errors = [];
+
+                    $(this).find(':input').each(function(input_index) {
                         var field_name = get_field_name($(this).attr('name'));
                         if (field_name) {
                             var field_type = field_name_to_type[prefix + '_' + field_name];
@@ -1074,15 +1055,38 @@ $(document).ready(function () {
                                     data_to_add[field_name] = $(this).val();
                                 }
                             }
+
+                            var possible_errors = [];
+                            if (!input_index) {
+                                possible_errors = $(this).prev().prev().find('li');
+                                $.each(possible_errors, function() {
+                                    if ($(this).text()) {
+                                        errors.push($(this).text());
+                                    }
+                                });
+                            }
+                            else {
+                                possible_errors = $(this).prev().find('li');
+                                $.each(possible_errors, function() {
+                                    if ($(this).text()) {
+                                        errors.push(field_name + ': ' + $(this).text());
+                                    }
+                                });
+                            }
                         }
                     });
+
+                    if (errors.length) {
+                        all_errors[current_setup_id][prefix].push(errors);
+                    }
+                    else if (!all_errors[current_setup_id][prefix].length) {
+                        delete all_errors[current_setup_id][prefix];
+                    }
 
                     current_setup_data.push($.extend(true, {}, data_to_add));
                 }
             });
         });
-
-        // console.log(full_setups);
 
         $.each(full_setups, function(setup_id, contents) {
             var stringified_contents = JSON.stringify(contents);
@@ -1095,17 +1099,28 @@ $(document).ready(function () {
 
                 group_index_to_item_id[index_to_use] = [];
                 group_index_to_item_name[index_to_use] = [];
+
+                $.each(all_errors[setup_id], function(prefix, error_sets) {
+                    $.each(error_sets, function(error_index, error_set) {
+                        $.each(error_set, function(error_set_index, error) {
+                            var field_name = error.split(':')[0];
+                            table_errors[
+                                [
+                                    prefix,
+                                    index_to_use,
+                                    error_index,
+                                    field_name
+                                ].join('|')
+                            ] = error;
+                        });
+                    });
+                });
             }
             setup_to_group[setup_id] = unique_entities[stringified_contents];
 
             group_index_to_item_id[unique_entities[stringified_contents]].push(setup_id);
             group_index_to_item_name[unique_entities[stringified_contents]].push(setup_id_to_name[setup_id]);
         });
-
-        // console.log(unique_entities);
-        // console.log(setup_to_group);
-        // console.log(current_setup_data);
-        // console.log(group_index_to_item_name);
 
         rebuild_table();
 

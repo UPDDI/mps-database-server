@@ -1685,6 +1685,8 @@ def process_error_for_study_new(prefix, row, column, full_error):
     return modified_error
 
 
+# Perhaps it would have been more intelligent to leverage the forms in the add
+# There would have been different consquences for doing so, but consistency
 class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
     setup_data = forms.CharField(required=False)
     processed_setup_data = forms.CharField(required=False)
