@@ -43,6 +43,7 @@
 
     <legend>General</legend>
 
+    {# TODO REVISE ERROR REPORTING #}
     {% if form.errors %}
         {% for field in form %}
             {% if field.errors %}
@@ -64,6 +65,13 @@
             {{ form.non_field_errors }}
         </div>
     {% endif %}
+
+    <div class="form-group">
+        <label for="name" class="col-sm-2 control-label">Name*</label>
+        <div class="col-sm-10">
+          {{ form.name }}
+        </div>
+    </div>
 
     <div class="alert alert-info" role="alert">
             <span class="sr-only">Info:</span>
@@ -92,13 +100,6 @@
     </div>
 
     {% include 'generic_field.html' with field=form.drugbank_id label="DrugBank ID" %}
-
-    <div class="form-group">
-        <label for="name" class="col-sm-2 control-label">Name</label>
-        <div class="col-sm-10">
-          {{ form.name }}
-        </div>
-    </div>
 
     <div class="form-group">
         <label for="inchikey" class="col-sm-2 control-label">IUPAC Standard InChI Key</label>

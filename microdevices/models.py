@@ -315,11 +315,11 @@ class OrganModelLocation(models.Model):
 
 
 # PROTOTYPE
-# JUST THE CELL TYPE APPARENTLY
 class OrganModelCell(models.Model):
     organ_model = models.ForeignKey(OrganModel, on_delete=models.CASCADE)
     cell_type = models.ForeignKey('cellsamples.CellType', on_delete=models.CASCADE)
-    count = models.IntegerField()
+    # HIDDEN AND NOT REQUIRED
+    count = models.IntegerField(blank=True, null=True)
 
 
 # JUST INCLUDE EVERYTHING FOR NOW
