@@ -48,6 +48,9 @@
         <div class="container">
         <h1>
             Edit Matrix <em>{{ object }}</em>
+            {# Link to alt edit page #}
+            {# CRUDE #}
+            <a class="btn btn-primary" href="{{ object.get_absolute_url }}new/">Edit as Groups</a>
     {% elif detail %}
         <form enctype="multipart/form-data" class="form-horizontal" method="post" >
         <div class="container">

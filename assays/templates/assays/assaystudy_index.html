@@ -64,11 +64,6 @@
             </h1>
         </div>
 
-        {# CRUDE WAY TO GET MATRIX #}
-        {% for matrix in object.assaymatrix_set.all %}
-        <a href="{{ matrix.get_absolute_url }}new/" class="btn btn-lg btn-primary">NEW EDIT PAGE</a>
-        {% endfor %}
-
         <legend>
             <h2>
                 Matrices
@@ -99,8 +94,12 @@
                 <tr id={{ matrix.id }} name={{ matrix.id }}>
                     <td>
                         <a class="btn btn-primary"
-                           {# THIS SHOULD USE URL #}
+                           {% if object.organ_model and not object.signed_off_by %}
+                           {# CRUDE SWITCH FOR BY-GROUP VS MATRIX #}
+                           href="{{ matrix.get_absolute_url }}new/">
+                           {% else %}
                            href="{{ matrix.get_absolute_url }}">
+                           {% endif %}
                             View/Edit
                         </a>
                     </td>

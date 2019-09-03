@@ -1100,21 +1100,23 @@ $(document).ready(function () {
                 group_index_to_item_id[index_to_use] = [];
                 group_index_to_item_name[index_to_use] = [];
 
-                $.each(all_errors[setup_id], function(prefix, error_sets) {
-                    $.each(error_sets, function(error_index, error_set) {
-                        $.each(error_set, function(error_set_index, error) {
-                            var field_name = error.split(':')[0];
-                            table_errors[
-                                [
-                                    prefix,
-                                    index_to_use,
-                                    error_index,
-                                    field_name
-                                ].join('|')
-                            ] = error;
+                if (all_errors[setup_id]) {
+                    $.each(all_errors[setup_id], function(prefix, error_sets) {
+                        $.each(error_sets, function(error_index, error_set) {
+                            $.each(error_set, function(error_set_index, error) {
+                                var field_name = error.split(':')[0];
+                                table_errors[
+                                    [
+                                        prefix,
+                                        index_to_use,
+                                        error_index,
+                                        field_name
+                                    ].join('|')
+                                ] = error;
+                            });
                         });
                     });
-                });
+                }
             }
             setup_to_group[setup_id] = unique_entities[stringified_contents];
 

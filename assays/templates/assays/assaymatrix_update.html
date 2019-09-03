@@ -42,6 +42,8 @@
 
 <h1>
     Edit <em>{{ object }}</em>
+    {# Link to alt edit page #}
+    <a class="btn btn-primary" href="{{ object.get_absolute_url }}">Edit as Matrix</a>
 </h1>
 
 {% csrf_token %}
@@ -50,8 +52,12 @@
 
 {% include 'errors.html' %}
 
-{# NOT VERY GOOD, JUST FOR TESTING #}
-{% if item_formset.errors %}
+{% include 'tracking.html' %}
+
+{% include "sign_off_form.html" with group=form.instance.study.group.name %}
+
+{# NOT VERY GOOD, BUT MAY BE HELPFUL #}
+{% if item_formset.errors.0 %}
 <legend>Chip Errors</legend>
 {% for dict in item_formset.errors %}
     {% for key,value in dict.items %}
@@ -65,53 +71,6 @@
     {% endfor %}
 {% endfor %}
 {% endif %}
-
-{% if compound_formset.errors %}
-<legend>Compound Errors</legend>
-{% for dict in compound_formset.errors %}
-    {% for key,value in dict.items %}
-        {% if key %}
-            <div class="alert alert-danger" role="alert">
-                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                <span class="sr-only">Error:</span>
-                {{ forloop.parentloop.counter }}.) {{ key }} : {{ value }}
-            </div>
-        {% endif %}
-    {% endfor %}
-{% endfor %}
-{% endif %}
-
-{% if cell_formset.errors %}
-<legend>Cell Errors</legend>
-{% for dict in cell_formset.errors %}
-    {% for key,value in dict.items %}
-        {% if key %}
-            <div class="alert alert-danger" role="alert">
-                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                <span class="sr-only">Error:</span>
-                {{ forloop.parentloop.counter }}.) {{ key }} : {{ value }}
-            </div>
-        {% endif %}
-    {% endfor %}
-{% endfor %}
-{% endif %}
-
-{% if setting_formset.errors %}
-<legend>Setting Errors</legend>
-{% for dict in setting_formset.errors %}
-    {% for key,value in dict.items %}
-        {% if key %}
-            <div class="alert alert-danger" role="alert">
-                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                <span class="sr-only">Error:</span>
-                {{ forloop.parentloop.counter }}.) {{ key }} : {{ value }}
-            </div>
-        {% endif %}
-    {% endfor %}
-{% endfor %}
-{% endif %}
-
-{% include 'tracking.html' %}
 
 {# This section is a setup table similar to the new study page #}
 {# TODO PUT THE TABLE THING HERE #}
