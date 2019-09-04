@@ -328,6 +328,7 @@ $(document).ready(function () {
             .show()
             .css({top: current_top, left: current_left, position:'absolute'});
     });
+
     $(document).on('mouseout', '.data-power-analysis-group-info', function() {
         data_group_info_table_display.hide();
     });
@@ -394,12 +395,7 @@ $(document).ready(function () {
                 }
             },
             columns: group_table_columns,
-            columnDefs: [
-                { "responsivePriority": 1, "targets": [0,1,2,3] },
-                { "responsivePriority": 2, "targets": 5 },
-            ],
             "order": [1, 'asc'],
-            "responsive": true,
             dom: 'B<"row">lfrtip',
             paging: false,
             fixedHeader: {headerOffset: 50},
@@ -410,7 +406,6 @@ $(document).ready(function () {
         if (compounds_table) {
             unmake_compounds_datatable();
         }
-        avg_val_graph_check();
         empty_graph_containers();
     }
 
@@ -420,6 +415,7 @@ $(document).ready(function () {
         $(power_analysis_power_graph).empty();
         $(power_analysis_sample_size_graph).empty();
         $('#time-points-table_wrapper').hide();
+        $('#error-container').hide();
         avg_val_graph_check();
     }
 
@@ -531,8 +527,6 @@ $(document).ready(function () {
         }
 
         empty_graph_containers();
-
-        avg_val_graph_check();
     });
 
     // Time Point Table Checkbox click event
@@ -598,7 +592,6 @@ $(document).ready(function () {
             columns: compounds_table_columns,
             paging: false,
             "order": [1, 'asc'],
-            "responsive": true,
         });
 
         $('#compounds-table tr').each(function(){
@@ -643,16 +636,22 @@ $(document).ready(function () {
         }
 
         var column_to_check = [];
-        for (x = 0; x < sample_size_data_prepped[0].length; x++) {
+        var columns_to_axe = [];
+        for (x = 1; x < sample_size_data_prepped[0].length; x++) {
             for (y = 1; y < sample_size_data_prepped.length; y++) {
-                column_to_check.push(sample_size_data_prepped[y][x])
+                column_to_check.push(sample_size_data_prepped[y][x]);
             }
             if (column_to_check.join('').length === 0) {
-                remove_col(sample_size_data_prepped, x);
+                columns_to_axe.push(x);
             }
             column_to_check = [];
         }
         column_to_check = [];
+
+        for (x = columns_to_axe.length-1; x >= 0; x--) {
+            remove_col(sample_size_data_prepped, columns_to_axe[x]);
+        }
+        columns_to_axe = [];
 
         // Populate full list of time points only if this is the first instance of power analysis being run on this set
         time_points_full = sample_size_data_prepped[0].filter(
@@ -688,7 +687,6 @@ $(document).ready(function () {
             destroy: true,
             "scrollY": "340px",
             "order": [1, 'asc'],
-            "responsive": false,
         });
 
         sample_size_chart = new google.visualization.LineChart(power_analysis_sample_size_graph);
@@ -993,8 +991,6 @@ $(document).ready(function () {
             }
 
             empty_graph_containers();
-
-            avg_val_graph_check();
         }
     });
 
@@ -1099,6 +1095,9 @@ $(document).ready(function () {
 
     function draw_avg_val_graph(current_group, comp1, comp2) {
         // Values vs Time
+        if (!final_chart_data[current_group]) {
+            return null;
+        }
         var chart_data = JSON.parse(JSON.stringify(final_chart_data[current_group]));
         var compounds_to_keep = [comp1, comp1+'     ~@i1', comp1+'     ~@i2', comp2, comp2+'     ~@i1', comp2+'     ~@i2']
         var current_header;
@@ -1149,7 +1148,6 @@ $(document).ready(function () {
     //         destroy: true,
     //         "scrollY": "340px",
     //         "order": [1, 'asc'],
-    //         "responsive": false,
     //     });
     //
     //     // Reveal One Sample Time Points Table
@@ -1199,7 +1197,7 @@ $(document).ready(function () {
                 // Stop spinner
                 window.spinner.stop();
 
-                power_analysis_two_sample_container_selector.attr('hidden', false);
+                power_analysis_two_sample_container_selector.show();
                 $('#time-points-table_wrapper').show();
                 remove_col(data.power_analysis_data.power_results_report, 0);
                 remove_col(data.power_analysis_data.power_vs_sample_size_curves_matrix, 0);
