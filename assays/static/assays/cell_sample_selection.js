@@ -21,6 +21,7 @@ $(document).ready(function () {
     });
 
     // Open and then close dialog so it doesn't get placed in window itself
+    // RENAME
     var dialog = $('#dialog');
     dialog.dialog({
         width: 900,
@@ -56,7 +57,7 @@ $(document).ready(function () {
         $('#dialog').dialog('close');
     });
 
-    // Display all labels(irrelevant in matrix)
+    // Display all labels (irrelevant in matrix)
     $('.cell-sample-id-field').each(function() {
         // Get label
         var current_parent = $(this).parent().parent().parent().parent().parent();

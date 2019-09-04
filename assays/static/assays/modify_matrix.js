@@ -159,6 +159,21 @@ $(document).ready(function () {
                     current_data['cell_sample_id']
                 );
 
+                if (current_data['cell_sample_id']) {
+                    this_popup.find('#id_cell_sample_label').text($('#cell_sample_' + current_data['cell_sample_id']).attr('name'));
+                }
+                else {
+                    this_popup.find('#id_cell_sample_label').text('');
+                }
+
+                // TODO, ANOTHER BARBARIC EXCEPTION (not the best way to handle defaults...)
+                // TODO PLEASE REVISE
+                if (!current_data['biosensor_id']) {
+                    this_popup.find('#id_cell_biosensor')[0].selectize.setValue(
+                        2
+                    );
+                }
+
                 if (!is_edit_interface || $.isEmptyObject(current_data)) {
                     // TODO SPECIAL EXCEPTION FOR TIMES
                     $.each(time_prefixes, function(index, current_time_prefix) {

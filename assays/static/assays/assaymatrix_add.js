@@ -1204,6 +1204,15 @@ $(document).ready(function () {
                     date_picker.datepicker('setDate', curr_date);
                 }
 
+                // TODO SPECIAL EXCEPTION FOR CELL SAMPLE
+                // BAD
+                if (current_data['cell_sample']) {
+                    this_popup.find('#id_cell_sample_label').text($('#cell_sample_' + current_data['cell_sample']).attr('name'));
+                }
+                else {
+                    this_popup.find('#id_cell_sample_label').text('');
+                }
+
                 if ($.isEmptyObject(current_data)) {
                     // TODO SPECIAL EXCEPTION FOR TIMES
                     $.each(time_prefixes, function(index, current_time_prefix) {
