@@ -628,8 +628,8 @@ $(document).ready(function () {
             }
             sample_size_data_copy[x][0] = "Day " + String(current_time);
         }
+
         sample_size_data_prepped = get_pivot_array(sample_size_data_copy, 2, 0, 1);
-        sample_size_data_prepped.splice(1, 1);
 
         for (x = 1; x < sample_size_data_prepped.length; x++) {
             sample_size_data_prepped[x][0] = parseFloat(sample_size_data_prepped[x][0]);
