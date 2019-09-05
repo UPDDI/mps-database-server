@@ -1149,7 +1149,7 @@ $(document).ready(function () {
     var time_prefixes = [
         'addition_time',
         'duration'
-    ]
+    ];
 
     // CREATE DIALOGS
     // NOT DRY

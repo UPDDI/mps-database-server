@@ -168,7 +168,7 @@ $(document).ready(function () {
 
                 // TODO, ANOTHER BARBARIC EXCEPTION (not the best way to handle defaults...)
                 // TODO PLEASE REVISE
-                if (!current_data['biosensor_id']) {
+                if (this_popup.find('#id_cell_biosensor')[0] && !current_data['biosensor_id']) {
                     this_popup.find('#id_cell_biosensor')[0].selectize.setValue(
                         2
                     );
@@ -1138,6 +1138,12 @@ $(document).ready(function () {
             group_index_to_item_id[unique_entities[stringified_contents]].push(setup_id);
             group_index_to_item_name[unique_entities[stringified_contents]].push(setup_id_to_name[setup_id]);
         });
+
+        // IF THIS IS EMPTY, TERMINATE EARLY AND SHOW AN ERROR MESSAGE
+        if (!Object.keys(group_index_to_item_name).length) {
+            $('#invalid_matrix_message').show();
+            return;
+        }
 
         rebuild_table();
 

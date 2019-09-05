@@ -94,7 +94,7 @@
                 <tr id={{ matrix.id }} name={{ matrix.id }}>
                     <td>
                         <a class="btn btn-primary"
-                           {% if object.organ_model and not object.signed_off_by %}
+                           {% if matrix.representation == 'chips' and not object.signed_off_by and matrix.assaymatrixitem_set.count %}
                            {# CRUDE SWITCH FOR BY-GROUP VS MATRIX #}
                            href="{{ matrix.get_absolute_url }}new/">
                            {% else %}

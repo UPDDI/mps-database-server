@@ -101,18 +101,32 @@ OrganModelLocationFormsetFactory = inlineformset_factory(
 )
 
 
-class OrganModelProtocolForm(BootstrapForm):
-    """Form for Organ Model Protocols (as part of an inline)"""
+class OrganModelProtocolInlineForm(BootstrapForm):
     class Meta(object):
         model = OrganModelProtocol
-        exclude = ('',)
+        fields = ('name', 'protocol_file')
+
+        widgets = {
+            'name': forms.Textarea(attrs={'rows': 1}),
+        }
+
+
+class OrganModelProtocolForm(BootstrapForm):
+    class Meta(object):
+        model = OrganModelProtocol
+        exclude = tracking + ('organ_model',)
+
+        widgets = {
+            'name': forms.Textarea(attrs={'rows': 1}),
+            'description': forms.Textarea(attrs={'rows': 6}),
+        }
 
 
 class OrganModelProtocolInlineFormset(BaseInlineFormSet):
     """Formset of organ model protocols"""
     class Meta(object):
         model = OrganModelProtocol
-        exclude = ('',)
+        exclude = tracking
 
     def clean(self):
         forms_data = [f for f in self.forms if f.cleaned_data]
@@ -131,13 +145,10 @@ class OrganModelProtocolInlineFormset(BaseInlineFormSet):
 OrganModelProtocolFormsetFactory = inlineformset_factory(
     OrganModel,
     OrganModelProtocol,
-    form=OrganModelProtocolForm,
+    form=OrganModelProtocolInlineForm,
     formset=OrganModelProtocolInlineFormset,
-    extra=1,
-    exclude=[],
-    widgets={
-        'version': forms.TextInput(attrs={'size': 10})
-    }
+    fields=('name', 'protocol_file'),
+    extra=1
 )
 
 OrganModelReferenceFormSetFactory = inlineformset_factory(
@@ -185,17 +196,6 @@ class GroupDeferralForm(BootstrapForm):
         )
 
         self.fields['group'].queryset = groups_with_center_full
-
-
-class OrganModelProtocolForm(BootstrapForm):
-    class Meta(object):
-        model = OrganModelProtocol
-        exclude = tracking + ('organ_model',)
-
-        widgets = {
-            'name': forms.Textarea(attrs={'rows': 1}),
-            'description': forms.Textarea(attrs={'rows': 6}),
-        }
 
 
 class OrganModelProtocolCellForm(ModelFormSplitTime):
