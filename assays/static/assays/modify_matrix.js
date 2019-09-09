@@ -118,6 +118,25 @@ $(document).ready(function () {
     empty_forms[cell_prefix] = empty_cell_form;
     empty_forms[setting_prefix] = empty_setting_form;
 
+    // Default values
+    var default_values = {};
+    $.each(prefixes, function(prefix_index, prefix) {
+        default_values[prefix] = {};
+        var last_index = $('.' + prefix).length - 1;
+
+        $('#' + prefix + '-' + last_index).find(':input:not(:checkbox)').each(function() {
+            var split_name = $(this).attr('name').split('-');
+            var current_name = split_name[split_name.length - 1];
+
+            // CRUDE: DO NOT INCLUDE MATRIX ITEM
+            if (current_name === 'matrix_item') {
+                return true;
+            }
+
+            default_values[prefix][current_name] = $(this).val();
+        });
+    });
+
     var final_indexes = {};
     // final_indexes[item_prefix] = item_final_index;
     final_indexes[compound_prefix] = compound_final_index;
@@ -860,13 +879,15 @@ $(document).ready(function () {
                             }
                             var current_form = current_matrix_forms[prefix][content_index];
 
-                            $.each(current_contents, function(current_name, current_value) {
-                                var current_name = current_name.replace('_id', '');
-                                current_form.find('input[name$="-' + current_name + '"]').val(current_value);
-                            });
+                            if (current_contents && Object.keys(current_contents).length) {
+                                $.each(current_contents, function(current_name, current_value) {
+                                    var current_name = current_name.replace('_id', '');
+                                    current_form.find('input[name$="-' + current_name + '"]').val(current_value);
+                                });
 
-                            if (current_form.find('input[name$="-DELETE"]').prop('checked')) {
-                                form_slated_for_deletion[group_index][prefix][content_index] = true;
+                                if (current_form.find('input[name$="-DELETE"]').prop('checked')) {
+                                    form_slated_for_deletion[group_index][prefix][content_index] = true;
+                                }
                             }
                         });
                     });
@@ -1198,11 +1219,36 @@ $(document).ready(function () {
         //     apply_data_to_forms();
         // }
 
+        function burn_empty_forms() {
+            // BURN EMPTY FORMS (measured by no difference from default)
+            $.each(prefixes, function(prefix_index, prefix) {
+                $('.' + prefix).each(function(form_index) {
+                    var empty = true;
+
+                    var current_form = $(this);
+
+                    $.each(default_values[prefix], function(current_name, current_value) {
+                        var current_form_value = current_form.find('[name$="-' + current_name + '"]').val();
+                        if (current_form_value && current_form_value !== current_value) {
+                            empty = false;
+                        }
+                    });
+
+                    // Mark for deletion if empty
+                    // Items without names should always be removed
+                    if (empty) {
+                        current_form.find('input[name$="-DELETE"]').prop('checked', true);
+                    }
+                });
+            });
+        }
+
         // SLOPPY WAY TO DO THIS
         // Post submission operation
         // Special operations for pre-submission
-        // $('form').submit(function() {
-        //     apply_data_to_forms();
-        // });
+        $('form').submit(function() {
+            // BURN EMPTY FORMS (measured by no difference from default)
+            burn_empty_forms();
+        });
     }
 });

@@ -1304,7 +1304,7 @@ $(document).ready(function () {
             var current_name = $(this).find('input[name$="-name"]').val();
             if (current_name) {
                 $(this).find('input:not(:checkbox)').each(function(input_index) {
-                    if($(this).val()) {
+                    if ($(this).val()) {
                         if(
                             $(this).attr('name').indexOf('_index') === -1 &&
                             $(this).attr('name').indexOf('-name') === -1 &&

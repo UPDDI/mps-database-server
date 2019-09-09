@@ -209,6 +209,18 @@ class OrganModelAdd(SpecificGroupRequiredMixin, CreateView):
 
             # Redirect back to edit if protcol_formset has changed
             if protocol_formset.has_changed():
+                # CRUDE change tracking
+                for protocol in protocol_formset:
+                    if protocol.has_changed():
+                        protocol.instance.modified_by_id = self.request.user.id
+                        protocol.instance.modified_on = form.instance.modified_on
+
+                        if not protocol.instance.created_by_id:
+                            protocol.instance.created_by_id = protocol.instance.modified_by_id
+                            protocol.instance.created_on = protocol.instance.modified_on
+
+                        protocol.save()
+
                 return redirect('{}update/'.format(self.object.get_absolute_url()))
 
             return redirect(self.object.get_post_submission_url())
@@ -313,6 +325,18 @@ class OrganModelUpdate(UpdateView):
 
             # Redirect back to edit if protcol_formset has changed
             if protocol_formset.has_changed():
+                # CRUDE change tracking
+                for protocol in protocol_formset:
+                    if protocol.has_changed():
+                        protocol.instance.modified_by_id = self.request.user.id
+                        protocol.instance.modified_on = form.instance.modified_on
+
+                        if not protocol.instance.created_by_id:
+                            protocol.instance.created_by_id = protocol.instance.modified_by_id
+                            protocol.instance.created_on = protocol.instance.modified_on
+
+                        protocol.save()
+
                 return redirect('{}update/'.format(self.object.get_absolute_url()))
 
             return redirect(self.object.get_post_submission_url())
