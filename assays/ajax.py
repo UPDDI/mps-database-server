@@ -765,15 +765,23 @@ def get_item_groups(study, criteria, matrix_items=None, compound_profile=False, 
             'cell': DEFAULT_CELL_CRITERIA
         }
 
+    # BAD
+    use_center = False
+    if criteria.get('special', '') and 'center' in criteria.get('special', ''):
+        use_center = True
+
     # TODO TODO TODO REVISE THESE MAGIC KEYS
-    if criteria.get('setup', ''):
-        if 'organ_model_id' in criteria.get('setup'):
+    if criteria.get('setup', '') or criteria.get('special', ''):
+        if 'organ_model_id' in criteria.get('setup', []):
             header_keys.append('MPS Model')
-        if 'study.group_id' in criteria.get('setup'):
+        # KLUDGE, BAD
+        if use_center:
+            header_keys.append('Center')
+        if 'study.group_id' in criteria.get('setup', []):
             header_keys.append('MPS User Group')
-        if 'study_id' in criteria.get('setup'):
+        if 'study_id' in criteria.get('setup', []):
             header_keys.append('Study')
-        if 'matrix_id' in criteria.get('setup'):
+        if 'matrix_id' in criteria.get('setup', []):
             header_keys.append('Matrix')
     if criteria.get('compound', ''):
         header_keys.append('Compounds')
@@ -787,7 +795,7 @@ def get_item_groups(study, criteria, matrix_items=None, compound_profile=False, 
     setup_attribute_getter = tuple_attrgetter(*criteria.get('setup', ['']))
 
     for setup in setups:
-        treatment_group_tuple = ()
+        treatment_group_tuple = []
 
         if criteria.get('setup', ''):
             treatment_group_tuple = setup_attribute_getter(setup)
@@ -800,6 +808,12 @@ def get_item_groups(study, criteria, matrix_items=None, compound_profile=False, 
 
         if criteria.get('cell', ''):
             treatment_group_tuple += setup.devolved_cells(criteria.get('cell'))
+
+        # BAD
+        if use_center:
+            treatment_group_tuple += (setup.study.group.microphysiologycenter_set.first().id,)
+
+        treatment_group_tuple = tuple(treatment_group_tuple)
 
         current_representative = treatment_groups.get(treatment_group_tuple, None)
 
@@ -2147,10 +2161,22 @@ def acquire_post_filter(studies, assays, matrix_items, data_points):
             study.id: '{} ({})'.format(study.name, study.group.name)
         })
 
+        # SLOPPY
+        first_center = study.group.microphysiologycenter_set.first()
+
         current.setdefault(
             'group_id__in', {}
         ).update({
-            study.group_id: '{} ({})'.format(study.group.name, study.group.microphysiologycenter_set.first().name)
+            study.group_id: '{} ({})'.format(study.group.name, first_center.name)
+        })
+
+        # SPECIAL EXCEPTION FOR CENTER (kludge)
+        post_filter.setdefault(
+            'center', {}
+        ).setdefault(
+            'id__in', {}
+        ).update({
+            first_center.id: first_center.name
         })
 
     assays = assays.prefetch_related(
@@ -2453,6 +2479,11 @@ def acquire_post_filter(studies, assays, matrix_items, data_points):
 
 
 def apply_post_filter(post_filter, studies, assays, matrix_items, data_points):
+    # SLOPPY: APPLY CENTER FILTER
+    studies = studies.filter(
+        group__microphysiologycenter__in=post_filter.get('center', {}).get('id__in', [])
+    )
+
     # Not very elegant...
     study_post_filters = {
         current_filter: [
@@ -2607,38 +2638,6 @@ def apply_post_filter(post_filter, studies, assays, matrix_items, data_points):
     matrix_items = matrix_items.filter(
         **matrix_item_post_filters
     )
-
-    # Compounds
-    # if post_filter.get('matrix_item', {}).get('assaysetupcompound__compound_instance__compound_id__in', {}).get(
-    #         '0', None
-    # ):
-    #     matrix_items = matrix_items.filter(
-    #         **matrix_item_compound_post_filters
-    #     ) | matrix_items.filter(assaysetupcompound__isnull=True)
-    # else:
-    #     matrix_items = matrix_items.filter(
-    #         **matrix_item_compound_post_filters
-    #     )
-
-    # Cells
-    # if post_filter.get('matrix_item', {}).get('assaysetupcell__cell_sample_id__in', {}).get('0', None):
-    #     matrix_items = matrix_items.filter(
-    #         **matrix_item_cell_post_filters
-    #     ) | matrix_items.filter(assaysetupcell__isnull=True)
-    # else:
-    #     matrix_items = matrix_items.filter(
-    #         **matrix_item_cell_post_filters
-    #     )
-
-    # Setting
-    # if post_filter.get('matrix_item', {}).get('assaysetupsetting__setting_id__in', {}).get('0', None):
-    #     matrix_items = matrix_items.filter(
-    #         **matrix_item_setting_post_filters
-    #     ) | matrix_items.filter(assaysetupsetting__isnull=True)
-    # else:
-    #     matrix_items = matrix_items.filter(
-    #         **matrix_item_setting_post_filters
-    #     )
 
     # COMBINED FIELDS IF NECESSARY
     # TODO TODO TODO

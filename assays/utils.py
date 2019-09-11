@@ -292,7 +292,9 @@ def get_user_accessible_studies(user):
     combined = combined.distinct().prefetch_related(
         'created_by',
         'modified_by',
-        'signed_off_by'
+        'signed_off_by',
+        # CRUDE AND BAD
+        # 'group__microphysiologycenter_set'
     )
 
     return combined

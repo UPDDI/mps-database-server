@@ -239,18 +239,18 @@ $(document).ready(function () {
     // TERRIBLE, SPAGHETTI CODE
     // TERRIBLE, SPAGHETTI CODE
     // AWFUL
-    // WHY DO THIS?
-    var headers = {
-        // 'device': 'Device',
-        'MPS User Group': 'MPS User Group',
-        'Study': 'Study',
-        'Matrix': 'Matrix',
-        'MPS Model': 'MPS Model',
-        'Cells': 'Cells Added',
-        'Compounds': 'Compound Treatment',
-        'Settings': 'Settings (Non-Compound Treatments)',
-        'Items with Same Treatment': 'Matrix Items (Chips/Wells) in Group'
-    };
+    // WHY DO THIS? Seriously...
+    // var headers = {
+    //     // 'device': 'Device',
+    //     'MPS User Group': 'MPS User Group',
+    //     'Study': 'Study',
+    //     'Matrix': 'Matrix',
+    //     'MPS Model': 'MPS Model',
+    //     'Cells': 'Cells Added',
+    //     'Compounds': 'Compound Treatment',
+    //     'Settings': 'Settings (Non-Compound Treatments)',
+    //     'Items with Same Treatment': 'Matrix Items (Chips/Wells) in Group'
+    // };
 
     // var filter_popup_header = filter_popup.find('h5');
 
@@ -1070,7 +1070,7 @@ $(document).ready(function () {
         );
 
         $.each(header_keys, function(index, item) {
-            var new_td = $('<th>').html(headers[item]);
+            var new_td = $('<th>').html(item);
             new_row.append(new_td);
         });
 

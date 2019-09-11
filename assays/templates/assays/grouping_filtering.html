@@ -121,6 +121,20 @@
                     {% if not intra_flag %}
                     <tr>
                         <td>
+                            <button data-parent-model='center' data-filter-relation='id__in' role='button' class="btn btn-sm post-filter-spawn">
+                                <span class="glyphicon glyphicon-filter"></span>
+                            </button>
+                        </td>
+                        <td>
+                            <input data-group='center' data-group-relation='special' type="checkbox" class="grouping-checkbox">
+                            <span data-group-type="treatment"></span>
+                        </td>
+                        <td>
+                            Center
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
                             <button data-parent-model='study' data-filter-relation='group_id__in' role='button' class="btn btn-sm post-filter-spawn">
                                 <span class="glyphicon glyphicon-filter"></span>
                             </button>

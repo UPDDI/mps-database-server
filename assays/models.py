@@ -2054,6 +2054,8 @@ class AssayMatrixItem(FlaggableModel):
             criteria = {}
         dic = {
             # 'device': self.device.name,
+            # OBJECTIVELY BAD
+            'Center': self.study.group.microphysiologycenter_set.first().name,
             'MPS User Group': self.study.group.name,
             'Study': self.get_hyperlinked_study(),
             'Matrix': self.get_hyperlinked_matrix(),
