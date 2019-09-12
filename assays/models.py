@@ -19,6 +19,7 @@ from django.utils.safestring import mark_safe
 import urllib.request, urllib.parse, urllib.error
 import collections
 
+# TODO REORGANIZE
 import django.forms as forms
 
 

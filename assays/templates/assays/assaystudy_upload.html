@@ -57,9 +57,9 @@
     {% else %}
     <div class="form-group">
     {% endif %}
-        <label for="bulk_file" class="col-sm-2 control-label">Excel File*</label>
+        <label for="bulk_file" class="col-sm-2 control-label">Upload File</label>
         <div class="col-sm-10">
-            {{ form.bulk_file }}
+            <input type="file" name="bulk_file" class="btn btn-primary btn-lg" id="id_bulk_file">
         </div>
     </div>
 

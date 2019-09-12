@@ -2239,13 +2239,16 @@ def acquire_post_filter(studies, assays, matrix_items, data_points):
     matrix_items = matrix_items.prefetch_related(
         'assaysetupcompound_set__compound_instance__compound',
         'assaysetupcompound_set__compound_instance__supplier',
+        'assaysetupcompound_set__concentration_unit',
         'assaysetupcompound_set__addition_location',
         'assaysetupcell_set__cell_sample__cell_type',
         'assaysetupcell_set__cell_sample__cell_subtype',
         'assaysetupcell_set__addition_location',
         'assaysetupcell_set__biosensor',
+        'assaysetupcell_set__density_unit',
         'assaysetupsetting_set__setting',
         'assaysetupsetting_set__addition_location',
+        'assaysetupsetting_set__unit',
         'organ_model',
         'matrix',
         'study'

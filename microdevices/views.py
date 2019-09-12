@@ -13,6 +13,7 @@ from .forms import (
     OrganModelCellFormsetFactory,
     OrganModelProtocolCellFormsetFactory,
     OrganModelProtocolSettingFormsetFactory,
+    OrganModelReferenceFormSetFactory,
     MicrodeviceReferenceFormSetFactory
 )
 from .models import (
@@ -169,7 +170,6 @@ class OrganModelAdd(SpecificGroupRequiredMixin, CreateView):
                 context['location_formset'] = OrganModelLocationFormsetFactory(self.request.POST)
                 context['cell_formset'] = OrganModelCellFormsetFactory(self.request.POST)
                 context['reference_formset'] = OrganModelReferenceFormSetFactory(self.request.POST)
-
             else:
                 context['protocol_formset'] = OrganModelProtocolFormsetFactory()
                 context['location_formset'] = OrganModelLocationFormsetFactory()
@@ -211,7 +211,7 @@ class OrganModelAdd(SpecificGroupRequiredMixin, CreateView):
             if protocol_formset.has_changed():
                 # CRUDE change tracking
                 for protocol in protocol_formset:
-                    if protocol.has_changed():
+                    if protocol.has_changed() and not protocol.cleaned_data.get('DELETE', False):
                         protocol.instance.modified_by_id = self.request.user.id
                         protocol.instance.modified_on = form.instance.modified_on
 
@@ -314,9 +314,8 @@ class OrganModelUpdate(UpdateView):
             self.request.POST,
             instance=form.instance
         )
-
-        if form.is_valid() and protocol_formset.is_valid() and location_formset.is_valid() and cell_formset.is_valid() and reference_formset.is_valid():
-            save_forms_with_tracking(self, form, formset=[protocol_formset, location_formset, cell_formset, reference_formset], update=True)
+        if form.is_valid() and protocol_formset.is_valid() and location_formset.is_valid() and reference_formset.is_valid() and cell_formset.is_valid():
+            save_forms_with_tracking(self, form, formset=[protocol_formset, location_formset, reference_formset, cell_formset], update=True)
 
             # Update the base model to be self-referential if it is missing
             if not form.instance.base_model_id:
@@ -327,7 +326,7 @@ class OrganModelUpdate(UpdateView):
             if protocol_formset.has_changed():
                 # CRUDE change tracking
                 for protocol in protocol_formset:
-                    if protocol.has_changed():
+                    if protocol.has_changed() and not protocol.cleaned_data.get('DELETE', False):
                         protocol.instance.modified_by_id = self.request.user.id
                         protocol.instance.modified_on = form.instance.modified_on
 

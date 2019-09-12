@@ -45,7 +45,6 @@ from assays.models import (
     AssaySubtarget,
     AssayReference,
     AssayStudyReference,
-    # AssayType,
     AssayStudySet,
     AssayCategory
 )
