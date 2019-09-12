@@ -76,7 +76,7 @@ $(document).ready(function() {
     var repro_info_table_display = $('#repro_info_table_display');
     var area_to_copy_to = $("#expanded_data");
 
-    var inter_level = $('#inter_level_by_center').prop('checked') ? 1 : 0;
+    var inter_level = $('input[name=inter_level]:checked').val();
     var max_interpolation_size = $('#max_interpolation_size').val();
     var initial_norm = $('#initial_norm').prop('checked') ? 1 : 0;
 
@@ -181,7 +181,7 @@ $(document).ready(function() {
             ['No Matching Records Found', 1]
         ]);
 
-        inter_level = $('#inter_level_by_center').prop('checked') ? 1 : 0;
+        inter_level = $('input[name=inter_level]:checked').val();
         max_interpolation_size = $('#max_interpolation_size').val();
         initial_norm = $('#initial_norm').prop('checked') ? 1 : 0;
 
@@ -196,7 +196,7 @@ $(document).ready(function() {
             if (Object.keys(window.GROUPING.filters['groups']).length === 1) {
                 $('#inter_level_by_center').prop('checked', false);
                 $('#inter_level_by_study').prop('checked', true);
-                inter_level = 0;
+                inter_level = 'study';
             }
         }
 

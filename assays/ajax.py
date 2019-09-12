@@ -2892,7 +2892,7 @@ def fetch_data_points_from_filters(request):
                                 content_type="application/json")
         elif intention == 'inter_repro':
             criteria = json.loads(request.POST.get('criteria', '{}'))
-            inter_level = int(request.POST.get('inter_level', 1))
+            inter_level = request.POST.get('inter_level', 'center')
             max_interpolation_size = int(request.POST.get('max_interpolation_size', 2))
             initial_norm = int(request.POST.get('initial_norm', 0))
 
@@ -2991,7 +2991,7 @@ def fetch_data_points_from_study_set(request):
                                 content_type="application/json")
         elif intention == 'inter_repro':
             criteria = json.loads(request.POST.get('criteria', '{}'))
-            inter_level = int(request.POST.get('inter_level', 1))
+            inter_level = request.POST.get('inter_level', 'center')
             max_interpolation_size = int(request.POST.get('max_interpolation_size', 2))
             initial_norm = int(request.POST.get('initial_norm', 0))
 
@@ -3067,6 +3067,8 @@ def get_inter_study_reproducibility(
 
     sets_intra_points = {}
 
+    group_to_center = {}
+
     # CRUDE
     if criteria:
         group_sample_location = 'sample_location' in criteria.get('special', [])
@@ -3096,6 +3098,13 @@ def get_inter_study_reproducibility(
     data_point_attribute_getter_current_values = tuple_attrgetter(*current_value_tuple)
 
     for point in data_points:
+        center_or_group = point.study.group.name
+
+        if inter_level == 'center':
+            if not point.study.group.name in group_to_center:
+                group_to_center[point.study.group.name] = point.study.group.microphysiologycenter_set.first().name
+            center_or_group = group_to_center[point.study.group.name]
+
         point.standard_value = point.value
         item_id = point.matrix_item_id
         if point.study_assay.unit.base_unit_id:
@@ -3114,7 +3123,7 @@ def get_inter_study_reproducibility(
         )
 
         # TODO Intra-in-Inter: Dictionary of format {group_num : {study1 : [point1, point2], study2 : [point1, point2]}}
-        study_name = "{} ({})".format(point.study.name, point.study.group)
+        study_name = "{} ({})".format(point.study.name, center_or_group)
 
         if current_group not in sets_intra_points:
             sets_intra_points[current_group] = {}
@@ -3144,7 +3153,7 @@ def get_inter_study_reproducibility(
         data_group_to_studies.setdefault(
             current_group, {}
         ).update({
-            '<a data-anchor="study" href="{}" target="_blank">{} ({})</a>'.format(point.study.get_absolute_url(), point.study.name, point.study.group.name): point.study.name
+            '<a data-anchor="study" href="{}" target="_blank">{} ({})</a>'.format(point.study.get_absolute_url(), point.study.name, center_or_group): point.study.name
         })
 
         data_group_to_sample_locations.setdefault(
@@ -3177,20 +3186,28 @@ def get_inter_study_reproducibility(
     final_chart_data = {}
 
     for point in data_points:
+        # BAD
+        center_or_group = point.study.group.name
+
+        if inter_level == 'center':
+            center_or_group = group_to_center[point.study.group.name]
+        # DON'T MAKE KLUDGES LIKE THE ABOVE PLEASE
+
         inter_data.append([
             point.study.name,
             point.matrix_item.name,
             point.time,
             # NOTE USE OF STANDARD VALUE RATHER THAN VALUE
             point.standard_value,
-            point.study.group.name,
+            center_or_group,
             point.data_group
         ])
 
-        if inter_level:
-            legend = point.study.group.name
-        else:
+        # BAD KLUDGE
+        if inter_level == 'study':
             legend = point.study.name
+        else:
+            legend = center_or_group
 
         initial_chart_data.setdefault(
             point.data_group, {}
@@ -3298,10 +3315,16 @@ def get_inter_study_reproducibility(
     # Reset chart data again
     # initial_chart_data = {}
 
+    # CONTRIVED
+    inter_level_value = 1
+
+    if inter_level == 'study':
+        inter_level_value = 0
+
     reproducibility_results_table, inter_data_table = get_inter_study_reproducibility_report(
         len(treatment_group_table),
         inter_data,
-        inter_level,
+        inter_level_value,
         max_interpolation_size,
         initial_norm
     )
