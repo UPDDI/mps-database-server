@@ -496,7 +496,6 @@ $(document).ready(function () {
                 $('#id_test_type')
                     .clone()
                     .removeAttr('id')
-                    // .removeAttr('style')
                     .attr('data-row', row_index)
             )
         );

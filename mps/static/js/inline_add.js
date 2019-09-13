@@ -27,7 +27,7 @@ $(document).ready(function () {
             // Set the hidden TOTAL_FORMS to be incremented, otherwise won't bother reading other inline
             $('#id_'+current_set_title+'-TOTAL_FORMS').val(""+next_id);
             $("select").each(function(i, obj){
-                if(!$(obj).parent().hasClass("no-selectize")) {
+                if(!$(obj).parent().hasClass("no-selectize") && !$(obj).hasClass('no-selectize')) {
                     $(obj).not('.selectized').selectize('');
                 }
             });
