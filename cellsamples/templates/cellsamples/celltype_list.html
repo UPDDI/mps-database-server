@@ -33,7 +33,7 @@
 
             <tbody>
             {% for celltype in object_list %}
-                <tr class="cellsample" id={{ celltype.id }} name={{ celltype }}>
+                <tr>
                     <td><a class="btn btn-primary" href="{{ celltype.id }}">Edit</a></td>
                     <td>{{ celltype.cell_type }}</td>
                     <td>{{ celltype.organ }}</td>

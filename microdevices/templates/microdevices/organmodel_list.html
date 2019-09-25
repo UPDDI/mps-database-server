@@ -45,7 +45,7 @@
 
             <tbody>
             {% for model in object_list %}
-                <tr class="model" id="{{ model.id }}">
+                <tr>
                     <td><a class="btn btn-primary" href="{{ model.id }}">View</a></td>
                     <td><a class="btn btn-primary" href="{{ model.id }}/update/">Edit</a></td>
                     <td>{{ model.name }}</td>

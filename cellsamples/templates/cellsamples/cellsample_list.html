@@ -39,7 +39,7 @@
 
             <tbody>
             {% for cellsample in object_list %}
-                <tr class="cellsample" id={{ cellsample.id }}>
+                <tr>
                     <td><a class="btn btn-primary" href="{{ cellsample.id }}">Edit</a></td>
                     {# May seem odd, but including the id can help demystify the ID that appears in add interface #}
                     <td>{{ cellsample.id }}</td>

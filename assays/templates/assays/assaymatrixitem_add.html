@@ -680,47 +680,7 @@
     </div>
 </form>
 
-<div hidden id="dialog" title="Choose a Cell Sample">
-{#        <div class="alert alert-info text-center" role="alert">#}
-{#            <button role="button" class="btn btn-danger" id="clear_cell_sample">Clear Cell Sample</button>#}
-{#        </div>#}
-    <table id="cellsamples" class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>Select</th>
-                    <th>ID #</th>
-                    <th>Receipt Date</th>
-                    <th>Cell Type</th>
-                    <th>Cell Origin</th>
-                    <th>Supplier</th>
-                    <th>Barcode/Lot#</th>
-                    <th>Patient</th>
-                </tr>
-            </thead>
-
-            <tbody>
-            {% for cellsample in cellsamples %}
-                <tr class="cellsample">
-                    <td>
-                        <button type="button" class="cellsample-selector btn btn-xs btn-primary" data-cell-sample-id="{{ cellsample.id }}" id="cell_sample_{{ cellsample.id }}" name="{{ cellsample }}">Select</button>
-                    </td>
-                    <td>{{ cellsample.id }}</td>
-                    <td>{{ cellsample.receipt_date|date:"M d, Y" }}</td>
-                    <td>{{ cellsample.cell_type }}</td>
-                    <td>{{ cellsample.cell_subtype }}</td>
-                    <td>{{ cellsample.supplier }}</td>
-                    <td>{{ cellsample.barcode }}</td>
-                    <td>
-                        {% if cellsample.patient_age or cellsample.patient_gender != 'N' or cellsample.patient_condition %}
-                            {{ cellsample.patient_age|default:"Unknown" }} year old {{ cellsample.patient_gender }}
-                            {{ cellsample.patient_condition }}
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-    </table>
-</div>
+{% include 'assays/cellsample_dialog.html' %}
 
 {#<div hidden id="warning" title="Compound in Control Chip">#}
 {#    <p>#}

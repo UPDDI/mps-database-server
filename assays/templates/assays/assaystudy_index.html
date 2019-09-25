@@ -91,7 +91,7 @@
 
             <tbody>
             {% for matrix in matrices %}
-                <tr id={{ matrix.id }} name={{ matrix.id }}>
+                <tr>
                     <td>
                         <a class="btn btn-primary"
                            {% if matrix.representation == 'chips' and not object.signed_off_by and matrix.assaymatrixitem_set.count %}
@@ -158,7 +158,7 @@
 
             <tbody>
             {% for item in items %}
-                <tr id={{ item.id }} name={{ item.id }}>
+                <tr>
                     <td>
                         <a class="btn btn-primary"
                            href="{{ item.get_absolute_url }}">

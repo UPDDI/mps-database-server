@@ -33,7 +33,7 @@
     <tbody>
     {% for study in studies %}
         {% if not reproducibility or study.data_points %}
-        <tr class="study" id="{{ study.id }}" name="{{ study.id }}">
+        <tr>
             {% if not for_study_set_list %}
                 {% if reproducibility %}
                 <td><a class="btn btn-primary" href="{% url 'assay_study_reproducibility' study.id %}">Reproducibility</a></td>

@@ -38,7 +38,7 @@
             <tbody>
             {% for disease in object_list %}
                 {# {% for key, value in stat %}#}
-                 <tr class="disease" id={{ disease.id }} name={{ disease.name }}>
+                 <tr>
                     <td><a class="btn btn-primary" href="{{ disease.id }}">View</a></td>
                     <td>{{ disease.name }}</td>
                     {# <td></td>#}

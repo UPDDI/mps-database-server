@@ -180,10 +180,6 @@ class ModelFormSplitTime(BootstrapForm):
                     'duration': cleaned_data.get('duration') + cleaned_data.get('duration_' + time_unit, 0) * conversion
                 })
 
-            # NOW IN MODEL
-            # if self.fields.get('duration', None) is not None and cleaned_data.get('duration') <= 0:
-            #     raise forms.ValidationError({'duration': ['Duration cannot be zero or negative.']})
-
         return cleaned_data
 
 
@@ -1459,7 +1455,6 @@ class AssayMatrixItemFormSet(BaseInlineFormSetForcedUniqueness):
         }
 
     def clean(self):
-        """Checks to make sure duration is valid"""
         super(AssayMatrixItemFormSet, self).clean()
 
         for index, form in enumerate(self.forms):

@@ -16,13 +16,13 @@ $(document).ready(function () {
     // Populate cell_sampel_id_to_label
     cellsamples_selector.find('button').each(function() {
         var current_sample_id = $(this).attr('data-cell-sample-id');
-        var current_label = $(this).attr('name');
+        var current_label = $(this).attr('data-name');
         window.CELLS.cell_sample_id_to_label[current_sample_id] = current_label;
     });
 
     // Open and then close dialog so it doesn't get placed in window itself
     // RENAME
-    var dialog = $('#dialog');
+    var dialog = $('#cellsample_dialog');
     dialog.dialog({
         width: 900,
         height: 500,
@@ -52,16 +52,16 @@ $(document).ready(function () {
     $(document).on('click', '.cellsample-selector', function() {
         var cell_sample_id = $(this).attr('data-cell-sample-id');
         cell_sample_id_selector.val(cell_sample_id);
-        var cell_sample_name = this.attributes["name"].value;
+        var cell_sample_name = $(this).attr('data-name');
         cell_sample_label_selector.text(cell_sample_name);
-        $('#dialog').dialog('close');
+        dialog.dialog('close');
     });
 
     // Display all labels (irrelevant in matrix)
     $('.cell-sample-id-field').each(function() {
         // Get label
         var current_parent = $(this).parent().parent().parent().parent().parent();
-        current_parent.find('label').text($('#cell_sample_' + $(this).val()).attr('name'));
+        current_parent.find('label').text($('#cell_sample_' + $(this).val()).attr('data-name'));
         // Turn density into scientific notation
         // TODO SUBJECT TO CHANGE
         var current_density = current_parent.find('input[name$="-density"]');

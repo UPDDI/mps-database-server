@@ -32,7 +32,7 @@
 
             <tbody>
             {% for object in object_list %}
-                <tr class="cellsubtype" id={{ object.id }} name={{ object }}>
+                <tr>
                     <td><a class="btn btn-primary" href="{{ object.id }}">Edit</a></td>
                     <td>{{ object }}</td>
                     <td>{{ object.cell_type|default:'Generic (Applicable to All Cell Types)' }}</td>

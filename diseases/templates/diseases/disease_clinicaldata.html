@@ -62,7 +62,7 @@
 
             <tbody>
             {% for finding in trial_findings %}
-                <tr class="finding" id="{{ finding.id }}">
+                <tr>
                     <td><a target="_blank" class="btn btn-primary" href="/drugtrials/{{ finding.drug_trial.id }}">View</a></td>
                     <td>{{ finding.drug_trial.id }}</td>
                     <td>

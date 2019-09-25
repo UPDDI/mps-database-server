@@ -364,7 +364,7 @@ $(document).ready(function () {
         // NOTE: SPECIAL EXCEPTION FOR CELL SAMPLES
         if (field_name === 'cell_sample') {
             // TODO VERY POORLY DONE
-            // return $('#' + 'cell_sample_' + field.val()).attr('name');
+            // return $('#' + 'cell_sample_' + field.val()).attr('data-name');
             // Global here is a little sloppy, but should always succeed
             return window.CELLS.cell_sample_id_to_label[field.val()];
         }
@@ -1207,7 +1207,7 @@ $(document).ready(function () {
                 // TODO SPECIAL EXCEPTION FOR CELL SAMPLE
                 // BAD
                 if (current_data['cell_sample']) {
-                    this_popup.find('#id_cell_sample_label').text($('#cell_sample_' + current_data['cell_sample']).attr('name'));
+                    this_popup.find('#id_cell_sample_label').text($('#cell_sample_' + current_data['cell_sample']).attr('data-name'));
                 }
                 else {
                     this_popup.find('#id_cell_sample_label').text('');

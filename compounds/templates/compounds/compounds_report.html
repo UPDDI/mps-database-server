@@ -52,7 +52,7 @@
             <form autocomplete="off">
             {% for compound in object_list %}
                 {# NAME HERE IS USELESS ANYWAY #}
-                <tr class="compound" id="{{ compound.id }}" name="{{ compound.name }}">
+                <tr>
                     {# Checkbox for each compound #}
                     <td><input data-table-index="{{ forloop.counter0 }}" class="big-checkbox table-checkbox" type="checkbox" value="{{ compound.name|safe }}"></td>
                     <td><a href="/compounds/{{ compound.id }}">{{ compound.name }}</a></td>

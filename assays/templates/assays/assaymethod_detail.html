@@ -75,14 +75,14 @@
 
                 <tbody>
                 {% for assay in assays %}
-                     <tr class="assay">
+                     <tr>
                         <td><a href= "/assays/targets/{{ assay.1 }}/">{{ assay.0 }}</a></td>
                         <td>{{ assay.3 }}</td>
                         <td>{{ assay.2 }}</td>
                     </tr>
                 {% endfor %}
                 {% for image in images %}
-                     <tr class="image">
+                     <tr>
                         <td><a href= "/assays/targets/{{ image.1 }}/">{{ image.0 }}</a></td>
                         <td>{{ image.3 }}</td>
                         <td>{{ image.2 }}</td>
@@ -106,7 +106,7 @@
 
                 <tbody>
                 {% for study in studies %}
-                     <tr class="study">
+                     <tr>
                         <td><a href= "/assays/assaystudy/{{ study.id }}/">{{ study.name }}</a></td>
                         <td>{{ study.start_date }}</td>
                         <td>{{ study.get_study_types_string }}</td>
