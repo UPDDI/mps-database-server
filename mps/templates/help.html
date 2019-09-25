@@ -254,6 +254,8 @@
                             <li><a href="#matrixitems_editor">3. Matrix Items (Edit) </a></li>
                             <li><a href="#assaydata_editor">4. Assay Data (Upload or Reupload) </a></li>
                             <li><a href="#assayimages_editor">5. Assay Images &amp; Videos (Prepare) </a></li>
+                            <li><a href="#study_signoff_editor">6. Sign-Off a Study (Sharing Data) </a></li>
+                            <li><a href="#stakeholder_editor">7. Stakeholder Review and Acknowledgement </a></li>
                         </ul>
                     </li>
 
@@ -314,6 +316,7 @@
                             <li class="divider"></li>
                             <li class="dropdown-header"><b>Contribute Study Data</b></li>
                             <li><a href="#studies_editor">Provide Data - Getting Started </a></li>
+                            <li><a href="#stakeholder_editor">Stakeholder Review and Acknowledgement </a></li>
                         </ul>
                     </li>
 
@@ -342,8 +345,12 @@
             <div class="content1">
                 <div id="recentupgradesviewer" class="viewersubtainer">
                     <ul class="list-group">
-{#TODO:                        compuatational modeling, new workflow #}
-                        <li class="list-group-item"> <b><em> Power Analysis </em></b> - ...need to add a sentence here....
+{#TODO:                        compuatational modeling #}
+                        <li class="list-group-item"> <b><em> Study Setup by Treatment Group </em></b> - An enhancement to previous method of setting up a study that acquires information for the selected organ model and organ model version and enables streamlined study setup by organ model treatment group.
+                            For more information on the Study Setup by Treatment Group feature (sometimes referred to as the "new workflow" or the "streamlined workflow"), <a href="#studies_editor">click here</a>. </li>
+                        <li class="list-group-item"> <b><em> Recorded Presentations </em></b> - Recordings from various demonstrations of the MPS-Db have been added to the Help.
+                            For more information on the video presentations, <a href="#video_presentation_section">click here</a>.   </li>
+                        <li class="list-group-item"> <b><em> Power Analysis </em></b> - A statistical power analysis methodology has been implemented in the MPS-Db to estimate the probability that a statistical test will find a significant difference between two different data groups, such as control and compound treatment groups (post hoc two-sample power analysis), or a significance difference from one treatment group (a priori one-sample power analysis) for a MPS organ model.
                             For more information on the power analysis feature, <a href="#power_analysis">click here</a>.   </li>
                         <li class="list-group-item"> <b><em> References </em></b> - Allows Studies, MPS Models, Study Sets, and other study components to be linked to one or more publications.
                             For more information on the references feature, <a href="#reference">click here</a>.   </li>
@@ -741,12 +748,13 @@
 
     </div>
 
+
     <div id="video_presentation_section" class="container">
 
         <h1 class="sub1-bars"> Recorded Videos Demonstrating Database Features </h1>
 
         <div id="video_demo_5">
-            <button name="my_buttons" class="collapsible1">Study Sets, Controlled Sharing, and References</button>
+            <button name="my_buttons" class="collapsible1">Study Sets, Controlled Sharing, and References - recorded 20190620</button>
             <div class="content1">
                 <div id="video_demo_5viewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -762,7 +770,7 @@
         </div>
 
         <div id="video_demo_4">
-            <button name="my_buttons" class="collapsible1">NCATS Data Sharing Workflow</button>
+            <button name="my_buttons" class="collapsible1">NCATS Data Sharing Workflow - recorded 20190620</button>
             <div class="content1">
                 <div id="video_demo_4viewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -778,7 +786,7 @@
         </div>
 
         <div id="video_demo_3">
-            <button name="my_buttons" class="collapsible1">Exploring Kidney Study Data</button>
+            <button name="my_buttons" class="collapsible1">Exploring Kidney Study Data - recorded 20190418</button>
             <div class="content1">
                 <div id="video_demo_3viewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -794,7 +802,7 @@
         </div>
 
          <div id="video_demo_2">
-            <button name="my_buttons" class="collapsible1">Reproducibility and Customized Plots</button>
+            <button name="my_buttons" class="collapsible1">Reproducibility and Customized Plots - recorded 20190221</button>
             <div class="content1">
                 <div id="video_demo_2viewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -810,7 +818,7 @@
         </div>
 
         <div id="video_demo_1">
-            <button name="my_buttons" class="collapsible1">Adverse Events Analysis</button>
+            <button name="my_buttons" class="collapsible1">Adverse Events Analysis - recorded 20190117</button>
             <div class="content1">
                 <div id="video_demo_1viewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -826,7 +834,7 @@
         </div>
 
         <div id="video_demo_0">
-            <button name="my_buttons" class="collapsible1">Data Loading Workflow</button>
+            <button name="my_buttons" class="collapsible1">Data Loading Workflow - recorded  20181220</button>
             <div class="content1">
                 <div id="video_demo_0viewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -1594,7 +1602,7 @@
         </div>
 
         <div id="diseaselist">
-            <button name="my_buttons" class="collapsible1">Diseases in the MPS Database</b> </button>
+            <button name="my_buttons" class="collapsible1">Diseases in the MPS Database </button>
             <div class="content1">
                 <div id="diseaselistviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -1669,139 +1677,421 @@
                     <div class="content3">
                         <div id="mpsmodelseditor" class="editorsubtainer">
                             <ul class="list-group">
+                            {#TODO: redo table with model and model version (get from excel file using the table generator#}
                                 <li class="list-group-item background3">
                                 To have a new <b>MPS Model</b> added to the MPS-Db, compile the information shown in the table and contact an <b>MPS-Db</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add MPS Model to MPS-Db").
                                     <table class="table table-bordered table-condensed small table-components">
-                                    <thead>
-                                        <tr class="active">
-                                        <th> Description </th>
-                                        <th> Required </th>
-                                        <th> Model 1 </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td> MPS Model Name </td>
-                                            <td> yes </td>
-                                            <td> Blood-Brain Barrier (NVU) </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Center (MPS Model Developer) </td>
-                                            <td> yes </td>
-                                            <td> Vanderbilt Institute for Integrative Biosystems Research and Education </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Base Model Name (example: the base model of 'SQL-SAL 1.0' and 'SQL-SAL 1.5' is 'Liver (UPDDI)') </td>
-                                            <td> yes (use "one-off" if applicable) </td>
-                                            <td> Blood-Brain Barrier (NVU) </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Organ Modeling </td>
-                                            <td> yes </td>
-                                            <td> Brain </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Device Name </td>
-                                            <td> yes </td>
-                                            <td> Neurovascular Unit </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Model Type {pick one: Static-2D, Static-3D, Fluidic-2D, Fluidic-3D, Other} </td>
-                                            <td> yes </td>
-                                            <td> Fluidic-3D </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Disease {list all that apply: healthy, NAFLD, Ewing sarcoma, etc.} </td>
-                                            <td> if applicable, yes </td>
-                                            <td> healthy </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Disease Trigger {list all that apply: healthy, induced by compound, added diseased cells} </td>
-                                            <td> if applicable, yes </td>
-                                            <td> healthy </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Project Assignment {list all that apply: MPS, EPA, TCTC} </td>
-                                            <td> yes </td>
-                                            <td> TCTC </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Model Description </td>
-                                            <td> yes </td>
-                                            <td> Two chambered model of the blood-brain barrier. </td>
-                                        </tr>
-                                        <tr>
-                                            <td> References Relating to MPS Model </td>
-                                            <td> no </td>
-                                            <td> Brown JA, et al. Biomicrofluidics. 2015;9(5):054124. Epub 2015/11/18. doi: 10.1063/1.4934713. PubMed PMID: 26576206 </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Location </td>
-                                            <td> yes </td>
-                                            <td> Effluent-Brain </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Applicable To {list all that apply: assay sampling, imaging, cell addition, cell removal, compound addition, media addition, media removal, setting} </td>
-                                            <td> yes </td>
-                                            <td> media removal, assay sampling </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Location </td>
-                                            <td> yes </td>
-                                            <td> Effluent-Vascular </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Applicable To </td>
-                                            <td> yes </td>
-                                            <td> media removal, assay sampling </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Location </td>
-                                            <td> yes </td>
-                                            <td> Influent-Vascular </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Applicable To </td>
-                                            <td> yes </td>
-                                            <td> media addition, compound addition </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Location </td>
-                                            <td> yes </td>
-                                            <td> Brain </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Applicable To </td>
-                                            <td> yes </td>
-                                            <td> imaging, cell addition, cell removal </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Location </td>
-                                            <td> yes </td>
-                                            <td> Vascular </td>
-                                        </tr>
-                                        <tr>
-                                            <td> Applicable To </td>
-                                            <td> yes </td>
-                                            <td> imaging, cell addition, cell removal </td>
-                                        </tr>
-                                        <tr>
-                                            <td> (add more Location groups as needed) </td>
-                                            <td> yes, if more </td>
-                                            <td> add when needed </td>
-                                        </tr>
-                                        <tr>
-                                            <td> SOP/Protocol (file type dependent on database features to be used) </td>
-                                            <td> no </td>
-                                            <td> provide file </td>
-                                        </tr>
-                                        <tr>
-                                            <td> MPS Model Image </td>
-                                            <td> no </td>
-                                            <td> provide image </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                        <thead>
+                                            <tr class="active">
+                                            <th> Description </th>
+                                            <th> Required </th>
+                                            <th> Model 1 </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td> MPS Model Name </td>
+                                                <td> yes </td>
+                                                <td> Blood-Brain Barrier (NVU) </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Center (MPS Model Developer) </td>
+                                                <td> yes </td>
+                                                <td> Vanderbilt Institute for Integrative Biosystems Research and Education </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Base Model Name (example: the base model of 'SQL-SAL 1.0' and 'SQL-SAL 1.5' is 'Liver (UPDDI)') </td>
+                                                <td> yes (use "one-off" if applicable) </td>
+                                                <td> Blood-Brain Barrier (NVU) </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Organ Modeling </td>
+                                                <td> yes </td>
+                                                <td> Brain </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Device Name </td>
+                                                <td> yes </td>
+                                                <td> Neurovascular Unit </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Model Type {pick one: Static-2D, Static-3D, Fluidic-2D, Fluidic-3D, Other} </td>
+                                                <td> yes </td>
+                                                <td> Fluidic-3D </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Project Assignment {list all that apply: MPS, EPA, TCTC} </td>
+                                                <td> yes </td>
+                                                <td> TCTC </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Model Description </td>
+                                                <td> yes </td>
+                                                <td> Two chambered model of the blood-brain barrier. </td>
+                                            </tr>
+                                            <tr>
+                                                <td> References Relating to MPS Model </td>
+                                                <td> no </td>
+                                                <td> Brown JA, et al. Biomicrofluidics. 2015;9(5):054124. Epub 2015/11/18. doi: 10.1063/1.4934713. PubMed PMID: 26576206 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Location </td>
+                                                <td> yes </td>
+                                                <td> Effluent-Brain </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Applicable To {list all that apply: assay sampling, imaging, cell addition, cell removal, compound addition, media addition, media removal, setting} </td>
+                                                <td> yes </td>
+                                                <td> media removal, assay sampling </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Location </td>
+                                                <td> yes </td>
+                                                <td> Effluent-Vascular </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Applicable To </td>
+                                                <td> yes </td>
+                                                <td> media removal, assay sampling </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Location </td>
+                                                <td> yes </td>
+                                                <td> Influent-Vascular </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Applicable To </td>
+                                                <td> yes </td>
+                                                <td> media addition, compound addition </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Location </td>
+                                                <td> yes </td>
+                                                <td> Brain </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Applicable To </td>
+                                                <td> yes </td>
+                                                <td> imaging, cell addition, cell removal </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Location </td>
+                                                <td> yes </td>
+                                                <td> Vascular </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Applicable To </td>
+                                                <td> yes </td>
+                                                <td> imaging, cell addition, cell removal </td>
+                                            </tr>
+                                            <tr>
+                                                <td> (add more Location groups as needed) </td>
+                                                <td> yes, if more </td>
+                                                <td> add when needed </td>
+                                            </tr>
+                                            <tr>
+                                                <td> MPS Model Image </td>
+                                                <td> no </td>
+                                                <td> provide image </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Type </td>
+                                                <td> no </td>
+                                                <td> pericyte (Human Vasculature) </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Type </td>
+                                                <td> no </td>
+                                                <td> astrocyte (Human Brain) </td>
+                                            </tr>
+                                            <tr>
+                                                <td> (add more as needed)</td>
+                                                <td> no </td>
+                                                <td> add when needed </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td> Model Version Name (Repeat for Each Version) </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> BBB version 1 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> SOP/Protocol (file type dependent on database features to be used) </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> provide file </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Version Description </td>
+                                                <td> yes </td>
+                                                <td> This is a model version of the BBB where we used two cell types. </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Disease {list all that apply: healthy, NAFLD, Ewing sarcoma, etc.} </td>
+                                                <td> if applicable, yes </td>
+                                                <td> healthy </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Disease Trigger {list all that apply: healthy, induced by compound, added diseased cells} </td>
+                                                <td> if applicable, yes </td>
+                                                <td> healthy </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Sample ID# or Reference </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 43 - HBVP pericyte (Human Vasculature) (ScienCell Research Laboratories) </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Seeding Density </td>
+                                                <td> no </td>
+                                                <td> 1000 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Seeding Density Unit </td>
+                                                <td> no </td>
+                                                <td> cells/µL </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Suspension Volume Added </td>
+                                                <td> no </td>
+                                                <td> 60 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Suspension Volume Unit </td>
+                                                <td> no </td>
+                                                <td> mL </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Estimated # that Stick </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 5000 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Addition Location </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> Vascular </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Addition Day </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Addition Hour </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Addition Minute </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Duration Day </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Duration Hour </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Duration Minute </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 1 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Sample ID# or Reference </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 42 - SVG p12 astrocyte (Human Brain) (ATCC) </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Seeding Density </td>
+                                                <td> no </td>
+                                                <td> 1000 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Seeding Density Unit </td>
+                                                <td> no </td>
+                                                <td> cells/µL </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Suspension Volume Added </td>
+                                                <td> no </td>
+                                                <td> 60 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Suspension Volume Unit </td>
+                                                <td> no </td>
+                                                <td> mL </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Estimated # that Stick </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 5000 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Addition Location </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> Brain </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Addition Day </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Addition Hour </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Addition Minute </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Duration Day </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Duration Hour </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Duration Minute </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 1 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Sample ID# or Reference </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 44 - primary-cryopreserved endothelial (Human Vasculature) (CellSystems-376.01.04.01.03) </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Seeding Density </td>
+                                                <td> no </td>
+                                                <td> 1000 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Seeding Density Unit </td>
+                                                <td> no </td>
+                                                <td> cells/µL </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Suspension Volume Added </td>
+                                                <td> no </td>
+                                                <td> 60 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Suspension Volume Unit </td>
+                                                <td> no </td>
+                                                <td> mL </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Estimated # that Stick </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 5000 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Cell Addition Location </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> Vascular </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Addition Day </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Addition Hour </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Addition Minute </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Duration Day </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Duration Hour </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Duration Minute </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 1 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> (add more as needed) </td>
+                                                <td> no </td>
+                                                <td> add when needed </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Settings Name </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> Flowrate </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Settings Category or Value </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 5 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Settings Value Unit (use "category" for categories) </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> μL/minute </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Setting Location </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> Influent-Vascular </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Addition Day </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Addition Hour </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Addition Minute </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Duration Day </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 24 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Duration Hour </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> Duration Minute </td>
+                                                <td> yes, is using study setup by group </td>
+                                                <td> 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <td> (add more as needed) </td>
+                                                <td> no </td>
+                                                <td> add when needed </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </li>
                             </ul>
                         </div>
@@ -2199,32 +2489,33 @@
         </div>
 
         <div id="power_analysis">
-            <button name="my_buttons" class="collapsible3">Understanding and Overriding Power Analysis Options </button>
+            <button name="my_buttons" class="collapsible3">Overriding Power Analysis Options </button>
             <div class="content3">
                 <div id="power_analysis_viewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item background3">
+                            <p>A statistical power analysis methodology has been implemented in the MPS-Db to estimate the probability that a statistical test will find a significant difference between two different data groups, such as control and compound treatment groups (post hoc two-sample power analysis), or a significance difference from one treatment group (a priori one-sample power analysis) for a MPS organ model.</p>
                             <ul class="list-unstyled">
                                 {#TODO: power analysis stuff#}
-                                .....Need to add some information here.....
-
-{% comment %}                                <li>Customized properties for reproducibility analysis are available in the MPS-Db via a "Sidebar" on the inter-study reproducibility analysis page
+                                <li>Customized properties for power analysis are available in the MPS-Db via a "Sidebar" on the power analysis page
                                     <ul class="filled-circle">
                                         <li>If hidden, click the <b>Toggle Sidebar</b> button to show the sidebar
-                                        <li>Make desired selections in the sidebar
-                                            <ul class="open-circle">
-                                            <li>Reproducibility Comparison within Selected Data Sets - By Center (Center to Center) or By Study (Study to Study)</li>
-                                            <li>Normalize by Median - helpful if trends are similar but values are on different scales </li>
-                                            <li>Maximum Interpolation Size - maximum number of data points that can be interpolated, between experimental measurements, to allow for comparison within selected data sets, center to center or study to study (shown as stars on the reproducibility plots)</li>
-                                            </ul>
-                                        </li>
+                                        <li>Make desired selections in the sidebar</li>
+                                    </ul>
+                                </li>
+                                <li>Click on the Show Details box next to a set of interest
+                                    <ul class="filled-circle">
+                                        <li>Scroll down and select TWO compounds for Power Analysis</li>
+                                        <li>Scroll down to see additional options (Effect Size Methods and Significance Level)
+                                        <li>Make desired selections (optional) </li>
+                                        <li>Click Run Analysis</li>
                                     </ul>
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
                                         <li>By default, the screen will automatically refresh, to refresh manually, check the <b>Manually Refresh</b> box, make the desired changes, then click on the <b>Refresh</b> button to apply changes </li>
                                     </ul>
-                                </li>{% endcomment %}
+                                </li>
 
                             </ul>
                         </li>
@@ -2877,6 +3168,7 @@
 
 
                 <div id="studieseditor" class="editorsubtainer">
+                {#TODO: add new workflow blah blah#}
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
@@ -2897,28 +3189,48 @@
                                                 <li>Study Type – indicate the general purpose of the <b>Study</b> (one is required; check all that apply) </li>
                                                 <li>Study Name – use an informative name (e.g., "Kidney-Liver Vitamin C Metabolism" is more informative than "Study-1") </li>
                                                 <li>Start Date - start of experiment (Day 0 is generally considered the day the first cells added to model) </li>
-                                            </ul>
-                                        </li>
-                                        <li>Additional information can be added now or later (IMPORTANT: the Assay section must be completed PRIOR to uploading assay data)
-                                            <ul class="open-circle">
                                                 <li>Description - informative description (purpose, methods, results)</li>
-                                                <li>Use in Calculations - checking <b>Use in Calculations</b> tells the MPS-Db to use this study's data in predictive modeling and other calculations  </li>
+                                                <!--<li>Use in Calculations - checking <b>Use in Calculations</b> tells the MPS-Db to use this study's data in predictive modeling and other calculations  </li> -->
                                                 <li>Protocol File – a Word or pdf file containing the <b>Study</b> protocol </li>
                                                 <li>Image to Clarify A <b>Study</b> – recommend a picture of the setup or an illustration of the experimental protocol </li>
                                                 <!-- <li>For Integrated Chip Studies – select configuration if performing an integrated <b>Study</b>  </li> -->
+                                                <li>Study Setup (by treatment group) - if using this feature, <b>MUST</b> be used prior to first submit </li>
+                                                    <button name="my_buttons" class="collapsible4">Show/Hide Video Tutorial: Study Setup by Treatment Group Feature</button>
+                                                    <div class="content4">
+                                                          <div class="myIframe">
+                                                            <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=c651e3de-e0ec-4138-937e-aad20144e538&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                                                          </div>
+                                                    </div>
+                                                    <ul class="filled-circle">
+                                                        <li>Select an MPS Model </li>
+                                                        <li>Select an MPS Model Version (information about cells and settings will be pulled from the model version, if available)</li>
+                                                        <li> Enter the Number of Chips in the Control group</li>
+                                                        <li> Click on the <b>Add Setup Group</b> button</li>
+                                                        <li> Enter the Number of Chips in the Treated group </li>
+                                                        <li> Click on the <b>Add Compound</b> button </li>
+                                                        <li> Click on the <b>Add</b> button in the treated group row in the Compound column</li>
+                                                        <li> Fill in the form (make sure to fill all the fields with an *)</li>
+                                                        <li> Click the <b>Apply</b> button </li>
+                                                        <li> Add and/or remove other cells, settings, and/or compounds</li>
+                                                    </ul>
                                                 <li>Assays – for each combination of assay Method/Kit, Target/Analyte, and Unit used, add a row  </li>
-                                                <li>Supporting Data – attach files that will assist other MPS-Db users in understanding the <b>Study</b> design and/or assay data (other than the protocol file, which is added separately)  </li>
+                                                <!--<li>Supporting Data – attach files that will assist other MPS-Db users in understanding the <b>Study</b> design and/or assay data (other than the protocol file, which is added separately)  </li> -->
                                             </ul>
                                         </li>
                                         <li>Click the <b>Submit</b> button to save changes</li>
+                                        <li>IMPORTANT: If the Study Setup by Treatment Group feature is to be used, it <b>MUST</b> be completed <b>PRIOR to the first Submit</b> of the Study</li>
                                         <li>For information on continuing to add MPS models (<b>Matrix Items</b>) and assay data to the <b>Study</b> (Step 2), <a href="#matrices_editor">click here</a> </li>
                                     </ul>
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>Everything in the <b>Study</b> can be edited at any time until the <b>Study</b> Data Group Admin signs off the <b>Study</b> (then it is locked) </li>
+                                        <li>Everything in the <b>Study</b> can be edited until the <b>Study</b> Data Group Admin signs off the <b>Study</b> (then it is locked) </li>
                                         <li>Data contained in files attached as <b>Supporting Data</b> are NOT available for visualization, analysis, or used in calculations within the MPS-GUI </li>
-                                        <li>All combinations of Method/Kit, Target/Analyte, and Unit must be listed in the <b>Assays</b> Section of the <b>Study Level Details</b> page prior to uploading assay data</li>
+                                        <li>All combinations of Method/Kit, Target/Analyte, and Unit must be listed in the <b>Assays</b> Section of the <b>Study Level Details</b> page <b>PROIR</b> to uploading assay data</li>
+                                        <li>If the Study Setup by Treatment Group feature is to be used, it <b>MUST</b> be completed <b>PRIOR to the first Submit</b> of the Study</li>
+                                        <li>The Study Setup by Treatment Group feature is designed to be used in cases where an organ model version has been made and is associated to the model used in the study</li>
+                                        <li>When using the Study Setup by Treatment Group feature, if an organ model version has not been made and/or has not been populated correctly, cells and settings will not be automatically pulled into the group setup</li>
+                                        <li>When using the Study Setup by Treatment Group feature, treatment compounds will need to be added as they are not part of the model version (compounds cannot be saved as part of a model version)</li>
                                     </ul>
                                 </li>
                                  <li><br>Additional Video Tutorial(s)
@@ -2957,25 +3269,6 @@
                                             <li> A <b>Study</b> is annotated at the bottom of the <b>Study Level Details</b> page </li>
                                             <li> A <b>Matrix</b> is annotated at the bottom of the <b>Matrix Setup and Data</b> page </li>
                                             <li> A <b>Matrix Item</b> is annotated at the bottom of the <b>Item Setup and Data</b> page </li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <button name="my_buttons" class="collapsible3">See a Note about Sign Off and Validation</button>
-                <div class="content3">
-                    <div id="validation" class="editorsubtainer">
-                        <ul class="list-group">
-                            <li class="list-group-item background3">
-                                <ul class="list-unstyled">
-                                    <li>A <b>Study</b>, each <b>Matrix</b>, and/or each <b>Matrix Item</b> can be validated
-                                        <ul class="filled-circle">
-                                            <li> <b>Study</b> sign off is done by the Data Group Admin by clicking the <b>View/Edit Sign Off Status of this Study</b> button on the <b>Study Matrices and Items</b> list page </li>
-                                            <li> A <b>Matrix</b> is validated from the <b>Matrix Setup and Data</b> page </li>
-                                            <li> A <b>Matrix Item</b> is validated from the <b>Item Setup and Data</b> page </li>
                                         </ul>
                                     </li>
                                 </ul>
@@ -3092,11 +3385,12 @@ Results: add a summary of the study results. </td>
         </div>
 
         <div id="matrices_editor">
-            <button name="my_buttons" class="collapsible1">Adding Assay Data Step 2 - Matrices Setup </button>
+            <button name="my_buttons" class="collapsible1">Adding Assay Data Step 2 - Matrices Setup (alternative to Study Setup by Treatment Group)</button>
             <div class="content1">
                 <div id="matriceseditor" class="editorsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
+                            <p><b><i>If used the Study Setup by Treatment Group feature in Step 1 (above), this step is not necessary.</i></b></p>
                             <ul class="list-unstyled">
                                 <li>To Add/Edit a <b>Matrix</b>, from the <b>Study Matrices and Items</b> list page </li>
                                         <button name="my_buttons" class="collapsible4">Show/Hide Video Tutorial: Add/Edit a Matrix </button>
@@ -3131,6 +3425,10 @@ Results: add a summary of the study results. </td>
                                         <li>Select an <i>Action</i>
                                             <ul class="filled-circle">
                                                 <li> For each <b>Matrix Item</b>, the Name/ID, Test Type, Setup Date, and Device/Model are required </li>
+                                                     <ul class="open-circle">
+                                                        <li>Give each item a Name, Type, Date, and Device/Model </li>
+                                                         <li><b>SUBMIT</b> - before continuing, submit the study to save the matrix items! This if VERY IMPORTANT.</li>
+                                                     </ul>
                                                     <button name="my_buttons" class="collapsible4">Show/Hide Video Tutorial: Four Required Matrix Actions </button>
                                                         <div class="content4">
                                                               <div class="myIframe">
@@ -3169,10 +3467,12 @@ Results: add a summary of the study results. </td>
                                     <ul class="filled-circle">
                                         <li>Name/IDs must be unique in an individual <b>Study</b> (cannot have repeats in a <b>Matrix</b> or in two <b>Matrices</b> of the same <b>Study</b>)  </li>
                                         <li>Test Type specifies whether the <b>Matrix Item</b> functions as a control </li>
-                                        <li>After the first Submit, <b>Matrix Items</b> can be setup and/or updated in the <b>Matrix</b> or individually (to learn more about editting individual <b>Matrix Items</b>, <a href="#matrixitems_editor">click here</a>)   </li>
+                                        <li>After the first Submit, <b>Matrix Items</b> can be setup and/or updated in the <b>Matrix</b> or individually (to learn more about editing individual <b>Matrix Items</b>, <a href="#matrixitems_editor">click here</a>)   </li>
                                         <li>Adding and deleting information from multiple <b>Matrix Items</b> is generally easiest to do on the matrix edit page </li>
                                         <li>Editing information for a single <b>Matrix Item</b> will be easiest to do on the <b>Matrix Item</b> edit page </li>
                                         <li>For information on continuing to add MPS models (<b>Matrix Items</b>) and assay data to the <b>Study</b> (Step 3), <a href="#matrixitems_editor">click here</a> </li>
+                                        <li>Note that editing can be performed can be performed in the matrix (Edit as Matrix), or using treatment groups (Edit as Groups) </li>
+                                        <li>The toggle for switching between Edit as Matrix and Edit as Groups is located at the top of each matrix page (from the Matrix and Matrix Item list page, click View/Edit next to the Matrix of interest to be routed to the matrix page)</li>
                                     </ul>
                                 </li>
                                 <li><br>Additional Video Tutorial(s)
@@ -3939,7 +4239,6 @@ Results: add a summary of the study results. </td>
                     </div>
                 </div>
 
-
             </div>
         </div>
 
@@ -3949,6 +4248,7 @@ Results: add a summary of the study results. </td>
                 <div id="matrixitemseditor" class="editorsubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
+                            <p><b><i>There are several options for editing Matrix Items, including editing by group, this is just one option. </i></b></p>
                             <ul class="list-unstyled">
                                 <li>To edit a <b>Matrix Item</b>, click on the <b>View/Edit</b> button next to the <b>Matrix Item</b> of interest:
                                     <ul class="filled-circle">
@@ -4498,12 +4798,81 @@ Results: add a summary of the study results. </td>
             </div>
         </div>
 
+        <div id="study_signoff_editor">
+            <button name="my_buttons" class="collapsible1">Adding Assay Data Step 6 -  Sign-Off a Study (Sharing Data)</button>
+            <div class="content1">
+                <div id="validation" class="editorsubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item background3">
+                            <ul class="list-unstyled">
+                                <li>A <b>Study</b> can be "signed off" and each <b>Matrix</b> and/or each <b>Matrix Item</b> can be validated
+                                    <ul class="filled-circle">
+                                        <li> <b>Study</b> sign off is done by the Data Group Admin by clicking the <b>View/Edit Sign Off Status of this Study</b> button on the <b>Study Matrices and Items</b> list page </li>
+                                        <li> A <b>Matrix</b> is validated from the <b>Matrix Setup and Data</b> page </li>
+                                        <li> A <b>Matrix Item</b> is validated from the <b>Item Setup and Data</b> page </li>
+                                    </ul>
+                                </li>
+                                <li><br>Notes
+                                    <ul class="filled-circle">
+                                        <li>Study sign off is the first step in sharing data with the broader scientific community  </li>
+                                        <li>Study sign off is optional unless required by project funder </li>
+                                        <li><b>Matrix</b> and <b>Matrix Item</b> validation is designed to be part of the data provider's QC process (it is optional and is NOT required to be completed prior to study sign off) </li>
+                                        <li>As part of the validation process for matrices and matrix items, flags can be added that will be diplayed when the times are listed </li>
+                                        <li>During the study sign off process, notes can be added that will be displayed in the study list page when hovering over the check mark in the review column</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="stakeholder_editor">
+            <button name="my_buttons" class="collapsible1">Adding Assay Data Step 7 -   Stakeholder Review and Acknowledgement</button>
+            <div class="content1">
+                <div id="stakeholdereditor" class="editorsubtainer">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <ul class="list-unstyled">
+                                <li>To review and acknowledge study data
+                                    <ul class="filled-circle">
+                                        <li>Login to the MPS-Db</li>
+                                        <li>Go to the study list page - select Studies, then View All Studies or
+                                            <a href='https://mps.csb.pitt.edu/assays/assaystudy'>click here</a> </li>
+                                        <li>Look for studies with a check mark, but without an 'eye' or a 'pencil' in the Review column</li>
+                                        <li>Click the View/Edit button next to the study to review</li>
+                                        <li>Click the View/Edit Approval Status of this Study button near the top of the page</li>
+                                        <li>Add a Note (optional)</li>
+                                        <li>Click the Click Here to Approve this Study for Release button</li>
+                                        <li>Click Yes</li>
+                                        <li>Click Submit</li>
+                                        <li>Click Overwrite</li>
+                                    </ul>
+                                </li>
+                                <li><br>Notes
+                                    <ul class="filled-circle">
+                                        <li>Data providers and/or project funders designate study data stakeholder(s)</li>
+                                        <li>Designating a study data stakeholder is optional (unless required by the funder) </li>
+                                        <li>Stakeholders must be registered MPS-Db users to access study data</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
     </div>
+
+
 
     {% if user.is_superuser %}
     <div id="component_admin_section" class="container">
 
-        <h1 class="sub1-bars"> MPS-Db Admins </h1>
+        <h1 class="sub1-bars"> MPS-Db Admins (only visible to MPS-DB Admins)</h1>
 
         <h1 class="sub2-bars"> Adding/Editing Items to Pick Lists for MPS-Db Admins </h1>
 
@@ -4728,6 +5097,7 @@ Results: add a summary of the study results. </td>
                                     <ul class="filled-circle">
                                         <li>As of 20180925, models are available for review by all users</li>
                                         <li>As of 20180925, the ability to add more attributes to a model (locations, settings, media, etc) are under consideration</li>
+                                        <li>As of 20190924, model versions are now able to be added and populated in the edit Model interface. Model versions included cells and settings (not compounds). Model versions are used by the Study Setup by Treatment Group feature. Currently, no help is provided on completing a model version. At this time, it is uncertian who will be adding models and model versions, so instructions for adding model versions has not yet been added to the help. We can add information as needed and as time permits.</li>
                                     </ul>
                                 </li>
                             </ul>
