@@ -33,7 +33,7 @@ $(document).ready(function () {
     var glass_tooltip = "Glass' Δ is the mean difference dividied by the standard deviation of the 'control' group.";
     var hedge_g_tooltip = "Hedges' g is the mean difference divided by the unbiased estimate of standard deviation for two treatment groups.";
     var hedge_gs_tooltip = "Hedges' g* is Hedges' g normalized by the gamma function of the sample size.";
-    var sig_level_tooltip = "Significance level can be any value between (but exlcuding) 0 and 1.";
+    var sig_level_tooltip = "Significance level can be any value between (but excluding) 0 and 1.";
     var power_near_one_tooltip = "There is no power-sample curve at this time point because the power is too close to 1."
 
     $('#pam-cohen-d').next().html($('#pam-cohen-d').next().html() + make_escaped_tooltip(cohen_tooltip));
