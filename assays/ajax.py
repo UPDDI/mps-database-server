@@ -4,8 +4,10 @@ import ujson as json
 from django.http import (
     HttpResponse,
     HttpResponseForbidden,
-    HttpResponseServerError
+    HttpResponseServerError,
+    JsonResponse
 )
+from django.apps import apps
 from .models import (
     AssayStudy,
     AssayMatrixItem,
@@ -3682,6 +3684,11 @@ def fetch_assay_associations(request):
     )
 
 
+def valid_user_validation(request):
+    """Makes sure the user is authenticated and is active"""
+    return request.user.is_authenticated and request.user.is_active
+
+
 def study_viewer_validation(request):
     study = None
     if request.POST.get('study', ''):
@@ -4144,6 +4151,30 @@ def get_pubmed_reference_data(request):
         content_type="application/json"
     )
 
+# SOmewhat crude, but we need some way to perform filters etc.
+dropdown_processing = {
+    ''
+}
+
+
+# Why here in Assays?
+def fetch_dropdown(request):
+    """Returns dropdown values in JSON to be processed by selectize"""
+    dropdown = [{'value': "", 'text': '---------'}]
+    data = {'dropdown': dropdown}
+
+    app = request.POST.get('app', '')
+    model = request.POST.get('model', '')
+
+    entries = apps.get_model(app_label=app, model_name=model).objects.all()
+
+    for entry in entries:
+        # match value to the desired subject ID
+        value = str(entry.id)
+        dropdown.append({'value': value, 'text': str(entry)})
+
+    return JsonResponse(data)
+
 # TODO TODO TODO
 switch = {
     'fetch_center_id': {'call': fetch_center_id},
@@ -4204,6 +4235,10 @@ switch = {
     'fetch_assay_associations': {
         'call': fetch_assay_associations
     },
+    'fetch_dropdown': {
+        'call': fetch_dropdown,
+        'validation': valid_user_validation
+    }
 }
 
 

@@ -42,6 +42,13 @@
 
     <legend>Cell Type Details</legend>
 
+    {% include 'generic_field.html' with field=form.cell_type label="Cell Type*" %}
+
+    {% include 'generic_field.html' with field=form.species label="Species*" %}
+
+    {% include 'generic_field.html' with field=form.organ label="Organ*" %}
+
+    {% comment %}
     {% if form.cell_type.errors %}
         {% for error in form.cell_type.errors %}
             <div class="alert alert-danger" role="alert">
@@ -95,4 +102,5 @@
           {{ form.organ }}
         </div>
     </div>
+    {% endcomment %}
 {% endblock %}

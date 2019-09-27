@@ -6,6 +6,7 @@ from django.db import models
 # Use our own model base classes instead of models.Model
 from mps.base.models import LockableModel, FlaggableModel
 from django.contrib.auth.models import Group
+from django.urls import reverse
 
 
 class Organ(LockableModel):
@@ -17,6 +18,10 @@ class Organ(LockableModel):
 
     def __str__(self):
         return '{}'.format(self.organ_name)
+
+    # TODO
+    def get_post_submission_url(self):
+        return reverse('')
 
 
 class CellType(LockableModel):
@@ -59,6 +64,9 @@ class CellType(LockableModel):
     def get_absolute_url(self):
         return "/cellsamples/celltype/{}".format(self.id)
 
+    def get_post_submission_url(self):
+        return reverse('celltype_list')
+
 
 class CellSubtype(LockableModel):
     """CellSubtype details a subtype (e.g. a cell line)
@@ -82,6 +90,9 @@ class CellSubtype(LockableModel):
     def get_absolute_url(self):
         return "/cellsamples/cellsubtype/{}".format(self.id)
 
+    def get_post_submission_url(self):
+        return reverse('cellsubtype_list')
+
 
 class Supplier(LockableModel):
     """Supplier gives information for institutions that distribute cell samples and related materials"""
@@ -93,6 +104,10 @@ class Supplier(LockableModel):
 
     def __str__(self):
         return '{}'.format(self.name)
+
+    # TODO
+    def get_post_submission_url(self):
+        return reverse('')
 
 
 class Biosensor(LockableModel):
@@ -108,6 +123,10 @@ class Biosensor(LockableModel):
 
     def __str__(self):
         return '{}'.format(self.name)
+
+    # TODO
+    def get_post_submission_url(self):
+        return reverse('')
 
 
 class CellSample(FlaggableModel):
@@ -225,3 +244,6 @@ class CellSample(FlaggableModel):
 
     def get_absolute_url(self):
         return "/cellsamples/cellsample/{}".format(self.id)
+
+    def get_post_submission_url(self):
+        return reverse('cellsample_list')

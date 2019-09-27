@@ -128,9 +128,10 @@ $(document).ready(function () {
         "','win','toolbars=0,width=1000,height=760,left=200,top=200,scrollbars=1,resizable=1')"
     );
 
-    // Bind a listener to the navbar that causes a collapse if it is oversized
+    // Navbar select
     var navbar = $('#autocollapse');
 
+    // Bind a listener to the navbar that causes a collapse if it is oversized
     function autocollapse() {
         navbar.removeClass('collapsed');
         if (navbar.innerHeight() > 51) {
@@ -138,6 +139,57 @@ $(document).ready(function () {
         }
     }
 
-    $(document).on('ready', autocollapse);
-    $(window).on('resize', autocollapse);
+    // Remove navbar etc. if this is a popup
+    if ($.urlParam('popup') !== '1') {
+        $(document).on('ready', autocollapse);
+        $(window).on('resize', autocollapse);
+    }
+    else {
+        // Get rid of footer in popup
+        $('#footer').remove();
+    }
+
+    function close_and_return_pk() {
+        // SLOPPY
+        window.opener.SELECTIZE.refresh_dropdown(
+            $.urlParam('app'),
+            $.urlParam('model'),
+            $.urlParam('new_pk'),
+            $.urlParam('new_name')
+        );
+
+        // try {
+        //     // SLOPPY
+        //     window.opener.SELECTIZE.refresh_dropdown(
+        //         $.urlParam('app'),
+        //         $.urlParam('model'),
+        //         $.urlParam('new_pk'),
+        //         $.urlParam('new_name')
+        //     );
+        // }
+        // catch (err) {
+        //     alert('An error has occurred while retrieving the new entry.');
+        // }
+
+        window.close();
+
+        return false;
+    }
+
+    // Close if set to close
+    if ($.urlParam('popup') == '1' && $.urlParam('close') == '1') {
+        setTimeout(function() {
+             close_and_return_pk();
+        }, 3000)
+    }
+
+    // Crude: Triggers to spawn popups
+    $('.popup-link').click(function() {
+        window.open(
+            $(this).attr('data-href'),
+            $(this).attr('data-window-name'),
+            // Defaults for now
+            'toolbars=0,width=1000,height=760,left=200,top=200,scrollbars=1,resizable=1'
+        )
+    });
 });

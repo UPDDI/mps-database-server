@@ -433,13 +433,13 @@
                     <td>{{ target.name }}</td>
                     <td><a href="http://www.uniprot.org/uniprot/{{ target.uniprot_id }}">{{ target.uniprot_id }}</a></td>
                     <td>
-                      {% if target.type == 'Target' %}
+                      {% if target.type|lower == 'target' %}
                           <span class="label label-danger">{{ target.type }}</span>
-                      {% elif target.type == 'Enzyme' %}
+                      {% elif target.type|lower == 'enzyme' %}
                           <span class="label label-success">{{ target.type }}</span>
-                      {% elif target.type == 'Transporter' %}
+                      {% elif target.type|lower == 'transporter' %}
                           <span class="label label-warning">{{ target.type }}</span>
-                      {% elif target.type == 'Carrier' %}
+                      {% elif target.type|lower == 'carrier' %}
                           <span class="label label-info">{{ target.type }}</span>
                       {% else %}
                           <span class="label label-default">{{ target.type }}</span>
@@ -447,9 +447,9 @@
                     </td>
                     <td>{{ target.organism }}</td>
                     <td>
-                    {% if target.pharmacological_action == 'yes' %}
+                    {% if target.pharmacological_action|lower == 'yes' %}
                         <span class="label label-success">{{ target.pharmacological_action }}</span>
-                    {% elif target.pharmacological_action == 'no' %}
+                    {% elif target.pharmacological_action|lower == 'no' %}
                         <span class="label label-danger">{{ target.pharmacological_action }}</span>
                     {% else %}
                         <span class="label label-default">{{ target.pharmacological_action }}</span>
@@ -457,15 +457,15 @@
                     </td>
                     <td>
                     {% for action in target.actions %}
-                        {% if action == 'inducer' %}
+                        {% if action|lower == 'inducer' %}
                             <span class="label label-success">{{ action }}</span>
-                        {% elif action == 'substrate' %}
+                        {% elif action|lower == 'substrate' %}
                             <span class="label label-primary">{{ action }}</span>
-                        {% elif action == 'inhibitor' %}
+                        {% elif action|lower == 'inhibitor' %}
                             <span class="label label-danger">{{ action }}</span>
-                        {% elif action == 'antagonist' %}
+                        {% elif action|lower == 'antagonist' %}
                             <span class="label label-warning">{{ action }}</span>
-                        {% elif action == 'agonist' %}
+                        {% elif action|lower == 'agonist' %}
                             <span class="label label-info">{{ action }}</span>
                         {% else %}
                             <span class="label label-default">{{ action }}</span>

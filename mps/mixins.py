@@ -19,6 +19,12 @@ from mps.templatetags.custom_filters import (
     ADMIN_SUFFIX
 )
 
+from mps.base.models import save_forms_with_tracking
+
+from django.views.generic import UpdateView
+
+import urllib
+
 
 # Unsemantic! Breaks PEP! BAD!
 def PermissionDenied(request, message, log_in_link=True):
@@ -383,3 +389,135 @@ class SuperuserRequiredMixin(object):
         if not self.request.user.is_authenticated or not self.request.user.is_superuser:
             return PermissionDenied(self.request, 'You do not have permission to view this page.')
         return super(SuperuserRequiredMixin, self).dispatch(*args, **kwargs)
+
+
+class FormHandlerMixin(object):
+    """Mixin for handling forms, whether they have formsets and/or are popups"""
+    formsets = ()
+    is_update = False
+
+    def __init__(self, *args, **kwargs):
+        super(FormHandlerMixin, self).__init__(*args, **kwargs)
+
+        # Initialize dictionary of all forms
+        self.all_forms = {}
+
+        # Mark as is_update if UpdateView is one of the bases
+        if UpdateView in self.__class__.__bases__:
+            self.is_update = True
+
+    def get_form_kwargs(self):
+        kwargs = super(FormHandlerMixin, self).get_form_kwargs()
+
+        # Add user as kwarg
+        kwargs.update({
+            'user': self.request.user
+        })
+
+        return kwargs
+
+    def extra_form_processing(self):
+        """For if there needs to be extra processing after a save"""
+        pass
+
+    def get_context_data(self, **kwargs):
+        context = super(FormHandlerMixin, self).get_context_data(**kwargs)
+
+        for formset_name, formset_factory in self.formsets:
+            data_for_factory = []
+
+            if self.request.POST:
+                data_for_factory = [
+                    self.request.POST,
+                    self.request.FILES
+                ]
+
+            if formset_name not in context:
+                if data_for_factory:
+                    if self.is_update:
+                        current_formset = formset_factory(
+                            *data_for_factory,
+                            instance=self.object
+                        )
+                    else:
+                        current_formset = formset_factory(
+                            *data_for_factory
+                        )
+                else:
+                    if self.is_update:
+                        current_formset = formset_factory(
+                            instance=self.object
+                        )
+                    else:
+                        current_formset = formset_factory()
+
+                context.update({
+                    formset_name: current_formset
+                })
+
+        if self.is_update:
+            context.update({
+                'update': self.is_update
+            })
+
+        return context
+
+    def form_valid(self, form):
+        is_popup = self.request.GET.get('popup', 0) == '1'
+
+        all_formsets = []
+        self.all_forms = {
+            'form': form
+        }
+        for formset_name, formset_factory in self.formsets:
+            current_formset = formset_factory(
+                self.request.POST,
+                self.request.FILES,
+                instance=form.instance
+            )
+
+            all_formsets.append(current_formset)
+            self.all_forms.update({
+                formset_name: current_formset
+            })
+
+        all_formsets_valid = True
+
+        for formset in all_formsets:
+            current_is_valid = formset.is_valid()
+
+            if not current_is_valid:
+                all_formsets_valid = False
+
+        if form.is_valid() and all_formsets_valid:
+            save_forms_with_tracking(self, form, formset=all_formsets, update=self.is_update)
+
+            # May or may not do anything
+            self.extra_form_processing()
+
+            if is_popup:
+                if self.object.id:
+                    return redirect(
+                        '{}?popup=1&close=1&app={}&model={}&new_pk={}&new_name={}'.format(
+                            self.object.get_post_submission_url(),
+                            self.object._meta.app_label,
+                            self.object._meta.object_name,
+                            self.object.id,
+                            urllib.parse.quote(str(self.object)),
+                        )
+                    )
+                else:
+                    return redirect(
+                        '{}?popup=1&close=1'.format(
+                            self.object.get_post_submission_url()
+                        )
+                    )
+            else:
+                return redirect(
+                    self.object.get_post_submission_url()
+                )
+        else:
+            # Need to have the forms processed so that they have errors
+            return self.render_to_response(
+                self.get_context_data(**self.all_forms)
+            )

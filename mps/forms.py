@@ -7,6 +7,8 @@ from mps.settings import DEFAULT_FROM_EMAIL
 
 from django.template.loader import render_to_string
 
+# SHOULD BE IN ALL CAPS
+tracking = ('created_by', 'created_on', 'modified_on', 'modified_by', 'signed_off_by', 'signed_off_date', 'locked')
 
 WIDGETS_TO_ADD_FORM_CONTROL_TO = {
     "<class 'django.forms.widgets.TextInput'>": True,
@@ -26,10 +28,12 @@ WIDGETS_WITH_AUTOCOMPLETE_OFF = {
 
 class BootstrapForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', '')
         super(BootstrapForm, self).__init__(*args, **kwargs)
 
         for field in self.fields:
             widget_type = str(type(self.fields[field].widget))
+
             if widget_type in WIDGETS_TO_ADD_FORM_CONTROL_TO:
                 self.fields[field].widget.attrs['class'] = 'form-control'
             if widget_type in WIDGETS_WITH_AUTOCOMPLETE_OFF:
@@ -37,7 +41,27 @@ class BootstrapForm(forms.ModelForm):
             if widget_type == DATE_INPUT_WIDGET:
                 self.fields[field].widget.attrs['class'] += ' datepicker-input'
             if widget_type == FILE_INPUT_WIDGET:
-                self.fields[field].widget.attrs['class'] = 'btn btn-primary btn-lg'
+                # Sloppy (doubly strange)
+                if getattr(self.fields[field], 'required', False):
+                    self.fields[field].widget.attrs['class'] = 'btn btn-lg'
+                else:
+                    self.fields[field].widget.attrs['class'] = 'btn btn-default btn-lg'
+
+            # CRUDE WAY TO INDICATE REQUIRED FIELDS
+            if getattr(self.fields[field], 'required', False):
+                # SLOPPY
+                if self.fields[field].widget.attrs.get('class', ''):
+                    self.fields[field].widget.attrs['class'] += ' required'
+                else:
+                    self.fields[field].widget.attrs['class'] = 'required'
+
+            # Not really a good idea to use "private" attributes...
+            if getattr(self.fields[field], '_queryset', ''):
+                current_model = self.fields[field]._queryset.model
+                if current_model and current_model._meta.object_name:
+                    self.fields[field].widget.attrs['data-app'] = current_model._meta.app_label
+                    self.fields[field].widget.attrs['data-model'] = current_model._meta.object_name
+
 
 
 class SignOffMixin(BootstrapForm):

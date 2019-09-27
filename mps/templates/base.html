@@ -117,6 +117,12 @@
   <!-- Fixed navbar -->
   <nav id="autocollapse" class="navbar navbar-default navbar-fixed-top" role="navigation">
     <div class="container">
+    {# Strip navbar in popup #}
+    {% if request.GET.popup == '1' %}
+      <a class="navbar-brand" href="#">
+        <img alt="MPS Database Logo" src="/static/img/brand.png" style="margin-top:-10px;">
+      </a>
+    {% else %}
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
         <span class="sr-only">Toggle navigation</span>
@@ -292,6 +298,7 @@
         {% endif %}
       </ul>
     </div><!--/.nav-collapse -->
+    {% endif %}
     </div>
   </nav>
 
@@ -302,21 +309,18 @@
   <div id="page" style="margin-top: 70px;">
 
   {# For most elements #}
+  {% if request.GET.popup == '1' and request.GET.close == '1' %}
+    Success! This window will close in 3 seconds.
+  {% else %}
   <div id="content" class="container">
 
+  {# No breadcrumbs in popup #}
+  {% if request.GET.popup != '1' %}
   <ol id="breadcrumbs" class="breadcrumb">
     <li><a href="/">Home</a></li>
     {% block breadcrumbs %}{% endblock %}
   </ol>
-
-  {# Still have yet to make use of messages; should do so soon #}
-{#  {% if messages %}#}
-{#  <ul class="messages">#}
-{#    {% for message in messages %}#}
-{#    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>#}
-{#    {% endfor %}#}
-{#  </ul>#}
-{#  {% endif %}#}
+  {% endif %}
 
   {% block content %}{% endblock %}
 
@@ -327,6 +331,7 @@
 
   {% block fluid-content %}{% endblock %}
   </div>
+  {% endif %}
 
   <div id="footer" class="container hidden-print">
     <footer>

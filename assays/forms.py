@@ -53,7 +53,7 @@ from .utils import (
 )
 from django.utils import timezone
 
-from mps.templatetags.custom_filters import is_group_admin, ADMIN_SUFFIX
+from mps.templatetags.custom_filters import is_group_admin, filter_groups, ADMIN_SUFFIX
 
 from django.core.exceptions import NON_FIELD_ERRORS
 
@@ -424,9 +424,8 @@ class AssayStudyForm(SignOffMixin, BootstrapForm):
         Kwargs:
         groups -- a queryset of groups (allows us to avoid N+1 problem)
         """
-        self.groups = kwargs.pop('groups', None)
         super(AssayStudyForm, self).__init__(*args, **kwargs)
-        self.fields['group'].queryset = self.groups
+        self.fields['group'].queryset = filter_groups(self.user)
 
     class Meta(object):
         model = AssayStudy
@@ -543,7 +542,7 @@ class SetupFormsMixin(BootstrapForm):
                     initial=0,
                     required=False,
                     widget=forms.NumberInput(attrs={
-                        'class': 'form-control',
+                        'class': 'form-control required',
                         'style': 'width:75px;'
                     })
                 )
@@ -551,13 +550,33 @@ class SetupFormsMixin(BootstrapForm):
                     initial=0,
                     required=False,
                     widget=forms.NumberInput(attrs={
-                        'class': 'form-control',
+                        'class': 'form-control required',
                         'style': 'width:75px;'
                     })
                 )
 
         self.fields['cell_cell_sample'].widget.attrs['style'] = 'width:75px;'
         self.fields['cell_passage'].widget.attrs['style'] = 'width:75px;'
+
+        # DUMB, BAD (can't have them be "actually" required or they prevent submission
+        add_required_to = [
+            'cell_cell_sample',
+            'cell_biosensor',
+            'cell_density',
+            'cell_density_unit',
+            'cell_addition_location',
+            'setting_setting',
+            'setting_unit',
+            'setting_value',
+            'setting_addition_location',
+            'compound_compound',
+            'compound_concentration_unit',
+            'compound_concentration',
+            'compound_addition_location',
+        ]
+
+        for current_field in add_required_to:
+            self.fields[current_field].widget.attrs['class'] += ' required'
 
     ### ADDING SETUP CELLS
     cell_cell_sample = forms.IntegerField(required=False)
@@ -671,6 +690,7 @@ class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
         #             })
         #         )
 
+        # Changing these things in init is bad
         self.fields['matrix_item_notebook_page'].widget.attrs['style'] = 'width:75px;'
         # self.fields['cell_cell_sample'].widget.attrs['style'] = 'width:75px;'
         # self.fields['cell_passage'].widget.attrs['style'] = 'width:75px;'
@@ -682,28 +702,41 @@ class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
         # No selectize on action either (hides things, looks odd)
         # CONTRIVED
-        self.fields['action'].widget.attrs['class'] += ' no-selectize'
+        # self.fields['action'].widget.attrs['class'] += ' no-selectize'
+
+        # DUMB, BAD (can't have them be "actually" required or they prevent submission
+        add_required_to = [
+            'matrix_item_name',
+            'matrix_item_setup_date',
+            'matrix_item_test_type',
+            'matrix_item_name',
+            'matrix_item_device',
+            'matrix_item_organ_model',
+        ]
+
+        for current_field in add_required_to:
+            self.fields[current_field].widget.attrs['class'] += ' required'
 
     ### ADDITIONAL MATRIX FIELDS (unsaved)
     number_of_items = forms.IntegerField(required=False)
 
     ### ITEM FIELD HELPERS
-    action = forms.ChoiceField(choices=(
-        ('', 'Please Select an Action'),
-        ('add_name', 'Add Names/IDs*'),
-        ('add_test_type', 'Add Test Type*'),
-        ('add_date', 'Add Setup Date*'),
-        ('add_device', 'Add Device/MPS Model Information*'),
-        ('add_settings', 'Add Settings'),
-        ('add_compounds', 'Add Compounds'),
-        ('add_cells', 'Add Cells'),
-        ('add_notes', 'Add Notes/Notebook Information'),
-        # ADD BACK LATER
-        # ('copy', 'Copy Contents'),
-        # TODO TODO TODO TENTATIVE
-        # ('clear', 'Clear Contents'),
-        ('delete', 'Delete Selected'),
-    ), required=False)
+    # action = forms.ChoiceField(choices=(
+    #     ('', 'Please Select an Action'),
+    #     ('add_name', 'Add Names/IDs*'),
+    #     ('add_test_type', 'Add Test Type*'),
+    #     ('add_date', 'Add Setup Date*'),
+    #     ('add_device', 'Add Device/MPS Model Information*'),
+    #     ('add_settings', 'Add Settings'),
+    #     ('add_compounds', 'Add Compounds'),
+    #     ('add_cells', 'Add Cells'),
+    #     ('add_notes', 'Add Notes/Notebook Information'),
+    #     # ADD BACK LATER
+    #     # ('copy', 'Copy Contents'),
+    #     # TODO TODO TODO TENTATIVE
+    #     # ('clear', 'Clear Contents'),
+    #     ('delete', 'Delete Selected'),
+    # ), required=False)
 
     # The matrix_item isn't just to be annoying, I want to avoid conflicts with other fields
     ### ADDING ITEM FIELDS
@@ -1606,12 +1639,10 @@ class AssayStudySetForm(SignOffMixin, BootstrapForm):
         }
 
     def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop('request', None)
-
         super(AssayStudySetForm, self).__init__(*args, **kwargs)
 
         study_queryset = get_user_accessible_studies(
-            self.request.user
+            self.user
         ).prefetch_related(
             'group__microphysiologycenter_set',
         )
@@ -1698,10 +1729,8 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         Kwargs:
         groups -- a queryset of groups (allows us to avoid N+1 problem)
         """
-        self.groups = kwargs.pop('groups', None)
-        self.request = kwargs.pop('request', None)
         super(AssayStudyFormNew, self).__init__(*args, **kwargs)
-        self.fields['group'].queryset = self.groups
+        self.fields['group'].queryset = filter_groups(self.user)
 
         # Make sure there are only organ models with versions
         # Removed for now
@@ -1767,7 +1796,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         # if commit and all_setup_data:
         # SEE BASE MODELS FOR WHY COMMIT IS NOT HERE
         if all_setup_data:
-            created_by = self.request.user
+            created_by = self.user
             created_on = timezone.now()
 
             current_item_number = 1
@@ -2110,7 +2139,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         study = super(AssayStudyFormNew, self).save()
 
         # VERY SLOPPY
-        created_by = self.request.user
+        created_by = self.user
         created_on = timezone.now()
 
         study.created_by = created_by

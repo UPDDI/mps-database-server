@@ -3,7 +3,7 @@ from .models import Compound, CompoundTarget
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 # from django.utils.decorators import method_decorator
 # from django.contrib.auth.decorators import login_required
-from mps.mixins import SpecificGroupRequiredMixin
+from mps.mixins import SpecificGroupRequiredMixin, FormHandlerMixin
 # from django.shortcuts import render_to_response
 # from django.template import RequestContext
 from .forms import (
@@ -71,61 +71,22 @@ class CompoundsDetail(DetailView):
         return context
 
 
-class CompoundsAdd(SpecificGroupRequiredMixin, CreateView):
-    """Add a compound"""
-    form_class = CompoundForm
-    template_name = 'compounds/compounds_add.html'
-
-    required_group_name = 'Add Compounds Front'
-
-    def get_context_data(self, **kwargs):
-        context = super(CompoundsAdd, self).get_context_data(**kwargs)
-        if 'formset' not in context:
-            if self.request.POST:
-                context['formset'] = CompoundTargetFormset(self.request.POST)
-            else:
-                context['formset'] = CompoundTargetFormset()
-
-        return context
-
-    def form_valid(self, form):
-        formset = CompoundTargetFormset(self.request.POST, instance=form.instance)
-
-        if form.is_valid() and formset.is_valid():
-            save_forms_with_tracking(self, form, formset=formset, update=False)
-            return redirect(self.object.get_post_submission_url())
-        else:
-            return self.render_to_response(self.get_context_data(form=form, formset=formset))
-
-
-class CompoundsUpdate(SpecificGroupRequiredMixin, UpdateView):
-    """Update a Compound"""
+class CompoundsMixin(FormHandlerMixin):
     model = Compound
     form_class = CompoundForm
     template_name = 'compounds/compounds_add.html'
 
+    formsets = (
+        ('formset', CompoundTargetFormset),
+    )
+
+
+class CompoundsAdd(SpecificGroupRequiredMixin, CompoundsMixin, CreateView):
+    required_group_name = 'Add Compounds Front'
+
+
+class CompoundsUpdate(SpecificGroupRequiredMixin, CompoundsMixin, UpdateView):
     required_group_name = 'Change Compounds Front'
-
-    def get_context_data(self, **kwargs):
-        context = super(CompoundsUpdate, self).get_context_data(**kwargs)
-        if 'formset' not in context:
-            if self.request.POST:
-                context['formset'] = CompoundTargetFormset(self.request.POST)
-            else:
-                context['formset'] = CompoundTargetFormset(instance=self.object)
-
-        context['update'] = True
-
-        return context
-
-    def form_valid(self, form):
-        formset = CompoundTargetFormset(self.request.POST, instance=form.instance)
-
-        if form.is_valid() and formset.is_valid():
-            save_forms_with_tracking(self, form, formset=formset, update=True)
-            return redirect(self.object.get_post_submission_url())
-        else:
-            return self.render_to_response(self.get_context_data(form=form, formset=formset))
 
 
 # Currently, compounds report basically begins as just a compounds list
@@ -133,3 +94,59 @@ class CompoundsReport(ListView):
     """Displays page for a Compound Report"""
     model = Compound
     template_name = 'compounds/compounds_report.html'
+
+# class CompoundsAdd(SpecificGroupRequiredMixin, CreateView):
+#     """Add a compound"""
+#     form_class = CompoundForm
+#     template_name = 'compounds/compounds_add.html'
+#
+#     required_group_name = 'Add Compounds Front'
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(CompoundsAdd, self).get_context_data(**kwargs)
+#         if 'formset' not in context:
+#             if self.request.POST:
+#                 context['formset'] = CompoundTargetFormset(self.request.POST)
+#             else:
+#                 context['formset'] = CompoundTargetFormset()
+#
+#         return context
+#
+#     def form_valid(self, form):
+#         formset = CompoundTargetFormset(self.request.POST, instance=form.instance)
+#
+#         if form.is_valid() and formset.is_valid():
+#             save_forms_with_tracking(self, form, formset=formset, update=False)
+#             return redirect(self.object.get_post_submission_url())
+#         else:
+#             return self.render_to_response(self.get_context_data(form=form, formset=formset))
+#
+#
+# class CompoundsUpdate(SpecificGroupRequiredMixin, UpdateView):
+#     """Update a Compound"""
+#     model = Compound
+#     form_class = CompoundForm
+#     template_name = 'compounds/compounds_add.html'
+#
+#     required_group_name = 'Change Compounds Front'
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(CompoundsUpdate, self).get_context_data(**kwargs)
+#         if 'formset' not in context:
+#             if self.request.POST:
+#                 context['formset'] = CompoundTargetFormset(self.request.POST)
+#             else:
+#                 context['formset'] = CompoundTargetFormset(instance=self.object)
+#
+#         context['update'] = True
+#
+#         return context
+#
+#     def form_valid(self, form):
+#         formset = CompoundTargetFormset(self.request.POST, instance=form.instance)
+#
+#         if form.is_valid() and formset.is_valid():
+#             save_forms_with_tracking(self, form, formset=formset, update=True)
+#             return redirect(self.object.get_post_submission_url())
+#         else:
+#             return self.render_to_response(self.get_context_data(form=form, formset=formset))

@@ -1,5 +1,4 @@
 # coding=utf-8
-# IF YOU WANT TO SEE PAST VIEWS, DO NOT RELY ON THE COMMENTED CODE HEREIN
 from django.views.generic import (
     ListView,
     CreateView,
@@ -96,7 +95,8 @@ from mps.mixins import (
     StudyGroupMixin,
     StudyViewerMixin,
     CreatorOrSuperuserRequiredMixin,
-    SuperuserRequiredMixin
+    SuperuserRequiredMixin,
+    FormHandlerMixin,
 )
 
 from mps.base.models import save_forms_with_tracking
@@ -246,6 +246,24 @@ def get_queryset_with_group_center_dictionary(queryset):
         study.center = group_center_map[study.group_id]
 
 
+# Deprecated anyway
+class AssayStudyConfigurationMixin(FormHandlerMixin):
+    model = AssayStudyConfiguration
+    template_name = 'assays/studyconfiguration_add.html'
+    form_class = AssayStudyConfigurationForm
+
+    formsets = (
+        ('formset', AssayStudyModelFormSet),
+    )
+
+
+class AssayStudyConfigurationAdd(OneGroupRequiredMixin, AssayStudyConfigurationMixin, CreateView):
+    pass
+
+
+class AssayStudyConfigurationUpdate(OneGroupRequiredMixin, AssayStudyConfigurationMixin, UpdateView):
+    pass
+
 # Class-based views for study configuration
 class AssayStudyConfigurationList(LoginRequiredMixin, ListView):
     """Display a list of Study Configurations"""
@@ -253,58 +271,58 @@ class AssayStudyConfigurationList(LoginRequiredMixin, ListView):
     template_name = 'assays/studyconfiguration_list.html'
 
 
-class AssayStudyConfigurationAdd(OneGroupRequiredMixin, CreateView):
-    """Add a Study Configuration with inline for Associtated Models"""
-    template_name = 'assays/studyconfiguration_add.html'
-    form_class = AssayStudyConfigurationForm
-
-    def get_context_data(self, **kwargs):
-        context = super(AssayStudyConfigurationAdd, self).get_context_data(**kwargs)
-
-        if 'formset' not in context:
-            if self.request.POST:
-                context['formset'] = AssayStudyModelFormSet(self.request.POST)
-            else:
-                context['formset'] = AssayStudyModelFormSet()
-
-        return context
-
-    def form_valid(self, form):
-        formset = AssayStudyModelFormSet(self.request.POST, instance=form.instance)
-
-        if form.is_valid() and formset.is_valid():
-            save_forms_with_tracking(self, form, formset=formset, update=False)
-            return redirect(self.object.get_post_submission_url())
-        else:
-            return self.render_to_response(self.get_context_data(form=form, formset=formset))
-
-
-class AssayStudyConfigurationUpdate(OneGroupRequiredMixin, UpdateView):
-    """Update a Study Configuration with inline for Associtated Models"""
-    model = AssayStudyConfiguration
-    template_name = 'assays/studyconfiguration_add.html'
-    form_class = AssayStudyConfigurationForm
-
-    def get_context_data(self, **kwargs):
-        context = super(AssayStudyConfigurationUpdate, self).get_context_data(**kwargs)
-        if 'formset' not in context:
-            if self.request.POST:
-                context['formset'] = AssayStudyModelFormSet(self.request.POST, instance=self.object)
-            else:
-                context['formset'] = AssayStudyModelFormSet(instance=self.object)
-
-        context['update'] = True
-
-        return context
-
-    def form_valid(self, form):
-        formset = AssayStudyModelFormSet(self.request.POST, instance=self.object)
-
-        if form.is_valid() and formset.is_valid():
-            save_forms_with_tracking(self, form, formset=formset, update=True)
-            return redirect(self.object.get_post_submission_url())
-        else:
-            return self.render_to_response(self.get_context_data(form=form, formset=formset))
+# class AssayStudyConfigurationAdd(OneGroupRequiredMixin, CreateView):
+#     """Add a Study Configuration with inline for Associtated Models"""
+#     template_name = 'assays/studyconfiguration_add.html'
+#     form_class = AssayStudyConfigurationForm
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(AssayStudyConfigurationAdd, self).get_context_data(**kwargs)
+#
+#         if 'formset' not in context:
+#             if self.request.POST:
+#                 context['formset'] = AssayStudyModelFormSet(self.request.POST)
+#             else:
+#                 context['formset'] = AssayStudyModelFormSet()
+#
+#         return context
+#
+#     def form_valid(self, form):
+#         formset = AssayStudyModelFormSet(self.request.POST, instance=form.instance)
+#
+#         if form.is_valid() and formset.is_valid():
+#             save_forms_with_tracking(self, form, formset=formset, update=False)
+#             return redirect(self.object.get_post_submission_url())
+#         else:
+#             return self.render_to_response(self.get_context_data(form=form, formset=formset))
+#
+#
+# class AssayStudyConfigurationUpdate(OneGroupRequiredMixin, UpdateView):
+#     """Update a Study Configuration with inline for Associtated Models"""
+#     model = AssayStudyConfiguration
+#     template_name = 'assays/studyconfiguration_add.html'
+#     form_class = AssayStudyConfigurationForm
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(AssayStudyConfigurationUpdate, self).get_context_data(**kwargs)
+#         if 'formset' not in context:
+#             if self.request.POST:
+#                 context['formset'] = AssayStudyModelFormSet(self.request.POST, instance=self.object)
+#             else:
+#                 context['formset'] = AssayStudyModelFormSet(instance=self.object)
+#
+#         context['update'] = True
+#
+#         return context
+#
+#     def form_valid(self, form):
+#         formset = AssayStudyModelFormSet(self.request.POST, instance=self.object)
+#
+#         if form.is_valid() and formset.is_valid():
+#             save_forms_with_tracking(self, form, formset=formset, update=True)
+#             return redirect(self.object.get_post_submission_url())
+#         else:
+#             return self.render_to_response(self.get_context_data(form=form, formset=formset))
 
 
 # BEGIN NEW
@@ -471,149 +489,168 @@ class AssayStudyList(ListView):
         return combined
 
 
-class AssayStudyAdd(OneGroupRequiredMixin, CreateView):
-    """Add a study"""
-    template_name = 'assays/assaystudy_add.html'
-    form_class = AssayStudyForm
-
-    def get_form(self, form_class=None):
-        form_class = self.get_form_class()
-        # Get group selection possibilities
-        groups = filter_groups(self.request.user)
-
-        # If POST
-        if self.request.method == 'POST':
-            return form_class(self.request.POST, self.request.FILES, groups=groups)
-        # If GET
-        else:
-            return form_class(groups=groups)
-
-    def get_context_data(self, **kwargs):
-        context = super(AssayStudyAdd, self).get_context_data(**kwargs)
-        if self.request.POST:
-            if 'study_assay_formset' not in context:
-                context['study_assay_formset'] = AssayStudyAssayFormSetFactory(self.request.POST)
-            if 'supporting_data_formset' not in context:
-                context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(self.request.POST, self.request.FILES)
-            if 'reference_formset' not in context:
-                context['reference_formset'] = AssayStudyReferenceFormSetFactory(self.request.POST)
-        else:
-            context['study_assay_formset'] = AssayStudyAssayFormSetFactory()
-            context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory()
-            context['reference_formset'] = AssayStudyReferenceFormSetFactory()
-
-        context['reference_queryset'] = AssayReference.objects.all()
-
-        return context
-
-    def form_valid(self, form):
-        study_assay_formset = AssayStudyAssayFormSetFactory(
-            self.request.POST,
-            instance=form.instance
-        )
-        supporting_data_formset = AssayStudySupportingDataFormSetFactory(
-            self.request.POST,
-            self.request.FILES,
-            instance=form.instance
-        )
-        reference_formset = AssayStudyReferenceFormSetFactory(
-            self.request.POST,
-            instance=form.instance
-        )
-        if form.is_valid() and study_assay_formset.is_valid() and supporting_data_formset.is_valid() and reference_formset.is_valid():
-            save_forms_with_tracking(self, form, formset=[study_assay_formset, supporting_data_formset, reference_formset], update=False)
-            return redirect(
-                self.object.get_absolute_url()
-            )
-        else:
-            return self.render_to_response(
-                self.get_context_data(
-                    form=form,
-                    study_assay_formset=study_assay_formset,
-                    supporting_data_formset=supporting_data_formset,
-                    reference_formset=reference_formset
-                )
-            )
-
-
-# TODO CHANGE
-class AssayStudyUpdate(ObjectGroupRequiredMixin, UpdateView):
-    """Update the fields of a Study"""
+class AssayStudyMixin(FormHandlerMixin):
     model = AssayStudy
     template_name = 'assays/assaystudy_add.html'
     form_class = AssayStudyForm
 
-    def get_form(self, form_class=None):
-        form_class = self.get_form_class()
-        # Get group selection possibilities
-        groups = filter_groups(self.request.user)
-
-        # If POST
-        if self.request.method == 'POST':
-            return form_class(self.request.POST, self.request.FILES, instance=self.object, groups=groups)
-        # If GET
-        else:
-            return form_class(instance=self.object, groups=groups)
-
-    def get_context_data(self, **kwargs):
-        context = super(AssayStudyUpdate, self).get_context_data(**kwargs)
-        if self.request.POST:
-            if 'study_assay_formset' not in context:
-                context['study_assay_formset'] = AssayStudyAssayFormSetFactory(self.request.POST, instance=self.object)
-            if 'supporting_data_formset' not in context:
-                context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(self.request.POST, self.request.FILES, instance=self.object)
-            if 'reference_formset' not in context:
-                context['reference_formset'] = AssayStudyReferenceFormSetFactory(self.request.POST, instance=self.object)
-        else:
-            context['study_assay_formset'] = AssayStudyAssayFormSetFactory(instance=self.object)
-            context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(instance=self.object)
-            context['reference_formset'] = AssayStudyReferenceFormSetFactory(instance=self.object)
-
-        context['reference_queryset'] = AssayReference.objects.all()
-        context['update'] = True
-
-        return context
-
-    def form_valid(self, form):
-        study_assay_formset = AssayStudyAssayFormSetFactory(
-            self.request.POST,
-            instance=form.instance
-        )
-        supporting_data_formset = AssayStudySupportingDataFormSetFactory(
-            self.request.POST,
-            self.request.FILES,
-            instance=form.instance
-        )
-        reference_formset = AssayStudyReferenceFormSetFactory(
-            self.request.POST,
-            instance=form.instance
-        )
-        # TODO TODO TODO TODO
-        if form.is_valid() and study_assay_formset.is_valid() and supporting_data_formset.is_valid() and reference_formset.is_valid():
-            save_forms_with_tracking(self, form, formset=[study_assay_formset, supporting_data_formset, reference_formset], update=True)
-
-            return redirect(
-                self.object.get_absolute_url()
-            )
-        else:
-            return self.render_to_response(
-                self.get_context_data(
-                    form=form,
-                    study_assay_formset=study_assay_formset,
-                    supporting_data_formset=supporting_data_formset,
-                    reference_formset=reference_formset
-                )
-            )
+    formsets = (
+        ('study_assay_formset', AssayStudyAssayFormSetFactory),
+        ('supporting_data_formset', AssayStudySupportingDataFormSetFactory),
+        ('reference_formset', AssayStudyReferenceFormSetFactory),
+    )
 
 
-# TODO ADD PERMISSION MIXINS
+class AssayStudyAdd(OneGroupRequiredMixin, AssayStudyMixin, CreateView):
+    pass
+
+
+class AssayStudyUpdate(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
+    pass
+
+
+# class AssayStudyAdd(OneGroupRequiredMixin, CreateView):
+#     """Add a study"""
+#     template_name = 'assays/assaystudy_add.html'
+#     form_class = AssayStudyForm
+#
+#     def get_form(self, form_class=None):
+#         form_class = self.get_form_class()
+#         # Get group selection possibilities
+#         groups = filter_groups(self.request.user)
+#
+#         # If POST
+#         if self.request.method == 'POST':
+#             return form_class(self.request.POST, self.request.FILES, groups=groups)
+#         # If GET
+#         else:
+#             return form_class(groups=groups)
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(AssayStudyAdd, self).get_context_data(**kwargs)
+#         if self.request.POST:
+#             if 'study_assay_formset' not in context:
+#                 context['study_assay_formset'] = AssayStudyAssayFormSetFactory(self.request.POST)
+#             if 'supporting_data_formset' not in context:
+#                 context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(self.request.POST, self.request.FILES)
+#             if 'reference_formset' not in context:
+#                 context['reference_formset'] = AssayStudyReferenceFormSetFactory(self.request.POST)
+#         else:
+#             context['study_assay_formset'] = AssayStudyAssayFormSetFactory()
+#             context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory()
+#             context['reference_formset'] = AssayStudyReferenceFormSetFactory()
+#
+#         context['reference_queryset'] = AssayReference.objects.all()
+#
+#         return context
+#
+#     def form_valid(self, form):
+#         study_assay_formset = AssayStudyAssayFormSetFactory(
+#             self.request.POST,
+#             instance=form.instance
+#         )
+#         supporting_data_formset = AssayStudySupportingDataFormSetFactory(
+#             self.request.POST,
+#             self.request.FILES,
+#             instance=form.instance
+#         )
+#         reference_formset = AssayStudyReferenceFormSetFactory(
+#             self.request.POST,
+#             instance=form.instance
+#         )
+#         if form.is_valid() and study_assay_formset.is_valid() and supporting_data_formset.is_valid() and reference_formset.is_valid():
+#             save_forms_with_tracking(self, form, formset=[study_assay_formset, supporting_data_formset, reference_formset], update=False)
+#             return redirect(
+#                 self.object.get_absolute_url()
+#             )
+#         else:
+#             return self.render_to_response(
+#                 self.get_context_data(
+#                     form=form,
+#                     study_assay_formset=study_assay_formset,
+#                     supporting_data_formset=supporting_data_formset,
+#                     reference_formset=reference_formset
+#                 )
+#             )
+#
+#
+# # TODO CHANGE
+# class AssayStudyUpdate(ObjectGroupRequiredMixin, UpdateView):
+#     """Update the fields of a Study"""
+#     model = AssayStudy
+#     template_name = 'assays/assaystudy_add.html'
+#     form_class = AssayStudyForm
+#
+#     def get_form(self, form_class=None):
+#         form_class = self.get_form_class()
+#         # Get group selection possibilities
+#         groups = filter_groups(self.request.user)
+#
+#         # If POST
+#         if self.request.method == 'POST':
+#             return form_class(self.request.POST, self.request.FILES, instance=self.object, groups=groups)
+#         # If GET
+#         else:
+#             return form_class(instance=self.object, groups=groups)
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(AssayStudyUpdate, self).get_context_data(**kwargs)
+#         if self.request.POST:
+#             if 'study_assay_formset' not in context:
+#                 context['study_assay_formset'] = AssayStudyAssayFormSetFactory(self.request.POST, instance=self.object)
+#             if 'supporting_data_formset' not in context:
+#                 context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(self.request.POST, self.request.FILES, instance=self.object)
+#             if 'reference_formset' not in context:
+#                 context['reference_formset'] = AssayStudyReferenceFormSetFactory(self.request.POST, instance=self.object)
+#         else:
+#             context['study_assay_formset'] = AssayStudyAssayFormSetFactory(instance=self.object)
+#             context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(instance=self.object)
+#             context['reference_formset'] = AssayStudyReferenceFormSetFactory(instance=self.object)
+#
+#         context['reference_queryset'] = AssayReference.objects.all()
+#         context['update'] = True
+#
+#         return context
+#
+#     def form_valid(self, form):
+#         study_assay_formset = AssayStudyAssayFormSetFactory(
+#             self.request.POST,
+#             instance=form.instance
+#         )
+#         supporting_data_formset = AssayStudySupportingDataFormSetFactory(
+#             self.request.POST,
+#             self.request.FILES,
+#             instance=form.instance
+#         )
+#         reference_formset = AssayStudyReferenceFormSetFactory(
+#             self.request.POST,
+#             instance=form.instance
+#         )
+#         # TODO TODO TODO TODO
+#         if form.is_valid() and study_assay_formset.is_valid() and supporting_data_formset.is_valid() and reference_formset.is_valid():
+#             save_forms_with_tracking(self, form, formset=[study_assay_formset, supporting_data_formset, reference_formset], update=True)
+#
+#             return redirect(
+#                 self.object.get_absolute_url()
+#             )
+#         else:
+#             return self.render_to_response(
+#                 self.get_context_data(
+#                     form=form,
+#                     study_assay_formset=study_assay_formset,
+#                     supporting_data_formset=supporting_data_formset,
+#                     reference_formset=reference_formset
+#                 )
+#             )
+
+
 class AssayStudyIndex(StudyViewerMixin, DetailView):
     """Show all chip and plate models associated with the given study"""
     model = AssayStudy
     context_object_name = 'study_index'
     template_name = 'assays/assaystudy_index.html'
 
-    # For permission mixin
+    # For permission mixin NOT AS USELESS AS IT SEEMS
     def get_object(self, queryset=None):
         self.study = super(AssayStudyIndex, self).get_object()
         return self.study
@@ -1025,6 +1062,7 @@ class AssayStudyDataUpload(ObjectGroupRequiredMixin, UpdateView):
     template_name = 'assays/assaystudy_upload.html'
     form_class = AssayStudyDataUploadForm
 
+    # TODO: STRANGE
     def get_form(self, form_class=None):
         form_class = self.get_form_class()
         # If POST
@@ -1153,6 +1191,7 @@ def get_cell_samples_for_selection(user, setups=None):
     return combined_query
 
 
+# TODO REFACTOR
 class AssayMatrixAdd(StudyGroupMixin, CreateView):
     """Add a matrix"""
     model = AssayMatrix
@@ -1949,6 +1988,7 @@ class AssayDataFromFilters(TemplateView):
 
 
 # TODO acquire and send all data like IntraRepro
+# TODO REFACTOR
 class AssayStudySetAdd(OneGroupRequiredMixin, CreateView):
     model = AssayStudySet
     template_name = 'assays/assaystudyset_add.html'
@@ -2010,6 +2050,7 @@ class AssayStudySetAdd(OneGroupRequiredMixin, CreateView):
             )
 
 
+# TODO REFACTOR
 class AssayStudySetUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
     model = AssayStudySet
     template_name = 'assays/assaystudyset_add.html'
@@ -2069,73 +2110,96 @@ class AssayStudySetUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
             )
 
 
-class AssayStudyAddNew(OneGroupRequiredMixin, CreateView):
-    """Add a study"""
+class AssayStudyAddNew(OneGroupRequiredMixin, AssayStudyMixin, CreateView):
     template_name = 'assays/assaystudy_add_new.html'
     form_class = AssayStudyFormNew
 
-    def get_form(self, form_class=None):
-        form_class = self.get_form_class()
-        # Get group selection possibilities
-        groups = filter_groups(self.request.user)
-
-        # If POST
-        if self.request.method == 'POST':
-            return form_class(
-                self.request.POST,
-                self.request.FILES,
-                groups=groups,
-                request=self.request
-            )
-        # If GET
-        else:
-            return form_class(groups=groups, request=self.request)
-
+    # TODO TO BE REMOVED
     def get_context_data(self, **kwargs):
         context = super(AssayStudyAddNew, self).get_context_data(**kwargs)
-        if self.request.POST:
-            # Make the assumption that if one is missing, all are
-            if 'study_assay_formset' not in context:
-                context['study_assay_formset'] = AssayStudyAssayFormSetFactory(self.request.POST)
-                # context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(self.request.POST, self.request.FILES)
-        else:
-            context['study_assay_formset'] = AssayStudyAssayFormSetFactory()
-            # context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory()
 
         # Cellsamples will always be the same
-        context['cellsamples'] = CellSample.objects.all().prefetch_related(
+        current_cellsamples = CellSample.objects.all().prefetch_related(
             'cell_type__organ',
             'supplier',
             'cell_subtype__cell_type'
         )
 
+        # TODO SLATED FOR REMOVAL
+        context.update({
+            'cellsamples': current_cellsamples,
+            'reference_queryset': AssayReference.objects.all()
+        })
+
         return context
 
-    def form_valid(self, form):
-        study_assay_formset = AssayStudyAssayFormSetFactory(
-            self.request.POST,
-            instance=form.instance
-        )
-        # supporting_data_formset = AssayStudySupportingDataFormSetFactory(
-        #     self.request.POST,
-        #     self.request.FILES,
-        #     instance=form.instance
-        # )
-        if form.is_valid() and study_assay_formset.is_valid():
-        # if form.is_valid() and study_assay_formset.is_valid() and supporting_data_formset.is_valid():
-            # save_forms_with_tracking(self, form, formset=[study_assay_formset, supporting_data_formset], update=False)
-            save_forms_with_tracking(self, form, formset=[study_assay_formset], update=False)
-            return redirect(
-                self.object.get_absolute_url()
-            )
-        else:
-            return self.render_to_response(
-                self.get_context_data(
-                    form=form,
-                    study_assay_formset=study_assay_formset,
-                    # supporting_data_formset=supporting_data_formset
-                )
-            )
+# class AssayStudyAddNew(OneGroupRequiredMixin, CreateView):
+#     """Add a study"""
+#     template_name = 'assays/assaystudy_add_new.html'
+#     form_class = AssayStudyFormNew
+#
+#     def get_form(self, form_class=None):
+#         form_class = self.get_form_class()
+#         # Get group selection possibilities
+#         groups = filter_groups(self.request.user)
+#
+#         # If POST
+#         if self.request.method == 'POST':
+#             return form_class(
+#                 self.request.POST,
+#                 self.request.FILES,
+#                 groups=groups,
+#                 request=self.request
+#             )
+#         # If GET
+#         else:
+#             return form_class(groups=groups, request=self.request)
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(AssayStudyAddNew, self).get_context_data(**kwargs)
+#         if self.request.POST:
+#             # Make the assumption that if one is missing, all are
+#             if 'study_assay_formset' not in context:
+#                 context['study_assay_formset'] = AssayStudyAssayFormSetFactory(self.request.POST)
+#                 # context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(self.request.POST, self.request.FILES)
+#         else:
+#             context['study_assay_formset'] = AssayStudyAssayFormSetFactory()
+#             # context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory()
+#
+#         # Cellsamples will always be the same
+#         context['cellsamples'] = CellSample.objects.all().prefetch_related(
+#             'cell_type__organ',
+#             'supplier',
+#             'cell_subtype__cell_type'
+#         )
+#
+#         return context
+#
+#     def form_valid(self, form):
+#         study_assay_formset = AssayStudyAssayFormSetFactory(
+#             self.request.POST,
+#             instance=form.instance
+#         )
+#         # supporting_data_formset = AssayStudySupportingDataFormSetFactory(
+#         #     self.request.POST,
+#         #     self.request.FILES,
+#         #     instance=form.instance
+#         # )
+#         if form.is_valid() and study_assay_formset.is_valid():
+#         # if form.is_valid() and study_assay_formset.is_valid() and supporting_data_formset.is_valid():
+#             # save_forms_with_tracking(self, form, formset=[study_assay_formset, supporting_data_formset], update=False)
+#             save_forms_with_tracking(self, form, formset=[study_assay_formset], update=False)
+#             return redirect(
+#                 self.object.get_absolute_url()
+#             )
+#         else:
+#             return self.render_to_response(
+#                 self.get_context_data(
+#                     form=form,
+#                     study_assay_formset=study_assay_formset,
+#                     # supporting_data_formset=supporting_data_formset
+#                 )
+#             )
 
 
 def user_is_valid_study_set_viewer(user_accessible_studies_dic, study_set):
@@ -2285,22 +2349,35 @@ class AssayReferenceList(ListView):
     template_name = 'assays/assayreference_list.html'
 
 
-class AssayReferenceAdd(OneGroupRequiredMixin, CreateView):
+class AssayReferenceMixin(FormHandlerMixin):
     model = AssayReference
     template_name = 'assays/assayreference_add.html'
     form_class = AssayReferenceForm
 
-    def get_context_data(self, **kwargs):
-        context = super(AssayReferenceAdd, self).get_context_data(**kwargs)
-        context['update'] = False
-        return context
 
-    def form_valid(self, form):
-        if form.is_valid():
-            save_forms_with_tracking(self, form, formset=[], update=False)
-            return redirect(self.object.get_post_submission_url())
-        else:
-            return self.render_to_response(self.get_context_data(form=form))
+class AssayReferenceAdd(OneGroupRequiredMixin, FormHandlerMixin, CreateView):
+    pass
+
+
+class AssayReferenceUpdate(CreatorOrSuperuserRequiredMixin, FormHandlerMixin, UpdateView):
+    pass
+
+# class AssayReferenceAdd(OneGroupRequiredMixin, CreateView):
+#     model = AssayReference
+#     template_name = 'assays/assayreference_add.html'
+#     form_class = AssayReferenceForm
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(AssayReferenceAdd, self).get_context_data(**kwargs)
+#         context['update'] = False
+#         return context
+#
+#     def form_valid(self, form):
+#         if form.is_valid():
+#             save_forms_with_tracking(self, form, formset=[], update=False)
+#             return redirect(self.object.get_post_submission_url())
+#         else:
+#             return self.render_to_response(self.get_context_data(form=form))
 
 
 class AssayReferenceDetail(DetailView):
@@ -2308,22 +2385,22 @@ class AssayReferenceDetail(DetailView):
     template_name = 'assays/assayreference_detail.html'
 
 
-class AssayReferenceUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
-    model = AssayReference
-    template_name = 'assays/assayreference_add.html'
-    form_class = AssayReferenceForm
-
-    def get_context_data(self, **kwargs):
-        context = super(AssayReferenceUpdate, self).get_context_data(**kwargs)
-        context['update'] = True
-        return context
-
-    def form_valid(self, form):
-        if form.is_valid():
-            save_forms_with_tracking(self, form, formset=[], update=True)
-            return redirect(self.object.get_post_submission_url())
-        else:
-            return self.render_to_response(self.get_context_data(form=form))
+# class AssayReferenceUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
+#     model = AssayReference
+#     template_name = 'assays/assayreference_add.html'
+#     form_class = AssayReferenceForm
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(AssayReferenceUpdate, self).get_context_data(**kwargs)
+#         context['update'] = True
+#         return context
+#
+#     def form_valid(self, form):
+#         if form.is_valid():
+#             save_forms_with_tracking(self, form, formset=[], update=True)
+#             return redirect(self.object.get_post_submission_url())
+#         else:
+#             return self.render_to_response(self.get_context_data(form=form))
 
 
 class AssayReferenceDelete(DeletionMixin, DeleteView):

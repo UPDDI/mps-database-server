@@ -1,3 +1,4 @@
+// THIS FILE NEEDS TO BE REFACTORED
 $(document).ready(function () {
     // Note that this requires certain class name, add name, inlines name
     // Note that the selector that selects TABLES (not divs) with the name inlines
@@ -26,9 +27,11 @@ $(document).ready(function () {
             next_id += 1;
             // Set the hidden TOTAL_FORMS to be incremented, otherwise won't bother reading other inline
             $('#id_'+current_set_title+'-TOTAL_FORMS').val(""+next_id);
-            $("select").each(function(i, obj){
+            $("select").each(function(i, obj) {
                 if(!$(obj).parent().hasClass("no-selectize") && !$(obj).hasClass('no-selectize')) {
-                    $(obj).not('.selectized').selectize('');
+                    $(obj).not('.selectized').selectize({
+                        diacritics: true
+                    });
                 }
             });
         });
@@ -94,9 +97,11 @@ $(document).ready(function () {
             // Remove old
             current.remove();
         }
-        $("select").each(function(i, obj){
+        $("select").each(function(i, obj) {
             if(!$(obj).parent().hasClass("no-selectize")) {
-                $(obj).not('.selectized').selectize('');
+                $(obj).not('.selectized').selectize({
+                    diacritics: true
+                });
             }
         });
     });

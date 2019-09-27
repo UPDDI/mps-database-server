@@ -79,9 +79,9 @@
     <p>
         Click a magnifying glass to see a list of available cell samples. Use 'e' for scientific notation: 1e+3 = 1000.
         <br>
-        <a href="/cellsamples/cellsample">
+        <a class="popup-link" data-href="/cellsamples/cellsample/add?popup=1" data-window-name="cellsample">
             <span class="glyphicon glyphicon-plus text-success" aria-hidden="true"></span>
-            Add/Edit Cell Samples (Must Refresh Page to See Change)
+            Add Cell Sample
         </a>
     </p>
 
@@ -108,7 +108,7 @@
                         </td>
                     {% endif %}
                     <td>
-                        <input class="cell-sample-id-field form-control" readonly="readonly" id="id_{{ cell_formset.prefix }}-{{ forloop.counter0 }}-cell_sample"
+                        <input class="cell-sample-id-field form-control required" readonly="readonly" id="id_{{ cell_formset.prefix }}-{{ forloop.counter0 }}-cell_sample"
                                name="{{ cell_formset.prefix }}-{{ forloop.counter0 }}-cell_sample" style="width: 70px; display: inline;" value="{{ cell.cell_sample.value|default_if_none:'' }}">
                         <button id='search-{{ forloop.counter0 }}-' type="button" class="btn btn-xs btn-primary open-cell-sample-dialog">
                             <span class="glyphicon glyphicon-search" aria-hidden="true"></span>

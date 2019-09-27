@@ -62,9 +62,9 @@
         <div class="col-sm-10">
             {{ form.cell_type }}
             <br>
-            <a href="/cellsamples/celltype">
+            <a class="popup-link" data-href="/cellsamples/celltype/add?popup=1" data-window-name="celltype">
                 <span class="glyphicon glyphicon-plus text-success" aria-hidden="true"></span>
-                Add/Edit Cell Types (Must Refresh Page to See Change)
+                Add Cell Type
             </a>
         </div>
     </div>
@@ -89,9 +89,9 @@
             <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
             If the Cell Origin is a cell line, please select the associated Cell Type first.
             <br>
-            <a href="/cellsamples/cellsubtype">
+            <a class="popup-link" data-href="/cellsamples/cellsubtype/add?popup=1" data-window-name="cellsubtype">
                 <span class="glyphicon glyphicon-plus text-success" aria-hidden="true"></span>
-                Add/Edit Cell Origins (Must Refresh Page to See Change)
+                Add Cell Origin
             </a>
         </div>
     </div>

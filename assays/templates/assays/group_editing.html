@@ -217,7 +217,7 @@
         <tr>
         <td>
             {# Inline styles are evil #}
-            <input readonly="readonly" id="id_cell_cell_sample" name="cell_cell_sample" value="{{ form.cell_cell_sample.value|default_if_none:'' }}" class="form-control" style="width: 75px; display: inline;">
+            <input readonly="readonly" id="id_cell_cell_sample" name="cell_cell_sample" value="{{ form.cell_cell_sample.value|default_if_none:'' }}" class="form-control required" style="width: 75px; display: inline;">
             <button id='id_cell_sample_search' type="button" class="btn btn-xs btn-primary open-cell-sample-dialog">
                 <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
             </button>

@@ -70,9 +70,9 @@
         <div class="col-sm-10">
             {{ form.device }}
             <br>
-            <a href="/microdevices/device/add">
+            <a class="popup-link" data-href="/microdevices/device/add?popup=1" data-window-name="microdevice">
                 <span class="glyphicon glyphicon-plus text-success" aria-hidden="true"></span>
-                Add Microdevice (Must Refresh Page to See Change)
+                Add Microdevice
             </a>
         </div>
     </div>
@@ -173,9 +173,9 @@
     <legend>Cell Types</legend>
 
     {# Add new #}
-    <a href="/cellsamples/celltype/add/">
+    <a class="popup-link" data-href="/cellsamples/celltype/add?popup=1" data-window-name="celltype">
         <span class="glyphicon glyphicon-plus text-success" aria-hidden="true"></span>
-        Add Cell Type (Must Refresh Page to See Change)
+        Add Cell Type
     </a>
     <br>
     <br>

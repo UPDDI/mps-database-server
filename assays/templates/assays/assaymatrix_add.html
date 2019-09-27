@@ -132,7 +132,25 @@
 
 
     <div class="well">
-    {% include 'generic_field.html' with field=form.action label="Action" %}
+    {# {% include 'generic_field.html' with field=form.action label="Action" %} #}
+
+    <div class="form-group">
+        <label for="id_action" class="col-sm-2 control-label">Action</label>
+        <div class="col-sm-10">
+        <select name="action" class="form-control no-selectize" id="id_action">
+        <option value="" selected="">Please Select an Action</option>
+        <option value="add_name" class="required">Add Names/IDs*</option>
+        <option value="add_test_type" class="required">Add Test Type*</option>
+        <option value="add_date" class="required">Add Setup Date*</option>
+        <option value="add_device" class="required">Add Device/MPS Model Information*</option>
+        <option value="add_settings">Add Settings</option>
+        <option value="add_compounds">Add Compounds</option>
+        <option value="add_cells">Add Cells</option>
+        <option value="add_notes">Add Notes/Notebook Information</option>
+        <option value="delete">Delete Selected</option>
+        </select>
+        </div>
+    </div>
 
     <div hidden class="matrix_item-section add_name_section">
     {% include 'generic_field.html' with field=form.matrix_item_name label="Name*" %}
@@ -305,7 +323,7 @@
         <tr>
         <td>
             {# Inline styles are evil #}
-            <input readonly="readonly" id="id_cell_cell_sample" name="cell_cell_sample" value="{{ form.cell_cell_sample.value|default_if_none:'' }}" class="form-control" style="width: 75px; display: inline;">
+            <input readonly="readonly" id="id_cell_cell_sample" name="cell_cell_sample" value="{{ form.cell_cell_sample.value|default_if_none:'' }}" class="form-control required" style="width: 75px; display: inline;">
             <button id='id_cell_sample_search' type="button" class="btn btn-xs btn-primary open-cell-sample-dialog">
                 <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
             </button>
