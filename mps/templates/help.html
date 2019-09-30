@@ -12,7 +12,7 @@
     type="image/png"
     href="/static/img/glyphicons-question-sign.png">
 
-    <title>MPS Help</title>
+    <title>MPS-Db Help</title>
 
     {% compress js %}
     <!-- Load JQuery -->
@@ -219,7 +219,7 @@
                             <li><a href="#reference">References</a></li>
                             <li class="divider"></li>
                             <li class="dropdown-header"><b>Combining Study and Reference Data</b></li>
-                            <li><a href="#diseasemodels">Diseases</a></li>
+                            <li><a href="#diseasemodels">Diseases and Disease Models</a></li>
                             <li><a href="#compoundreport">Compound Report</a></li>
                             <li class="divider"></li>
                             <li class="dropdown-header"><b>Reference Data Only</b></li>
@@ -244,7 +244,7 @@
                             <li><a href="#devices">Devices</a></li>
                             <li><a href="#diseaselist">Diseases</a></li>
                             <li><a href="#mpslocations">Locations of MPS Models</a></li>
-                            <li><a href="#mpsmodels">MPS Models</a></li>
+                            <li><a href="#mpsmodels">MPS Models and Devices</a></li>
                             <li><a href="#settings">Settings</a></li>
                             <li><a href="#physicalunits">Units</a></li>
                             <li class="divider"></li>
@@ -293,7 +293,7 @@
                             <li class="divider"></li>
                             <li class="dropdown-header"><b>Search the Database</b></li>
                             <li><a href="#search">Global Search</a></li>
-                            <li><a href="#searchbars">Search and Sort Lists</a></li>
+                            <li><a href="#searchbars">Search and Sort Tables/Lists</a></li>
                             <li class="divider"></li>
                             <li class="dropdown-header"><b>Design an MPS Model</b></li>
                             <li><a href="#mpsmodels">Review MPS Models</a></li>
@@ -339,44 +339,45 @@
 {% endcomment %}
 
     <div id="recentupgrades_section" class="container">
-        <h1 class="sub1-bars"> What's New in the MPS Database </h1>
+        <h1 class="sub1-bars"> What's New in the MPS-Db (MPS-Db)</h1>
         <div id="recentupgrades">
             <button name="my_buttons" class="collapsible1">Recent Updates and Enhancements</button>
             <div class="content1">
                 <div id="recentupgradesviewer" class="viewersubtainer">
                     <ul class="list-group">
 {#TODO:                        compuatational modeling #}
-                        <li class="list-group-item"> <b><em> Study Setup by Treatment Group </em></b> - An enhancement to previous method of setting up a study that acquires information for the selected organ model and organ model version and enables streamlined study setup by organ model treatment group.
-                            For more information on the Study Setup by Treatment Group feature (sometimes referred to as the "new workflow" or the "streamlined workflow"), <a href="#studies_editor">click here</a>. </li>
+                        <li class="list-group-item"> <b><em> Study Setup by Group </em></b> - An enhancement to the previous method of setting up a study that acquires information for the selected MPS model and MPS model version and enables streamlined study setup by group.
+                            For more information on study setup by group (sometimes referred to as the "new workflow" or the "streamlined workflow"), <a href="#studies_editor">click here</a>. </li>
                         <li class="list-group-item"> <b><em> Recorded Presentations </em></b> - Recordings from various demonstrations of the MPS-Db have been added to the Help.
                             For more information on the video presentations, <a href="#video_presentation_section">click here</a>.   </li>
-                        <li class="list-group-item"> <b><em> Power Analysis </em></b> - A statistical power analysis methodology has been implemented in the MPS-Db to estimate the probability that a statistical test will find a significant difference between two different data groups, such as control and compound treatment groups (post hoc two-sample power analysis), or a significance difference from one treatment group (a priori one-sample power analysis) for a MPS organ model.
+                        <li class="list-group-item"> <b><em> Power Analysis </em></b> - A statistical power analysis methodology has been implemented in the MPS-Db to estimate the probability that a statistical test will find a significant difference between two different data groups, such as control and compound treatment groups (post hoc two-sample power analysis), or a significance difference from one treatment group (a priori one-sample power analysis) for an MPS model.
                             For more information on the power analysis feature, <a href="#power_analysis">click here</a>.   </li>
-                        <li class="list-group-item"> <b><em> References </em></b> - Allows Studies, MPS Models, Study Sets, and other study components to be linked to one or more publications.
+                        <li class="list-group-item"> <b><em> References </em></b> - Allows studies, MPS models, study sets, and other study components to be linked to one or more publications.
                             For more information on the references feature, <a href="#reference">click here</a>.   </li>
                         <li class="list-group-item"> <b><em> Study Sets </em></b> - Designed so that multiple studies can be grouped and referenced together with one URL.
-                            For more information on the Study Sets feature, <a href="#studyset">click here</a>. </li>
-                        <li class="list-group-item"> <b><em> Data Sharing Collaborators </em></b> - Collaborator groups allow data providers (those contributing experimentally derived assay study data) to share their data with a small group of collaborators. For example, if colleagues from two different universities are working on a joint publication using data from both groups, they can join a collaborator group and share their data with each other, but no one else. Currently, collaborator groups are managed by MPS-Db administrators. If you have added study data to the MPS-Db and would like to set up a collaborator group, send an email to MPSHELP@pitt.edu with subject line "I want to make a collaborator group".</li>                                          <li class="list-group-item"> <b><em>Enhanced Options for Overriding the Built-in Grouping/Filtering,Plotting, and Reproducibility Analysis of Assay Data</em></b> - A left-sidebar offers a wide variety of options for dynamically changing data aggregation grouping and filtering. The sidebar can be toggled on and off to allow flexible use of screen space. An option to manually refresh data aggregation has been provided to allow users to make multiple changes without waiting for the refresh after each change. Filter buttons are now highlighted when active. The sidebars are targeted to the displayed feature (i.e. the options for the reproducibility plots are different than the options for the study summary plots), and new options for customizing individual plots have been added.
-                            For more information on the intra-study feature, <a href="#intrastudy">click here</a>.
-                            For more information on the inter-study feature, <a href="#interstudy">click here</a>.
+                            For more information on study sets, <a href="#studyset">click here</a>. </li>
+                        <li class="list-group-item"> <b><em> Data Sharing Collaborators </em></b> - Collaborator groups allow data providers (those contributing experimentally derived assay study data) to share their data with a small group of collaborators. For example, if colleagues from two different universities are working on a joint publication using data from both groups, they can join a collaborator group and share their data with each other, but no one else. Currently, collaborator groups are managed by MPS-Db administrators. If you have added study data to the MPS-Db and would like to set up a collaborator group, send an email to MPSHELP@pitt.edu with subject line "I want to make a collaborator group".</li>                                          
+                        <li class="list-group-item"> <b><em>Enhanced Options for Overriding the Built-in Grouping/Filtering, Plotting, and Reproducibility Analysis of Assay Data</em></b> - Grouping and filtering options enhanced and moved to a left-sidebar. The left-sidebar offers a wide variety of options for dynamically changing data aggregation grouping and filtering. The sidebar can be toggled on and off to allow flexible use of screen space. An option to manually refresh data aggregation has been provided to allow users to make multiple changes without waiting for the refresh after each change. Filter buttons are highlighted when active. The sidebars are targeted to the displayed feature (i.e. the options for the reproducibility plots are different than the options for the study summary plots). Customization can be applied to all plots or to individual plots.
+                            For more information on intra-study customization, <a href="#intrastudy">click here</a>.
+                            For more information on inter-study customization, <a href="#interstudy">click here</a>.
                         </li>
-                        <li class="list-group-item"> <b><em>Integrated Reproducibility Analysis</em></b> - An intra- and inter-study reproducibility analysis tool is now available in the <b>MPS database</b>. The inter-study tool can be accessed through the <b>Data Analysis</b> icon or tab. This tool offers the user a wide range of options for grouping and filtering data prior to performing graphing and/or reproducibility analysis. The intra-study tool can be accessed through the <b>Study Summary</b> page of the MPS-GUI.
-                            For more information on the intra-study feature, <a href="#intrastudy">click here</a>.
-                            For more information on the inter-study feature, <a href="#interstudy">click here</a>.
+                        <li class="list-group-item"> <b><em>Integrated Reproducibility Analysis</em></b> - An intra- and inter-study reproducibility analysis tool is now available in the MPS-Db. The inter-study tool can be accessed through the <b>Data Analysis</b> icon or tab. This tool offers the user a wide range of options for grouping and filtering data prior to performing graphing and/or reproducibility analysis. The intra-study tool can be accessed through the <b>Study Summary</b> page of the MPS-GUI.
+                            For more information intra-study reproducibility analysis, <a href="#intrastudy">click here</a>.
+                            For more information on the inter-study reproducibility analysis, <a href="#interstudy">click here</a>.
                         </li>
-                        <li class="list-group-item"> <b><em>MPS Models can be Grouped into a Matrix</em></b> - <b>MPS Models</b> (i.e. <b>Matrix Items</b>), tested as part of a study, can now be assigned to a <b>Matrix</b> and data can be summarized by <b>Matrix</b>. <b>Matrices</b> can be accessed from the <b>Study Matrices and Items</b> list page of a specific study.
-                            For more information on this feature, <a href="#intrastudy">click here</a> and click to see information on the Built-in Default Grouping/Filtering by Matrix.
+                        <li class="list-group-item"> <b><em>MPS Models can be Grouped into a Matrix</em></b> - MPS models (i.e. matrix items), tested as part of a study, can now be assigned to a matrix, and data can be summarized by matrix. Matrices can be accessed from the <b>Study Matrices and Items</b> list page of a specific study.
+                            For more information on assigning MPS models to a matrix, <a href="#intrastudy">click here</a> and click the <b>Built-in Default Grouping/Filtering by Matrix</b> button.
                         </li>
-                        <li class="list-group-item"> <b><em>Integration of Images and Videos</em></b> - Images and videos can now be associated to a <b>MPS Model</b> (i.e. <b>Matrix Item</b>) within a study. Images and videos are auto-scaled for optimal viewing online and the unaltered image/video is available for download to facilitate performing relative comparisons. Images and videos can be accessed from the <b>Study Matrices and Items</b> list page of a specific study.
-                            For more information on this feature, <a href="#intrastudy">click here</a>.
+                        <li class="list-group-item"> <b><em>Integration of Images and Videos</em></b> - Images and videos can now be associated to a MPS model (i.e. a matrix item) within a study. Images and videos are auto-scaled for optimal viewing online and the unaltered image/video is available for download to facilitate performing relative comparisons. Images and videos can be accessed from the <b>Study Matrices and Items</b> list page of a specific study.
+                            For more information on images and videos, <a href="#intrastudy">click here</a>.
                         </li>
-                        <li class="list-group-item"> <b><em>Inter-Study Analysis with Grouping and Filtering</em></b> - The grouping and filtering feature is a powerful tool that offers the user a wide range of options for grouping and filtering data. The tool can be accessed in several places throughout the database, including: through the <b>Data Analysis</b> icon or tab and the <b>Study Summary</b> page. The tool can be used to customize what data are used (via the filtering feature) and how data will be grouped (via the grouping feature) in subsequent graphing and analysis.
-                            For more information on this feature, <a href="#interstudy">click here</a>.
+                        <li class="list-group-item"> <b><em>Inter-Study Analysis with Grouping and Filtering</em></b> - Grouping and filtering is a powerful tool that offers the user a wide range of options for grouping and filtering data. The tool can be accessed in several places throughout the database, including: through the <b>Data Analysis</b> icon or tab and the <b>Study Summary</b> page. The tool can be used to customize what data are used (via the filtering feature) and how data will be grouped (via the grouping feature) in subsequent graphing and analysis.
+                            For more information on grouping and filtering, <a href="#interstudy">click here</a>.
                         </li>
-                        <li class="list-group-item"> <b><em>View Diseases</em></b> - The <b>View Diseases</b> feature allows users to quickly find information regarding a specific disease. Users can drill down on data stored in the <b>MPS database</b> (study data and data extracted from the clinicaltrials.gov website), and link to clinicaltrials.gov where additional drug trial information can be obtained. The <b>View Diseases</b> feature can be accessed through the <b>MPS Models</b> icon or tab.
-                            For more information on this feature, <a href="#diseasemodels">click here</a>.
+                        <li class="list-group-item"> <b><em>View Diseases</em></b> - The <b>View Diseases</b> feature allows users to quickly find information regarding a specific disease. Users can drill down on data stored in the MPS-Db (study data and data extracted from the clinicaltrials.gov website), and link to clinicaltrials.gov where additional drug trial information can be obtained. The <b>View Diseases</b> feature can be accessed through the <b>MPS Models</b> icon or tab.
+                            For more information viewing diseases, <a href="#diseasemodels">click here</a>.
                         </li>
-                        <li class="list-group-item"> <b><em>Add Experimental Variables as Settings</em></b> - This feature allows the <b>Data Provider</b> the ability to enter treatments and/or experimental parameters (such as instrument settings) that impact assay data measurements. These, along with the added compounds, can be used to group and filter data in preparation for visualization and analysis.
+                        <li class="list-group-item"> <b><em>Add Experimental Variables as Settings</em></b> - This feature allows data providers the ability to enter treatments and/or experimental parameters (such as instrument settings) that impact assay data measurements. These, along with information about cells and compounds, can be used to group and filter data in preparation for visualization and analysis.
                             For more information on adding settings, <a href="#matrixitems_editor">click here</a>.
                             For more information on using settings in grouping and filtering, <a href="#intrastudy">click here</a>.
                         </li>
@@ -389,7 +390,7 @@
 
     <div id="overview_section" class="container">
 
-        <h1 class="sub1-bars"> Overview of the MPS Database </h1>
+        <h1 class="sub1-bars"> Overview of the MPS-Db </h1>
 
         <div id="overview0">
             <button name="my_buttons" class="collapsible1">Database Background</button>
@@ -397,11 +398,11 @@
                 <div id="overview0viewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item">
-                            The <b>Microphysiology Systems (MPS) Database</b> was designed for the management and analysis of MPS data together with curated reference and clinical data. The <b>MPS Database</b> can store curated assay data and associated metadata from a wide variety of plate-based and microfluidic models. Data from external reference sources are brought into the <b>MPS Database</b> to facilitate ease of access to those data and to support integration of data across curated data sources.
+                            The Microphysiology Systems Database (MPS-Db) was designed for the management and analysis of MPS data together with curated reference and clinical data. The MPS-Db can store curated assay data and associated metadata from a wide variety of plate-based and microfluidic models. Data from external reference sources are brought into the MPS-Db to facilitate ease of access to those data and to support integration of data across curated data sources.
                             <br><br>
-                            <b>Study Data</b> and <b>Study Components</b> (e.g., <b>MPS Models</b>, <b>Devices</b>, <b>Cell Samples</b>) are manually curated into the <b>MPS Database</b>. Data from some reference data sources are both manually and auto-curated. The <b>MPS Database</b> provides tools to analyze and/or visualize data pulled from external data sources, and also provides tools to analyze curated study data in combination with reference data. <b>Study Data</b>, <b>Study Components</b>, and the <b>Features</b> available in the <b>MPS Database</b> are described briefly in the tables below.
+                            Study data and study components (e.g., MPS Models, devices, cell samples are manually curated into the MPS-Db. Data from reference data sources are manually and/or auto-curated. The MPS-Db provides tools to analyze and/or visualize data pulled from external data sources, and also provides tools to analyze curated study data in combination with reference data. Study data, study components, and the features available in the MPS-Db are described briefly in the tables below.
                             <br><br>
-                            Many of the terms used in the MPS-GUI and here in the <b>Help</b> are defined in the <b>Glossary</b>. It is recommended that users rely heavily on the <b>Glossary</b> to assist in understanding how to appropriately review, edit, and/or add data to the <b>MPS Database</b>.
+                            Many of the terms used in the MPS-GUI and here in the <b>Help</b> page are defined in the <b>Glossary</b>. It is recommended that users rely heavily on the <b>Glossary</b> to assist in understanding how to appropriately review, edit, and/or add data to the MPS-Db.
                         </li>
                     </ul>
                 </div>
@@ -409,7 +410,7 @@
         </div>
 
         <div id="overview1">
-            <button name="my_buttons" class="collapsible1">Study Components Lists </button>
+            <button name="my_buttons" class="collapsible1">Study Components </button>
             <div class="content1">
                 <div id="overview1viewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -424,48 +425,58 @@
                             <tbody>
                                 <tr>
                                 <td> Assay Method/Kits </td>
-                                    <td> A list of assay <b>Method/Kits</b> used to measure assay <b>Targets/Analytes</b>. For more information, <a href="#assaymts">click here</a>.</td>
+                                    <td> Assay method/kits used to measure assay targets/analytes.
+                                    For more information, <a href="#assaymts">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> Assay Targets/Analytes </td>
-                                    <td> A list of assay <b>Targets/Analytes</b> used to assess the response of a <b>MPS Model</b>. Assay <b>Targets/Analytes</b> are associated to the <b>Method/Kit</b> used to measure response. For more information, <a href="#assaymts">click here</a>.</td>
+                                    <td> Targets/analytes used to assess the response of a MPS model. Assay targets/analytes are associated to the method/kit used to measure response.
+                                    For more information, <a href="#assaymts">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> Cell Samples </td>
-                                    <td> A list of <b>Cell Samples</b> used in <b>MPS Models</b> in the <b>MPS Database</b>. The <b>Cell Types</b> and <b>Cell Origins</b> are included as part of the <b>Cell Sample</b>. For more information on this feature, <a href="#cellsamples">click here</a>.</td>
+                                    <td> Cell samples used in MPS models in the MPS-Db. The cell types and cell origins are included as part of the cell sample.
+                                    For more information, <a href="#cellsamples">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> Compounds </td>
-                                    <td> A list of <b>Chemicals</b> used in <b>Studies</b> and/or <b>Features</b> of the <b>MPS Database</b>. <b>Chemical</b> properties are curated from reference sources. For more information, <a href="#chemicallist">click here</a>.</td>
+                                    <td> Chemicals used in studies and/or features of the MPS-Db. Chemical properties are curated from reference sources.
+                                    For more information, <a href="#chemicallist">click here</a>.</td>
                                 </tr>
 
                                 <tr>
                                 <td> Devices </td>
-                                    <td> A list of <b>Devices</b> used in <b>MPS Models</b> in the <b>MPS Database</b> with the option to click on the <b>Device</b> to view details of the <b>Device</b>. For more information on this feature, <a href="#devices">click here</a>.</td>
+                                    <td> Devices used in MPS models in the MPS-Db with the option to click on the device to view details of the device.
+                                    For more information, <a href="#devices">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> Diseases </td>
-                                    <td> A list of <b>Diseases</b> in the <b>MPS Database</b>. For more information on this feature, <a href="#diseasemodels">click here</a>.</td>
+                                    <td> Diseases added into the MPS-Db.
+                                    For more information, <a href="#diseasemodels">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> Locations </td>
-                                    <td> A list of <b>Locations</b> within a <b>Device</b> where treatments can be added and/or samples removed. For more information on this feature, <a href="#mpslocations">click here</a>.</td>
+                                    <td> Locations within a device where treatments can be added and/or samples removed.
+                                    For more information, <a href="#mpslocations">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> MPS Models </td>
-                                    <td> A list of <b>MPS Models</b> in the <b>MPS Database</b> with the option to click on the model and view details of the model's design. For more information on this feature, <a href="#mpsmodels">click here</a>.</td>
+                                    <td> MPS Models in the MPS-Db with the option to click on the model and view details of the model's design.
+                                    For more information, <a href="#mpsmodels">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> Settings </td>
-                                    <td> A list of <b>Settings</b> used in describing the <b>Study</b> design. For more information, <a href="#settings">click here</a>.</td>
+                                    <td> Settings used in describing the study design.
+                                    For more information, <a href="#settings">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> Units of Measure </td>
-                                    <td> A list of <b>Units</b> available for quantifying values. For more information, <a href="#physicalunits">click here</a>.</td>
+                                    <td> Units available for quantifying values.
+                                    For more information, <a href="#physicalunits">click here</a>.</td>
                                 </tr>
                                 <tr>
-                                <td> Other Lists </td>
-                                <td> Options to view lists of other components of a <b>Study</b> are currently in development. </td>
+                                <td> Other Components </td>
+                                <td> Options to view additional components of a study are currently in development. </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -491,23 +502,28 @@
                             <tbody>
                                 <tr>
                                 <td> Study </td>
-                                    <td> A <b>Study</b> is a container for all data and metadata associated to an experiment assessing <b>MPS Model</b> response. A list of <b>Studies</b> in the <b>MPS Database</b>, with summary information about the <b>MPS Models</b> used in the <b>Study</b> and associated assay results, is provided on the <b>Studies</b> list page of the MPS-GUI. Selecting a <b>Study</b> from the list allows the user to focus on data from a single <b>Study</b>. For more information, <a href="#intrastudy">click here</a>.</td>
+                                    <td> A study is a container for all data and metadata associated to an experiment designed to assess MPS model response. A list of studies in the MPS-Db, with summary information about the MPS models used in the study and associated assay results, is provided on the <b>Studies</b> list page of the MPS-GUI. Selecting a study from the list allows the user to focus on data from a single study.
+                                    For more information, <a href="#intrastudy">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> Matrices </td>
-                                    <td> A <b>Study Matrix</b> is a method of grouping models within a <b>Study</b>. <b>Matrices</b> associated with an individual <b>Study</b> are shown on the <b>Study Matrices and Items</b> list page of the MPS-GUI. For more information, <a href="#intrastudy">click here</a>.</td>
+                                    <td> A matrix is used to group models within a study. Matrices associated with an individual study are shown on the <b>Study Matrices and Items</b> list page of the MPS-GUI.
+                                    For more information, <a href="#intrastudy">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> Matrix Items </td>
-                                <td> In a <b>Study</b>, a <b>Matrix Item</b> is the generic term for an individual organ model. <b>Matrix Items</b> are assigned to a <b>Matrix</b> within an individual <b>Study</b>. For more information, <a href="#intrastudy">click here</a>.</td>
+                                <td> A matrix item is the generic term for an individual MPS model. Matrix Items are assigned to a matrix within an individual study.
+                                For more information, <a href="#intrastudy">click here</a>.</td>
                                 </tr>
                                 <tr>
                                 <td> Assay Data Points </td>
-                                    <td> Measured assay <b>Targets/Analytes</b> values, for a specific time point relative to the start of an experiment, can be uploaded into the <b>MPS Database</b> and assigned to an individual <b>Matrix Item</b> within a specific <b>Study</b>. These data can be visualized/analyzed within the individual <b>Study</b> (intra-study), across studies (inter-study), and/or in combination with curated reference data. For more information, <a href="#intrastudy">click here</a>. </td>
+                                    <td> Measured assay targets/analyte values, for a specific time point relative to the start of an experiment, can be uploaded into the MPS-Db and assigned to an individual matrix item within a specific study. These data can be visualized/analyzed within the individual study (intra-study), across studies (inter-study), and/or in combination with curated reference data.
+                                    For more information, <a href="#intrastudy">click here</a>. </td>
                                 </tr>
                                 <tr>
                                 <td> Assay Images & Videos </td>
-                                    <td> Images and videos can be attached to a <b>Matrix Item</b> and displayed within a <b>Study</b>. For more information, <a href="#intrastudy">click here</a>.</td>
+                                    <td> Images and videos can be attached to a matrix item and displayed within a study.
+                                    For more information, <a href="#intrastudy">click here</a>.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -534,67 +550,80 @@
                             <tbody>
                                 <tr>
                                 <td> Intra-Study Analysis (Graphing/Reproducibility) </td>
-                                <td> Enables intra-study querying and subsequent visualization and analysis. For more information on intra-study assay data analysis, <a href="#intrastudy">click here</a>.</td>
+                                <td> Enables intra-study querying and subsequent visualization and analysis.
+                                For more information on intra-study assay data analysis, <a href="#intrastudy">click here</a>.</td>
                                 <td> 1</td>
                                 </tr>
                                 <tr>
                                 <td> Inter-Study Analysis (Graphing/Reproducibility) </td>
-                                <td> Enables inter-study querying and subsequent visualization and analysis. For more information on inter-study assay data analysis, <a href="#interstudy">click here</a>.</td>
+                                <td> Enables inter-study querying and subsequent visualization and analysis.
+                                For more information on inter-study assay data analysis, <a href="#interstudy">click here</a>.</td>
                                 <td> 1</td>
                                 </tr>
                                 <tr>
                                 <td> Study Sets </td>
-                                <td> Enables multiple studies to be grouped and referenced with one URL. For more information on study sets, <a href="#studyset">click here</a>.</td>
+                                <td> Enables multiple studies to be grouped and referenced with one URL.
+                                For more information on study sets, <a href="#studyset">click here</a>.</td>
                                 <td> 1</td>
                                 </tr>
                                 <tr>
                                 <td> References </td>
-                                <td> References to publications can be added and associated to MPS Models, Study Sets, Studies, and several other study components. For more information on references, <a href="#reference">click here</a>.</td>
+                                <td> References to publications can be added and associated to MPS Models, Study Sets, Studies, and several other study components.
+                                For more information on references, <a href="#reference">click here</a>.</td>
                                 <td> 1</td>
                                 </tr>
                                 <tr>
                                 <td> Diseases </td>
-                                <td> Provides a portal connecting information from clinical trials to MPS <b>Study Data</b>. Links are made based on <b>Disease</b>. Users can view summary information, then drill down to see additional disease-related details. For more information, <a href="#diseasemodels">click here</a>.</td>
+                                <td> Provides a portal connecting information from clinical trials to MPS study data. Links are made based on disease. Users can view summary information, then drill down to see additional disease-related details.
+                                For more information, <a href="#diseasemodels">click here</a>.</td>
                                 <td> 1, 13, 14, 15 </td>
                                 </tr>
                                 <tr>
                                 <td> Compound Report </td>
-                                <td> Provides a portal for viewing compound data and associated assay <b>Study Data</b>. For more information, <a href="#compoundreport">click here</a>.</td>
+                                <td> Provides a portal for viewing compound data and associated assay study data.
+                                For more information, <a href="#compoundreport">click here</a>.</td>
                                 <td> 1-5, 12 </td>
                                 </tr>
                                 <tr>
                                 <td> Chemical Data </td>
-                                <td> Provides a portal for looking at <b>Chemical</b> data from a variety of sources. Allows for searching by synonym, molecular weight, and other <b>Compound</b> properties. For more information, <a href="#chemicaldata">click here</a>.</td>
+                                <td> Provides a portal for looking at chemical data from a variety of sources. Allows for searching by synonym, molecular weight, and other compound properties.
+                                For more information, <a href="#chemicaldata">click here</a>.</td>
                                 <td>  2-5, 8, 9, 10, 11, 12 </td>
                                 </tr>
                                 <tr>
                                 <td> Bioactivities </td>
-                                <td> Provides a portal for searching <b>Chemcial</b> <b>Bioactivities</b> from a variety of sources. Provides a <b>Quick Search</b> option to search by <b>Compound</b>, biological target, and/or bioactivity name, and an <b>Advanced Search</b> option for selecting multiple <b>Compounds</b>, biological targets, and/or bioactivities. For more information, <a href="#bioactivities">click here</a>.</td>
+                                <td> Provides a portal for searching chemcial bioactivities from a variety of sources. Provides a <b>Quick Search</b> option to search by compound, biological target, and/or bioactivity name, and an <b>Advanced Search</b> option for selecting multiple compounds, biological targets, and/or bioactivities.
+                                For more information, <a href="#bioactivities">click here</a>.</td>
                                 <td> 8, 9, 12, manual </td>
                                 </tr>
                                 <tr>
                                 <td> Drug Trials </td>
-                                <td> Provides a portal for viewing <b>Drug Trial</b> data from a variety of sources. Trial type and trial finding are summarized in list format. Users can search by treatment <b>Compound</b>, trial type, species, and other aspects of the trial. For more information, <a href="#drugtrials">click here</a>.</td>
+                                <td> Provides a portal for viewing drug trial data from a variety of sources. Trial type and trial finding are summarized in list format. Users can search by treatment compound, trial type, species, and other aspects of the trial.
+                                For more information, <a href="#drugtrials">click here</a>.</td>
                                 <td> 2-5</td>
                                 </tr>
                                 <tr>
                                 <td> Adverse Events </td>
-                                <td> Provides a portal for searching and viewing reported <b>Adverse Events</b>, including estimated number of reports normalized by estimated drug usage. For more information, <a href="#adverseevents">click here</a>.</td>
+                                <td> Provides a portal for searching and viewing reported adverse events, including estimated number of reports normalized by estimated drug usage.
+                                For more information, <a href="#adverseevents">click here</a>.</td>
                                 <td> 6, 7</td>
                                 </tr>
                                 <tr>
                                 <td> Compare Adverse Events </td>
-                                <td> Enables comparison of multiple <b>Compounds</b> and <b>Adverse Events</b> side-by-side. For more information, <a href="#compareadverseevents">click here</a>.</td>
+                                <td> Enables comparison of multiple compounds and adverse events side-by-side.
+                                For more information, <a href="#compareadverseevents">click here</a>.</td>
                                 <td> 6, 7</td>
                                 </tr>
                                 <tr>
                                 <td> Heatmap (Bioactivities) </td>
-                                <td> Provides a <b>Heatmap</b> visualization of relative <b>Bioactivities</b> (e.g., bioavailability, Cmax, etc.) for one or more <b>Compounds</b> and one or more biological targets. For more information, <a href="#heatmap">click here</a>.</td>
+                                <td> Provides a heatmap visualization of relative bioactivities (e.g., bioavailability, Cmax, etc.) for one or more compounds and one or more biological targets.
+                                For more information, <a href="#heatmap">click here</a>.</td>
                                 <td> 2-5, 8, 9, 11, 12 </td>
                                 </tr>
                                 <tr>
                                 <td> Cluster Chemicals </td>
-                                <td> Provides a dendrogram of <b>Compounds</b> clustered by their respective properties and/or <b>Bioactivities</b>. For more information, <a href="#cluster">click here</a>.</td>
+                                <td> Provides a dendrogram of compounds clustered by their respective properties and/or bioactivities.
+                                For more information, <a href="#cluster">click here</a>.</td>
                                 <td> 2-5, 8, 9, 11, 12 </td>
                                 </tr>
                             </tbody>
@@ -622,7 +651,7 @@
                                 <tbody>
                                     <tr>
                                     <td> 1 </td>
-                                        <td> MPS Database Study Data </td>
+                                        <td> MPS-Db Study Data </td>
                                     <td> Manual Curation </td>
                                     </tr>
                                     <tr>
@@ -673,12 +702,12 @@
                                     <tr>
                                     <td> 11 </td>
                                     <td> DrugBank  </td>
-                                    <td> Auto Curation (Compound data updated when compound added to MPS Database) </td>
+                                    <td> Auto Curation (Compound data updated when compound added to MPS-Db) </td>
                                     </tr>
                                     <tr>
                                     <td> 12 </td>
                                     <td> ChEMBL </td>
-                                    <td> Auto Curation (Bioactivity data updated quarterly; Compound data updated when compound added to MPS Database) </td>
+                                    <td> Auto Curation (Bioactivity data updated quarterly; Compound data updated when compound added to MPS-Db) </td>
                                     </tr>
                                     <tr>
                                     <td> 13 </td>
@@ -719,27 +748,27 @@
                                 <tbody>
                                     <tr>
                                     <td> Registered MPS Users with No Additional Permissions  </td>
-                                    <td> Can view all reference data and associated features. Can view <b>Study</b> component lists (e.g., <b>MPS Models</b>, <b>Devices</b>, <b>Cell Samples</b>). Can view <b>Study Data</b> in <b>Studies</b> that have been designated as open to all registered MPS users, including: viewing <b>Matrix Item</b> setup, study protocols, images, videos, and <b>Study Data</b>. </td>
+                                    <td> Can view all reference data and associated features. Can view study components (e.g., MPS models, devices, cell samples). Can view study data in studies that have been designated as open to all registered MPS users, including: viewing matrix item setup, study protocols, images, videos, and assay data. </td>
                                     </tr>
                                     <tr>
                                     <td> Data Group Viewers and Users with Additional Permissions  </td>
-                                    <td> Have all the access of <i>registered MPS Users with No Additional Permissions</i> plus access to <b>Studies</b> to which they have been granted special access. Special access is sometimes granted to organ model devleopers (i.e. acknowledgement access) and/or project funders. </td>
+                                    <td> Have all the access of <i>registered MPS Users with No Additional Permissions</i> plus access to studies to which they have been granted special access. Special access is sometimes granted to MPS model develeopers (i.e. acknowledgement access) and/or project funders. </td>
                                     </tr>
                                     <tr>
                                     <td> Data Group Editors  </td>
-                                    <td> Have all the access of <i>Data Group Viewers and Users with Additional Permissions</i> plus the ability to edit their <b>Studies</b>, including: adding/deleting/editing <b>Studies</b> and <b>Study</b> details; adding/deleting/editing <b>Matrices</b> and <b>Matrix Items</b>; uploading assay data; and validating <b>Matrices</b>, <b>Matrix Items</b>, and <b>Studies</b>. </td>
+                                    <td> Have all the access of <i>Data Group Viewers and Users with Additional Permissions</i> plus the ability to edit their studies, including: adding/deleting/editing studies and study details, adding/deleting/editing matrices and matrix items, uploading assay data, and validating matrices, matrix items, and studies. </td>
                                     </tr>
                                     <tr>
                                     <td> Data Group Admins  </td>
-                                    <td> Have all the access of <i>Data Group Editors</i> plus the ability to sign off a <b>Study</b> and monitor the acknowledgment status of a <b>Study</b> (e.g., indicating a model developer has reviewed <b>Study</b> data). </td>
+                                    <td> Have all the access of <i>Data Group Editors</i> plus the ability to sign off a study and monitor the acknowledgment status of a study (e.g., a model developer reviewed study data). </td>
                                     </tr>
                                     <tr>
-                                    <td> MPS Database Administrators  </td>
-                                    <td> Have all the access of <i>Data Group Admins</i> plus the ability to add/edit/delete new controlled vocabulary (e.g., <b>MPS Models</b>, <b>Devices</b>, <b>Cell Samples</b>) and change user permissions, including establishing users with special access to specific studies. </td>
+                                    <td> MPS-Db Administrators  </td>
+                                    <td> Have all the access of <i>Data Group Admins</i> plus the ability to add/edit/delete new controlled vocabulary (e.g., MPS models, devices, cell samples) and change user permissions, including establishing users with special access to specific studies. </td>
                                     </tr>
                                 </tbody>
                             </table>
-                            Note: Additional permissions can be granted in a multitude of configurations to match individual user needs. For example, any registered user could be granted permission to add/edit <b>Cell Samples</b>, <b>Compounds</b>, <b>MPS Models</b>, etc.
+                            Note: Additional permissions can be granted in a multitude of configurations to match individual user needs. For example, any registered user could be granted permission to add/edit cell samples, compounds, MPS models, etc.
                         </li>
                     </ul>
                 </div>
@@ -853,7 +882,7 @@
 
     <div id="search_section" class="container">
 
-        <h1 class="sub1-bars"> Searching the MPS Database </h1>
+        <h1 class="sub1-bars"> Searching the MPS-Db </h1>
 
         <div id="search">
             <button name="my_buttons" class="collapsible1">Global Search</button>
@@ -862,9 +891,9 @@
                     <ul class="list-group">
                         <li class="list-group-item">
                             <ul class="list-unstyled">
-                                <li>Use a <b>Global Search</b> to search the whole <b>MPS Database</b> from the Home page
+                                <li>Use a <b>Global Search</b> to search the whole MPS-Db from the Home page
                                     <ul class="filled-circle">
-                                        <li>Go to the <b>MPS Database Home</b> page</li>
+                                        <li>Go to the <b>MPS-Db Home</b> page</li>
                                         <li>Type search text in the <b>Global</b> search bar</li>
                                         <li>Make preliminary selection (hit enter, click the blue <b>Search</b> button, or mouse down the options list to item of interest and click the left mouse button)</li>
                                         <li>Wait for a list of matching information to appear</li>
@@ -950,12 +979,12 @@
                 </div>
 
                 <div id="assaymts_editor">
-                    <button name="my_buttons" class="collapsible3">Details and Examples of Metadata Needed to Add New Assays to the MPS Database </button>
+                    <button name="my_buttons" class="collapsible3">Details and Examples of Metadata Needed to Add New Assays to the MPS-Db </button>
                     <div class="content3">
                         <div id="assaymtseditor" class="editorsubtainer">
                             <ul class="list-group">
                                 <li class="list-group-item background3">
-                                    To have a new assay added to the MPS Database, compile the information shown in the table and contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Assay to MPS Database").
+                                    To have a new assay added to the MPS-Db, compile the information shown in the table and contact an MPS-Db Administrator (send email to MPSHELP@pitt.edu with subject line "Add Assay to MPS-Db").
                                     <table class="table table-bordered table-condensed small table-components">
                                     <thead>
                                         <tr class="active">
@@ -1163,12 +1192,12 @@
                 </div>
 
                 <div id="cellsamples_editor">
-                    <button name="my_buttons" class="collapsible3">Details and Example of Metadata Needed to Add New Cell Samples to the MPS Database </button>
+                    <button name="my_buttons" class="collapsible3">Details and Example of Metadata Needed to Add New Cell Samples to the MPS-Db </button>
                     <div class="content3">
                         <div id="cellsampleseditor" class="editorsubtainer">
                             <ul class="list-group">
                                 <li class="list-group-item background3">
-                                To have a new <b>Cell Sample</b> added to the MPS Database, compile the information shown in the table and contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Cell Sample to MPS Database").
+                                To have a new <b>Cell Sample</b> added to the MPS-Db, compile the information shown in the table and contact an MPS-Db Administrator (send email to MPSHELP@pitt.edu with subject line "Add Cell Sample to MPS-Db").
                                     <table class="table table-bordered table-condensed small table-components">
                                     <thead>
                                         <tr class="active">
@@ -1195,7 +1224,7 @@
                                             <td> Human </td>
                                         </tr>
                                         <tr>
-                                            <td> Organ Modeled </td>
+                                            <td> MPS modeled </td>
                                             <td> yes </td>
                                             <td> Brain </td>
                                             <td> Brain </td>
@@ -1411,7 +1440,7 @@
                                 <li><br>Notes
                                     <ul class="filled-circle">
                                         <li>If a <b>Compound</b> is missing from the list and you have been granted permission to add compounds, add the compound by entering the ChEMBL ID and clicking the Retrieve button </li>
-                                        <li>If a <b>Compound</b> is missing from the list and you do not have permission to add compounds, provide the <b>Compound</b> name and the ChEMBL ID to an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Compound to MPS Database")</li>
+                                        <li>If a <b>Compound</b> is missing from the list and you do not have permission to add compounds, provide the <b>Compound</b> name and the ChEMBL ID to an MPS-Db Administrator (send email to MPSHELP@pitt.edu with subject line "Add Compound to MPS-Db")</li>
                                     </ul>
                                 </li>
                             </ul>
@@ -1445,12 +1474,12 @@
                 </div>
 
                 <div id="devices_editor">
-                    <button name="my_buttons" class="collapsible3">Details and Example of Metadata Needed to Add New Devices to the MPS Database </button>
+                    <button name="my_buttons" class="collapsible3">Details and Example of Metadata Needed to Add New Devices to the MPS-Db </button>
                     <div class="content3">
                         <div id="deviceseditor" class="editorsubtainer">
                             <ul class="list-group">
                                 <li class="list-group-item background3">
-                                To have a Device added to the MPS Database, compile the information shown in the table and contact an <b>MPS Database</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Device to MPS Database").
+                                To have a Device added to the MPS-Db, compile the information shown in the table and contact an MPS-Db Administrator (send email to MPSHELP@pitt.edu with subject line "Add Device to MPS-Db").
                                     <table class="table table-bordered table-condensed small table-components">
                                     <thead>
                                         <tr class="active">
@@ -1602,7 +1631,7 @@
         </div>
 
         <div id="diseaselist">
-            <button name="my_buttons" class="collapsible1">Diseases in the MPS Database </button>
+            <button name="my_buttons" class="collapsible1">Diseases in the MPS-Db </button>
             <div class="content1">
                 <div id="diseaselistviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -1615,7 +1644,7 @@
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>To have a new <b>Disease</b> added, contact an <b>MPS-Db</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Disease to MPS-Db") </li>
+                                        <li>To have a new <b>Disease</b> added, contact an MPS-Db Administrator (send email to MPSHELP@pitt.edu with subject line "Add Disease to MPS-Db") </li>
                                     </ul>
                                 </li>
                             </ul>
@@ -1639,7 +1668,7 @@
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>To have a new <b>Location</b> added, prepare a description of the location (including the MPS Model(s) that would utilize the location) and contact an <b>MPS-Db</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Location to MPS-Db")   </li>
+                                        <li>To have a new <b>Location</b> added, prepare a description of the location (including the MPS Model(s) that would utilize the location) and contact an MPS-Db Administrator (send email to MPSHELP@pitt.edu with subject line "Add Location to MPS-Db")   </li>
                                     </ul>
                                 </li>
                             </ul>
@@ -1679,7 +1708,7 @@
                             <ul class="list-group">
                             {#TODO: redo table with model and model version (get from excel file using the table generator#}
                                 <li class="list-group-item background3">
-                                To have a new <b>MPS Model</b> added to the MPS-Db, compile the information shown in the table and contact an <b>MPS-Db</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add MPS Model to MPS-Db").
+                                To have a new <b>MPS Model</b> added to the MPS-Db, compile the information shown in the table and contact an MPS-Db Administrator (send email to MPSHELP@pitt.edu with subject line "Add MPS Model to MPS-Db").
                                     <table class="table table-bordered table-condensed small table-components">
                                         <thead>
                                             <tr class="active">
@@ -1705,7 +1734,7 @@
                                                 <td> Blood-Brain Barrier (NVU) </td>
                                             </tr>
                                             <tr>
-                                                <td> Organ Modeling </td>
+                                                <td> MPS modeling </td>
                                                 <td> yes </td>
                                                 <td> Brain </td>
                                             </tr>
@@ -2120,7 +2149,7 @@
                                     <ul class="filled-circle">
                                         <li>This will only work for <b>Studies</b> that are accessible to you</li>
                                         <li>A method allowing all users to see the complete list of settings is in development</li>
-                                        <li>To have a new <b>Setting</b> added, prepare a description of the setting (including the MPS Model(s) that would utilize the setting) and contact an <b>MPS-Db</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Setting to MPS-Db" </li>
+                                        <li>To have a new <b>Setting</b> added, prepare a description of the setting (including the MPS Model(s) that would utilize the setting) and contact an MPS-Db Administrator (send email to MPSHELP@pitt.edu with subject line "Add Setting to MPS-Db" </li>
                                     </ul>
                                 </li>
                             </ul>
@@ -2144,7 +2173,7 @@
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>To have a new <b>Unit</b> added, contact an <b>MPS-Db</b> Administrator (send email to MPSHELP@pitt.edu with subject line "Add Unit to MPS-Db")   </li>
+                                        <li>To have a new <b>Unit</b> added, contact an MPS-Db Administrator (send email to MPSHELP@pitt.edu with subject line "Add Unit to MPS-Db")   </li>
                                     </ul>
                                 </li>
                             </ul>
@@ -2218,7 +2247,7 @@
                                                 <li>Scroll down to see the visualizations </li>
                                                 <li>For more information on overriding default grouping and filtering, <a href="#groupingfiltering">click here</a> </li>
                                                 <li>For more information on overriding default plotting options, <a href="#plottingoptions">click here</a> </li>
-                                                <li>For more information on overriding default reproducibility property options, <a href="#reproducibilityoptions">click here</a> </li>
+                                                <li>For more information on using and overriding default reproducibility property options, <a href="#reproducibilityoptions">click here</a> </li>
                                             </ul>
                                         </li>
                                         <li>Option 3 - Click on the <b>Download</b> button - to download selected data  </li>
@@ -2458,7 +2487,7 @@
         </div>
 
         <div id="reproducibilityoptions">
-            <button name="my_buttons" class="collapsible3">Overriding Reproducibility Options </button>
+            <button name="my_buttons" class="collapsible3">Using and Overriding Default Reproducibility Options </button>
             <div class="content3">
                 <div id="plottingoptionsviewer" class="viewersubtainer">
                     <ul class="list-group">
@@ -2489,30 +2518,30 @@
         </div>
 
         <div id="power_analysis">
-            <button name="my_buttons" class="collapsible3">Overriding Power Analysis Options </button>
+            <button name="my_buttons" class="collapsible3">Using and Overriding Default Power Analysis Options </button>
             <div class="content3">
                 <div id="power_analysis_viewer" class="viewersubtainer">
                     <ul class="list-group">
                         <li class="list-group-item background3">
-                            <p>A statistical power analysis methodology has been implemented in the MPS-Db to estimate the probability that a statistical test will find a significant difference between two different data groups, such as control and compound treatment groups (post hoc two-sample power analysis), or a significance difference from one treatment group (a priori one-sample power analysis) for a MPS organ model.</p>
+                            <p>A statistical power analysis methodology has been implemented in the MPS-Db to estimate the probability that a statistical test will find a significant difference between two different data groups, such as control and compound treatment groups (post hoc two-sample power analysis), or a significance difference from one treatment group (a priori one-sample power analysis) for an MPS model.</p>
                             <ul class="list-unstyled">
-                                {#TODO: power analysis stuff#}
-                                <li>Customized properties for power analysis are available in the MPS-Db via a "Sidebar" on the power analysis page
+                                <li> To perform power analysis
                                     <ul class="filled-circle">
-                                        <li>If hidden, click the <b>Toggle Sidebar</b> button to show the sidebar
-                                        <li>Make desired selections in the sidebar</li>
-                                    </ul>
-                                </li>
-                                <li>Click on the Show Details box next to a set of interest
-                                    <ul class="filled-circle">
+                                        <li>Click on the Show Details box next to a Target/Analyte (set) of interest</li>
                                         <li>Scroll down and select TWO compounds for Power Analysis</li>
                                         <li>Scroll down to see additional options (Effect Size Methods and Significance Level)
-                                        <li>Make desired selections (optional) </li>
+                                        <li>Make desired changes to effective size and significance level selections (optional) </li>
                                         <li>Click Run Analysis</li>
                                     </ul>
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
+                                        <li>Customized properties for power analysis are available in the MPS-Db via a "Sidebar" on the power analysis page
+                                            <ul class="open-circle">
+                                                <li>If hidden, click the <b>Toggle Sidebar</b> button to show the sidebar
+                                                <li>Make desired selections in the sidebar (for more information on overriding default grouping and filtering, <a href="#groupingfiltering">click here</a> )</li>
+                                            </ul>
+                                        </li>
                                         <li>By default, the screen will automatically refresh, to refresh manually, check the <b>Manually Refresh</b> box, make the desired changes, then click on the <b>Refresh</b> button to apply changes </li>
                                     </ul>
                                 </li>
@@ -2601,7 +2630,7 @@
                                                 <li>Disease Overview - disease basics </li>
                                                 <li>Disease Biology - active links to relevant biology/genomic information </li>
                                                 <li>Clinical Data - summarized findings from clinicaltrials.gov </li>
-                                                <li>Disease Models &amp; Studies - list of disease related <b>Models</b> in the <b>MPS-Db</b> and list of studies related to the disease  </li>
+                                                <li>Disease Models &amp; Studies - list of disease related <b>Models</b> in the MPS-Db and list of studies related to the disease  </li>
                                             </ul>
                                         </li>
                                     </ul>
@@ -3188,49 +3217,49 @@
                                                 <li>Group – select a Data Group (the team performing the study) </li>
                                                 <li>Study Type – indicate the general purpose of the <b>Study</b> (one is required; check all that apply) </li>
                                                 <li>Study Name – use an informative name (e.g., "Kidney-Liver Vitamin C Metabolism" is more informative than "Study-1") </li>
-                                                <li>Start Date - start of experiment (Day 0 is generally considered the day the first cells added to model) </li>
+                                                <li>Start Date - start of experiment (typically the day the first cells are added to the device) </li>
                                                 <li>Description - informative description (purpose, methods, results)</li>
                                                 <!--<li>Use in Calculations - checking <b>Use in Calculations</b> tells the MPS-Db to use this study's data in predictive modeling and other calculations  </li> -->
                                                 <li>Protocol File – a Word or pdf file containing the <b>Study</b> protocol </li>
-                                                <li>Image to Clarify A <b>Study</b> – recommend a picture of the setup or an illustration of the experimental protocol </li>
+                                                <li>Image to Illustrate A <b>Study</b> – recommend a picture of the setup or an illustration of the experimental protocol </li>
                                                 <!-- <li>For Integrated Chip Studies – select configuration if performing an integrated <b>Study</b>  </li> -->
-                                                <li>Study Setup (by treatment group) - if using this feature, <b>MUST</b> be used prior to first submit </li>
-                                                    <button name="my_buttons" class="collapsible4">Show/Hide Video Tutorial: Study Setup by Treatment Group Feature</button>
+                                                <li>Study Setup - easily add groups of chips to the study  </li>
+                                                    <button name="my_buttons" class="collapsible4">Show/Hide Video Tutorial: Study Setup by Group </button>
                                                     <div class="content4">
                                                           <div class="myIframe">
                                                             <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=c651e3de-e0ec-4138-937e-aad20144e538&v=1" width="720" height="405" style="padding: 0px; border: 1px solid #464646;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
                                                           </div>
                                                     </div>
                                                     <ul class="filled-circle">
-                                                        <li>Select an MPS Model </li>
-                                                        <li>Select an MPS Model Version (information about cells and settings will be pulled from the model version, if available)</li>
-                                                        <li> Enter the Number of Chips in the Control group</li>
-                                                        <li> Click on the <b>Add Setup Group</b> button</li>
-                                                        <li> Enter the Number of Chips in the Treated group </li>
-                                                        <li> Click on the <b>Add Compound</b> button </li>
-                                                        <li> Click on the <b>Add</b> button in the treated group row in the Compound column</li>
+                                                        <li> Select an MPS Model </li>
+                                                        <li> Select an MPS Model Version (information about cells and settings will be pulled from the model version)</li>
+                                                        <li> Click on the <b>Add Setup Group</b> button</li> (repeat as needed)
+                                                        <li> Enter the Number of Chips in each group </li>
+                                                        <li> Change the Test Type for each group, as needed</li>
+                                                        <li> Add compounds, additional cells, and additional settings by clicking on the <b>Add Compound</b>, <b>Add Cell</b>, or <b>Add Setting</b> button, respectively</li>
+                                                        <li> Click on the <b>Add</b> button in the row where the new setup information is to be added</li>
                                                         <li> Fill in the form (make sure to fill all the fields with an *)</li>
                                                         <li> Click the <b>Apply</b> button </li>
-                                                        <li> Add and/or remove other cells, settings, and/or compounds</li>
+                                                        <li> Remove cells, settings, and/or compounds by clicking the red X's (click on individual X's or, to remove a column, click on the red X in the column header, and to remove a row, click on the red X in the row label)</li>
                                                     </ul>
                                                 <li>Assays – for each combination of assay Method/Kit, Target/Analyte, and Unit used, add a row  </li>
                                                 <!--<li>Supporting Data – attach files that will assist other MPS-Db users in understanding the <b>Study</b> design and/or assay data (other than the protocol file, which is added separately)  </li> -->
                                             </ul>
                                         </li>
                                         <li>Click the <b>Submit</b> button to save changes</li>
-                                        <li>IMPORTANT: If the Study Setup by Treatment Group feature is to be used, it <b>MUST</b> be completed <b>PRIOR to the first Submit</b> of the Study</li>
-                                        <li>For information on continuing to add MPS models (<b>Matrix Items</b>) and assay data to the <b>Study</b> (Step 2), <a href="#matrices_editor">click here</a> </li>
                                     </ul>
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
+                                        <li>IMPORTANT: The option to setup a study by treatment group is only available <b>PRIOR to the first Submit</b> of the Study (option is not available when editing a study)</li>
+                                        <li>When using Study Setup by Treatment Group, chips will be numbered sequentially, starting from 1 (these can be changed in edit mode, if necessary)</li>
+                                        <li>When using Study Setup by Treatment Group, it is recommended that all chips be added prior to the first submit (additional chips can be added to the study in edit mode, but the process is more difficult)</li>
+                                        <li>For information on continuing to add MPS models (<b>Matrix Items</b>) and assay data to the <b>Study</b> (Step 2), <a href="#matrices_editor">click here</a> </li>
+                                         <li>When using Study Setup by Treatment Group, if an MPS model version has not been made and/or has not been populated correctly, cells and settings will not be automatically pulled into the group setup</li>
+                                        <li>When using Study Setup by Treatment Group, treatment compounds will need to be added as they are not part of the MPS model version (compounds cannot be saved as part of a model version)</li>
                                         <li>Everything in the <b>Study</b> can be edited until the <b>Study</b> Data Group Admin signs off the <b>Study</b> (then it is locked) </li>
-                                        <li>Data contained in files attached as <b>Supporting Data</b> are NOT available for visualization, analysis, or used in calculations within the MPS-GUI </li>
-                                        <li>All combinations of Method/Kit, Target/Analyte, and Unit must be listed in the <b>Assays</b> Section of the <b>Study Level Details</b> page <b>PROIR</b> to uploading assay data</li>
-                                        <li>If the Study Setup by Treatment Group feature is to be used, it <b>MUST</b> be completed <b>PRIOR to the first Submit</b> of the Study</li>
-                                        <li>The Study Setup by Treatment Group feature is designed to be used in cases where an organ model version has been made and is associated to the model used in the study</li>
-                                        <li>When using the Study Setup by Treatment Group feature, if an organ model version has not been made and/or has not been populated correctly, cells and settings will not be automatically pulled into the group setup</li>
-                                        <li>When using the Study Setup by Treatment Group feature, treatment compounds will need to be added as they are not part of the model version (compounds cannot be saved as part of a model version)</li>
+                                        <!--<li>Data contained in files attached as <b>Supporting Data</b> are NOT available for visualization, analysis, or used in calculations within the MPS-GUI </li>-->
+                                         <li>All combinations of Method/Kit, Target/Analyte, and Unit must be listed in the <b>Assays</b> Section of the <b>Study Level Details</b> page <b>PROIR</b> to uploading assay data</li>
                                     </ul>
                                 </li>
                                  <li><br>Additional Video Tutorial(s)
@@ -4255,7 +4284,7 @@ Results: add a summary of the study results. </td>
                                         <li>In the <i>Matrix Item Details</i> section
                                             <ul class="open-circle">
                                                 <li>Add/Edit the information as appropriate (add additional details if desired) </li>
-                                                <li>If possible, add the organ model protocol (if not added in the Matrix) </li>
+                                                <li>If possible, add the MPS model protocol (if not added in the Matrix) </li>
                                             </ul>
                                         </li>
                                         <li>In the <i>Compounds</i> section
@@ -4318,13 +4347,13 @@ Results: add a summary of the study results. </td>
                                         <li>Confirm that all combinations of Method/Kit, Target/Analyte, and Unit must be included in the <i>Assays</i> section of the <b>Study Level Details</b> page PRIOR to uploading assay data points for that combination</li>
 
                                         <li>Click on the <b>Upload Data</b> button </li>
-                                        <li>Click on the <b>Submit</b> button to save data to the <b>MPS-Db</b> </li>
+                                        <li>Click on the <b>Submit</b> button to save data to the MPS-Db </li>
                                     </ul>
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
                                         <li>The ONLY assay data that are editable in the MPS-GUI is the <b>Exclude</b> field (editable on the <b>Matrix Item</b> edit page) </li>
-                                        <li>Contact an <b>MPS-Db</b> Administrator for guidance on preparing data files</li>
+                                        <li>Contact an MPS-Db Administrator for guidance on preparing data files</li>
                                         <li>To replace assay data values with new values, correct the values in the MIF-C-a file and re-upload
                                         <ul class="open-circle">
                                             <li>Changes made to the <b>Exclude</b> field using the MPS-GUI will be lost when data are re-uploaded</li>
@@ -4458,7 +4487,7 @@ Results: add a summary of the study results. </td>
                                             <td> MIF-C-a and MIF-C-i </td>
                                             <td> yes </td>
                                             <td> required </td>
-                                            <td> Primarily identifier used to refer to a specific instance of an organ model. In cases where wells are being used as a static comparison to a chip, for purposes of entry into the MPS-Db, each of those wells will need to be assigned a Chip ID, which could be “PlateID-WellID” (e.g. P1234-B05). </td>
+                                            <td> Primarily identifier used to refer to a specific instance of an MPS model. In cases where wells are being used as a static comparison to a chip, for purposes of entry into the MPS-Db, each of those wells will need to be assigned a Chip ID, which could be “PlateID-WellID” (e.g. P1234-B05). </td>
                                             <td> c00001 </td>
                                             <td> c00001 </td>
                                         </tr>
@@ -4512,7 +4541,7 @@ Results: add a summary of the study results. </td>
                                             <td> MIF-C-a and MIF-C-i </td>
                                             <td> yes </td>
                                             <td> yes </td>
-                                            <td> Specifies a compartment in the Organ Model such as: brain, vascular, neural, apical, basal. Must be in MPS-Db llist. When  a sample is collected from the Organ Model, the compartment should be combined with a prefix indicating where the sample was collected, such as “effluent-brain” or “stock-brain”. Note that, when a chamber is image, no prefix would be used. </td>
+                                            <td> Specifies a compartment in the MPS model such as: brain, vascular, neural, apical, basal. Must be in MPS-Db llist. When  a sample is collected from the MPS model, the compartment should be combined with a prefix indicating where the sample was collected, such as “effluent-brain” or “stock-brain”. Note that, when a chamber is image, no prefix would be used. </td>
                                             <td> effluent-apical </td>
                                             <td> Apical </td>
                                         </tr>
@@ -4781,14 +4810,14 @@ Results: add a summary of the study results. </td>
                                     <ul class="filled-circle">
                                         <li>Prepare the image/video file</li>
                                         <li>Prepare an image/video metadata file (MIF-C-i) </li>
-                                        <li>Contact an <b>MPS-Db</b> Administrator to make arrangements for submitting the files</li>
+                                        <li>Contact an MPS-Db Administrator to make arrangements for submitting the files</li>
                                     </ul>
                                 </li>
                                 <li><br>Notes
                                     <ul class="filled-circle">
-                                        <li>Contact an <b>MPS-Db</b> Administrator for guidance on preparing media metadata files</li>
+                                        <li>Contact an MPS-Db Administrator for guidance on preparing media metadata files</li>
                                         <li>For details on the required file format of the media metadata file, <a href="#assaydata_editor">click here</a> and click to view the detailed specifications for MIF-C-a and MIF-C-i files </li>
-                                        <li>To remove media files, contact an <b>MPS-Db</b> Administrator for assistance</li>
+                                        <li>To remove media files, contact an MPS-Db Administrator for assistance</li>
                                     </ul>
                                 </li>
                             </ul>
