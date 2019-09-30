@@ -22,7 +22,7 @@ $(document).ready(function () {
 
     // Open and then close dialog so it doesn't get placed in window itself
     // RENAME
-    var dialog = $('#cellsample_dialog');
+    var dialog = $('#cell_sample_dialog');
     dialog.dialog({
         width: 900,
         height: 500,

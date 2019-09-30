@@ -20,6 +20,9 @@ $(document).ready(function () {
     // ERRORS
     var setup_table_errors_selector = $('#setup_table_errors').find('.errorlist');
 
+    // More selectors
+    var study_setup_table_section = $('#study_setup_table_section');
+
     var table_errors = {}
 
     setup_table_errors_selector.find('li').each(function() {
@@ -457,18 +460,28 @@ $(document).ready(function () {
                     )
                 )
             );
+
+            // SLOPPY, BAD
+            var new_td = $('<td>').html(
+                '<div class="error-message-section error-display important-display"></div>'
+            );
+
+            var number_of_items_input = $('#id_number_of_items')
+                .clone()
+                .removeAttr('id')
+                .attr('data-row', row_index)
+
+            // SLOPPY
+            if (study_setup_table_section.is(':visible')) {
+                number_of_items_input.attr('required', 'required');
+            }
+
+            new_td.append(
+                number_of_items_input
+            );
+
             new_row.append(
-                $('<td>')
-                .html(
-                    '<div class="error-message-section error-display important-display"></div>'
-                )
-                .append(
-                    $('#id_number_of_items')
-                        .clone()
-                        .removeAttr('id')
-                        .attr('data-row', row_index)
-                        // .attr('required', 'required')
-                )
+                new_td
             );
         }
         else {
@@ -492,14 +505,30 @@ $(document).ready(function () {
             );
         }
 
+        // SLOPPY
+        var test_type_input = $('#id_test_type')
+            .clone()
+            .removeAttr('id')
+            .attr('data-row', row_index)
+
+        // SLOPPY
+        if (study_setup_table_section.is(':visible')) {
+            test_type_input.attr('required', 'required');
+        }
+
         new_row.append(
-            $('<td>').append(
-                $('#id_test_type')
-                    .clone()
-                    .removeAttr('id')
-                    .attr('data-row', row_index)
-            )
+            $('<td>').append(test_type_input)
         );
+
+        // OLD
+        // new_row.append(
+        //     $('<td>').append(
+        //         $('#id_test_type')
+        //             .clone()
+        //             .removeAttr('id')
+        //             .attr('data-row', row_index)
+        //     )
+        // );
 
         $.each(prefixes, function(index, prefix) {
             var content_set = setup_to_use[prefix];
@@ -709,10 +738,10 @@ $(document).ready(function () {
         // Sloppy
         // MOVED TO ORGAN MODEL
         // if (protocol.val()) {
-        //     $('#study_setup_table_section').show('slow');
+        //     study_setup_table_section.show('slow');
         // }
         // else {
-        //     $('#study_setup_table_section').hide('slow');
+        //     study_setup_table_section.hide('slow');
         // }
 
         // TERMINATE EARLY IF FIRST RUN
@@ -785,10 +814,10 @@ $(document).ready(function () {
         // See if the table can be displayed
         // Sloppy
         // if (protocol.val()) {
-        //     $('#study_setup_table_section').show('slow');
+        //     study_setup_table_section.show('slow');
         // }
         // else {
-        //     $('#study_setup_table_section').hide('slow');
+        //     study_setup_table_section.hide('slow');
         // }
         //
         // window.spinner.stop();
@@ -963,10 +992,10 @@ $(document).ready(function () {
 
             // Show the table if there is an organ model
             if (organ_model.val()) {
-                $('#study_setup_table_section').show('slow');
+                study_setup_table_section.show('slow');
             }
             else {
-                $('#study_setup_table_section').hide('slow');
+                study_setup_table_section.hide('slow');
             }
 
             // Make the table
@@ -1169,7 +1198,7 @@ $(document).ready(function () {
         rebuild_table();
 
         // Show the table
-        $('#study_setup_table_section').show('slow');
+        study_setup_table_section.show('slow');
     }
 
     if (window.MASS_EDIT.matrix_id) {

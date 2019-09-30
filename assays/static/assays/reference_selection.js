@@ -18,7 +18,7 @@ $(document).ready(function () {
     });
 
     // Open and then close dialog so it doesn't get placed in window itself
-    var dialog = $('#dialog');
+    var dialog = $('#reference_dialog');
     dialog.dialog({
         width: 900,
         height: 500,
@@ -56,7 +56,7 @@ $(document).ready(function () {
         var reference_id = $(this).attr('data-reference-id');
         reference_id_selector.val(reference_id);
         var reference_name = this.attributes["name"].value;
-        $('#dialog').dialog('close');
+        dialog.dialog('close');
         $.each(reference_id_to_data[reference_id], function(current_field, current_value) {
             var current_column = current_row.find('[data-reference-field="'+current_field+'"]');
             if (current_column[0]) {

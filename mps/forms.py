@@ -56,11 +56,10 @@ class BootstrapForm(forms.ModelForm):
                     self.fields[field].widget.attrs['class'] = 'required'
 
             # Not really a good idea to use "private" attributes...
-            if getattr(self.fields[field], '_queryset', ''):
-                current_model = self.fields[field]._queryset.model
-                if current_model and current_model._meta.object_name:
-                    self.fields[field].widget.attrs['data-app'] = current_model._meta.app_label
-                    self.fields[field].widget.attrs['data-model'] = current_model._meta.object_name
+            if hasattr(self.fields[field], '_queryset'):
+                if hasattr(self.fields[field]._queryset, 'model'):
+                    self.fields[field].widget.attrs['data-app'] = self.fields[field]._queryset.model._meta.app_label
+                    self.fields[field].widget.attrs['data-model'] = self.fields[field]._queryset.model._meta.object_name
 
 
 

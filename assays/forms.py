@@ -1739,10 +1739,10 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         # ).distinct()
 
         # SLOPPY
-        self.fields['test_type'].widget.attrs['class'] += ' no-selectize test-type'
+        self.fields['test_type'].widget.attrs['class'] += ' no-selectize test-type required'
         # Bad
         self.fields['test_type'].widget.attrs['style'] = 'width:100px;'
-        self.fields['number_of_items'].widget.attrs['class'] = 'form-control number-of-items'
+        self.fields['number_of_items'].widget.attrs['class'] = 'form-control number-of-items required'
         # Bad
         # self.fields['number_of_items'].widget.attrs['style'] = 'margin-top:10px;'
 

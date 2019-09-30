@@ -12,6 +12,7 @@
     <script src="{% static "assays/organ_model_filter.js" %}"></script>
     <script src="{% static "assays/modify_matrix.js" %}"></script>
     <script src="{% static "assays/assaystudy_add.js" %}"></script>
+    <script src="{% static "assays/reference_selection.js" %}"></script>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -408,8 +409,7 @@
         </tbody>
     </table>
 
-    {# REMOVED FOR NOW #}
-    {% comment %}
+    {# ADDED BACK #}
     {{ supporting_data_formset.management_form }}
     <legend>Supporting Data</legend>
     {% if supporting_data_formset.non_form_errors %}
@@ -461,7 +461,8 @@
             {% endfor %}
         </tbody>
     </table>
-    {% endcomment %}
+
+    {% include 'add_reference.html' %}
 
     {# Hidden for Cells, Compounds, and Settings #}
     {# <div hidden> #}
