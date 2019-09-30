@@ -494,19 +494,39 @@ class AssayStudyMixin(FormHandlerMixin):
     template_name = 'assays/assaystudy_add.html'
     form_class = AssayStudyForm
 
+    # SUPPORTING DATA IS NOT IN ADD
+    # formsets = (
+    #     ('study_assay_formset', AssayStudyAssayFormSetFactory),
+    #     ('supporting_data_formset', AssayStudySupportingDataFormSetFactory),
+    #     ('reference_formset', AssayStudyReferenceFormSetFactory),
+    # )
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyMixin, self).get_context_data(**kwargs)
+
+        # TODO SLATED FOR REMOVAL
+        context.update({
+            'reference_queryset': AssayReference.objects.all()
+        })
+
+        return context
+
+
+class AssayStudyAdd(OneGroupRequiredMixin, AssayStudyMixin, CreateView):
+    # Supporting data and reference not in add
+    formsets = (
+        ('study_assay_formset', AssayStudyAssayFormSetFactory),
+        # ('supporting_data_formset', AssayStudySupportingDataFormSetFactory),
+        # ('reference_formset', AssayStudyReferenceFormSetFactory),
+    )
+
+
+class AssayStudyUpdate(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     formsets = (
         ('study_assay_formset', AssayStudyAssayFormSetFactory),
         ('supporting_data_formset', AssayStudySupportingDataFormSetFactory),
         ('reference_formset', AssayStudyReferenceFormSetFactory),
     )
-
-
-class AssayStudyAdd(OneGroupRequiredMixin, AssayStudyMixin, CreateView):
-    pass
-
-
-class AssayStudyUpdate(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
-    pass
 
 
 # class AssayStudyAdd(OneGroupRequiredMixin, CreateView):
@@ -2113,6 +2133,13 @@ class AssayStudySetUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
 class AssayStudyAddNew(OneGroupRequiredMixin, AssayStudyMixin, CreateView):
     template_name = 'assays/assaystudy_add_new.html'
     form_class = AssayStudyFormNew
+
+    # Supporting data and reference not in add
+    formsets = (
+        ('study_assay_formset', AssayStudyAssayFormSetFactory),
+        # ('supporting_data_formset', AssayStudySupportingDataFormSetFactory),
+        # ('reference_formset', AssayStudyReferenceFormSetFactory),
+    )
 
     # TODO TO BE REMOVED
     def get_context_data(self, **kwargs):

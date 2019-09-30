@@ -144,10 +144,10 @@ $(document).ready(function () {
         $(document).on('ready', autocollapse);
         $(window).on('resize', autocollapse);
     }
-    else {
-        // Get rid of footer in popup
-        $('#footer').remove();
-    }
+    // else {
+    //     // Get rid of footer in popup
+    //     $('#footer').remove();
+    // }
 
     function close_and_return_pk() {
         // SLOPPY
