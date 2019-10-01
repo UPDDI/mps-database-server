@@ -139,7 +139,13 @@
         <th colspan="3">Compound*</th>
     </tr>
     <tr>
-        <td colspan="3">{{ form.compound_compound }}</td>
+        <td colspan="3">
+            {{ form.compound_compound }}
+            <a class="popup-link" data-href="/compounds/add/?popup=1" data-window-name="compounds">
+                <span class="glyphicon glyphicon-plus text-success" aria-hidden="true"></span>
+                Create New Compound
+            </a>
+        </td>
     </tr>
     <tr>
         <th>Supplier*</th>

@@ -2739,10 +2739,10 @@ class AssayReference(FlaggableModel):
         return '{}. {}. {}. {}. doi:{}. PMID:{}'.format(self.authors, self.title, self.publication, self.year, self.doi, self.pubmed_id)
 
     def get_post_submission_url(self):
-        return '/assays/references/'
+        return '/assays/assayreference/'
 
     def get_absolute_url(self):
-        return '/assays/references/{}/'.format(self.id)
+        return '/assays/assayreference/{}/'.format(self.id)
 
     def get_delete_url(self):
         return '{}delete/'.format(self.get_absolute_url())

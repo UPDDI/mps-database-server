@@ -2365,11 +2365,11 @@ class AssayReferenceMixin(FormHandlerMixin):
     form_class = AssayReferenceForm
 
 
-class AssayReferenceAdd(OneGroupRequiredMixin, FormHandlerMixin, CreateView):
+class AssayReferenceAdd(OneGroupRequiredMixin, AssayReferenceMixin, CreateView):
     pass
 
 
-class AssayReferenceUpdate(CreatorOrSuperuserRequiredMixin, FormHandlerMixin, UpdateView):
+class AssayReferenceUpdate(CreatorOrSuperuserRequiredMixin, AssayReferenceMixin, UpdateView):
     pass
 
 # class AssayReferenceAdd(OneGroupRequiredMixin, CreateView):
@@ -2417,7 +2417,7 @@ class AssayReferenceDelete(DeletionMixin, DeleteView):
     """Delete a Reference"""
     model = AssayReference
     template_name = 'assays/assayreference_delete.html'
-    success_url = '/assays/references/'
+    success_url = '/assays/assayreference/'
 
 
 def get_summary_data(set_name, queryset, on_or_after_date=None):

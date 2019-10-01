@@ -85,7 +85,7 @@
                 </td>
                 <td>
                     {% for reference in object.microdevicereference_set.all %}
-                        <a href="/assays/references/{{ reference.reference.id }}" target="_blank">{{ reference.reference }}</a><br>
+                        <a href="/assays/assayreference/{{ reference.reference.id }}" target="_blank">{{ reference.reference }}</a><br>
                     {% endfor %}
                     {#{{ object.references|linebreaksbr|default:'-No References Listed-' }}#}
                 </td>

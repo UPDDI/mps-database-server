@@ -59,7 +59,7 @@
 
 <div hidden id="reference_dialog" title="Choose a Reference">
     <div class="row text-center padded-bottom">
-        <a href="/assays/references/add/" class="btn btn-lg btn-success" target="_blank" role="button">Create New Reference<br><h6>*Requires refresh</h6></a>
+        <a class="popup-link btn btn-lg btn-success" data-href="/assays/assayreference/add?popup=1" data-window-name="references" role="button">Create New Reference</a>
     </div>
     <table id="reference_table" class="table table-striped">
         <thead>
@@ -76,7 +76,7 @@
         {% for reference in reference_queryset %}
             <tr>
                 <td>
-                    <button type="button" class="reference-selector btn btn-xs btn-primary" data-reference-id="{{ reference.id }}" id="reference_{{ reference.id }}" name="{{ reference.id }}">Select</button>
+                    <button type="button" class="reference-selector btn btn-xs btn-primary" data-reference-id="{{ reference.id }}">Select</button>
                 </td>
                 <td data-reference-field="id" hidden>{{ reference.id }}</td>
                 <td data-reference-field="pubmed_id">{{ reference.pubmed_id }}</td>

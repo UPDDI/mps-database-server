@@ -157,11 +157,11 @@ urlpatterns = [
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/power_analysis/$', AssayStudyPowerAnalysisStudy.as_view(), name='assay-power-analysis-study'),
 
     # References
-    url(r'^assays/references/$', AssayReferenceList.as_view(), name='assay-reference-list'),
-    url(r'^assays/references/add/$', AssayReferenceAdd.as_view(), name='assay-reference-add'),
-    url(r'^assays/references/(?P<pk>[0-9]+)/$', AssayReferenceDetail.as_view(), name='assay-reference-detail'),
-    url(r'^assays/references/(?P<pk>[0-9]+)/update/$', AssayReferenceUpdate.as_view(), name='assay-reference-update'),
-    url(r'^assays/references/(?P<pk>[0-9]+)/delete/$', AssayReferenceDelete.as_view(), name='assay-reference-delete'),
+    url(r'^assays/assayreference/$', AssayReferenceList.as_view(), name='assay-reference-list'),
+    url(r'^assays/assayreference/add/$', AssayReferenceAdd.as_view(), name='assay-reference-add'),
+    url(r'^assays/assayreference/(?P<pk>[0-9]+)/$', AssayReferenceDetail.as_view(), name='assay-reference-detail'),
+    url(r'^assays/assayreference/(?P<pk>[0-9]+)/update/$', AssayReferenceUpdate.as_view(), name='assay-reference-update'),
+    url(r'^assays/assayreference/(?P<pk>[0-9]+)/delete/$', AssayReferenceDelete.as_view(), name='assay-reference-delete'),
 
     # TCTC Summary test
     url(r'^tctc_summary/$', TCTCSummary.as_view(), name='tctc_summary'),

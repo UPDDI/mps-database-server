@@ -151,25 +151,40 @@ $(document).ready(function () {
 
     function close_and_return_pk() {
         // SLOPPY
-        window.opener.SELECTIZE.refresh_dropdown(
-            $.urlParam('app'),
-            $.urlParam('model'),
-            $.urlParam('new_pk'),
-            $.urlParam('new_name')
-        );
+        // CATEGORICALLY A BAD PLACE FOR THIS
+        // NOT DRY HANDLING
+        // If cellsample
+        if ($.urlParam('model') === 'CellSample' || $.urlParam('model') === 'AssayReference') {
+            // SLOPPY
+            window.opener.TABLES.add_new_row_to_selection_list(
+                $.urlParam('app'),
+                $.urlParam('model'),
+                $.urlParam('new_pk'),
+                decodeURIComponent($.urlParam('new_name'))
+            );
+        }
+        else {
+            // SLOPPY
+            window.opener.SELECTIZE.refresh_dropdown(
+                $.urlParam('app'),
+                $.urlParam('model'),
+                $.urlParam('new_pk'),
+                decodeURIComponent($.urlParam('new_name'))
+            );
 
-        // try {
-        //     // SLOPPY
-        //     window.opener.SELECTIZE.refresh_dropdown(
-        //         $.urlParam('app'),
-        //         $.urlParam('model'),
-        //         $.urlParam('new_pk'),
-        //         $.urlParam('new_name')
-        //     );
-        // }
-        // catch (err) {
-        //     alert('An error has occurred while retrieving the new entry.');
-        // }
+            // try {
+            //     // SLOPPY
+            //     window.opener.SELECTIZE.refresh_dropdown(
+            //         $.urlParam('app'),
+            //         $.urlParam('model'),
+            //         $.urlParam('new_pk'),
+            //         $.urlParam('new_name')
+            //     );
+            // }
+            // catch (err) {
+            //     alert('An error has occurred while retrieving the new entry.');
+            // }
+        }
 
         window.close();
 
