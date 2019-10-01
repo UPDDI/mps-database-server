@@ -1,3 +1,4 @@
+// Ancient Cruft
 $(document).ready(function () {
 
     /*
@@ -9,7 +10,7 @@ $(document).ready(function () {
     $('#regenerate-data-cache-button').click(function() {
         $.ajax({
             type: 'GET',
-            url: '/bioactivities/initialize_data/', 
+            url: '/bioactivities/initialize_data/',
             dataType: 'json',
             success: function (data) {
                 $("#the-table").pivotUI(data);
