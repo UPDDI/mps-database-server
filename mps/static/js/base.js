@@ -149,11 +149,14 @@ $(document).ready(function () {
     //     $('#footer').remove();
     // }
 
-    function close_and_return_pk() {
+    // Close if set to close
+    if ($.urlParam('popup') == '1' && $.urlParam('close') == '1') {
+        // Return pk etc.
         // SLOPPY
         // CATEGORICALLY A BAD PLACE FOR THIS
         // NOT DRY HANDLING
         // If cellsample
+        // This will run even before it is closed (in case user closes the window early)
         if ($.urlParam('model') === 'CellSample' || $.urlParam('model') === 'AssayReference') {
             // SLOPPY
             window.opener.TABLES.add_new_row_to_selection_list(
@@ -171,30 +174,10 @@ $(document).ready(function () {
                 $.urlParam('new_pk'),
                 decodeURIComponent($.urlParam('new_name'))
             );
-
-            // try {
-            //     // SLOPPY
-            //     window.opener.SELECTIZE.refresh_dropdown(
-            //         $.urlParam('app'),
-            //         $.urlParam('model'),
-            //         $.urlParam('new_pk'),
-            //         $.urlParam('new_name')
-            //     );
-            // }
-            // catch (err) {
-            //     alert('An error has occurred while retrieving the new entry.');
-            // }
         }
 
-        window.close();
-
-        return false;
-    }
-
-    // Close if set to close
-    if ($.urlParam('popup') == '1' && $.urlParam('close') == '1') {
         setTimeout(function() {
-             close_and_return_pk();
+             window.close();
         }, 3000)
     }
 
