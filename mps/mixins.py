@@ -497,15 +497,26 @@ class FormHandlerMixin(object):
 
             if is_popup:
                 if self.object.id:
-                    return redirect(
-                        '{}?popup=1&close=1&app={}&model={}&new_pk={}&new_name={}'.format(
-                            self.object.get_post_submission_url(),
-                            self.object._meta.app_label,
-                            self.object._meta.object_name,
-                            self.object.id,
-                            urllib.parse.quote(str(self.object)),
+                    if hasattr(self.object, 'get_string_for_processing'):
+                        return redirect(
+                            '{}?popup=1&close=1&app={}&model={}&new_pk={}&new_name={}'.format(
+                                self.object.get_post_submission_url(),
+                                self.object._meta.app_label,
+                                self.object._meta.object_name,
+                                self.object.id,
+                                urllib.parse.quote(str(self.object.get_string_for_processing())),
+                            )
                         )
-                    )
+                    else:
+                        return redirect(
+                            '{}?popup=1&close=1&app={}&model={}&new_pk={}&new_name={}'.format(
+                                self.object.get_post_submission_url(),
+                                self.object._meta.app_label,
+                                self.object._meta.object_name,
+                                self.object.id,
+                                urllib.parse.quote(str(self.object)),
+                            )
+                        )
                 else:
                     return redirect(
                         '{}?popup=1&close=1'.format(

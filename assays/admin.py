@@ -841,7 +841,8 @@ class AssayStudyAdmin(LockableAdmin):
                     ('created_by', 'created_on'),
                     ('modified_by', 'modified_on'),
                     ('signed_off_by', 'signed_off_date'),
-                    ('signed_off_notes',)
+                    ('signed_off_notes',),
+                    ('flagged', 'reason_for_flag')
                 )
             }
         ),

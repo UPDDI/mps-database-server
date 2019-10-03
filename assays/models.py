@@ -22,6 +22,8 @@ import collections
 # TODO REORGANIZE
 import django.forms as forms
 
+from mps.utils import *
+
 
 # These are here to avoid potentially messy imports, may change later
 def attr_getter(item, attributes):
@@ -2734,6 +2736,14 @@ class AssayReference(FlaggableModel):
             'year': self.year,
             'doi': self.doi,
         }
+
+    # CRUDE
+    def get_string_for_processing(self):
+        return COMBINED_VALUE_DELIMITER.join(str(x) for x in [
+            self.authors,
+            self.title,
+            self.pubmed_id
+        ])
 
     def __str__(self):
         return '{}. {}. {}. {}. doi:{}. PMID:{}'.format(self.authors, self.title, self.publication, self.year, self.doi, self.pubmed_id)

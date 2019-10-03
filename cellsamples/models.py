@@ -8,6 +8,8 @@ from mps.base.models import LockableModel, FlaggableModel
 from django.contrib.auth.models import Group
 from django.urls import reverse
 
+from mps.utils import *
+
 
 class Organ(LockableModel):
     """Organ details an organ name and (with an inline) the cell types associated with it"""
@@ -241,6 +243,29 @@ class CellSample(FlaggableModel):
                 self.cell_type,
                 self.supplier
             )
+
+    # CRUDE
+    def get_string_for_processing(self):
+        if self.patient_age or self.patient_gender != 'N' or self.patient_condition:
+            return COMBINED_VALUE_DELIMITER.join(str(x) for x in [
+                self.receipt_date,
+                self.cell_type,
+                self.cell_subtype,
+                self.supplier,
+                self.barcode,
+                '{} year old {} {}'.format(self.patient_age, self.patient_gender, self.patient_condition),
+                str(self),
+            ])
+        else:
+            return COMBINED_VALUE_DELIMITER.join(str(x) for x in [
+                self.receipt_date,
+                self.cell_type,
+                self.cell_subtype,
+                self.supplier,
+                self.barcode,
+                '',
+                str(self),
+            ])
 
     def get_absolute_url(self):
         return "/cellsamples/cellsample/{}".format(self.id)

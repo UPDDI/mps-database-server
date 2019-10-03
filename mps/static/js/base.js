@@ -167,13 +167,19 @@ $(document).ready(function () {
             );
         }
         else {
-            // SLOPPY
-            window.opener.SELECTIZE.refresh_dropdown(
-                $.urlParam('app'),
-                $.urlParam('model'),
-                $.urlParam('new_pk'),
-                decodeURIComponent($.urlParam('new_name'))
-            );
+            // Crude propogation
+            var current_window = window.opener;
+            while (current_window) {
+                // SLOPPY
+                current_window.SELECTIZE.refresh_dropdown(
+                    $.urlParam('app'),
+                    $.urlParam('model'),
+                    $.urlParam('new_pk'),
+                    decodeURIComponent($.urlParam('new_name'))
+                );
+
+                current_window = current_window.opener;
+            }
         }
 
         setTimeout(function() {

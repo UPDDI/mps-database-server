@@ -119,28 +119,30 @@ $(document).ready(function () {
                 .clone()
                 .addClass('success');
 
+            var split_name = new_name.split(window.SIGILS.COMBINED_VALUE_SIGIL);
+
             // CRUDE
-            new_row.find('.cellsample-selector').attr('data-cell-sample-id', new_pk);
+            new_row.find('.cellsample-selector').attr('data-cell-sample-id', new_pk).attr('data-name', split_name[6]);
             new_row.find('td').eq(1).text(new_pk);
-            new_row.find('td').eq(2).text('NEW');
-            new_row.find('td').eq(3).text(new_name);
-            new_row.find('td').eq(4).text('NEW');
-            new_row.find('td').eq(5).text('NEW');
-            new_row.find('td').eq(6).text('NEW');
-            new_row.find('td').eq(7).text('NEW');
+            new_row.find('td').eq(2).text(split_name[0]);
+            new_row.find('td').eq(3).text(split_name[1]);
+            new_row.find('td').eq(4).text(split_name[2]);
+            new_row.find('td').eq(5).text(split_name[3]);
+            new_row.find('td').eq(6).text(split_name[4]);
+            new_row.find('td').eq(7).text(split_name[5]);
 
             // Acquire the label
-            window.CELLS.cell_sample_id_to_label[new_pk] = new_name;
+            window.CELLS.cell_sample_id_to_label[new_pk] = split_name[6];
 
             cell_sample_table.DataTable().row.add(new_row).draw();
         }
         // If reference
         else if (current_model === 'AssayReference') {
-            var split_name = new_name.split('.');
+            var split_name = new_name.split(window.SIGILS.COMBINED_VALUE_SIGIL);
             var authors = split_name[0];
             var title = split_name[1];
             // SLOPPY
-            var pmid = new_name.slice(new_name.indexOf('PMID:') + 5);
+            var pmid = split_name[2];
 
             var reference_table = $('#reference_table');
 
