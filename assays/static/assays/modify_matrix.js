@@ -454,10 +454,11 @@ $(document).ready(function () {
                 $('<td>').html(
                     '<div class="no-wrap">' + buttons_to_add + '</div>'
                 ).append(
-                    $('<h3>').append($('<span>')
-                        .addClass('label label-primary')
-                        .text('Group ' + (row_index + 1))
-                    )
+                    $('<span>').text('Group ' + (row_index + 1))
+                    // $('<h3>').append($('<span>')
+                    //     .addClass('label label-primary')
+                    //     .text('Group ' + (row_index + 1))
+                    // )
                 )
             );
 
@@ -487,10 +488,11 @@ $(document).ready(function () {
         else {
             new_row.append(
                 $('<td>').append(
-                    $('<h3>').append($('<span>')
-                        .addClass('label label-primary')
-                        .text('Group ' + (row_index + 1))
-                    )
+                    $('<span>').text('Group ' + (row_index + 1))
+                    // $('<h3>').append($('<span>')
+                    //     .addClass('label label-primary')
+                    //     .text('Group ' + (row_index + 1))
+                    // )
                 )
             );
             new_row.append(
