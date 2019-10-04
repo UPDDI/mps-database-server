@@ -106,6 +106,9 @@ $(document).ready(function() {
     });
     sign_off_confirm.removeProp('hidden');
 
+    // Show the full container
+    $('#sign_off_container').show();
+
     mark_reviewed_button_group.click(function() {
         sign_off_confirm.dialog('open');
     });
