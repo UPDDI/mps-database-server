@@ -4144,10 +4144,10 @@ def get_pubmed_reference_data(request):
         content_type="application/json"
     )
 
-# SOmewhat crude, but we need some way to perform filters etc.
-dropdown_processing = {
-    ''
-}
+# Somewhat crude, but we need some way to perform filters etc. if we use this
+# dropdown_processing = {
+#     ''
+# }
 
 
 # Why here in Assays?

@@ -94,8 +94,8 @@
     <table class="table table-striped inlines" id="{{ supporting_data_formset.prefix }}-group" name="supporting_data">
         <thead>
             <tr>
-                <th>Description*</th>
                 <th>Supporting Data File*</th>
+                <th>Description*</th>
                 <th>Delete</th>
             </tr>
         </thead>
@@ -110,8 +110,8 @@
                                value="{{ supporting_data.id.value }}">
                     </td>
                     {% endif %}
-                    <td>{{ supporting_data.description }}</td>
                     <td>{{ supporting_data.supporting_data }}</td>
+                    <td>{{ supporting_data.description }}</td>
                     <td>{{ supporting_data.DELETE }}</td>
                 </tr>
             {% endfor %}
