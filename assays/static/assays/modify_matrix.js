@@ -347,7 +347,7 @@ $(document).ready(function () {
                 // NOTE THIS ONLY HAPPENS WHEN IT IS NEEDED IN ADD PAGE
                 else {
                     var split_time = window.SPLIT_TIME.get_split_time(
-                        value,
+                        value
                     );
 
                     $.each(split_time, function(time_name, time_value) {
