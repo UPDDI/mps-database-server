@@ -276,7 +276,7 @@
         </li>
         <li title="Give feedback, ask questions, or view the knowledge base">
             <a class="navbar-feedback"
-               onclick="window.open('/feedback/',
+               onclick="window.open('/feedback/submit/',
                 'win',
                 'toolbars=0,width=1000,height=760,left=200,top=200,scrollbars=1,resizable=1')">
                 Feedback
@@ -365,17 +365,23 @@
           </p>
         </div>
         <div class="col-xs-3">
-          <span class="pull-right">
-            <a onclick="window.open('/feedback/',
-             'win',
-             'toolbars=0,width=1000,height=760,left=200,top=200,scrollbars=1,resizable=1')">
-                Give Feedback
-            </a>
-            <br>
-            <a target="_blank" href="https://github.com/UPDDI">Contribute on Github</a>
+          <div class="pull-right">
+          <a class="btn btn-default" onclick="window.open('https://forms.gle/KeCLm2H5jP3D12CCA',
+            'survey',
+            'toolbars=0,width=1000,height=760,left=200,top=200,scrollbars=1,resizable=1')">
+              Take a Survey
+          </a>
+          <br>
+          <a onclick="window.open('/feedback/submit/',
+           'win',
+           'toolbars=0,width=1000,height=760,left=200,top=200,scrollbars=1,resizable=1')">
+              Give Feedback
+          </a>
+          <br>
+          <a target="_blank" href="https://github.com/UPDDI">Contribute on Github</a>
 {#          Add about section later#}
 {#          <a href="#/about">About the MPS Project</a>#}
-          </span>
+          </div>
         </div>
       </div>
     </footer>

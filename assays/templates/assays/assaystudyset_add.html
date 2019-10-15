@@ -37,27 +37,6 @@
 {% else %}
 <div hidden id="list_section">
 {% endif %}
-    {# A little odd, I actually populate this by iterating over the queryset in the form #}
-    {# (Perhaps it would be more semantic to iterate over something passed in the context #}
-    {% comment %} <table class="table table-striped table-bordered" id="study_data_table">
-        <thead>
-            <tr>
-                <th>Select</th>
-                <th>Study</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for study in form.studies.field.queryset.all %}
-            <tr>
-                <td style="text-align:center;">
-                    <input type="checkbox" class="big-checkbox study-selector" value="{{ study.id }}">
-                </td>
-                <td>{{ study }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table> {% endcomment %}
-
     <h3 hidden id="study_list_hint">
     <div class="alert alert-info" role="alert">
         <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>

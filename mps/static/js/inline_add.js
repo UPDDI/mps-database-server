@@ -82,12 +82,14 @@ $(document).ready(function () {
             // Add values to input
             $('#'+ current_title + '-' + i + ' input').each(function () {
                 $(this).attr("value", this.value);
-                add.find(this.id).attr('value', this.value);
+                add.find('#' + this.id).val(this.value);
+                add.find('#' + this.id).attr('value', this.value);
             });
             // Add selected attribute to selected option of each select
             $('#'+ current_title + '-' + i + ' select').each(function (){
                 //console.log(this.id);
                 $('#' + this.id + ' option[value="' + $(this).val() + '"]').attr("selected", true);
+                add.find('#' + this.id).val(this.value);
                 add.find('#' + this.id + ' option[value="' + $(this).val() + '"]').attr("selected", true);
             });
 

@@ -1772,7 +1772,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         errors = {'organ_model': [], 'setup_data': []}
         current_errors = errors.get('setup_data')
 
-        study = super(AssayStudyFormNew, self).save(commit=False)
+        # study = super(AssayStudyFormNew, self).save(commit=False)
 
         if self.cleaned_data.get('setup_data', None):
             all_setup_data = json.loads(self.cleaned_data.get('setup_data', '[]'))

@@ -136,7 +136,7 @@ def mps_help(request):
 #added sck
 # TODO NOT DRY
 def mps_about(request):
-    number_of_days = 30
+    number_of_days = 90
 
     # Needed to make minimum timezone aware
     minimum_datetime = datetime.min.replace(tzinfo=pytz.UTC)

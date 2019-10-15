@@ -57,18 +57,26 @@ $(document).ready(function () {
         dialog.dialog('close');
     });
 
-    // Display all labels (irrelevant in matrix)
-    $('.cell-sample-id-field').each(function() {
-        // Get label
-        var current_parent = $(this).parent().parent().parent().parent().parent();
-        current_parent.find('label').text($('#cell_sample_' + $(this).val()).attr('data-name'));
-        // Turn density into scientific notation
-        // TODO SUBJECT TO CHANGE
-        var current_density = current_parent.find('input[name$="-density"]');
-        var current_number = Number(current_density.val());
-        if (current_number && current_number > 9999) {
-            // TODO TODO TODO THIS DOES NOT WORK IN FIREFIX
-            current_density.val(current_number.toExponential());
-        }
+    function refresh_all_cell_samples() {
+        // Display all labels (irrelevant in matrix)
+        $('.cell-sample-id-field').each(function() {
+            // Get label
+            var current_parent = $(this).parent().parent().parent().parent().parent();
+            current_parent.find('label').text($('#cell_sample_' + $(this).val()).attr('data-name'));
+            // Turn density into scientific notation
+            // TODO SUBJECT TO CHANGE
+            var current_density = current_parent.find('input[name$="-density"]');
+            var current_number = Number(current_density.val());
+            if (current_number && current_number > 9999) {
+                // TODO TODO TODO
+                current_density.val(current_number.toExponential());
+            }
+        });
+    }
+
+    $(document).on('click', '.inline td input[name$="-DELETE"]', function() {
+        refresh_all_cell_samples();
     });
+
+    refresh_all_cell_samples();
 });

@@ -11,8 +11,32 @@ $(document).ready(function() {
     function reproPie() {
         studies_table.show();
 
-        var number_of_rows = $('.study').length;
-        var pie, pieData, pieOptions, pieChart;
+        var pieOptions = {
+            legend: 'none',
+            slices: {
+                0: {color: '#74ff5b'},
+                1: {color: '#fcfa8d'},
+                2: {color: '#ff7863'}
+            },
+            pieSliceText: 'none',
+            pieSliceTextStyle: {
+                color: 'black',
+                bold: true,
+                fontSize: 12
+            },
+            'chartArea': {'width': '90%', 'height': '90%'},
+            backgroundColor: {fill: 'transparent'},
+            pieSliceBorderColor: "black",
+            tooltip: {
+                textStyle: {
+                    fontName: 'verdana', fontSize: 10
+                }
+            }
+            // enableInteractivity: false
+        };
+
+        var number_of_rows = studies_table.find('tr').length - 1;
+        var pie, pieData, pieChart;
         for (x = 0; x < number_of_rows; x++) {
             pieData = null;
 
@@ -26,29 +50,6 @@ $(document).ready(function() {
                         ['Acceptable', parseInt(pie[1])],
                         ['Poor', parseInt(pie[2])]
                     ]);
-                    pieOptions = {
-                        legend: 'none',
-                        slices: {
-                            0: {color: '#74ff5b'},
-                            1: {color: '#fcfa8d'},
-                            2: {color: '#ff7863'}
-                        },
-                        pieSliceText: 'none',
-                        pieSliceTextStyle: {
-                            color: 'black',
-                            bold: true,
-                            fontSize: 12
-                        },
-                        'chartArea': {'width': '90%', 'height': '90%'},
-                        backgroundColor: {fill: 'transparent'},
-                        pieSliceBorderColor: "black",
-                        tooltip: {
-                            textStyle: {
-                                fontName: 'verdana', fontSize: 10
-                            }
-                        }
-                        // enableInteractivity: false
-                    };
                 }
                 // else {
                 //     pieData = google.visualization.arrayToDataTable([

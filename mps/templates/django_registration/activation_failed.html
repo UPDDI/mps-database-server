@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<li class="active">Activation Falied</li>
+{% endblock %}
+
+{% block content %}
+<div class="alert alert-danger" role="alert">
+  <span class="glyphicon glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+  <span class="sr-only">Danger:</span>
+  Account activation failed. Did you already activate your account?
+</div>
+{% endblock %}
