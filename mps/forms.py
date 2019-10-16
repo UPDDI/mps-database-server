@@ -61,6 +61,9 @@ class BootstrapForm(forms.ModelForm):
                     self.fields[field].widget.attrs['data-app'] = self.fields[field]._queryset.model._meta.app_label
                     self.fields[field].widget.attrs['data-model'] = self.fields[field]._queryset.model._meta.object_name
 
+            # Crude way to indicate default
+            if hasattr(self.fields[field], 'initial'):
+                self.fields[field].widget.attrs['data-default'] = self.fields[field].initial
 
 
 class SignOffMixin(BootstrapForm):

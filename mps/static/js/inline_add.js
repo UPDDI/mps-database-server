@@ -12,6 +12,32 @@ $(document).ready(function () {
 
         default_rows[set_title] = $(this).find('.inline:last').clone();
 
+        default_rows[set_title].find('input:not([type="file"])').each(function() {
+            if ($(this).attr('data-default')) {
+                $(this).val($(this).attr('data-default'));
+                // DUMB
+                $(this).attr('value', $(this).attr('data-default'));
+            }
+            else {
+                $(this).val('');
+                // DUMB
+                $(this).attr('value', '');
+            }
+        });
+
+        default_rows[set_title].find('select').each(function() {
+            if ($(this).attr('data-default')) {
+                $(this).val($(this).attr('data-default'));
+                // DUMB
+                $(this).find('option[value="' + $(this).attr('data-default') + '"]').attr("selected", true);
+            }
+            else {
+                $(this).val('');
+                // DUMB
+                $(this).find('option[value=""]').attr("selected", true);
+            }
+        });
+
         $('#add_button-'+set_title).click(function() {
             var current_set_title = this.id.split('-').slice(1).join('-');
             var current_title = $('#'+current_set_title+'-group').find('.inline')[0].id.split('-')[0];
@@ -82,15 +108,18 @@ $(document).ready(function () {
             // Add values to input
             $('#'+ current_title + '-' + i + ' input').each(function () {
                 $(this).attr("value", this.value);
-                add.find('#' + this.id).val(this.value);
-                add.find('#' + this.id).attr('value', this.value);
+                var current_add = add.find('#' + this.id);
+                current_add.val(this.value);
+                current_add.attr('value', this.value);
             });
             // Add selected attribute to selected option of each select
             $('#'+ current_title + '-' + i + ' select').each(function (){
                 //console.log(this.id);
                 $('#' + this.id + ' option[value="' + $(this).val() + '"]').attr("selected", true);
-                add.find('#' + this.id).val(this.value);
-                add.find('#' + this.id + ' option[value="' + $(this).val() + '"]').attr("selected", true);
+                var current_add = add.find('#' + this.id);
+
+                current_add.val(this.value);
+                current_add.find('option[value="' + $(this).val() + '"]').attr("selected", true);
             });
 
             var replacement = add.html().replace(/\-\d+\-/g,'-'+ (i-1) +'-');
