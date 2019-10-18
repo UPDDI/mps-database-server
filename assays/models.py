@@ -24,6 +24,8 @@ import django.forms as forms
 
 from mps.utils import *
 
+import reversion
+
 
 # These are here to avoid potentially messy imports, may change later
 def attr_getter(item, attributes):
@@ -166,7 +168,7 @@ def get_center_id(group_id):
 
     return data
 
-
+@reversion.register(follow=['physicalunits_set'])
 class UnitType(LockableModel):
     """Unit types for physical units"""
 
@@ -178,6 +180,7 @@ class UnitType(LockableModel):
         return '{}'.format(self.unit_type)
 
 
+# Doing follows for units would be difficult, there are a lot of relations!
 # TODO THIS NEEDS TO BE REVISED (IDEALLY REPLACED WITH PHYSICALUNIT BELOW)
 class PhysicalUnits(LockableModel):
     """Measures of concentration and so on"""
@@ -774,6 +777,7 @@ class AssayPlateTestResult(FlaggableRestrictedModel):
         return '/assays/assayplatetestresult/{}/delete/'.format(self.id)
 
 
+# DEPRECATED: Slated to be removed
 class AssayStudyConfiguration(LockableModel):
     """Defines how chips are connected together (for integrated studies)"""
 
@@ -805,6 +809,7 @@ class AssayStudyConfiguration(LockableModel):
         return '/assays/studyconfiguration/'
 
 
+# DEPRECATED
 class AssayStudyModel(models.Model):
     """Individual connections for integrated models"""
 
@@ -1411,6 +1416,7 @@ class AssayChipResult(models.Model):
     )
 
 
+# DEPRECATED
 class AssayDataUpload(FlaggableRestrictedModel):
     """Shows the history of data uploads for a readout; functions as inline"""
 
@@ -1438,6 +1444,12 @@ class AssayDataUpload(FlaggableRestrictedModel):
         return urllib.parse.unquote(self.file_location.split('/')[-1])
 
 
+# By following the datapoins, we can restore them with django-reversion
+# "replaced" should be deprecated
+@reversion.register(follow=[
+    'study',
+    # 'assaydatapoint_set'
+])
 class AssayDataFileUpload(FlaggableModel):
     """Shows the history of data uploads for a study; functions as inline"""
 
@@ -1478,7 +1490,7 @@ class AssayTarget(LockableModel):
         return '{0}'.format(self.name)
 
 
-class AssaySubtarget(models.Model):
+class AssaySubtarget(FlaggableModel):
     """Describes a target for situations where manually curated lists are prohibitively expensive (TempoSeq, etc.)"""
     name = models.CharField(max_length=512, unique=True)
     description = models.CharField(max_length=2000)
@@ -1526,6 +1538,7 @@ class AssayMethod(LockableModel):
         return self.name
 
 
+# Making follows for this would be dificult, there are a lot of things
 class AssaySampleLocation(LockableModel):
     """Describes a location for where a sample was acquired"""
     name = models.CharField(max_length=512, unique=True)
@@ -1535,7 +1548,7 @@ class AssaySampleLocation(LockableModel):
         return self.name
 
 
-# TODO WE WILL NEED TO ADD INSTRUMENT/READER IT SEEMS
+# DEPRECATED
 class AssayInstance(models.Model):
     """Specific assays used in the 'inlines'"""
     study = models.ForeignKey(AssayRun, null=True, blank=True, on_delete=models.CASCADE)
@@ -1569,6 +1582,13 @@ def upload_file_location(instance, filename):
     return '/'.join(['data_points', str(instance.id), filename])
 
 
+@reversion.register(follow=[
+    'assaymatrix_set',
+    'assaystudyassay_set',
+    'assaydatafileupload_set',
+    'assaymatrixitem_set',
+    # 'assaydatapoint_set',
+])
 class AssayStudy(FlaggableModel):
     """The encapsulation of all data concerning a project"""
     class Meta(object):
@@ -1776,6 +1796,10 @@ class AssayStudy(FlaggableModel):
 
 
 # ON THE FRONT END, MATRICES ARE LIKELY TO BE CALLED STUDY SETUPS
+@reversion.register(follow=[
+    'study',
+    'assaymatrixitem_set'
+])
 class AssayMatrix(FlaggableModel):
     """Used to organize data in the interface. An Matrix is a set of setups"""
     class Meta(object):
@@ -1867,6 +1891,13 @@ TEST_TYPE_CHOICES = (
 )
 
 # SUBJECT TO REMOVAL (MAY JUST USE ASSAY SETUP)
+@reversion.register(follow=[
+    'study',
+    'matrix',
+    'assaysetupcompound_set',
+    'assaysetupcell_set',
+    'assaysetupsetting_set',
+])
 class AssayMatrixItem(FlaggableModel):
     class Meta(object):
         verbose_name = 'Matrix Item'
@@ -2100,6 +2131,9 @@ class AssayMatrixItem(FlaggableModel):
 
 # Controversy has arisen over whether to put this in an organ model or not
 # This name is somewhat deceptive, it describes the quantity of cells, not a cell (rename please)
+@reversion.register(follow=[
+    'matrix_item'
+])
 class AssaySetupCell(models.Model):
     """Individual cell parameters for setup used in inline"""
     class Meta(object):
@@ -2288,6 +2322,8 @@ class AssayDataPoint(models.Model):
 
     excluded = models.BooleanField(default=False)
 
+    # TODO: replaced should be removed
+    # It is confusing and functionally useless
     replaced = models.BooleanField(default=False)
 
     # This value contains notes for the data point
@@ -2319,6 +2355,9 @@ class AssayDataPoint(models.Model):
         )
 
 
+@reversion.register(follow=[
+    'matrix_item'
+])
 class AssaySetupCompound(models.Model):
     """An instance of a compound used in an assay; used in M2M with setup"""
 
@@ -2455,6 +2494,9 @@ class AssaySetting(LockableModel):
         return self.name
 
 
+@reversion.register(follow=[
+    'matrix_item'
+])
 class AssaySetupSetting(models.Model):
     """Defines a setting as it relates to a setup"""
     class Meta(object):
@@ -2590,6 +2632,7 @@ class AssayStudyStakeholder(models.Model):
     sign_off_required = models.BooleanField(default=True)
 
 
+@reversion.register(follow=['study'])
 class AssayStudyAssay(models.Model):
     """Specific assays used in the 'inlines'"""
     study = models.ForeignKey(AssayStudy, null=True, blank=True, on_delete=models.CASCADE)
@@ -2612,7 +2655,7 @@ class AssayStudyAssay(models.Model):
         return '{0}~@|{1}~@|{2}~@|{3}'.format(self.study_id, self.target, self.method, self.unit)
 
 
-class AssayImageSetting(models.Model):
+class AssayImageSetting(FlaggableModel):
     # Requested, not sure how useful
     # May want to remove soon, why have this be specific to a study? Deletion cascade?
     study = models.ForeignKey(AssayStudy, on_delete=models.CASCADE)

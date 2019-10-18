@@ -8,7 +8,7 @@ from django.forms import Textarea
 from django.db import models
 
 from bioactivities.resource import BioactivityTypeResource
-from mps.base.admin import LockableAdmin
+from mps.base.admin import ImportExportModelAdmin
 from .models import (
     Target,
     Assay,
@@ -24,7 +24,7 @@ from django.utils.safestring import mark_safe
 # TODO TODO TODO allow_tags attribute has been removed
 
 
-class TargetAdmin(LockableAdmin):
+class TargetAdmin(ImportExportModelAdmin):
     """Admin for Bioactivity Target"""
     # class Media(object):
     #     js = ('bioactivities/customize_admin.js',)
@@ -153,7 +153,7 @@ class TargetAdmin(LockableAdmin):
 admin.site.register(Target, TargetAdmin)
 
 
-class AssayAdmin(LockableAdmin):
+class AssayAdmin(ImportExportModelAdmin):
     """Admin for Bioactivity Assay (not to be confused with models of the Assay App)"""
     form = AssayForm
 
@@ -282,7 +282,7 @@ class AssayAdmin(LockableAdmin):
 admin.site.register(Assay, AssayAdmin)
 
 
-class BioactivityAdmin(LockableAdmin):
+class BioactivityAdmin(ImportExportModelAdmin):
     """Admin for an individual Bioactivity"""
     save_on_top = True
     list_per_page = 50
@@ -350,7 +350,7 @@ class BioactivityAdmin(LockableAdmin):
 admin.site.register(Bioactivity, BioactivityAdmin)
 
 
-class BioactivityTypeAdmin(LockableAdmin):
+class BioactivityTypeAdmin(ImportExportModelAdmin):
     """Admin for Bioactivty Type (for consolidating units and so on)"""
     resource_class = BioactivityTypeResource
     save_on_top = True
@@ -400,7 +400,7 @@ class BioactivityTypeAdmin(LockableAdmin):
 admin.site.register(BioactivityType, BioactivityTypeAdmin)
 
 
-class PubChemBioactivityAdmin(LockableAdmin):
+class PubChemBioactivityAdmin(ImportExportModelAdmin):
     """Admin for a PubChem Bioactivity"""
     search_fields = ['compound__name', 'activity_name', 'target__name', 'outcome']
     list_filter = ['compound', ]
@@ -439,7 +439,7 @@ admin.site.register(PubChemBioactivity, PubChemBioactivityAdmin)
 
 
 # DEPRECATED
-#class PubChemTargetAdmin(LockableAdmin):
+#class PubChemTargetAdmin(ImportExportModelAdmin):
 #    search_fields = ['name', 'organism', 'GI']
 #
 #    save_on_top = True
@@ -465,7 +465,7 @@ admin.site.register(PubChemBioactivity, PubChemBioactivityAdmin)
 #admin.site.register(PubChemTarget, PubChemTargetAdmin)
 
 
-#class PubChemAssayAdmin(LockableAdmin):
+#class PubChemAssayAdmin(ImportExportModelAdmin):
 #    search_fields = ['aid', 'name', 'source']
 #
 #    save_on_top = True

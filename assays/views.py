@@ -118,6 +118,8 @@ import pytz
 
 # TODO TODO TODO render_to_response is DEPRECATED: USE render INSTEAD
 
+import reversion
+
 
 def add_study_fields_to_form(self, form, add_study=False):
     """Adds study, group, and restricted to a form
@@ -176,11 +178,17 @@ def get_data_file_uploads(study=None, matrix_item=None):
             data_point.data_file_upload_id, True
         )
 
+    # for data_file_upload in data_file_uploads:
+    #     if data_file_upload_map.get(data_file_upload.id, ''):
+    #         valid_files.append(data_file_upload)
+    #
+    # return valid_files
+
     for data_file_upload in data_file_uploads:
         if data_file_upload_map.get(data_file_upload.id, ''):
-            valid_files.append(data_file_upload)
+            data_file_upload.present = True
 
-    return valid_files
+    return data_file_uploads
 
 
 def get_queryset_with_stakeholder_sign_off(queryset):

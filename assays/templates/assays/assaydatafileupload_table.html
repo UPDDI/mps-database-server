@@ -3,33 +3,37 @@
 {% if data_file_uploads %}
 <legend>Current Data Files</legend>
 <table id="data_file_upload_table" class="table table-striped table-bordered padded-bottom">
-	<thead>
-		<tr>
-			<th>Data File</th>
-			<th>Upload Date</th>
-			<th>Uploaded By</th>
+    <thead>
+        <tr>
+            <th>Data File</th>
+            <th>Upload Date</th>
+            <th>Uploaded By</th>
             {% if show_delete and user|is_group_editor:group %}
             <th>Remove All Associated Data</th>
             {% endif %}
-		</tr>
-	</thead>
+        </tr>
+    </thead>
     <tbody>
         {% for data_file_upload in data_file_uploads %}
         {# Right now, only uploads with data are displayed #}
         {# At the moment, this conditional is superfluous #}
 {#        {% if data_file_upload.has_data %}#}
+        {% if data_file_upload.present %}
         <tr>
+        {% else %}
+        <tr class="text-danger">
+        {% endif %}
             <td>
-            	<a href="{{ data_file_upload.file_location }}">{{ data_file_upload }}</a>
+                <a href="{{ data_file_upload.file_location }}">{{ data_file_upload }}</a>
             </td>
             <td>
-            	{{ data_file_upload.created_on }}
+                {{ data_file_upload.created_on }}
             </td>
             <td>
-            	{{ data_file_upload.full_creator }}
+                {{ data_file_upload.full_creator }}
             </td>
             {# This is processed in a contrived way in the view #}
-            {% if show_delete and user|is_group_editor:group %}
+            {% if show_delete and user|is_group_editor:group and data_file_upload.present %}
                 <td>
                 <input type="checkbox"
                        id="id_data_upload_{{ data_file_upload.id }}"
