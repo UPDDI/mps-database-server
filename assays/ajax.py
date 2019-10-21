@@ -4168,6 +4168,104 @@ def get_pubmed_reference_data(request):
 #
 #     return JsonResponse(data)
 
+
+# Crude method to clone
+def make_clone(object_to_clone, attributes_to_change=None):
+    object_to_clone.id = None
+    object_to_clone.pk = None
+    if hasattr(object_to_clone, 'name'):
+        object_to_clone.name = 'Clone-' + object_to_clone.name
+
+    if attributes_to_change:
+        for attribute, value in attributes_to_change.items():
+            if hasattr(object_to_clone, attribute):
+                setattr(object_to_clone, attribute, value)
+
+    object_to_clone.save()
+
+    return object_to_clone.id
+
+
+def clone_study(request):
+    data = {}
+
+    study_to_clone = get_object_or_404(AssayStudy, pk=request.POST.get('study'))
+
+    if AssayStudy.objects.filter(name='Clone-'+study_to_clone.name).count():
+        return HttpResponse(
+            json.dumps(
+                {
+                    'errors': 'A clone of this study already exists.',
+                    'new_study_id': AssayStudy.objects.filter(name='Clone-'+study_to_clone.name)[0].get_absolute_url()
+                }
+            ),
+            content_type="application/json"
+        )
+
+    # Crude method to clone
+    # NOTE, undo signed_off_by and restricted
+    new_study_id = make_clone(study_to_clone, {'signed_off_by_id': None, 'restricted': True})
+
+    # Restore (crude)
+    study_to_clone = get_object_or_404(AssayStudy, pk=request.POST.get('study'))
+
+    # Clone study assays
+    for assay in study_to_clone.assaystudyassay_set.all():
+        clone_attributes = {
+            'study_id': new_study_id
+        }
+        make_clone(assay, clone_attributes)
+
+    # Don't clone references or supporting data
+
+    matrix_to_matrix = {}
+
+    for matrix in study_to_clone.assaymatrix_set.all():
+        clone_attributes = {
+            'study_id': new_study_id
+        }
+        original_matrix_id = matrix.id
+        new_matrix_id = make_clone(matrix, clone_attributes)
+        matrix_to_matrix.update({
+            original_matrix_id: new_matrix_id
+        })
+
+    matrix_item_to_matrix_item = {}
+
+    for matrix_item in study_to_clone.assaymatrixitem_set.all():
+        clone_attributes = {
+            'study_id': new_study_id,
+            'matrix_id': matrix_to_matrix.get(matrix_item.matrix_id)
+        }
+        original_matrix_item_id = matrix_item.id
+        new_matrix_item_id = make_clone(matrix_item, clone_attributes)
+        matrix_item_to_matrix_item.update({
+            original_matrix_item_id: new_matrix_item_id
+        })
+
+    # Double loop is goofy
+    for matrix_item in study_to_clone.assaymatrixitem_set.all():
+        clone_attributes = {
+            'study_id': new_study_id,
+            'matrix_item_id': matrix_item_to_matrix_item.get(matrix_item.id)
+        }
+        # Horrible nested loops, can take a very long time!
+        for cell in matrix_item.assaysetupcell_set.all():
+            make_clone(cell, clone_attributes)
+        for compound in matrix_item.assaysetupcompound_set.all():
+            make_clone(compound, clone_attributes)
+        for setting in matrix_item.assaysetupsetting_set.all():
+            make_clone(setting, clone_attributes)
+
+    data.update({
+        'new_study_id': AssayStudy.objects.get(id=new_study_id).get_absolute_url()
+    })
+
+    return HttpResponse(
+        json.dumps(data),
+        content_type="application/json"
+    )
+
 # TODO TODO TODO
 switch = {
     'fetch_center_id': {'call': fetch_center_id},
@@ -4227,6 +4325,10 @@ switch = {
     },
     'fetch_assay_associations': {
         'call': fetch_assay_associations
+    },
+    'clone_study': {
+        'call': clone_study,
+        'validation': study_editor_validation
     },
     # 'fetch_dropdown': {
     #     'call': fetch_dropdown,

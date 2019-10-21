@@ -45,6 +45,9 @@
                     <a id="indicate_study_is_ready_for_sign_off" class="btn btn-success" role="button">Indicate Study is Ready for Sign Off</a>
                 </div>
                 {% endif %}
+                {% if user_is_group_editor %}
+                    <a id="clone_study_request" class="btn btn-info" role="button">Clone this Study</a>
+                {% endif %}
                 {% if user_is_group_admin %}
                     <div class="row text-center small-padding-top">
                         <a href="sign_off" class="btn btn-success" role="button">View/Edit Sign Off Status of this Study</a>
@@ -244,6 +247,37 @@
             <br>
             <br>
             Was sent to users that can Sign Off on the study.
+        </h3>
+    </div>
+    </div>
+    {% endif %}
+
+    {% if user_is_group_editor %}
+    <div hidden id="clone_study_section" title="Indicate Study is Ready for Sign Off">
+    <div class="alert alert-info" role="alert">
+        <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>
+        <span class="sr-only">Info:</span>
+        Cloning a study will create a new study in the database that is the same as this study with "Clone-" added to its name and the names of all of its Matrices and Matrix Items. None of the data points will be cloned, however.
+    </div>
+    <div hidden id="clone_failure" class="alert alert-danger" role="alert">
+        <h3>
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Danger:</span>
+            Your request to clone has failed.
+            <br>
+            <br>
+            <span id="clone_failure_message"></span>
+            <br>
+            <br>
+            <a hidden href="" id="clone_link_fail">Click here to go to the existing clone Study.</a>
+        </h3>
+    </div>
+    <div hidden id="clone_success" class="alert alert-success" role="alert">
+        <h3>
+            <span class="glyphicon glyphicon-check" aria-hidden="true"></span>
+            <span class="sr-only">Success:</span>
+            Your request has succeeded.
+            <a href="" id="clone_link_success">Click here to go to the new Study.</a>
         </h3>
     </div>
     </div>
