@@ -6,7 +6,10 @@ from django.contrib.auth.models import Group
 from mps.base.models import LockableModel, TrackableModel, FlaggableModel
 from django.core.validators import MaxValueValidator
 
+import reversion
 
+
+@reversion.register(follow=['microdevice_set'])
 class MicrophysiologyCenter(LockableModel):
     """Microphysiology Center gives details for a collaborating center
 
@@ -45,6 +48,7 @@ class MicrophysiologyCenter(LockableModel):
         return self.name
 
 
+@reversion.register(follow=['microdevice_set'])
 class Manufacturer(LockableModel):
     """Manufacturer gives details for a manufacturer of devices and/or componentry"""
     class Meta(object):
@@ -58,6 +62,12 @@ class Manufacturer(LockableModel):
         return self.name
 
 
+@reversion.register(follow=[
+    'organ',
+    'center',
+    'manufacturer',
+    'organmodel_set'
+])
 class Microdevice(LockableModel):
     """A Microdevice describes a physical vessel for performing experiments (a plate, chip, etc.)"""
     class Meta(object):
@@ -152,6 +162,9 @@ class Microdevice(LockableModel):
         return '/microdevices/device/'
 
 
+@reversion.register(follow=[
+    'organmodelprotocol_set'
+])
 class OrganModel(LockableModel):
     """An Organ Model describes a way of preparing a device to emulate a particular organ"""
     class Meta(object):
@@ -247,6 +260,9 @@ class ValidatedAssay(models.Model):
 
 
 # TODO PLEASE NOTE THIS WILL BE REFERRED TO AS SIMPLY A "VERSION"
+@reversion.register(follow=[
+    'organ_model',
+])
 class OrganModelProtocol(FlaggableModel):
     """Organ Model Protocols point to a file detailing the preparation of a model
 

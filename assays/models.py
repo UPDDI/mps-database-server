@@ -1473,6 +1473,9 @@ class AssayDataFileUpload(FlaggableModel):
 
 
 # NEW MODELS, TO BE INTEGRATED FURTHER LATER
+@reversion.register(follow=[
+    'methods',
+])
 class AssayTarget(LockableModel):
     """Describes what was sought by a given Assay"""
     name = models.CharField(max_length=512, unique=True)
@@ -1499,6 +1502,9 @@ class AssaySubtarget(FlaggableModel):
         return self.name
 
 
+@reversion.register(follow=[
+    'assaymethod_set',
+])
 class AssayMeasurementType(LockableModel):
     """Describes what was measures with a given method"""
     name = models.CharField(max_length=512, unique=True)
@@ -1508,6 +1514,9 @@ class AssayMeasurementType(LockableModel):
         return self.name
 
 
+@reversion.register(follow=[
+    'assaymethod_set',
+])
 class AssaySupplier(LockableModel):
     """Assay Supplier so we can track where kits came from"""
     name = models.CharField(max_length=512, unique=True)
@@ -1517,6 +1526,10 @@ class AssaySupplier(LockableModel):
         return self.name
 
 
+@reversion.register(follow=[
+    'measurement_type',
+    'supplier',
+])
 class AssayMethod(LockableModel):
     """Describes how an assay was performed"""
     # We may want to modify this so that it is unique on name in combination with measurement type?
@@ -1539,6 +1552,11 @@ class AssayMethod(LockableModel):
 
 
 # Making follows for this would be dificult, there are a lot of things
+@reversion.register(follow=[
+    'assaysetupcompound_set',
+    'assaysetupcell_set',
+    'assaysetupsetting_set',
+])
 class AssaySampleLocation(LockableModel):
     """Describes a location for where a sample was acquired"""
     name = models.CharField(max_length=512, unique=True)
@@ -1587,6 +1605,7 @@ def upload_file_location(instance, filename):
     'assaystudyassay_set',
     'assaydatafileupload_set',
     'assaymatrixitem_set',
+    'assaystudyset_set',
     # 'assaydatapoint_set',
 ])
 class AssayStudy(FlaggableModel):
@@ -2730,6 +2749,7 @@ class AssayImage(models.Model):
         return '{}'.format(self.file_name)
 
 
+@reversion.register(follow=['studies', 'assays'])
 class AssayStudySet(FlaggableModel):
     # Name for the set
     name = models.CharField(max_length=255, unique=True)

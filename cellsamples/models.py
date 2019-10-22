@@ -10,7 +10,10 @@ from django.urls import reverse
 
 from mps.utils import *
 
+import reversion
 
+
+@reversion.register(follow=['celltype_set'])
 class Organ(LockableModel):
     """Organ details an organ name and (with an inline) the cell types associated with it"""
     organ_name = models.CharField(max_length=255, unique=True)
@@ -26,6 +29,7 @@ class Organ(LockableModel):
         return reverse('')
 
 
+@reversion.register(follow=['cellsubtype_set'])
 class CellType(LockableModel):
     """CellType details a type (e.g. hepatocyte), a species, and an organ"""
     class Meta(object):
@@ -70,6 +74,7 @@ class CellType(LockableModel):
         return reverse('celltype_list')
 
 
+@reversion.register(follow=['cell_type'])
 class CellSubtype(LockableModel):
     """CellSubtype details a subtype (e.g. a cell line)
 
@@ -96,6 +101,8 @@ class CellSubtype(LockableModel):
         return reverse('cellsubtype_list')
 
 
+# TODO: Just having this be "supplier" is confusing, supplier of what? Should be specific or general
+@reversion.register(follow=['cellsample_set'])
 class Supplier(LockableModel):
     """Supplier gives information for institutions that distribute cell samples and related materials"""
     class Meta(object):
@@ -112,6 +119,7 @@ class Supplier(LockableModel):
         return reverse('')
 
 
+@reversion.register(follow=['assaysetupcell_set'])
 class Biosensor(LockableModel):
     """Biosensor describes a biosensor used on cell samples"""
     class Meta(object):
@@ -131,6 +139,7 @@ class Biosensor(LockableModel):
         return reverse('')
 
 
+@reversion.register(follow=['cell_type', 'cell_subtype'])
 class CellSample(FlaggableModel):
     """A Cell Sample describes a particular selection of cells used for experiments"""
 
