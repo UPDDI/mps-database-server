@@ -46,11 +46,12 @@ from assays.models import (
     AssayReference,
     AssayStudyReference,
     AssayStudySet,
-    AssayCategory
+    AssayCategory,
+    AssayDataFileUpload
 )
 from microdevices.models import MicrophysiologyCenter
 # from compounds.models import Compound
-from mps.base.admin import LockableAdmin
+from mps.base.admin import TrackableAdmin, LockableAdmin
 # from assays.resource import *
 # from import_export.admin import ImportExportModelAdmin
 # from compounds.models import *
@@ -784,7 +785,14 @@ class AssayStudyReferenceInline(admin.TabularInline):
     extra = 1
 
 
-# TODO REVISE
+class AssayDataFileUploadInline(admin.TabularInline):
+    """Inline for Data File"""
+    model = AssayDataFileUpload
+    exclude = []
+    extra = 1
+
+
+# TODO REMAKE FOR ASSAY STUDY
 class AssayStudyAdmin(LockableAdmin):
     """Admin for Studies"""
     # class Media(object):
@@ -860,7 +868,13 @@ class AssayStudyAdmin(LockableAdmin):
         ),
     )
 
-    inlines = [AssayStudyStakeholderInline, AssayStudyAssayInline, AssayStudySupportingDataInline, AssayStudyReferenceInline]
+    inlines = [
+        AssayStudyStakeholderInline,
+        AssayStudyAssayInline,
+        AssayStudySupportingDataInline,
+        AssayStudyReferenceInline,
+        # AssayDataFileUploadInline
+    ]
 
     def get_queryset(self, request):
         qs = super(AssayStudyAdmin, self).get_queryset(request)
@@ -1351,14 +1365,14 @@ admin.site.register(AssayStudy, AssayStudyAdmin)
 
 
 # TODO TODO TODO TODO NEW MODELS HERE
-class AssayMatrixItemAdmin(ImportExportModelAdmin):
+class AssayMatrixItemAdmin(TrackableAdmin):
     model = AssayMatrixItem
     search_fields = ('name', 'notes')
 
 admin.site.register(AssayMatrixItem, AssayMatrixItemAdmin)
 
 
-class AssayMatrixAdmin(ImportExportModelAdmin):
+class AssayMatrixAdmin(TrackableAdmin):
     model = AssayMatrix
     search_fields = ('name', 'notes')
 
@@ -1372,28 +1386,28 @@ class AssayImageAdmin(ImportExportModelAdmin):
 admin.site.register(AssayImage, AssayImageAdmin)
 
 
-class AssayImageSettingAdmin(ImportExportModelAdmin):
+class AssayImageSettingAdmin(TrackableAdmin):
     model = AssayImageSetting
     search_fields = ('study__name', 'label_name')
 
 admin.site.register(AssayImageSetting, AssayImageSettingAdmin)
 
 
-class AssaySettingAdmin(ImportExportModelAdmin):
+class AssaySettingAdmin(TrackableAdmin):
     model = AssaySetting
     search_fields = ('name', 'description')
 
 admin.site.register(AssaySetting, AssaySettingAdmin)
 
 
-class AssaySubtargetAdmin(ImportExportModelAdmin):
+class AssaySubtargetAdmin(TrackableAdmin):
     model = AssaySubtarget
     search_fields = ('name', 'description')
 
 admin.site.register(AssaySubtarget, AssaySubtargetAdmin)
 
 
-class AssayReferenceAdmin(ImportExportModelAdmin):
+class AssayReferenceAdmin(TrackableAdmin):
     model = AssayReference
     search_fields = ('pubmed_id', 'title', 'authors')
 
@@ -1431,7 +1445,7 @@ class AssayStudySetAdminForm(forms.ModelForm):
         self.fields['assays'].queryset = assay_queryset
 
 
-class AssayStudySetAdmin(ImportExportModelAdmin):
+class AssayStudySetAdmin(TrackableAdmin):
     model = AssayStudySet
     form = AssayStudySetAdminForm
     search_fields = ('name', 'description')
@@ -1440,9 +1454,21 @@ class AssayStudySetAdmin(ImportExportModelAdmin):
 admin.site.register(AssayStudySet, AssayStudySetAdmin)
 
 
-class AssayCategoryAdmin(ImportExportModelAdmin):
+class AssayCategoryAdmin(TrackableAdmin):
     model = AssayCategory
     search_fields = ('name', 'description')
     filter_horizontal = ('targets',)
 
 admin.site.register(AssayCategory, AssayCategoryAdmin)
+
+
+class AssayDataFileUploadAdmin(TrackableAdmin):
+    model = AssayDataFileUpload
+
+admin.site.register(AssayDataFileUpload, AssayDataFileUploadAdmin)
+
+# Note something someone would probably want to visit...
+# class AssayDataPointAdmin(TrackableAdmin):
+#     model = AssayDataPoint
+#
+# admin.site.register(AssayDataPoint, AssayDataPointAdmin)

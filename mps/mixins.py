@@ -25,6 +25,8 @@ from django.views.generic import UpdateView
 
 import urllib
 
+from reversion.views import RevisionMixin
+
 
 # Unsemantic! Breaks PEP! BAD!
 def PermissionDenied(request, message, log_in_link=True):
@@ -391,7 +393,8 @@ class SuperuserRequiredMixin(object):
         return super(SuperuserRequiredMixin, self).dispatch(*args, **kwargs)
 
 
-class FormHandlerMixin(object):
+# ReversionMixin helps here... but would be nice to have applied to all Create and Update Views
+class FormHandlerMixin(RevisionMixin):
     """Mixin for handling forms, whether they have formsets and/or are popups"""
     formsets = ()
     is_update = False
