@@ -201,7 +201,7 @@ class OrganModelDetail(DetailView):
 class MicrophysiologyCenterDetail(DetailView):
     """Displays details for a Microphysiology Center"""
     model = MicrophysiologyCenter
-    template_name = 'microdevices/center_detail.html'
+    template_name = 'microdevices/microphysiologycenter_detail.html'
 
     def get_context_data(self, **kwargs):
         context = super(MicrophysiologyCenterDetail, self).get_context_data(**kwargs)

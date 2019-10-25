@@ -82,6 +82,10 @@ $(document).ready(function () {
 
             // Activates Bootstrap tooltips
             $('[data-toggle="tooltip"]').tooltip({container:"body", html: true});
+
+            // CRUDE!
+            // Trigger resize
+            $(window).trigger('resize');
         }
     });
 
@@ -95,11 +99,12 @@ $(document).ready(function () {
     });
 
     // Fix some issues with column width on resize.
+    // BAD
     window.onresize = function() {
         setTimeout(function() {
             $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
-            // $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
-            // $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+            $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
+            $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
         }, 250);
     }
 

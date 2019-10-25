@@ -941,6 +941,13 @@ class AssaySetupCompoundFormSet(BaseModelFormSetForcedUniqueness):
 
             current_data = form.cleaned_data
 
+            # Bad
+            if not current_data.get('supplier_text'):
+                current_data['supplier_text'] = 'N/A'
+
+            if not current_data.get('lot_text'):
+                current_data['lot_text'] = 'N/A'
+
             compound_id = int(current_data.get('compound'))
             supplier_text = current_data.get('supplier_text').strip()
             lot_text = current_data.get('lot_text').strip()
