@@ -84,7 +84,7 @@ class Feedback(models.Model):
         help_text=_(
             "Hide from public pages. Only site administrators will be able to "
             "view and respond to this"),
-        default=False)
+        default=True)
     user = models.ForeignKey(User, blank=True, null=True, verbose_name=_("User"), on_delete=models.CASCADE)
     email = models.EmailField(
         blank=True, null=True, verbose_name=_('E-mail'),

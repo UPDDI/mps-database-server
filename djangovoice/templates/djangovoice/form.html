@@ -1,6 +1,7 @@
 {% extends "djangovoice/base.html" %}
 
 {% load trans from i18n %}
+{% load static %}
 {#{% load url from future %}#}
 
 {% block title %}{% trans "Feedback" %}{% endblock %}
@@ -25,4 +26,9 @@
       </div>
     </form>
   </div>
+{% endblock %}
+
+{% block scripts %}
+    {# SLOPPY #}
+    <script src="{% static "djangovoice/js/prevent_double_submission.js" %}"></script>
 {% endblock %}
