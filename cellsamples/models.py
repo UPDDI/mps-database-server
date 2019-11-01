@@ -16,7 +16,11 @@ import reversion
 @reversion.register(follow=['celltype_set'])
 class Organ(LockableModel):
     """Organ details an organ name and (with an inline) the cell types associated with it"""
-    organ_name = models.CharField(max_length=255, unique=True)
+    organ_name = models.CharField(
+        max_length=255,
+        unique=True,
+        verbose_name='Name'
+    )
 
     class Meta(object):
         ordering = ('organ_name', )
@@ -47,7 +51,8 @@ class CellType(LockableModel):
     # Unsemantic name (should just be name)
     cell_type = models.CharField(
         max_length=255,
-        help_text='Example: hepatocyte, muscle, kidney, etc'
+        help_text='Example: hepatocyte, muscle, kidney, etc',
+        verbose_name='Cell Type'
     )
     species = models.CharField(
         max_length=10,
@@ -58,7 +63,11 @@ class CellType(LockableModel):
 
     # Deprecated
     # cell_subtype = models.ForeignKey('CellSubtype', null=True, blank=True, on_delete=models.CASCADE)
-    organ = models.ForeignKey('Organ', on_delete=models.CASCADE)
+    organ = models.ForeignKey(
+        'Organ',
+        on_delete=models.CASCADE,
+        verbose_name='Organ'
+    )
 
     def __str__(self):
         return '{} ({} {})'.format(
@@ -84,12 +93,22 @@ class CellSubtype(LockableModel):
         ordering = ('cell_subtype', )
 
     # Unsemantic name (should just be name)
-    cell_subtype = models.CharField(max_length=255, unique=True,
-                                    help_text="Example: motor (type of neuron), "
-                                              "skeletal (type of muscle), etc.")
+    cell_subtype = models.CharField(
+        max_length=255,
+        unique=True,
+        help_text="Example: motor (type of neuron), "
+            "skeletal (type of muscle), etc.",
+        verbose_name='Name'
+    )
 
     # Cell Subtypes with a None value for cell_type are generic
-    cell_type = models.ForeignKey(CellType, null=True, blank=True, on_delete=models.CASCADE)
+    cell_type = models.ForeignKey(
+        CellType,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name='Cell Type'
+    )
 
     def __str__(self):
         return '{}'.format(self.cell_subtype)
@@ -107,9 +126,21 @@ class Supplier(LockableModel):
     """Supplier gives information for institutions that distribute cell samples and related materials"""
     class Meta(object):
         ordering = ('name', )
-    name = models.CharField(max_length=255, unique=True)
-    phone = models.CharField(max_length=255, blank=True)
-    address = models.CharField(max_length=255, blank=True)
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+        verbose_name='Name'
+    )
+    phone = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Phone'
+    )
+    address = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Address'
+    )
 
     def __str__(self):
         return '{}'.format(self.name)
@@ -124,12 +155,31 @@ class Biosensor(LockableModel):
     """Biosensor describes a biosensor used on cell samples"""
     class Meta(object):
         ordering = ('name', )
-    name = models.CharField(max_length=255, unique=True)
-    supplier = models.ForeignKey('Supplier', on_delete=models.CASCADE)
-    product_id = models.CharField(max_length=255, blank=True)
-    lot_number = models.CharField(max_length=255, blank=True,
-                                  verbose_name='Lot#')
-    description = models.CharField(max_length=512, blank=True)
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+        verbose_name='Name'
+    )
+    supplier = models.ForeignKey(
+        'Supplier',
+        on_delete=models.CASCADE,
+        verbose_name='Supplier'
+    )
+    product_id = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Product ID'
+    )
+    lot_number = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Lot#'
+    )
+    description = models.CharField(
+        max_length=512,
+        blank=True,
+        verbose_name='Description'
+    )
 
     def __str__(self):
         return '{}'.format(self.name)
@@ -148,8 +198,16 @@ class CellSample(FlaggableModel):
         # NOT USEFUL NOW THAT IT IS NO LONGER REQUIRED
         # ordering = ('-receipt_date', )
 
-    cell_type = models.ForeignKey('CellType', on_delete=models.CASCADE)
-    cell_subtype = models.ForeignKey('CellSubtype', on_delete=models.CASCADE)
+    cell_type = models.ForeignKey(
+        'CellType',
+        on_delete=models.CASCADE,
+        verbose_name='Cell Type'
+    )
+    cell_subtype = models.ForeignKey(
+        'CellSubtype',
+        on_delete=models.CASCADE,
+        verbose_name='Cell Subtype'
+    )
 
     # Group may need to be explicitly defined here as opposed to using a mixin
     # group = models.ForeignKey('auth.Group', help_text='Bind to a group', on_delete=models.CASCADE)
@@ -167,13 +225,34 @@ class CellSample(FlaggableModel):
     #                                choices=CELLSOURCETYPE, default='Primary',
     #                                blank=True)
 
-    notes = models.TextField(blank=True, default='')
-    receipt_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(
+        blank=True,
+        default='',
+        verbose_name='Notes'
+    )
+    receipt_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name='Receipt Date'
+    )
 
     # SAMPLE
-    supplier = models.ForeignKey('Supplier', on_delete=models.CASCADE)
-    barcode = models.CharField(max_length=255, blank=True, verbose_name='Barcode/Lot#')
-    product_id = models.CharField(max_length=255, blank=True, default='')
+    supplier = models.ForeignKey(
+        'Supplier',
+        on_delete=models.CASCADE,
+        verbose_name='Supplier'
+    )
+    barcode = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Barcode/Lot#'
+    )
+    product_id = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name='Product ID'
+    )
 
     # PATIENT (move to subtype?)
     # Technically, these are sexes, not genders
@@ -182,40 +261,50 @@ class CellSample(FlaggableModel):
         ('F', 'Female'),
         ('M', 'Male'),
     )
-    patient_age = models.IntegerField(null=True, blank=True)
+    patient_age = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name='Patient Age'
+    )
     patient_gender = models.CharField(
         max_length=1,
         choices=GENDER_CHOICES,
         default=GENDER_CHOICES[0][0],
-        blank=True
+        blank=True,
+        verbose_name='Patient Sex'
     )
     patient_condition = models.CharField(
         max_length=255,
         blank=True,
-        default=''
+        default='',
+        verbose_name='Patient Condition'
     )
 
     # ISOLATION
     isolation_datetime = models.DateField(
-        "Isolation",
         blank=True,
-        null=True
+        null=True,
+        verbose_name='Isolation Date'
     )
     isolation_method = models.CharField(
-        "Method",
         max_length=255,
         blank=True,
-        default=''
+        default='',
+        verbose_name='Isolation Method'
     )
     isolation_notes = models.CharField(
-        "Notes",
         max_length=255,
         blank=True,
-        default=''
+        default='',
+        verbose_name='Isolation Notes'
     )
 
     # VIABILITY
-    viable_count = models.FloatField(null=True, blank=True)
+    viable_count = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Viable Count'
+    )
 
     # Removed: Deemed confusing/not useful
     # VIABLE_COUNT_UNIT_CHOICES = (
@@ -228,11 +317,16 @@ class CellSample(FlaggableModel):
     #                                      default=VIABLE_COUNT_UNIT_CHOICES[0][
     #                                          0], blank=True)
 
-    percent_viability = models.FloatField(null=True, blank=True)
+    percent_viability = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Percent Viability'
+    )
     cell_image = models.ImageField(
         upload_to='cellsamples',
         null=True,
-        blank=True
+        blank=True,
+        verbose_name='Cell Image'
     )
 
     # THIS IS NOW EXPLICITLY LISTED

@@ -172,9 +172,15 @@ def get_center_id(group_id):
 class UnitType(LockableModel):
     """Unit types for physical units"""
 
-    unit_type = models.CharField(max_length=100)
-    description = models.CharField(max_length=256,
-                                   blank=True, default='')
+    unit_type = models.CharField(
+        max_length=100,
+        verbose_name='Name'
+    )
+    description = models.CharField(
+        max_length=256,
+        blank=True,
+        default=''
+    )
 
     def __str__(self):
         return '{}'.format(self.unit_type)
@@ -187,36 +193,48 @@ class PhysicalUnits(LockableModel):
 
     # USE NAME IN LIEU OF UNIT (unit.unit is confusing and dumb)
     # name = models.CharField(max_length=255)
-    unit = models.CharField(max_length=255)
+    unit = models.CharField(
+        max_length=255,
+        verbose_name='Name'
+    )
     description = models.CharField(
         max_length=255,
         blank=True,
         default=''
     )
 
-    unit_type = models.ForeignKey(UnitType, on_delete=models.CASCADE)
+    unit_type = models.ForeignKey(
+        UnitType,
+        on_delete=models.CASCADE,
+        verbose_name='Unit Type'
+    )
 
     # Base Unit for conversions and scale factor
     base_unit = models.ForeignKey(
         'assays.PhysicalUnits',
         blank=True,
         null=True,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Base Unit'
     )
 
     # Scale factor gives the conversion to get to the base unit, can also act to sort
     scale_factor = models.FloatField(
         blank=True,
-        null=True
+        null=True,
+        verbose_name='Scale Factor'
     )
 
     availability = models.CharField(
         max_length=255,
         blank=True,
         default='',
-        help_text=('Type a series of strings for indicating '
-                   'where this unit should be listed:'
-                   '\ntest = test results\nreadouts = readouts\ncells = cell samples')
+        help_text=(
+            'Type a series of strings for indicating '
+            'where this unit should be listed:'
+            '\ntest = test results\nreadouts = readouts\ncells = cell samples'
+        ),
+       verbose_name='Availability'
     )
 
     # verbose_name_plural is used to avoid a double 's' on the model name
@@ -1478,16 +1496,35 @@ class AssayDataFileUpload(FlaggableModel):
 ])
 class AssayTarget(LockableModel):
     """Describes what was sought by a given Assay"""
-    name = models.CharField(max_length=512, unique=True)
-    description = models.CharField(max_length=2000)
+    name = models.CharField(
+        max_length=512,
+        unique=True,
+        verbose_name='Name'
+    )
+    description = models.CharField(
+        max_length=2000,
+        verbose_name='Description'
+    )
 
-    short_name = models.CharField(max_length=20, unique=True)
+    short_name = models.CharField(
+        max_length=20,
+        unique=True,
+        verbose_name='Short Name'
+    )
 
     # Tentative
-    alt_name = models.CharField(max_length=1000, blank=True, default='')
+    alt_name = models.CharField(
+        max_length=1000,
+        blank=True,
+        default='',
+        verbose_name='Alternative Name'
+    )
 
     # List of all methods
-    methods = models.ManyToManyField('assays.AssayMethod')
+    methods = models.ManyToManyField(
+        'assays.AssayMethod',
+        verbose_name='Methods'
+    )
 
     def __str__(self):
         return '{0}'.format(self.name)
@@ -1507,8 +1544,15 @@ class AssaySubtarget(FlaggableModel):
 ])
 class AssayMeasurementType(LockableModel):
     """Describes what was measures with a given method"""
-    name = models.CharField(max_length=512, unique=True)
-    description = models.CharField(max_length=2000)
+    name = models.CharField(
+        max_length=512,
+        unique=True,
+        verbose_name='Name'
+    )
+    description = models.CharField(
+        max_length=2000,
+        verbose_name='Description'
+    )
 
     def __str__(self):
         return self.name
@@ -1519,8 +1563,15 @@ class AssayMeasurementType(LockableModel):
 ])
 class AssaySupplier(LockableModel):
     """Assay Supplier so we can track where kits came from"""
-    name = models.CharField(max_length=512, unique=True)
-    description = models.CharField(max_length=2000)
+    name = models.CharField(
+        max_length=512,
+        unique=True,
+        verbose_name='Name'
+    )
+    description = models.CharField(
+        max_length=2000,
+        verbose_name='Description'
+    )
 
     def __str__(self):
         return self.name
@@ -1533,19 +1584,46 @@ class AssaySupplier(LockableModel):
 class AssayMethod(LockableModel):
     """Describes how an assay was performed"""
     # We may want to modify this so that it is unique on name in combination with measurement type?
-    name = models.CharField(max_length=512, unique=True)
-    description = models.CharField(max_length=2000)
-    measurement_type = models.ForeignKey(AssayMeasurementType, on_delete=models.CASCADE)
+    name = models.CharField(
+        max_length=512,
+        unique=True,
+        verbose_name='Name'
+    )
+    description = models.CharField(
+        max_length=2000,
+        verbose_name='Description'
+    )
+    measurement_type = models.ForeignKey(
+        AssayMeasurementType,
+        on_delete=models.CASCADE,
+        verbose_name='Measurement Type'
+    )
 
     # May or may not be required in the future
-    supplier = models.ForeignKey(AssaySupplier, blank=True, null=True, on_delete=models.CASCADE)
+    supplier = models.ForeignKey(
+        AssaySupplier,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name='Supplier'
+    )
 
     # TODO STORAGE LOCATION
     # TODO TEMPORARILY NOT REQUIRED
-    protocol_file = models.FileField(upload_to='assays', null=True, blank=True)
+    protocol_file = models.FileField(
+        upload_to='assays',
+        null=True,
+        blank=True,
+        verbose_name='Protocol File'
+    )
 
     # Tentative
-    alt_name = models.CharField(max_length=1000, blank=True, default='')
+    alt_name = models.CharField(
+        max_length=1000,
+        blank=True,
+        default='',
+        verbose_name='Alternative Name'
+    )
 
     def __str__(self):
         return self.name
@@ -1559,8 +1637,15 @@ class AssayMethod(LockableModel):
 ])
 class AssaySampleLocation(LockableModel):
     """Describes a location for where a sample was acquired"""
-    name = models.CharField(max_length=512, unique=True)
-    description = models.CharField(max_length=2000)
+    name = models.CharField(
+        max_length=512,
+        unique=True,
+        verbose_name='Name'
+    )
+    description = models.CharField(
+        max_length=2000,
+        verbose_name='Description'
+    )
 
     def __str__(self):
         return self.name
@@ -1624,16 +1709,34 @@ class AssayStudy(FlaggableModel):
             'group'
         ))
 
-    toxicity = models.BooleanField(default=False)
-    efficacy = models.BooleanField(default=False)
-    disease = models.BooleanField(default=False)
+    toxicity = models.BooleanField(
+        default=False,
+        verbose_name='Toxicity'
+    )
+    efficacy = models.BooleanField(
+        default=False,
+        verbose_name='Efficacy'
+    )
+    disease = models.BooleanField(
+        default=False,
+        verbose_name='Disease'
+    )
     # TODO PLEASE REFACTOR
     # NOW REFERRED TO AS "Chip Characterization"
-    cell_characterization = models.BooleanField(default=False)
+    cell_characterization = models.BooleanField(
+        default=False,
+        verbose_name='Cell Characterization'
+    )
 
     # Subject to change
     # NOTE THAT THE TABLE IS NOW NAMED AssayStudyConfiguration to adhere to standards
-    study_configuration = models.ForeignKey(AssayStudyConfiguration, blank=True, null=True, on_delete=models.CASCADE)
+    study_configuration = models.ForeignKey(
+        AssayStudyConfiguration,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name='Study Configuration'
+    )
     # Whether or not the name should be unique is an interesting question
     # We could have a constraint on the combination of name and start_date
     # But to constrain by name, start_date, and study_types, we will need to do that in the forms.py file
@@ -1644,8 +1747,16 @@ class AssayStudy(FlaggableModel):
     # This will be used to avoid having to call related fields to get the full name all the time
     # full_name = models.CharField(max_length=1200, verbose_name='Full Study Name')
 
-    start_date = models.DateField(help_text='YYYY-MM-DD')
-    description = models.CharField(max_length=8000, blank=True, default='')
+    start_date = models.DateField(
+        help_text='YYYY-MM-DD',
+        verbose_name='Start Date'
+    )
+    description = models.CharField(
+        max_length=8000,
+        blank=True,
+        default='',
+        verbose_name='Description'
+    )
 
     protocol = models.FileField(
         upload_to='study_protocol',
@@ -1659,44 +1770,92 @@ class AssayStudy(FlaggableModel):
     # study_types = models.ManyToManyField(AssayStudyType)
 
     # Image for the study (some illustrative image)
-    image = models.ImageField(upload_to='studies', null=True, blank=True)
+    image = models.ImageField(
+        upload_to='studies',
+        null=True,
+        blank=True,
+        verbose_name='Image'
+    )
 
-    use_in_calculations = models.BooleanField(default=False)
+    use_in_calculations = models.BooleanField(
+        default=False,
+        verbose_name='Use in Calculations'
+    )
 
     # Access groups
-    access_groups = models.ManyToManyField(Group, blank=True, related_name='study_access_groups')
+    access_groups = models.ManyToManyField(
+        Group,
+        blank=True,
+        related_name='study_access_groups',
+        verbose_name='Access Groups'
+    )
 
     # Collaborator groups
-    collaborator_groups = models.ManyToManyField(Group, blank=True, related_name='study_collaborator_groups')
+    collaborator_groups = models.ManyToManyField(
+        Group,
+        blank=True,
+        related_name='study_collaborator_groups',
+        verbose_name='Collaborator Groups'
+    )
 
     # THESE ARE NOW EXPLICIT FIELDS IN STUDY
-    group = models.ForeignKey(Group, verbose_name='Data Group', help_text='Select the Data Group. The study will be bound to this group', on_delete=models.CASCADE)
+    group = models.ForeignKey(
+        Group,
+        verbose_name='Data Group',
+        help_text='Select the Data Group. The study will be bound to this group',
+        on_delete=models.CASCADE
+    )
 
     restricted = models.BooleanField(
         default=True,
         help_text='Check box to restrict to the Access Groups selected below.'
                   ' Access is granted to access group(s) after Data Group admin and all designated'
-                  ' Stakeholder Group admin(s) sign off on the study'
+                  ' Stakeholder Group admin(s) sign off on the study',
+        verbose_name='Restricted'
     )
 
     # Special addition, would put in base model, but don't want excess...
-    signed_off_notes = models.CharField(max_length=255, blank=True, default='')
+    signed_off_notes = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name='Signed Off Notes'
+    )
 
     # Delimited string of reproducibility (Excellent|Acceptable|Poor)
-    repro_nums = models.CharField(max_length=40, blank=True, default='', help_text='Excellent|Acceptable|Poor')
+    repro_nums = models.CharField(
+        max_length=40,
+        blank=True,
+        default='',
+        help_text='Excellent|Acceptable|Poor',
+        verbose_name='Reproducibility'
+    )
 
     # TODO SOMEWHAT CONTRIVED
     bulk_file = models.FileField(
         upload_to=upload_file_location,
         verbose_name='Data File',
-        blank=True, null=True
+        blank=True,
+        null=True
     )
 
 
     # TODO MAKE REQUIRED
     # TODO DEAL WITH CONFLICTS
-    organ_model = models.ForeignKey(OrganModel, blank=True, null=True, on_delete=models.CASCADE)
-    organ_model_protocol = models.ForeignKey(OrganModelProtocol, blank=True, null=True, on_delete=models.CASCADE)
+    organ_model = models.ForeignKey(
+        OrganModel,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name='MPS Model'
+    )
+    organ_model_protocol = models.ForeignKey(
+        OrganModelProtocol,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name='MPS Model Version'
+    )
 
     # Whether or not to show on the front end
     archived = models.BooleanField(
@@ -1834,7 +1993,10 @@ class AssayMatrix(FlaggableModel):
         unique_together = [('study', 'name')]
 
     # TODO Name made unique within Study? What will the constraint be?
-    name = models.CharField(max_length=255)
+    name = models.CharField(
+        max_length=255,
+        verbose_name='Name'
+    )
 
     # TODO THINK OF HOW TO HANDLE PLATES HERE
     # TODO REALLY NEEDS TO BE REVISED
@@ -1848,12 +2010,23 @@ class AssayMatrix(FlaggableModel):
             ('plate', 'Plate'),
             # What other things might interest us?
             ('', '')
-        )
+        ),
+        verbose_name='Representation'
     )
 
-    study = models.ForeignKey(AssayStudy, on_delete=models.CASCADE)
+    study = models.ForeignKey(
+        AssayStudy,
+        on_delete=models.CASCADE,
+        verbose_name='Study'
+    )
 
-    device = models.ForeignKey(Microdevice, null=True, blank=True, on_delete=models.CASCADE)
+    device = models.ForeignKey(
+        Microdevice,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name='Device'
+    )
 
     # Decided against the inclusion of organ model here
     # organ_model = models.ForeignKey(OrganModel, null=True, blank=True, on_delete=models.CASCADE)
@@ -1875,11 +2048,24 @@ class AssayMatrix(FlaggableModel):
 
     # Number of rows and columns
     # Only required for representations without dimensions already
-    number_of_rows = models.IntegerField(null=True, blank=True)
-    number_of_columns = models.IntegerField(null=True, blank=True)
+    number_of_rows = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name='Number of Rows'
+    )
+    number_of_columns = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name='Number of Columns'
+    )
 
     # May be useful
-    notes = models.CharField(max_length=2048, blank=True, default='')
+    notes = models.CharField(
+        max_length=2048,
+        blank=True,
+        default='',
+        verbose_name='Notes'
+    )
 
     def __str__(self):
         return '{0}'.format(self.name)
@@ -1935,40 +2121,86 @@ class AssayMatrixItem(FlaggableModel):
         ]
 
     # Technically the study here is redundant (contained in matrix)
-    study = models.ForeignKey(AssayStudy, on_delete=models.CASCADE)
+    study = models.ForeignKey(
+        AssayStudy,
+        on_delete=models.CASCADE,
+        verbose_name='Study'
+    )
 
     # Probably shouldn't use this trick!
     # This is in fact required, just listed as not being so due to quirk in cleaning
-    matrix = models.ForeignKey(AssayMatrix, null=True, blank=True, on_delete=models.CASCADE)
+    matrix = models.ForeignKey(
+        AssayMatrix,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name='Matrix'
+    )
 
     # This is in fact required, just listed as not being so due to quirk in cleaning
     # setup = models.ForeignKey('assays.AssaySetup', null=True, blank=True, on_delete=models.CASCADE)
 
-    name = models.CharField(max_length=512)
-    setup_date = models.DateField(help_text='YYYY-MM-DD')
+    name = models.CharField(
+        max_length=512,
+        verbose_name='Name'
+    )
+    setup_date = models.DateField(
+        help_text='YYYY-MM-DD',
+        verbose_name='Setup Date'
+    )
 
     # Do we still want this? Should it be changed?
-    scientist = models.CharField(max_length=100, blank=True, default='')
-    notebook = models.CharField(max_length=256, blank=True, default='')
+    scientist = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        verbose_name='Scientist'
+    )
+    notebook = models.CharField(
+        max_length=256,
+        blank=True,
+        default='',
+        verbose_name='Notebook'
+    )
     # Should this be an integer field instead?
-    notebook_page = models.CharField(max_length=256, blank=True, default='')
-    notes = models.CharField(max_length=2048, blank=True, default='')
+    notebook_page = models.CharField(
+        max_length=256,
+        blank=True,
+        default='',
+        verbose_name='Notebook Page'
+    )
+    notes = models.CharField(
+        max_length=2048,
+        blank=True,
+        default='',
+        verbose_name='Notes'
+    )
 
     # If setups and items are to be merged, these are necessary
-    row_index = models.IntegerField()
-    column_index = models.IntegerField()
+    row_index = models.IntegerField(verbose_name='Row Index')
+    column_index = models.IntegerField(verbose_name='Column Index')
 
     # TODO DEPRECATED: PURGE
     # HENCEFORTH ALL ITEMS WILL HAVE AN ORGAN MODEL PROTOCOL
-    device = models.ForeignKey(Microdevice, verbose_name='Device', on_delete=models.CASCADE)
+    device = models.ForeignKey(
+        Microdevice,
+        verbose_name='Device',
+        on_delete=models.CASCADE
+    )
 
     # TODO DEPRECATED: PURGE
     # HENCEFORTH ALL ITEMS WILL HAVE AN ORGAN MODEL PROTOCOL
-    organ_model = models.ForeignKey(OrganModel, verbose_name='Model', null=True, blank=True, on_delete=models.CASCADE)
+    organ_model = models.ForeignKey(
+        OrganModel,
+        verbose_name='MPS Model',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
+    )
 
     organ_model_protocol = models.ForeignKey(
         OrganModelProtocol,
-        verbose_name='Model Protocol',
+        verbose_name='MPS Model Version',
         null=True,
         blank=True,
         on_delete=models.CASCADE
@@ -1987,16 +2219,27 @@ class AssayMatrixItem(FlaggableModel):
     test_type = models.CharField(
         max_length=8,
         choices=TEST_TYPE_CHOICES,
-        # default='control'
+        # default='control',
+        verbose_name='Test Type'
     )
 
     # Tentative
     # Do we want a time on top of this?
     # failure_date = models.DateField(help_text='YYYY-MM-DD', null=True, blank=True)
     # Failure time in minutes
-    failure_time = models.FloatField(null=True, blank=True)
+    failure_time = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Failure Time'
+    )
     # Do we want this is to be table or a static list?
-    failure_reason = models.ForeignKey(AssayFailureReason, blank=True, null=True, on_delete=models.CASCADE)
+    failure_reason = models.ForeignKey(
+        AssayFailureReason,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name='Failure Reason'
+    )
 
     def __str__(self):
         return str(self.name)
@@ -2194,18 +2437,30 @@ class AssaySetupCell(models.Model):
         )
 
     # Now binds directly to items
-    matrix_item = models.ForeignKey(AssayMatrixItem, on_delete=models.CASCADE)
+    matrix_item = models.ForeignKey(
+        AssayMatrixItem,
+        on_delete=models.CASCADE,
+        verbose_name='Matrix Item'
+    )
 
     # No longer bound one-to-one
     # setup = models.ForeignKey('AssaySetup', on_delete=models.CASCADE)
-    cell_sample = models.ForeignKey('cellsamples.CellSample', on_delete=models.CASCADE)
+    cell_sample = models.ForeignKey(
+        'cellsamples.CellSample',
+        on_delete=models.CASCADE,
+        verbose_name='Cell Sample'
+    )
     biosensor = models.ForeignKey(
         'cellsamples.Biosensor',
         on_delete=models.CASCADE,
         # Default is naive
-        default=2
+        default=2,
+        verbose_name='Biosensor'
     )
-    density = models.FloatField(verbose_name='density', default=0)
+    density = models.FloatField(
+        verbose_name='density',
+        default=0
+    )
 
     # TODO THIS IS TO BE HAMMERED OUT
     # density_unit = models.CharField(
@@ -2217,7 +2472,11 @@ class AssaySetupCell(models.Model):
     #             ('ML', 'cells / mL'),
     #             ('MM', 'cells / mm^2'))
     # )
-    density_unit = models.ForeignKey('assays.PhysicalUnits', on_delete=models.CASCADE)
+    density_unit = models.ForeignKey(
+        'assays.PhysicalUnits',
+        on_delete=models.CASCADE,
+        verbose_name='Density Unit'
+    )
     passage = models.CharField(
         max_length=16,
         verbose_name='Passage#',
@@ -2228,13 +2487,23 @@ class AssaySetupCell(models.Model):
     # DO WE WANT ADDITION TIME AND DURATION?
     # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
     # TODO TODO TODO TEMPORARILY NOT REQUIRED
-    addition_time = models.FloatField(null=True, blank=True)
+    addition_time = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Addition Time'
+    )
 
     # TODO TODO TODO DO WE WANT DURATION????
     # duration = models.FloatField(null=True, blank=True)
 
     # TODO TODO TODO TEMPORARILY NOT REQUIRED
-    addition_location = models.ForeignKey(AssaySampleLocation, blank=True, default=1, on_delete=models.CASCADE)
+    addition_location = models.ForeignKey(
+        AssaySampleLocation,
+        blank=True,
+        default=1,
+        on_delete=models.CASCADE,
+        verbose_name='Addition Location'
+    )
 
     # NOT DRY
     def get_addition_time_string(self):
@@ -2324,56 +2593,123 @@ class AssayDataPoint(models.Model):
     # setup = models.ForeignKey('assays.AssaySetup', on_delete=models.CASCADE)
 
     # May seem excessive, but chaining through fields can be inconvenient
-    study = models.ForeignKey('assays.AssayStudy', on_delete=models.CASCADE)
+    study = models.ForeignKey(
+        'assays.AssayStudy',
+        on_delete=models.CASCADE,
+        verbose_name='Study'
+    )
 
     # Cross reference for users if study ids diverge
-    cross_reference = models.CharField(max_length=255, default='')
+    cross_reference = models.CharField(
+        max_length=255,
+        default='',
+        verbose_name='Cross Reference'
+    )
 
-    matrix_item = models.ForeignKey('assays.AssayMatrixItem', on_delete=models.CASCADE)
+    matrix_item = models.ForeignKey(
+        'assays.AssayMatrixItem',
+        on_delete=models.CASCADE,
+        verbose_name='Matrix Item'
+    )
 
-    study_assay = models.ForeignKey('assays.AssayStudyAssay', on_delete=models.CASCADE)
+    study_assay = models.ForeignKey(
+        'assays.AssayStudyAssay',
+        on_delete=models.CASCADE,
+        verbose_name='Study Assay'
+    )
 
-    sample_location = models.ForeignKey('assays.AssaySampleLocation', on_delete=models.CASCADE)
+    sample_location = models.ForeignKey(
+        'assays.AssaySampleLocation',
+        on_delete=models.CASCADE,
+        verbose_name='Sample Location'
+    )
 
-    value = models.FloatField(null=True)
+    value = models.FloatField(
+        null=True,
+        verbose_name='Value'
+    )
 
     # PLEASE NOTE THAT THIS IS IN MINUTES
-    time = models.FloatField(default=0)
+    time = models.FloatField(
+        default=0,
+        verbose_name='Time'
+    )
 
     # Caution flags for the user
     # Errs on the side of larger flags, currently
-    caution_flag = models.CharField(max_length=255, default='')
+    caution_flag = models.CharField(
+        max_length=255,
+        default='',
+        verbose_name='Caution Flag'
+    )
 
     # TODO PROPOSED: CHANGE QUALITY TO TWO BOOLEANS: exclude and replaced
     # Kind of sloppy right now, I do not like it!
     # This value will act as quality control, if it evaluates True then the value is considered invalid
     # quality = models.CharField(max_length=20, default='')
 
-    excluded = models.BooleanField(default=False)
+    excluded = models.BooleanField(
+        default=False,
+        verbose_name='Excluded'
+    )
 
     # TODO: replaced should be removed
     # It is confusing and functionally useless
-    replaced = models.BooleanField(default=False)
+    replaced = models.BooleanField(
+        default=False,
+        verbose_name='Replaced'
+    )
 
     # This value contains notes for the data point
-    notes = models.CharField(max_length=255, default='')
+    notes = models.CharField(
+        max_length=255,
+        default='',
+        verbose_name='Notes'
+    )
 
     # Indicates what replicate this is (0 is for original)
-    update_number = models.IntegerField(default=0)
+    update_number = models.IntegerField(
+        default=0,
+        verbose_name='Update Number'
+    )
 
     # DEFAULTS SUBJECT TO CHANGE
-    assay_plate_id = models.CharField(max_length=255, default='N/A')
-    assay_well_id = models.CharField(max_length=255, default='N/A')
+    assay_plate_id = models.CharField(
+        max_length=255,
+        default='N/A',
+        verbose_name='Assay Plate ID'
+    )
+    assay_well_id = models.CharField(
+        max_length=255,
+        default='N/A',
+        verbose_name='Assay Well ID'
+    )
 
     # Indicates "technical replicates"
     # SUBJECT TO CHANGE
-    replicate = models.CharField(max_length=255, default='')
+    replicate = models.CharField(
+        max_length=255,
+        default='',
+        verbose_name='Replicate'
+    )
 
     # OPTIONAL FOR NOW
-    data_file_upload = models.ForeignKey('assays.AssayDataFileUpload', null=True, blank=True, on_delete=models.CASCADE)
+    data_file_upload = models.ForeignKey(
+        'assays.AssayDataFileUpload',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name='Data File Upload'
+    )
 
     # OPTIONAL
-    subtarget = models.ForeignKey(AssaySubtarget, null=True, blank=True, on_delete=models.CASCADE)
+    subtarget = models.ForeignKey(
+        AssaySubtarget,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name='Subtarget'
+    )
 
     def get_time_string(self):
         split_times = get_split_times(self.time)
@@ -2415,30 +2751,47 @@ class AssaySetupCompound(models.Model):
         )
 
     # Now binds directly to items
-    matrix_item = models.ForeignKey(AssayMatrixItem, on_delete=models.CASCADE)
+    matrix_item = models.ForeignKey(
+        AssayMatrixItem,
+        on_delete=models.CASCADE,
+        verbose_name='Matrix Item'
+    )
 
     # COMPOUND INSTANCE IS REQUIRED, however null=True was done to avoid a submission issue
     compound_instance = models.ForeignKey(
         'compounds.CompoundInstance',
         null=True,
         blank=True,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Compound Instance'
     )
-    concentration = models.FloatField()
+    concentration = models.FloatField(verbose_name='Concentration')
     concentration_unit = models.ForeignKey(
         'assays.PhysicalUnits',
         verbose_name='Concentration Unit',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
 
     # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
-    addition_time = models.FloatField(blank=True)
+    addition_time = models.FloatField(
+        blank=True,
+        verbose_name='Addition Time'
+    )
 
     # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
-    duration = models.FloatField(blank=True)
+    duration = models.FloatField(
+        blank=True,
+        verbose_name='Duration'
+    )
 
     # TODO TODO TODO TEMPORARILY NOT REQUIRED
-    addition_location = models.ForeignKey(AssaySampleLocation, blank=True, default=1, on_delete=models.CASCADE)
+    addition_location = models.ForeignKey(
+        AssaySampleLocation,
+        blank=True,
+        default=1,
+        on_delete=models.CASCADE,
+        verbose_name='Addition Location'
+    )
 
     # NOT DRY
     def get_addition_time_string(self):
@@ -2499,25 +2852,38 @@ class AssaySetupCompound(models.Model):
 # TODO MODIFY StudySupportingData
 class AssayStudySupportingData(models.Model):
     """A file (with description) that gives extra data for a Study"""
-    study = models.ForeignKey(AssayStudy, on_delete=models.CASCADE)
+    study = models.ForeignKey(
+        AssayStudy,
+        on_delete=models.CASCADE,
+        verbose_name='Study'
+    )
 
     description = models.CharField(
         max_length=1000,
-        help_text='Describes the contents of the supporting data file'
+        help_text='Describes the contents of the supporting data file',
+        verbose_name='Description'
     )
 
     # Not named file in order to avoid shadowing
     supporting_data = models.FileField(
         upload_to=study_supporting_data_location,
-        help_text='Supporting Data for Study'
+        help_text='Supporting Data for Study',
+        verbose_name='File'
     )
 
 
 # TODO Probably should have a ControlledVocabularyMixin for defining name and description consistently
 class AssaySetting(LockableModel):
     """Defines a type of setting (flowrate etc.)"""
-    name = models.CharField(max_length=512, unique=True)
-    description = models.CharField(max_length=2000)
+    name = models.CharField(
+        max_length=512,
+        unique=True,
+        verbose_name='Name'
+    )
+    description = models.CharField(
+        max_length=2000,
+        verbose_name='Description'
+    )
 
     def __str__(self):
         return self.name
@@ -2551,24 +2917,53 @@ class AssaySetupSetting(models.Model):
         )
 
     # Now binds directly to items
-    matrix_item = models.ForeignKey(AssayMatrixItem, on_delete=models.CASCADE)
+    matrix_item = models.ForeignKey(
+        AssayMatrixItem,
+        on_delete=models.CASCADE,
+        verbose_name='Matrix Item'
+    )
 
     # No longer one-to-one
     # setup = models.ForeignKey('assays.AssaySetup', on_delete=models.CASCADE)
-    setting = models.ForeignKey('assays.AssaySetting', on_delete=models.CASCADE)
+    setting = models.ForeignKey(
+        'assays.AssaySetting',
+        on_delete=models.CASCADE,
+        verbose_name='Setting'
+    )
     # DEFAULTS TO NONE, BUT IS REQUIRED
-    unit = models.ForeignKey('assays.PhysicalUnits', blank=True, default=14, on_delete=models.CASCADE)
-    value = models.CharField(max_length=255)
+    unit = models.ForeignKey(
+        'assays.PhysicalUnits',
+        blank=True,
+        default=14,
+        on_delete=models.CASCADE,
+        verbose_name='Unit'
+    )
+    value = models.CharField(
+        max_length=255,
+        verbose_name='Value'
+    )
 
     # Will we include these??
     # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
-    addition_time = models.FloatField(blank=True)
+    addition_time = models.FloatField(
+        blank=True,
+        verbose_name='Addition Time'
+    )
 
     # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
-    duration = models.FloatField(blank=True)
+    duration = models.FloatField(
+        blank=True,
+        verbose_name='Duration'
+    )
 
     # TODO TODO TODO TEMPORARILY NOT REQUIRED
-    addition_location = models.ForeignKey(AssaySampleLocation, blank=True, default=1, on_delete=models.CASCADE)
+    addition_location = models.ForeignKey(
+        AssaySampleLocation,
+        blank=True,
+        default=1,
+        on_delete=models.CASCADE,
+        verbose_name='Addition Location'
+    )
 
     # NOT DRY
     def get_addition_time_string(self):
@@ -2644,32 +3039,71 @@ class AssayStudyStakeholder(models.Model):
     Stakeholders needs to be consulted (sign off) before data can become available
     """
 
-    study = models.ForeignKey(AssayStudy, on_delete=models.CASCADE)
+    study = models.ForeignKey(
+        AssayStudy,
+        on_delete=models.CASCADE,
+        verbose_name='Study'
+    )
 
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    group = models.ForeignKey(
+        Group,
+        on_delete=models.CASCADE,
+        verbose_name='Group'
+    )
     # Explicitly declared rather than from inheritance to avoid unecessary fields
     signed_off_by = models.ForeignKey(
         User,
         blank=True,
         null=True,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Signed Off By'
     )
-    signed_off_date = models.DateTimeField(blank=True, null=True)
+    signed_off_date = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name='Signed Off Date'
+    )
 
-    signed_off_notes = models.CharField(max_length=255, blank=True, default='')
+    signed_off_notes = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name='Signed Off Notes'
+    )
 
-    sign_off_required = models.BooleanField(default=True)
+    sign_off_required = models.BooleanField(
+        default=True,
+        verbose_name='Signed Off Required'
+    )
 
 
 @reversion.register(follow=['study'])
 class AssayStudyAssay(models.Model):
     """Specific assays used in the 'inlines'"""
-    study = models.ForeignKey(AssayStudy, null=True, blank=True, on_delete=models.CASCADE)
+    study = models.ForeignKey(
+        AssayStudy,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name='Study'
+    )
     # study_new = models.ForeignKey('assays.AssayStudy', null=True, blank=True, on_delete=models.CASCADE)
-    target = models.ForeignKey(AssayTarget, on_delete=models.CASCADE)
-    method = models.ForeignKey(AssayMethod, on_delete=models.CASCADE)
+    target = models.ForeignKey(
+        AssayTarget,
+        on_delete=models.CASCADE,
+        verbose_name='Target'
+    )
+    method = models.ForeignKey(
+        AssayMethod,
+        on_delete=models.CASCADE,
+        verbose_name='Method'
+    )
     # Name of model "PhysicalUnits" should be renamed, methinks
-    unit = models.ForeignKey(PhysicalUnits, on_delete=models.CASCADE)
+    unit = models.ForeignKey(
+        PhysicalUnits,
+        on_delete=models.CASCADE,
+        verbose_name='Unit'
+    )
 
     # CATEGORY IS NOT ACTUALLY STORED
     # category = models.ForeignKey(
@@ -2687,18 +3121,57 @@ class AssayStudyAssay(models.Model):
 class AssayImageSetting(FlaggableModel):
     # Requested, not sure how useful
     # May want to remove soon, why have this be specific to a study? Deletion cascade?
-    study = models.ForeignKey(AssayStudy, on_delete=models.CASCADE)
+    study = models.ForeignKey(
+        AssayStudy,
+        on_delete=models.CASCADE,
+        verbose_name='Study'
+    )
     # This is necessary in TongYing's scheme, but it is kind of confusing in a way
-    label_id = models.CharField(max_length=40, default='', blank=True)
-    label_name = models.CharField(max_length=255)
-    label_description = models.CharField(max_length=500, default='', blank=True)
-    wave_length = models.CharField(max_length=255)
-    magnification = models.CharField(max_length=40)
-    resolution = models.CharField(max_length=40)
-    resolution_unit = models.CharField(max_length=40)
+    label_id = models.CharField(
+        max_length=40,
+        default='',
+        blank=True,
+        verbose_name='Label ID'
+    )
+    label_name = models.CharField(
+        max_length=255,
+        verbose_name='Label Name'
+    )
+    label_description = models.CharField(
+        max_length=500,
+        default='',
+        blank=True,
+        verbose_name='Label Description'
+    )
+    wave_length = models.CharField(
+        max_length=255,
+        verbose_name='Wave Length'
+    )
+    magnification = models.CharField(
+        max_length=40,
+        verbose_name='Magnification'
+    )
+    resolution = models.CharField(
+        max_length=40,
+        verbose_name='Resolution'
+    )
+    resolution_unit = models.CharField(
+        max_length=40,
+        verbose_name='Resolution Unit'
+    )
     # May be useful later
-    notes = models.CharField(max_length=500, default='', blank=True)
-    color_mapping = models.CharField(max_length=255, default='', blank=True)
+    notes = models.CharField(
+        max_length=500,
+        default='',
+        blank=True,
+        verbose_name='Notes'
+    )
+    color_mapping = models.CharField(
+        max_length=255,
+        default='',
+        blank=True,
+        verbose_name='Color Mapping'
+    )
 
     def __str__(self):
         return '{} {}'.format(self.study.name, self.label_name)
@@ -2708,26 +3181,77 @@ class AssayImage(models.Model):
     # May want to have an FK to study for convenience?
     # study = models.ForeignKey(AssayStudy, on_delete=models.CASCADE)
     # The associated item
-    matrix_item = models.ForeignKey(AssayMatrixItem, on_delete=models.CASCADE)
+    matrix_item = models.ForeignKey(
+        AssayMatrixItem,
+        on_delete=models.CASCADE,
+        verbose_name='Matrix Item'
+    )
     # The file name
-    file_name = models.CharField(max_length=255)
-    field = models.CharField(max_length=255)
-    field_description = models.CharField(max_length=500, default='')
+    file_name = models.CharField(
+        max_length=255,
+        verbose_name='File Name'
+    )
+    field = models.CharField(
+        max_length=255,
+        verbose_name='Field'
+    )
+    field_description = models.CharField(
+        max_length=500,
+        default='',
+        verbose_name='Field Description'
+    )
     # Stored in minutes
-    time = models.FloatField()
+    time = models.FloatField(verbose_name='Time')
     # Possibly used later, who knows
-    assay_plate_id = models.CharField(max_length=255, default='N/A')
-    assay_well_id = models.CharField(max_length=255, default='N/A')
+    assay_plate_id = models.CharField(
+        max_length=255,
+        default='N/A',
+        verbose_name='Assay Plate ID'
+    )
+    assay_well_id = models.CharField(
+        max_length=255,
+        default='N/A',
+        verbose_name='Assay Well ID'
+    )
     # PLEASE NOTE THAT I USE TARGET AND METHOD SEPARATE FROM ASSAY INSTANCE
-    method = models.ForeignKey(AssayMethod, on_delete=models.CASCADE)
-    target = models.ForeignKey(AssayTarget, on_delete=models.CASCADE)
+    method = models.ForeignKey(
+        AssayMethod,
+        on_delete=models.CASCADE,
+        verbose_name='Method'
+    )
+    target = models.ForeignKey(
+        AssayTarget,
+        on_delete=models.CASCADE,
+        verbose_name='Target'
+    )
     # May become useful
-    subtarget = models.ForeignKey(AssaySubtarget, on_delete=models.CASCADE)
-    sample_location = models.ForeignKey(AssaySampleLocation, on_delete=models.CASCADE)
-    notes = models.CharField(max_length=500, default='')
-    replicate = models.CharField(max_length=255, default='')
-    setting = models.ForeignKey(AssayImageSetting, on_delete=models.CASCADE)
+    subtarget = models.ForeignKey(
+        AssaySubtarget,
+        on_delete=models.CASCADE,
+        verbose_name='Subtarget'
+    )
+    sample_location = models.ForeignKey(
+        AssaySampleLocation,
+        on_delete=models.CASCADE,
+        verbose_name='Sample Location'
+    )
+    notes = models.CharField(
+        max_length=500,
+        default='',
+        verbose_name='Notes'
+    )
+    replicate = models.CharField(
+        max_length=255,
+        default='',
+        verbose_name='Replicate'
+    )
+    setting = models.ForeignKey(
+        AssayImageSetting,
+        on_delete=models.CASCADE,
+        verbose_name='Setting'
+    )
 
+    # ?
     def get_metadata(self):
         return {
             'matrix_item_id': self.matrix_item_id,
@@ -2762,12 +3286,27 @@ class AssayImage(models.Model):
 @reversion.register(follow=['studies', 'assays'])
 class AssayStudySet(FlaggableModel):
     # Name for the set
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+        verbose_name='Name'
+    )
     # Description
-    description = models.CharField(max_length=2000, default='', blank=True)
+    description = models.CharField(
+        max_length=2000,
+        default='',
+        blank=True,
+        verbose_name='Description'
+    )
 
-    studies = models.ManyToManyField(AssayStudy)
-    assays = models.ManyToManyField(AssayStudyAssay)
+    studies = models.ManyToManyField(
+        AssayStudy,
+        verbose_name='Studies'
+    )
+    assays = models.ManyToManyField(
+        AssayStudyAssay,
+        verbose_name='Assays'
+    )
 
     def get_post_submission_url(self):
         return self.get_absolute_url()
@@ -2780,13 +3319,41 @@ class AssayStudySet(FlaggableModel):
 
 
 class AssayReference(FlaggableModel):
-    pubmed_id = models.CharField(verbose_name='PubMed ID', max_length=40, blank=True, default='N/A')
-    title = models.CharField(verbose_name='Title', max_length=2000, unique=True)
-    authors = models.CharField(verbose_name='Authors', max_length=2000)
-    abstract = models.CharField(verbose_name='Abstract', max_length=4000, blank=True, default='')
-    publication = models.CharField(verbose_name='Publication', max_length=255)
-    year = models.CharField(verbose_name='Year', max_length=4)
-    doi = models.CharField(verbose_name='DOI', max_length=100, blank=True, default='N/A')
+    pubmed_id = models.CharField(
+        verbose_name='PubMed ID',
+        max_length=40,
+        blank=True,
+        default='N/A'
+    )
+    title = models.CharField(
+        verbose_name='Title',
+        max_length=2000,
+        unique=True
+    )
+    authors = models.CharField(
+        verbose_name='Authors',
+        max_length=2000
+    )
+    abstract = models.CharField(
+        verbose_name='Abstract',
+        max_length=4000,
+        blank=True,
+        default=''
+    )
+    publication = models.CharField(
+        verbose_name='Publication',
+        max_length=255
+    )
+    year = models.CharField(
+        verbose_name='Year',
+        max_length=4
+    )
+    doi = models.CharField(
+        verbose_name='DOI',
+        max_length=100,
+        blank=True,
+        default='N/A'
+    )
 
     # Somewhat odd
     def get_metadata(self):
@@ -2830,8 +3397,16 @@ class AssayStudyReference(models.Model):
             )
         ]
 
-    reference = models.ForeignKey(AssayReference, on_delete=models.CASCADE)
-    reference_for = models.ForeignKey(AssayStudy, on_delete=models.CASCADE)
+    reference = models.ForeignKey(
+        AssayReference,
+        on_delete=models.CASCADE,
+        verbose_name='Reference'
+    )
+    reference_for = models.ForeignKey(
+        AssayStudy,
+        on_delete=models.CASCADE,
+        verbose_name='Reference For'
+    )
 
 
 # TODO TODO TODO
@@ -2844,8 +3419,16 @@ class AssayStudySetReference(models.Model):
             )
         ]
 
-    reference = models.ForeignKey(AssayReference, on_delete=models.CASCADE)
-    reference_for = models.ForeignKey(AssayStudySet, on_delete=models.CASCADE)
+    reference = models.ForeignKey(
+        AssayReference,
+        on_delete=models.CASCADE,
+        verbose_name='Reference'
+    )
+    reference_for = models.ForeignKey(
+        AssayStudySet,
+        on_delete=models.CASCADE,
+        verbose_name='Reference For'
+    )
 
 
 class AssayCategory(FlaggableModel):
@@ -2855,11 +3438,21 @@ class AssayCategory(FlaggableModel):
         verbose_name = 'Assay Category'
         verbose_name_plural = 'Assay Categories'
 
-    name = models.CharField(max_length=512, unique=True)
-    description = models.CharField(max_length=2000)
+    name = models.CharField(
+        max_length=512,
+        unique=True,
+        verbose_name='Name'
+    )
+    description = models.CharField(
+        max_length=2000,
+        verbose_name='Description'
+    )
 
     # List of all related targets
-    targets = models.ManyToManyField('assays.AssayTarget')
+    targets = models.ManyToManyField(
+        'assays.AssayTarget',
+        verbose_name='Targets'
+    )
 
     def __str__(self):
         return '{}'.format(self.name)

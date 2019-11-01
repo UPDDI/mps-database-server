@@ -82,12 +82,22 @@
         <label for="chemblid" class="col-sm-2 control-label compounds-compound">ChEMBL ID</label>
         <div class="col-sm-10">
           {{ form.chemblid }}
-          <a target="_blank" href="https://www.ebi.ac.uk/chembl">Search ChEMBL</a>
             {# Hidden for now #}
 {#          <button type="button" id="search_chembl" class="btn btn-info">#}
 {#              <span class="glyphicon glyphicon-search"></span>#}
 {#              Search ChEMBL#}
 {#          </button>#}
+        </div>
+    </div>
+
+    <div class="row padded-bottom">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-10">
+            <a id="retrieve" class="btn btn-primary" role="button">Fetch Compound Information</a>
+            <a href="https://www.ebi.ac.uk/chembl" target="_blank" class="btn btn-info">
+                <span class="glyphicon glyphicon-search"></span>
+                Search ChEMBL
+            </a>
         </div>
     </div>
 

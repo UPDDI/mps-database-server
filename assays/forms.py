@@ -742,37 +742,72 @@ class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
     ### ADDING ITEM FIELDS
     matrix_item_name = forms.CharField(
         required=False,
-        widget=forms.Textarea(attrs={'rows': 1})
+        widget=forms.Textarea(attrs={'rows': 1}),
+        label='Matrix Item Name'
     )
 
-    matrix_item_setup_date = forms.DateField(required=False)
+    matrix_item_setup_date = forms.DateField(
+        required=False,
+        label='Matrix Item Setup Date'
+    )
     # Foolish!
     matrix_item_setup_date_popup = forms.DateField(required=False)
 
-    matrix_item_test_type = forms.ChoiceField(required=False, choices=TEST_TYPE_CHOICES)
+    matrix_item_test_type = forms.ChoiceField(
+        required=False,
+        choices=TEST_TYPE_CHOICES,
+        label='Matrix Item Test Type'
+    )
 
     matrix_item_scientist = forms.CharField(
         required=False,
-        widget=forms.Textarea(attrs={'rows': 1})
+        widget=forms.Textarea(attrs={'rows': 1}),
+        label='Scientist'
     )
-    matrix_item_notebook = forms.CharField(required=False)
-    matrix_item_notebook_page = forms.CharField(required=False)
+    matrix_item_notebook = forms.CharField(
+        required=False,
+        label='Notebook'
+    )
+    matrix_item_notebook_page = forms.CharField(
+        required=False,
+        label='Notebook Page'
+    )
     matrix_item_notes = forms.CharField(
         required=False,
-        widget=forms.Textarea(attrs={'rows': 3})
+        widget=forms.Textarea(attrs={'rows': 3}),
+        label='Notes'
     )
 
     ### ADDING SETUP FIELDS
-    matrix_item_device = forms.ModelChoiceField(queryset=Microdevice.objects.all().order_by('name'), required=False)
-    matrix_item_organ_model = forms.ModelChoiceField(queryset=OrganModel.objects.all().order_by('name'), required=False)
-    matrix_item_organ_model_protocol = forms.ModelChoiceField(queryset=OrganModelProtocol.objects.all().order_by('version'), required=False)
+    matrix_item_device = forms.ModelChoiceField(
+        queryset=Microdevice.objects.all().order_by('name'),
+        required=False,
+        label='Matrix Item Device'
+    )
+    matrix_item_organ_model = forms.ModelChoiceField(
+        queryset=OrganModel.objects.all().order_by('name'),
+        required=False,
+        label='Matrix Item MPS Model'
+    )
+    matrix_item_organ_model_protocol = forms.ModelChoiceField(
+        queryset=OrganModelProtocol.objects.all().order_by('version'),
+        required=False,
+        label='Matrix Item MPS Model Version'
+    )
     matrix_item_variance_from_organ_model_protocol = forms.CharField(
         required=False,
-        widget=forms.Textarea(attrs={'rows': 3})
+        widget=forms.Textarea(attrs={'rows': 3}),
+        label='Matrix Item Variance from Protocol'
     )
 
-    matrix_item_full_organ_model = forms.ModelChoiceField(queryset=OrganModel.objects.all().order_by('name'), required=False)
-    matrix_item_full_organ_model_protocol = forms.ModelChoiceField(queryset=OrganModelProtocol.objects.all(), required=False)
+    matrix_item_full_organ_model = forms.ModelChoiceField(
+        queryset=OrganModel.objects.all().order_by('name'),
+        required=False
+    )
+    matrix_item_full_organ_model_protocol = forms.ModelChoiceField(
+        queryset=OrganModelProtocol.objects.all(),
+        required=False
+    )
 
     ### INCREMENTER
     compound_concentration_increment = forms.FloatField(required=False, initial=1)
@@ -788,12 +823,16 @@ class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
     ), required=False)
 
     # Options for deletion
-    delete_option = forms.ChoiceField(required=False, choices=(
-        ('all', 'Everything'),
-        ('cell', 'Cells'),
-        ('compound', 'Compounds'),
-        ('setting', 'Settings'),
-    ))
+    delete_option = forms.ChoiceField(
+        required=False,
+        choices=(
+            ('all', 'Everything'),
+            ('cell', 'Cells'),
+            ('compound', 'Compounds'),
+            ('setting', 'Settings'),
+        ),
+        label='Delete Option'
+    )
 
     # FORCE UNIQUENESS CHECK
     def clean(self):

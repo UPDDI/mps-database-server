@@ -10,8 +10,8 @@ $(document).ready(function () {
 
     // Add the retrieve button
     // TODO REVISE
-    $('<input type="button" value="Retrieve" id="retrieve" name="_fetch">')
-            .insertAfter(chembl_id_selector);
+    // $('<input type="button" value="Retrieve" id="retrieve" name="_fetch">')
+    //        .insertAfter(chembl_id_selector);
     var retrieve_selector = $('#retrieve');
 
     // Set override exception to include chembl_search (so it doesn't trigger the submission)
@@ -107,7 +107,13 @@ $(document).ready(function () {
         get_drugbank_data();
     }
 
+    // ODD
     function caller(selection, chemblid, middleware_token) {
+        // Show spinner
+        window.spinner.spin(
+            document.getElementById("spinner")
+        );
+
         return $.ajax({
             url: "/compounds_ajax/",
             type: "POST",
@@ -208,11 +214,20 @@ $(document).ready(function () {
             error: function (xhr, errmsg, err) {
                 console.log(xhr.status + ": " + xhr.responseText);
                 retrieve_selector.removeAttr('disabled').val('Retrieve');
+            },
+            complete: function() {
+                // Stop spinner
+                window.spinner.stop();
             }
         });
     }
 
     function get_search_results() {
+        // Show spinner
+        window.spinner.spin(
+            document.getElementById("spinner")
+        );
+
         chembl_search_submit.prop('disabled', true)
             .removeClass('btn-primary')
             .addClass('btn-warning')
@@ -246,6 +261,10 @@ $(document).ready(function () {
                     .addClass('btn-primary')
                     .removeClass('btn-warning')
                     .text('Search');
+            },
+            complete: function() {
+                // Stop spinner
+                window.spinner.stop();
             }
         });
     }

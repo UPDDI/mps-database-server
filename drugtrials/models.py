@@ -13,10 +13,14 @@ from django.core.exceptions import ValidationError
 class Species(LockableModel):
     """A Species defines a particular species"""
     class Meta(object):
-        verbose_name_plural = 'species'
+        verbose_name_plural = 'Species'
         ordering = ('species_name', )
 
-    species_name = models.CharField(max_length=40, unique=True)
+    species_name = models.CharField(
+        max_length=40,
+        unique=True,
+        verbose_name='Species'
+    )
 
     def __str__(self):
         return self.species_name
