@@ -18,6 +18,7 @@ class CompoundsList(ListView):
     """Display a list of compounds (not to be confused with CompoundReport"""
     model = Compound
     template_name = 'compounds/compounds_list.html'
+
     # If variable pagination is desired, just jam that into GET too
     # paginate_by = 50
     #
