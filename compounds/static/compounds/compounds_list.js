@@ -27,7 +27,21 @@ $(document).ready(function() {
             //     "searchable": true
             // },
             {
-                "targets": [4],
+                "targets": [
+                    4,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18,
+                    19,
+                    20,
+                ],
                 "visible": false,
                 "searchable": true
             },

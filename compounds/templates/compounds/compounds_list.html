@@ -25,6 +25,8 @@
         {# Deprecated #}
 {# {% include 'project_filters.html' %} #}
 
+        {# TODO REFACTOR THE TEMPLATE FOR LIST VIEWS #}
+        {# TODO Headers etc. ideally should not be explicitly written, not DRY #}
         <table hidden id="compounds" class="display" cellspacing="0" width="100%">
             <thead>
                 <tr>
@@ -37,9 +39,17 @@
                     <th>LogP</th>
                     <th>Rule of 5 Violations</th>
                     <th>Known Drug</th>
-{#                    <th>Last Update</th>#}
-                    {% comment %} <th>Image</th> {% endcomment %}
-                    {% comment %} <th>Project</th> {% endcomment %}
+                    <th>Rotatable Bonds</th>
+                    <th>Acidic pKa</th>
+                    <th>Basic pKa</th>
+                    <th>LogD</th>
+                    <th>Passes Rule of 3</th>
+                    <th>Protein Binding</th>
+                    <th>Half Life</th>
+                    <th>Clearance</th>
+                    <th>Bioavailability</th>
+                    <th>Absorption</th>
+                    <th>PK Metabolism</th>
                 </tr>
             </thead>
 
@@ -64,36 +74,17 @@
                             <span hidden>False</span>
                         {% endif %}
                     </td>
-
-                    {# TODO Tags field is deprecated #}
-{#                    <td>{{ compound.tags|default_if_none:"" }}</td>#}
-{#                    <td>{{ compound.molecular_weight }}</td>#}
-{#                    <td>{{ compound.logp }}</td>#}
-{#                    <td>{{ compound.ro5_violations }}</td>#}
-{#                    <td>{{ compound.last_update }}</td>#}
-                    {# Image removed for now #}
-                    {% comment %} <td>
-                      {% if compound.chemblid %}
-                          <img src="https://www.ebi.ac.uk/chembldb/compound/displayimage/{{ compound.chemblid }}">
-                      {% else %}
-                        <span style="width: 128px; height: 128px;" class="glyphicon glyphicon-file text-warning" aria-hidden="true"></span>
-                      {% endif %}
-                    </td> {% endcomment %}
-
-                    {% comment %} <td>
-                        {% if compound.mps %}
-                            MPS
-                        {% endif %}
-                        {% if compound.epa %}
-                            EPA
-                        {% endif %}
-                        {% if compound.tctc %}
-                            TCTC
-                        {% endif %}
-                        {% if not compound.epa and not compound.mps and not compound.tctc %}
-                            Unassigned
-                        {% endif %}
-                    </td> {% endcomment %}
+                    <td>{{ compound.rotatable_bonds|default_if_none:"" }}</td>
+                    <td>{{ compound.acidic_pka|default_if_none:"" }}</td>
+                    <td>{{ compound.basic_pka|default_if_none:"" }}</td>
+                    <td>{{ compound.logd|default_if_none:"" }}</td>
+                    <td>{{ compound.ro3_passes|default_if_none:"" }}</td>
+                    <td>{{ compound.protein_binding|default_if_none:"" }}</td>
+                    <td>{{ compound.half_life|default_if_none:"" }}</td>
+                    <td>{{ compound.clearance|default_if_none:"" }}</td>
+                    <td>{{ compound.bioavailability|default_if_none:"" }}</td>
+                    <td>{{ compound.absorption|default_if_none:"" }}</td>
+                    <td>{{ compound.pk_metabolism|default_if_none:"" }}</td>
                 </tr>
             {% endfor %}
             </tbody>
