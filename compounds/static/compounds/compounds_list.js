@@ -40,7 +40,6 @@ $(document).ready(function() {
                     17,
                     18,
                     19,
-                    20,
                 ],
                 "visible": false,
                 "searchable": true
