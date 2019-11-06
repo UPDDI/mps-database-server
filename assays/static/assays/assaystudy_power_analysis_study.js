@@ -829,16 +829,16 @@ $(document).ready(function () {
             var current_max_y = Math.abs(Math.max.apply(null, trimmed_values));
             var current_min_y = Math.abs(Math.min.apply(null, trimmed_values));
 
-            if (current_max_y > 1000 || current_max_y < 0.001) {
-                options.vAxis.format = '0.00E0';
+            if (current_max_y > 1000 || current_max_y < 0.001 && current_max_y !== 0) {
+                options.vAxis.format = '0.0E0';
                 return false;
             }
             else if (Math.abs(current_max_y - current_min_y) < 10 && Math.abs(current_max_y - current_min_y) > 0.1 && Math.abs(current_max_y - current_min_y) !== 0) {
-                options.vAxis.format = '0.00';
+                options.vAxis.format = '0.0';
                 return false;
             }
             else if (Math.abs(current_max_y - current_min_y) < 0.1 && Math.abs(current_max_y - current_min_y) !== 0) {
-                options.vAxis.format = '0.00E0';
+                options.vAxis.format = '0.0E0';
                 return false;
             }
         });
