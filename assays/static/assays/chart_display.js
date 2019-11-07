@@ -632,6 +632,10 @@ $(document).ready(function () {
             }
         });
 
+        // Global max
+        var global_max_y = 0;
+        var global_min_y = 1e25;
+
         // Go through y values
         $.each(assay_data.slice(1), function(current_index, current_values) {
             // Idiomatic way to remove NaNs
@@ -640,19 +644,23 @@ $(document).ready(function () {
             var current_max_y = Math.abs(Math.max.apply(null, trimmed_values));
             var current_min_y = Math.abs(Math.min.apply(null, trimmed_values));
 
-            if (current_max_y > 1000 || current_max_y < 0.001) {
-                options.vAxis.format = '0.00E0';
-                return false;
+            if (global_max_y < current_max_y) {
+                global_max_y = current_max_y;
             }
-            else if (Math.abs(current_max_y - current_min_y) < 10 && Math.abs(current_max_y - current_min_y) > 0.1 && Math.abs(current_max_y - current_min_y) !== 0) {
-                options.vAxis.format = '0.00';
-                return false;
-            }
-            else if (Math.abs(current_max_y - current_min_y) < 0.1 && Math.abs(current_max_y - current_min_y) !== 0) {
-                options.vAxis.format = '0.00E0';
-                return false;
+            if (global_min_y > current_min_y) {
+                global_min_y = current_min_y;
             }
         });
+
+        if (global_max_y > 1000 || global_max_y < 0.001 && global_max_y !== 0) {
+            options.vAxis.format = '0.0E0';
+        }
+        else if (Math.abs(global_max_y - global_min_y) < 10 && Math.abs(global_max_y - global_min_y) > 0.1 && Math.abs(global_max_y - global_min_y) !== 0) {
+            options.vAxis.format = '0.0';
+        }
+        else if (Math.abs(global_max_y - global_min_y) < 0.1 && Math.abs(global_max_y - global_min_y) !== 0) {
+            options.vAxis.format = '0.0E0';
+        }
 
         var current_min_x = assay_data[1][0];
         var current_max_x = assay_data[assay_data.length - 1][0];
