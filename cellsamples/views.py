@@ -1,9 +1,21 @@
 # coding=utf-8
 
-from django.views.generic import ListView, CreateView, UpdateView
-from .models import CellSample, CellType, CellSubtype
-from .forms import CellSampleForm, CellTypeForm, CellSubtypeForm
-from mps.mixins import LoginRequiredMixin, OneGroupRequiredMixin, SpecificGroupRequiredMixin, PermissionDenied, user_is_active, FormHandlerMixin
+from django.views.generic import ListView, CreateView, UpdateView, DetailView
+from .models import (
+    CellSample,
+    CellType,
+    CellSubtype,
+    Supplier,
+    Biosensor
+)
+from .forms import (
+    CellSampleForm,
+    CellTypeForm,
+    CellSubtypeForm,
+    SupplierForm,
+    BiosensorForm
+)
+from mps.mixins import LoginRequiredMixin, OneGroupRequiredMixin, SpecificGroupRequiredMixin, PermissionDenied, user_is_active, FormHandlerMixin, DetailHandlerMixin, ListHandlerMixin, CreatorOrSuperuserRequiredMixin
 from mps.templatetags.custom_filters import filter_groups
 from django.shortcuts import redirect
 
@@ -105,6 +117,49 @@ class CellSubtypeList(ListView):
             'cell_type__organ'
         )
         return queryset
+
+
+class SupplierMixin(FormHandlerMixin):
+    model = Supplier
+    form_class = SupplierForm
+
+
+class SupplierAdd(OneGroupRequiredMixin, SupplierMixin, CreateView):
+    pass
+
+
+class SupplierUpdate(CreatorOrSuperuserRequiredMixin, SupplierMixin, UpdateView):
+    pass
+
+
+class SupplierDetail(DetailHandlerMixin, DetailView):
+    pass
+
+
+class SupplierList(ListHandlerMixin, ListView):
+    model = Supplier
+
+
+class BiosensorMixin(FormHandlerMixin):
+    model = Biosensor
+    form_class = BiosensorForm
+
+
+class BiosensorAdd(OneGroupRequiredMixin, BiosensorMixin, CreateView):
+    pass
+
+
+class BiosensorUpdate(CreatorOrSuperuserRequiredMixin, BiosensorMixin, UpdateView):
+    pass
+
+
+class BiosensorDetail(DetailHandlerMixin, DetailView):
+    pass
+
+
+class BiosensorList(ListHandlerMixin, ListView):
+    model = Biosensor
+
 
 # OLD
 # class CellSampleAdd(SpecificGroupRequiredMixin, CreateView):

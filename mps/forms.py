@@ -8,7 +8,7 @@ from mps.settings import DEFAULT_FROM_EMAIL
 from django.template.loader import render_to_string
 
 # SHOULD BE IN ALL CAPS
-tracking = ('created_by', 'created_on', 'modified_on', 'modified_by', 'signed_off_by', 'signed_off_date', 'locked')
+tracking = ('created_by', 'created_on', 'modified_on', 'modified_by', 'signed_off_by', 'signed_off_date', 'locked', 'restricted')
 
 WIDGETS_TO_ADD_FORM_CONTROL_TO = {
     "<class 'django.forms.widgets.TextInput'>": True,

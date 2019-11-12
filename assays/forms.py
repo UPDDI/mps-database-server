@@ -30,6 +30,11 @@ from assays.models import (
     AssayReference,
     AssayStudyReference,
     AssayStudySetReference,
+    AssayTarget,
+    AssayMeasurementType,
+    AssayMethod,
+    AssaySetting,
+    AssaySupplier
 )
 from compounds.models import Compound, CompoundInstance, CompoundSupplier
 from microdevices.models import (
@@ -38,7 +43,7 @@ from microdevices.models import (
     OrganModel,
     OrganModelProtocol
 )
-from mps.forms import SignOffMixin, BootstrapForm
+from mps.forms import SignOffMixin, BootstrapForm, tracking
 import string
 from captcha.fields import CaptchaField
 
@@ -63,16 +68,16 @@ import ujson as json
 # TODO REFACTOR FK QUERYSETS TO AVOID N+1
 
 # These are all of the tracking fields
-tracking = (
-    'created_by',
-    'created_on',
-    'modified_on',
-    'modified_by',
-    'signed_off_by',
-    'signed_off_date',
-    'locked',
-    'restricted'
-)
+# tracking = (
+#     'created_by',
+#     'created_on',
+#     'modified_on',
+#     'modified_by',
+#     'signed_off_by',
+#     'signed_off_date',
+#     'locked',
+#     'restricted'
+# )
 # Excluding restricted is likewise useful
 restricted = ('restricted',)
 # Group
@@ -2280,3 +2285,73 @@ class AssayMatrixFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         self.fields['test_type'].widget.attrs['class'] += ' no-selectize test-type'
         # Bad
         self.fields['test_type'].widget.attrs['style'] = 'width:100px;'
+
+
+class AssayTargetForm(BootstrapForm):
+    class Meta(object):
+        model = AssayTarget
+        exclude = tracking
+
+        widgets = {
+            'description': forms.Textarea(attrs={'cols': 50, 'rows': 3}),
+        }
+
+
+class AssayMethodForm(BootstrapForm):
+    class Meta(object):
+        model = AssayMethod
+        exclude = tracking
+
+        widgets = {
+            'description': forms.Textarea(attrs={'cols': 50, 'rows': 3}),
+        }
+
+
+class PhysicalUnitsForm(BootstrapForm):
+    class Meta(object):
+        model = PhysicalUnits
+        exclude = tracking
+
+        widgets = {
+            'description': forms.Textarea(attrs={'cols': 50, 'rows': 3}),
+        }
+
+
+class AssayMeasurementTypeForm(BootstrapForm):
+    class Meta(object):
+        model = AssayMeasurementType
+        exclude = tracking
+
+        widgets = {
+            'description': forms.Textarea(attrs={'cols': 50, 'rows': 3}),
+        }
+
+
+class AssaySampleLocationForm(BootstrapForm):
+    class Meta(object):
+        model = AssaySampleLocation
+        exclude = tracking
+
+        widgets = {
+            'description': forms.Textarea(attrs={'cols': 50, 'rows': 3}),
+        }
+
+
+class AssaySettingForm(BootstrapForm):
+    class Meta(object):
+        model = AssaySetting
+        exclude = tracking
+
+        widgets = {
+            'description': forms.Textarea(attrs={'cols': 50, 'rows': 3}),
+        }
+
+
+class AssaySupplierForm(BootstrapForm):
+    class Meta(object):
+        model = AssaySupplier
+        exclude = tracking
+
+        widgets = {
+            'description': forms.Textarea(attrs={'cols': 50, 'rows': 3}),
+        }

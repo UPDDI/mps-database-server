@@ -13,18 +13,19 @@ from .models import (
     OrganModelCell,
     OrganModelProtocolCell,
     OrganModelProtocolSetting,
+    Manufacturer
 )
 from cellsamples.models import CellType
 from assays.models import AssayMatrixItem, AssaySampleLocation
 from diseases.models import Disease
-from mps.forms import SignOffMixin, BootstrapForm
+from mps.forms import SignOffMixin, BootstrapForm, tracking
 from django.forms.models import inlineformset_factory
 
 # A little strange to import this way: spaghetti
 from assays.forms import ModelFormSplitTime, PhysicalUnits
 
 # These are all of the tracking fields
-tracking = ('created_by', 'created_on', 'modified_on', 'modified_by', 'signed_off_by', 'signed_off_date')
+# tracking = ('created_by', 'created_on', 'modified_on', 'modified_by', 'signed_off_by', 'signed_off_date')
 
 
 class MicrodeviceForm(SignOffMixin, BootstrapForm):
@@ -257,3 +258,13 @@ OrganModelCellFormsetFactory = inlineformset_factory(
     extra=1,
     exclude=[],
 )
+
+
+class ManufacturerForm(BootstrapForm):
+    class Meta(object):
+        model = Manufacturer
+        exclude = tracking
+
+        widgets = {
+            'description': forms.Textarea(attrs={'cols': 50, 'rows': 3}),
+        }

@@ -6,6 +6,52 @@ from django.db import models
 from django.utils import timezone
 # from django.shortcuts import redirect, get_object_or_404
 
+from django.urls import reverse
+
+
+class FrontEndModel(models.Model):
+    """Contains default methods for urls"""
+
+    class Meta(object):
+        abstract = True
+
+    def get_absolute_url(self):
+        return reverse(
+            '{}-{}-detail'.format(
+                self._meta.app_label,
+                self._meta.model_name
+            ),
+            kwargs={'pk': self.id}
+        )
+
+    def get_update_url(self):
+        return reverse(
+            '{}-{}-update'.format(
+                self._meta.app_label,
+                self._meta.model_name
+            ),
+            kwargs={'pk': self.id}
+        )
+
+    def get_list_url(self):
+        return reverse(
+            '{}-{}-list'.format(
+                self._meta.app_label,
+                self._meta.model_name
+            )
+        )
+
+    def get_add_url(self):
+        return reverse(
+            '{}-{}-add'.format(
+                self._meta.app_label,
+                self._meta.model_name
+            )
+        )
+
+    def get_post_submission_url(self):
+        return self.get_list_url()
+
 
 # TODO THIS WILL HAVE TO BE CHANGED IF WE WANT TO HAVE A RECORD FOR EVERY MODIFIER
 class TrackableModel(models.Model):

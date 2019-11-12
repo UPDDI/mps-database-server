@@ -33,12 +33,12 @@
         </legend>
 
         <div class="row text-center padded-bottom">
-            <a href="{% url 'assay_study_add' %}"  class="btn btn-lg btn-success" role="button">Add Study</a>
-            <a href="{% url 'assaystudyset-add' %}" class="btn btn-lg btn-success" role="button">Create Study Set</a>
+            <a href="{% url 'assays-assaystudy-add' %}"  class="btn btn-lg btn-success" role="button">Add Study</a>
+            <a href="{% url 'assays-assaystudyset-add' %}" class="btn btn-lg btn-success" role="button">Create Study Set</a>
             {% if not editable %}
-                <a href="{% url 'editable_study_list' %}" class="btn btn-lg btn-primary" role="button">Show Editable Studies Only</a>
+                <a href="{% url 'assays-editable-study-list' %}" class="btn btn-lg btn-primary" role="button">Show Editable Studies Only</a>
             {% else %}
-                <a href="{% url 'assay_study_list' %}" class="btn btn-lg btn-primary" role="button">Show All Studies</a>
+                <a href="{% url 'assays-assaystudy-list' %}" class="btn btn-lg btn-primary" role="button">Show All Studies</a>
             {% endif %}
         </div>
 

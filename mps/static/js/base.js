@@ -99,7 +99,7 @@ $(document).ready(function () {
     else if (url.indexOf('/targets/') > -1) {
         anchor = '#assaymts'
     }
-    else if (url.indexOf('/methods/') > -1) {
+    else if (url.indexOf('/method/') > -1) {
         anchor = '#assaymts'
     }
     else if (url.indexOf('/assaymatrixitem/') > -1) {

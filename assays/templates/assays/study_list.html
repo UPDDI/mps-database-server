@@ -38,7 +38,7 @@
                 {% if reproducibility %}
                 <td><a class="btn btn-primary" href="{% url 'assay_study_reproducibility' study.id %}">Reproducibility</a></td>
                 {% else %}
-                <td><a class="btn btn-primary" href="{% url 'assay_study_index' study.id %}">View/Edit</a></td>
+                <td><a class="btn btn-primary" href="{% url 'assays-assaystudy-index' study.id %}">View/Edit</a></td>
                 {% endif %}
             {% else %}
                 <td style="text-align:center;">

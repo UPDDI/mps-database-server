@@ -22,12 +22,6 @@ from assays.views import (
     AssayStudySignOff,
     AssayStudyReproducibility,
     AssayStudyImages,
-    AssayTargetList,
-    AssayTargetDetail,
-    AssayMethodList,
-    AssayMethodDetail,
-    AssayPhysicalUnitsList,
-    AssaySampleLocationList,
     GraphingReproducibilityFilterView,
     AssayDataFromFilters,
     AssayInterStudyReproducibility,
@@ -47,121 +41,177 @@ from assays.views import (
     AssayReferenceDelete,
     TCTCSummary,
     AssayStudyAddNew,
-    AssayMatrixNew
+    AssayMatrixNew,
+    AssayTargetAdd,
+    AssayTargetList,
+    AssayTargetDetail,
+    AssayTargetUpdate,
+    AssayMethodAdd,
+    AssayMethodList,
+    AssayMethodDetail,
+    AssayMethodUpdate,
+    PhysicalUnitsAdd,
+    PhysicalUnitsList,
+    PhysicalUnitsDetail,
+    PhysicalUnitsUpdate,
+    AssaySettingAdd,
+    AssaySettingList,
+    AssaySettingDetail,
+    AssaySettingUpdate,
+    AssaySampleLocationAdd,
+    AssaySampleLocationUpdate,
+    AssaySampleLocationList,
+    AssaySupplierAdd,
+    AssaySupplierUpdate,
+    AssaySupplierList,
+    AssayMeasurementTypeAdd,
+    AssayMeasurementTypeUpdate,
+    AssayMeasurementTypeList,
+    AssayStudyComponents
 )
 import assays.ajax
 
+# TODO: WHY ARE THERE TWO DIFFERENT APPROACHES TO NAMES
 urlpatterns = [
     # User can view all Editable Studies
-    url(r'^assays/assaystudy/editable_studies/$', AssayStudyEditableList.as_view(), name='editable_study_list'),
+    url(r'^assays/assaystudy/editable_studies/$', AssayStudyEditableList.as_view(), name='assays-editable-study-list'),
     # The main page for a study
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/$', AssayStudyIndex.as_view(), name='assay_study_index'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/$', AssayStudyIndex.as_view(), name='assays-assaystudy-index'),
     # Update page for studies
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/update/$', AssayStudyUpdate.as_view(), name='assay_study_update'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/update/$', AssayStudyUpdate.as_view(), name='assays-assaystudy-update'),
     # Delete view for studies
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/delete/$', AssayStudyDelete.as_view(), name='study-delete'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/delete/$', AssayStudyDelete.as_view(), name='assays-assaystudy-delete'),
     # Summary view for studies
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/summary/$', AssayStudySummary.as_view(), name='assay_study_summary'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/summary/$', AssayStudySummary.as_view(), name='assays-assaystudy-summary'),
     # # All data for a study
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/data/$', AssayStudyData.as_view(), name='assay_study_data'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/data/$', AssayStudyData.as_view(), name='assays-assaystudy-data'),
     # # Bulk Readout Upload for Studies
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/upload/$', AssayStudyDataUpload.as_view(), name='assay_study_upload'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/upload/$', AssayStudyDataUpload.as_view(), name='assays-assaystudy-upload'),
 
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/sign_off/$', AssayStudySignOff.as_view(), name='assay_study_sign_off'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/sign_off/$', AssayStudySignOff.as_view(), name='assays-assaystudy-sign-off'),
 
-    # NEW_TO_BE_REVISED
-    url(r'^assays/assaystudy/$', AssayStudyList.as_view(), name='assay_study_list'),
-    url(r'^assays/assaystudy/add/$', AssayStudyAddNew.as_view(), name='assay_study_add'),
-
-    url(r'^assays/assaymatrixitem/(?P<pk>[0-9]+)/$', AssayMatrixItemDetail.as_view(), name='assay_matrix_item_detail'),
-    url(r'^assays/assaymatrixitem/(?P<pk>[0-9]+)/update/$', AssayMatrixItemUpdate.as_view(), name='assay_matrix_item_update'),
-    url(r'^assays/assaymatrixitem/(?P<pk>[0-9]+)/delete/$', AssayMatrixItemDelete.as_view(), name='assay_matrix_item_delete'),
-
-    url(r'^assays/studyconfiguration/$', AssayStudyConfigurationList.as_view(), name='studyconfiguration_list'),
-    url(r'^assays/studyconfiguration/add/$', AssayStudyConfigurationAdd.as_view(), name='studyconfiguration_add'),
-    url(r'^assays/studyconfiguration/(?P<pk>[0-9]+)/$', AssayStudyConfigurationUpdate.as_view(), name='studyconfiguration_update'),
-
-    # Add a matrix
-    url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assaymatrix/add/$', AssayMatrixAdd.as_view(), name='assay_matrix_add'),
-    url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/$', AssayMatrixDetail.as_view(), name='assay_matrix_detail'),
-    url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/update/$', AssayMatrixUpdate.as_view(), name='assay_matrix_update'),
-    url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/delete/$', AssayMatrixDelete.as_view(), name='assay_matrix_delete'),
-
-    url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/new/$', AssayMatrixNew.as_view(), name='assay_matrix_new'),
-
-    url(r'^assays/studyconfiguration/$', AssayStudyConfigurationList.as_view(), name='studyconfiguration_list'),
-    url(r'^assays/studyconfiguration/add/$', AssayStudyConfigurationAdd.as_view(), name='studyconfiguration_add'),
-    url(r'^assays/studyconfiguration/(?P<pk>[0-9]+)/$', AssayStudyConfigurationUpdate.as_view(), name='studyconfiguration_update'),
-
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/reproducibility/$', AssayStudyReproducibility.as_view(), name='assay_study_reproducibility'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/reproducibility/$', AssayStudyReproducibility.as_view(), name='assays-assaystudy-reproducibility'),
 
     # Images
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/images/$', AssayStudyImages.as_view(), name='study-images'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/images/$', AssayStudyImages.as_view(), name='assays-assaystudy-images'),
 
-    # Targets and Methods
-    url(r'^assays/targets/$', AssayTargetList.as_view(), name='assay-targets-list'),
-    url(r'^assays/targets/(?P<pk>[0-9]+)/$', AssayTargetDetail.as_view(), name='assay-targets-detail'),
-    url(r'^assays/methods/$', AssayMethodList.as_view(), name='assay-methods-list'),
-    url(r'^assays/methods/(?P<pk>[0-9]+)/$', AssayMethodDetail.as_view(), name='assay-methods-detail'),
+    # NEW_TO_BE_REVISED
+    url(r'^assays/assaystudy/$', AssayStudyList.as_view(), name='assays-assaystudy-list'),
+    url(r'^assays/assaystudy/add/$', AssayStudyAddNew.as_view(), name='assays-assaystudy-add'),
 
-    # Units
-    url(r'^assays/units/$', AssayPhysicalUnitsList.as_view(), name='assay-units-list'),
+    url(r'^assays/assaymatrixitem/(?P<pk>[0-9]+)/$', AssayMatrixItemDetail.as_view(), name='assays-assaymatrixitem-detail'),
+    url(r'^assays/assaymatrixitem/(?P<pk>[0-9]+)/update/$', AssayMatrixItemUpdate.as_view(), name='assays-assaymatrixitem-update'),
+    url(r'^assays/assaymatrixitem/(?P<pk>[0-9]+)/delete/$', AssayMatrixItemDelete.as_view(), name='assays-assaymatrixitem-delete'),
 
-    # Sample Locations
-    url(r'^assays/locations/$', AssaySampleLocationList.as_view(), name='assay-locations-list'),
+    url(r'^assays/studyconfiguration/$', AssayStudyConfigurationList.as_view(), name='assays-assays-assaystudyconfiguration-list'),
+    url(r'^assays/studyconfiguration/add/$', AssayStudyConfigurationAdd.as_view(), name='assays-assaystudyconfiguration-add'),
+    url(r'^assays/studyconfiguration/(?P<pk>[0-9]+)/$', AssayStudyConfigurationUpdate.as_view(), name='assays-assaystudyconfiguration-update'),
+
+    # Add a matrix
+    url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assaymatrix/add/$', AssayMatrixAdd.as_view(), name='assays-assaymatrix-add'),
+    url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/$', AssayMatrixDetail.as_view(), name='assays-assaymatrix-detail'),
+    url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/update/$', AssayMatrixUpdate.as_view(), name='assays-assaymatrix-update'),
+    url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/delete/$', AssayMatrixDelete.as_view(), name='assays-assaymatrix-delete'),
+
+    url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/new/$', AssayMatrixNew.as_view(), name='assays-assaymatrix-new'),
 
     # Location for assay filter
-    url(r'^assays/graphing_reproducibility/$', GraphingReproducibilityFilterView.as_view(), name='graphing-reproducibility'),
+    url(r'^assays/graphing_reproducibility/$', GraphingReproducibilityFilterView.as_view(), name='assays-graphing-reproducibility'),
 
     # Separate URLs for plots and repro
-    url(r'^assays/assay_interstudy_reproducibility/$', AssayInterStudyReproducibility.as_view(), name='interstudy-reproducibility'),
-    url(r'^assays/assaystudy_data_plots/$', AssayStudyDataPlots.as_view(), name='assaystudy-data-plots'),
+    url(r'^assays/assay_interstudy_reproducibility/$', AssayInterStudyReproducibility.as_view(), name='assays-interstudy-reproducibility'),
+    url(r'^assays/assaystudy_data_plots/$', AssayStudyDataPlots.as_view(), name='assays-assaystudy-data-plots'),
 
     # Study Set urls
     url(
         r'^assays/assaystudyset/add/$',
         AssayStudySetAdd.as_view(),
-        name='assaystudyset-add'
+        name='assays-assaystudyset-add'
     ),
     url(
         r'^assays/assaystudyset/(?P<pk>[0-9]+)/update/$',
         AssayStudySetUpdate.as_view(),
-        name='assaystudyset-update'
+        name='assays-assaystudyset-update'
     ),
     url(
         r'^assays/assaystudyset/(?P<pk>[0-9]+)/$',
         AssayStudySetDataPlots.as_view(),
-        name='assaystudyset-data-plots'
+        name='assays-assaystudyset-data-plots'
     ),
     url(
         r'^assays/assaystudyset/(?P<pk>[0-9]+)/reproducibility/$',
         AssayStudySetReproducibility.as_view(),
-        name='assaystudyset-reproducibility'
+        name='assays-assaystudyset-reproducibility'
     ),
     url(
         r'^assays/assaystudyset/$',
         AssayStudySetList.as_view(),
-        name='assaystudyset-list'
+        name='assays-assaystudyset-list'
     ),
 
     url(
         r'^assays/assaystudyset/(?P<pk>[0-9]+)/data/$',
         AssayStudySetData.as_view(),
-        name='assaystudyset-data'
+        name='assays-assaystudyset-data'
     ),
 
     # Data from filters
-    url(r'^assays/data_from_filters/$', AssayDataFromFilters.as_view(), name='data-from-filters'),
+    url(r'^assays/data_from_filters/$', AssayDataFromFilters.as_view(), name='assays-data-from-filters'),
 
     # Power Analysis
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/power_analysis/$', AssayStudyPowerAnalysisStudy.as_view(), name='assay-power-analysis-study'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/power_analysis/$', AssayStudyPowerAnalysisStudy.as_view(), name='assays-power-analysis-study'),
 
     # References
-    url(r'^assays/assayreference/$', AssayReferenceList.as_view(), name='assay-reference-list'),
-    url(r'^assays/assayreference/add/$', AssayReferenceAdd.as_view(), name='assay-reference-add'),
-    url(r'^assays/assayreference/(?P<pk>[0-9]+)/$', AssayReferenceDetail.as_view(), name='assay-reference-detail'),
-    url(r'^assays/assayreference/(?P<pk>[0-9]+)/update/$', AssayReferenceUpdate.as_view(), name='assay-reference-update'),
-    url(r'^assays/assayreference/(?P<pk>[0-9]+)/delete/$', AssayReferenceDelete.as_view(), name='assay-reference-delete'),
+    url(r'^assays/assayreference/$', AssayReferenceList.as_view(), name='assays-assayreference-list'),
+    url(r'^assays/assayreference/add/$', AssayReferenceAdd.as_view(), name='assays-assayreference-add'),
+    url(r'^assays/assayreference/(?P<pk>[0-9]+)/$', AssayReferenceDetail.as_view(), name='assays-assayreference-detail'),
+    url(r'^assays/assayreference/(?P<pk>[0-9]+)/update/$', AssayReferenceUpdate.as_view(), name='assays-assayreference-update'),
+    url(r'^assays/assayreference/(?P<pk>[0-9]+)/delete/$', AssayReferenceDelete.as_view(), name='assays-assayreference-delete'),
+
+    # Target
+    url(r'^assays/target/$', AssayTargetList.as_view(), name='assays-assaytarget-list'),
+    url(r'^assays/target/(?P<pk>[0-9]+)/$', AssayTargetDetail.as_view(), name='assays-assaytarget-detail'),
+    url(r'^assays/target/(?P<pk>[0-9]+)/update/$', AssayTargetUpdate.as_view(), name='assays-assaytarget-update'),
+    url(r'^assays/target/add/$', AssayTargetAdd.as_view(), name='assays-assaytarget-add'),
+
+    # Methods
+    url(r'^assays/method/$', AssayMethodList.as_view(), name='assays-assaymethod-list'),
+    url(r'^assays/method/(?P<pk>[0-9]+)/$', AssayMethodDetail.as_view(), name='assays-assaymethod-detail'),
+    url(r'^assays/method/(?P<pk>[0-9]+)/update/$', AssayMethodUpdate.as_view(), name='assays-assaymethod-update'),
+    url(r'^assays/method/add/$', AssayMethodAdd.as_view(), name='assays-assaymethod-add'),
+
+    # Setting
+    url(r'^assays/setting/$', AssaySettingList.as_view(), name='assays-assaysetting-list'),
+    url(r'^assays/setting/(?P<pk>[0-9]+)/$', AssaySettingDetail.as_view(), name='assays-assaysetting-detail'),
+    url(r'^assays/setting/(?P<pk>[0-9]+)/update/$', AssaySettingUpdate.as_view(), name='assays-assaysetting-update'),
+    url(r'^assays/setting/add/$', AssaySettingAdd.as_view(), name='assays-assaysetting-add'),
+
+    # Units
+    url(r'^assays/unit/$', PhysicalUnitsList.as_view(), name='assays-physicalunits-list'),
+    # url(r'^assays/unit/(?P<pk>[0-9]+)/$', PhysicalUnitsDetail.as_view(), name='assays-physicalunits-detail'),
+    url(r'^assays/unit/(?P<pk>[0-9]+)/update/$', PhysicalUnitsUpdate.as_view(), name='assays-physicalunits-update'),
+    url(r'^assays/unit/add/$', PhysicalUnitsAdd.as_view(), name='assays-physicalunits-add'),
+
+    # Sample Locations
+    url(r'^assays/location/$', AssaySampleLocationList.as_view(), name='assays-assaysamplelocation-list'),
+    # url(r'^assays/location/(?P<pk>[0-9]+)/$', AssaySampleLocationDetail.as_view(), name='assays-assaysamplelocation-detail'),
+    url(r'^assays/location/(?P<pk>[0-9]+)/update/$', AssaySampleLocationUpdate.as_view(), name='assays-assaysamplelocation-update'),
+    url(r'^assays/location/add/$', AssaySampleLocationAdd.as_view(), name='assays-assaysamplelocation-add'),
+
+    # Supplier
+    url(r'^assays/supplier/$', AssaySupplierList.as_view(), name='assays-assaysupplier-list'),
+    # url(r'^assays/supplier/(?P<pk>[0-9]+)/$', AssaySupplierDetail.as_view(), name='assays-assaysupplier-detail'),
+    url(r'^assays/supplier/(?P<pk>[0-9]+)/update/$', AssaySupplierUpdate.as_view(), name='assays-assaysupplier-update'),
+    url(r'^assays/supplier/add/$', AssaySupplierAdd.as_view(), name='assays-assaysupplier-add'),
+
+    # Measurement Type
+    url(r'^assays/measurementtype/$', AssayMeasurementTypeList.as_view(), name='assays-assaymeasurementtype-list'),
+    # url(r'^assays/measurementtype/(?P<pk>[0-9]+)/$', AssayMeasurementTypeDetail.as_view(), name='assays-assaymeasurementtype-detail'),
+    url(r'^assays/measurementtype/(?P<pk>[0-9]+)/update/$', AssayMeasurementTypeUpdate.as_view(), name='assays-assaymeasurementtype-update'),
+    url(r'^assays/measurementtype/add/$', AssayMeasurementTypeAdd.as_view(), name='assays-assaymeasurementtype-add'),
+
+    # Should this be here?
+    url(r'^studycomponents/$', AssayStudyComponents.as_view(), name='assays-studycomponents'),
 
     # TCTC Summary test
     url(r'^tctc_summary/$', TCTCSummary.as_view(), name='tctc_summary'),

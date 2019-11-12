@@ -4,6 +4,6 @@ $(document).ready(function() {
         "sDom": '<B<"row">lfrtip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
-        "order": [[0, "asc"]],
+        "order": [[1, "asc"]],
     });
 });

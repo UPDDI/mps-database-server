@@ -1,5 +1,11 @@
 from django import forms
-from .models import CellSample, CellType, CellSubtype
+from .models import (
+    CellSample,
+    CellType,
+    CellSubtype,
+    Supplier,
+    Biosensor
+)
 from mps.forms import SignOffMixin, BootstrapForm, tracking
 
 # ODD, not exactly semantic to import from this file
@@ -54,4 +60,28 @@ class CellSubtypeForm(SignOffMixin, BootstrapForm):
         exclude = tracking
         widgets = {
             'cell_subtype': forms.Textarea(attrs={'rows': 1}),
+        }
+
+
+class SupplierForm(BootstrapForm):
+    """Form for Cell Suppliers (distinct from assay suppliers)"""
+
+    class Meta(object):
+        model = Supplier
+        exclude = tracking
+
+        widgets = {
+            'description': forms.Textarea(attrs={'cols': 50, 'rows': 3}),
+        }
+
+
+class BiosensorForm(BootstrapForm):
+    """Form for Cell Suppliers (distinct from assay suppliers)"""
+
+    class Meta(object):
+        model = Biosensor
+        exclude = tracking
+
+        widgets = {
+            'description': forms.Textarea(attrs={'cols': 50, 'rows': 3}),
         }

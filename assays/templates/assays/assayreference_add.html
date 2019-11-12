@@ -7,7 +7,8 @@
 {% endblock %}
 
 {% block breadcrumbs %}
-    <li><a href="{% url 'assay-reference-list' %}">References</a></li>
+    <li><a href="{% url 'assays-studycomponents' %}">Study Components</a></li>
+    <li><a href="{% url 'assays-assayreference-list' %}">References</a></li>
     <li class="active">
         {% if update %}Update{% else %}Add{% endif %} Reference
     </li>

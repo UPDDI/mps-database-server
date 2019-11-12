@@ -6,6 +6,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}
+    <li><a href="{% url 'assays-studycomponents' %}">Study Components</a></li>
     <li class="active">References</li>
 {% endblock %}
 
@@ -40,8 +41,8 @@
                 <tbody>
                 {% for reference in object_list %}
                      <tr>
-                        <td><a class="btn btn-primary" href="{% url 'assay-reference-detail' reference.id %}">View</a></td>
-                        <td><a class="btn btn-primary" href="{% url 'assay-reference-update' reference.id %}">Edit</a></td>
+                        <td><a class="btn btn-primary" href="{% url 'assays-assayreference-detail' reference.id %}">View</a></td>
+                        <td><a class="btn btn-primary" href="{% url 'assays-assayreference-update' reference.id %}">Edit</a></td>
                         <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{ reference.pubmed_id }}" target="_blank">{{ reference.pubmed_id }}</a></td>
                         <td>{{ reference.title }}</td>
                         <td>{{ reference.authors }}</td>

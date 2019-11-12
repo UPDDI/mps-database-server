@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}
-    <li><a href="/assays/methods/">Methods</a></li>
+    <li><a href="/assays/method/">Methods</a></li>
     <li class="active">{{ object.name }}</li>
 {% endblock %}
 
@@ -76,14 +76,14 @@
                 <tbody>
                 {% for assay in assays %}
                      <tr>
-                        <td><a href= "/assays/targets/{{ assay.1 }}/">{{ assay.0 }}</a></td>
+                        <td><a href= "/assays/target/{{ assay.1 }}/">{{ assay.0 }}</a></td>
                         <td>{{ assay.3 }}</td>
                         <td>{{ assay.2 }}</td>
                     </tr>
                 {% endfor %}
                 {% for image in images %}
                      <tr>
-                        <td><a href= "/assays/targets/{{ image.1 }}/">{{ image.0 }}</a></td>
+                        <td><a href= "/assays/target/{{ image.1 }}/">{{ image.0 }}</a></td>
                         <td>{{ image.3 }}</td>
                         <td>{{ image.2 }}</td>
                     </tr>

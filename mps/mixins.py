@@ -271,7 +271,7 @@ class CreatorOrAdminRequiredMixin(object):
     def dispatch(self, *args, **kwargs):
         self.object = self.get_object()
         if not self.request.user.is_authenticated or (self.request.user != self.object.created_by and not is_group_admin(self.request.user, self.object.group.name)):
-            return PermissionDenied(self.request, 'You can only delete entries that you have created')
+            return PermissionDenied(self.request, 'You do not have permission to view this page. Please contact an administrator if you need assistance.')
         return super(CreatorOrAdminRequiredMixin, self).dispatch(*args, **kwargs)
 
 
@@ -399,6 +399,9 @@ class FormHandlerMixin(RevisionMixin):
     formsets = ()
     is_update = False
 
+    # Default to generic_form template
+    template_name = 'generic_form.html'
+
     def __init__(self, *args, **kwargs):
         super(FormHandlerMixin, self).__init__(*args, **kwargs)
 
@@ -425,6 +428,12 @@ class FormHandlerMixin(RevisionMixin):
 
     def get_context_data(self, **kwargs):
         context = super(FormHandlerMixin, self).get_context_data(**kwargs)
+
+        # Add model name
+        context.update({
+            'model_verbose_name': self.model._meta.verbose_name,
+            'model_verbose_name_plural': self.model._meta.verbose_name_plural
+        })
 
         for formset_name, formset_factory in self.formsets:
             data_for_factory = []
@@ -535,3 +544,23 @@ class FormHandlerMixin(RevisionMixin):
             return self.render_to_response(
                 self.get_context_data(**self.all_forms)
             )
+
+
+# Possible
+class ListHandlerMixin(object):
+    template_name = 'generic_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(ListHandlerMixin, self).get_context_data(**kwargs)
+
+        # Add model name
+        context.update({
+            'model_verbose_name': self.model._meta.verbose_name,
+            'model_verbose_name_plural': self.model._meta.verbose_name_plural
+        })
+
+        return context
+
+
+class DetailHandlerMixin(object):
+    template_name = 'generic_detail.html'

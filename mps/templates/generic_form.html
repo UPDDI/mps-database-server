@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block breadcrumbs %}
+    <li><a href="{% url 'assays-studycomponents' %}">Study Components</a></li>
+    <li><a href="{{ form.instance.get_list_url }}">{{ model_verbose_name_plural }}</a></li>
+    <li class="active">
+        {% if update %}
+            Edit <em>{{ object }}</em>
+        {% else %}
+            {# TODO #}
+            Add {{ model_verbose_name }}
+        {% endif %}
+    </li>
+{% endblock %}
+
+{% block content %}
+<form class="form-horizontal" method="post">
+<h1>
+{% if update %}
+    Edit <em>{{ object }}</em>
+{% else %}
+    {# TODO #}
+    Add {{ model_verbose_name }}
+{% endif %}
+</h1>
+
+{% include 'submit.html' with flag='y' %}
+{% include 'errors.html' %}
+{% include 'tracking.html' %}
+
+<hr>
+
+{% csrf_token %}
+
+
+
+{% for field in form %}
+    {% include 'generic_field.html' with field=field %}
+{% endfor %}
+
+</form>
+{% endblock %}

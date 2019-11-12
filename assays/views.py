@@ -33,7 +33,12 @@ from assays.models import (
     AssayRun,
     AssayDataUpload,
     AssayStudySet,
-    AssayReference
+    AssayReference,
+    AssayTarget,
+    AssayMeasurementType,
+    AssaySampleLocation,
+    AssaySetting,
+    AssaySupplier
 )
 from assays.forms import (
     AssayStudyConfigurationForm,
@@ -59,7 +64,14 @@ from assays.forms import (
     AssayStudySetForm,
     AssayReferenceForm,
     AssayStudySetReferenceFormSetFactory,
-    AssayMatrixFormNew
+    AssayMatrixFormNew,
+    AssayTargetForm,
+    AssayMethodForm,
+    AssayMeasurementTypeForm,
+    AssaySettingForm,
+    PhysicalUnitsForm,
+    AssaySampleLocationForm,
+    AssaySupplierForm,
 )
 from microdevices.models import MicrophysiologyCenter
 from django import forms
@@ -97,6 +109,9 @@ from mps.mixins import (
     CreatorOrSuperuserRequiredMixin,
     SuperuserRequiredMixin,
     FormHandlerMixin,
+    FormHandlerMixin,
+    ListHandlerMixin,
+    CreatorOrSuperuserRequiredMixin
 )
 
 from mps.base.models import save_forms_with_tracking
@@ -112,6 +127,8 @@ from django.template.loader import render_to_string, TemplateDoesNotExist
 
 from datetime import datetime, timedelta
 import pytz
+
+from django.apps import apps
 
 # TODO Refactor imports
 # TODO REFACTOR CERTAIN WHITTLING TO BE IN FORM AS OPPOSED TO VIEW
@@ -1778,90 +1795,6 @@ class AssayStudyDataPlots(TemplateView):
     template_name = 'assays/assaystudy_data_plots.html'
 
 
-class AssayTargetList(ListView):
-    model = AssayTarget
-    template_name = 'assays/assaytarget_list.html'
-
-
-class AssayTargetDetail(DetailView):
-    model = AssayTarget
-    template_name = 'assays/assaytarget_detail.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(AssayTargetDetail, self).get_context_data(**kwargs)
-        context['assays'] = AssayStudyAssay.objects.filter(
-            target__name__icontains=self.object.name
-        ).values_list("method__name", "method_id", "method__description").distinct()
-        context['images'] = AssayImage.objects.filter(
-            target__name__icontains=self.object.name
-        ).values_list("method__name", "method_id", "method__description").distinct()
-        context['studies'] = get_user_accessible_studies(
-            self.request.user
-        ).filter(
-            assaystudyassay__target__name=self.object.name
-        ).distinct() | get_user_accessible_studies(
-            self.request.user
-        ).filter(
-            assayimagesetting__assayimage__target__name=self.object.name
-        ).distinct()
-        return context
-
-
-class AssayMethodList(ListView):
-    model = AssayMethod
-    template_name = 'assays/assaymethod_list.html'
-
-    def get_queryset(self):
-        queryset = AssayMethod.objects.all().prefetch_related(
-            'supplier',
-            'measurement_type'
-        )
-
-        return queryset
-
-
-class AssayMethodDetail(DetailView):
-    model = AssayMethod
-    template_name = 'assays/assaymethod_detail.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(AssayMethodDetail, self).get_context_data(**kwargs)
-        context['assays'] = AssayStudyAssay.objects.filter(
-            method__name__icontains=self.object.name
-        ).values_list("target__name", "target_id", "target__description", "target__short_name").distinct()
-        context['images'] = AssayImage.objects.filter(
-            method__name__icontains=self.object.name
-        ).values_list("target__name", "target_id", "target__description", "target__short_name").distinct()
-        context['studies'] = get_user_accessible_studies(
-            self.request.user
-        ).filter(
-            assaystudyassay__method__name=self.object.name
-        ).distinct() | get_user_accessible_studies(
-            self.request.user
-        ).filter(
-            assayimagesetting__assayimage__method__name=self.object.name
-        ).distinct()
-        return context
-
-
-class AssayPhysicalUnitsList(ListView):
-    model = PhysicalUnits
-    template_name = 'assays/assayunit_list.html'
-
-    def get_queryset(self):
-        queryset = PhysicalUnits.objects.all().prefetch_related(
-            'unit_type',
-        )
-
-        return queryset
-
-
-# TODO: PERHAPS THIS SHOULD NOT BE HERE
-class AssaySampleLocationList(ListView):
-    model = AssaySampleLocation
-    template_name = 'assays/assaylocation_list.html'
-
-
 # Inappropriate use of CBV
 class AssayDataFromFilters(TemplateView):
     """Returns a combined file for all data for given filters"""
@@ -2958,7 +2891,277 @@ class AssayMatrixNew(StudyGroupMixin, UpdateView):
             return self.render_to_response(self.get_context_data(form=form))
 
 
+
 class AssayStudyPowerAnalysisStudy(StudyViewerMixin, DetailView):
     """Displays the power analysis interface for the current study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_power_analysis_study.html'
+
+
+# REVIEW PERMISSIONS
+class AssayTargetMixin(FormHandlerMixin):
+    model = AssayTarget
+    form_class = AssayTargetForm
+
+
+class AssayTargetAdd(OneGroupRequiredMixin, AssayTargetMixin, CreateView):
+    pass
+
+
+class AssayTargetUpdate(CreatorOrSuperuserRequiredMixin, AssayTargetMixin, UpdateView):
+    pass
+
+
+class AssayTargetList(ListView):
+    model = AssayTarget
+    template_name = 'assays/assaytarget_list.html'
+
+
+class AssayTargetDetail(DetailView):
+    model = AssayTarget
+    template_name = 'assays/assaytarget_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayTargetDetail, self).get_context_data(**kwargs)
+        context['assays'] = AssayStudyAssay.objects.filter(
+            target__name__icontains=self.object.name
+        ).values_list("method__name", "method_id", "method__description").distinct()
+        context['images'] = AssayImage.objects.filter(
+            target__name__icontains=self.object.name
+        ).values_list("method__name", "method_id", "method__description").distinct()
+        context['studies'] = get_user_accessible_studies(
+            self.request.user
+        ).filter(
+            assaystudyassay__target__name=self.object.name
+        ).distinct() | get_user_accessible_studies(
+            self.request.user
+        ).filter(
+            assayimagesetting__assayimage__target__name=self.object.name
+        ).distinct()
+
+        return context
+
+
+class AssayMethodMixin(FormHandlerMixin):
+    model = AssayMethod
+    form_class = AssayMethodForm
+
+
+class AssayMethodAdd(OneGroupRequiredMixin, AssayMethodMixin, CreateView):
+    pass
+
+
+class AssayMethodUpdate(CreatorOrSuperuserRequiredMixin, AssayMethodMixin, UpdateView):
+    pass
+
+
+class AssayMethodList(ListView):
+    model = AssayMethod
+    template_name = 'assays/assaymethod_list.html'
+
+    def get_queryset(self):
+        queryset = AssayMethod.objects.all().prefetch_related(
+            'supplier',
+            'measurement_type'
+        )
+
+        return queryset
+
+
+class AssayMethodDetail(DetailView):
+    model = AssayMethod
+    template_name = 'assays/assaymethod_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayMethodDetail, self).get_context_data(**kwargs)
+        context['assays'] = AssayStudyAssay.objects.filter(
+            method__name__icontains=self.object.name
+        ).values_list("target__name", "target_id", "target__description", "target__short_name").distinct()
+        context['images'] = AssayImage.objects.filter(
+            method__name__icontains=self.object.name
+        ).values_list("target__name", "target_id", "target__description", "target__short_name").distinct()
+        context['studies'] = get_user_accessible_studies(
+            self.request.user
+        ).filter(
+            assaystudyassay__method__name=self.object.name
+        ).distinct() | get_user_accessible_studies(
+            self.request.user
+        ).filter(
+            assayimagesetting__assayimage__method__name=self.object.name
+        ).distinct()
+        return context
+
+
+# class UnitTypeMixin(FormHandlerMixin):
+#     model = UnitType
+#     form_class = UnitTypeForm
+#
+#
+# class UnitTypeAdd(OneGroupRequiredMixin, UnitTypeMixin, CreateView):
+#     pass
+#
+#
+# class UnitTypeUpdate(OneGroupRequiredMixin, UnitTypeMixin, UpdateView):
+#     pass
+
+
+# Unpleasant name
+class PhysicalUnitsMixin(FormHandlerMixin):
+    model = PhysicalUnits
+    form_class = PhysicalUnitsForm
+
+
+class PhysicalUnitsAdd(OneGroupRequiredMixin, PhysicalUnitsMixin, CreateView):
+    pass
+
+
+class PhysicalUnitsUpdate(CreatorOrSuperuserRequiredMixin, PhysicalUnitsMixin, UpdateView):
+    pass
+
+
+class PhysicalUnitsDetail(DetailView):
+    pass
+
+
+class PhysicalUnitsList(ListView):
+    model = PhysicalUnits
+    template_name = 'assays/assayunit_list.html'
+
+    def get_queryset(self):
+        queryset = PhysicalUnits.objects.all().prefetch_related(
+            'unit_type',
+        )
+
+        return queryset
+
+
+class AssayMeasurementTypeMixin(FormHandlerMixin):
+    model = AssayMeasurementType
+    form_class = AssayMeasurementTypeForm
+
+
+class AssayMeasurementTypeAdd(OneGroupRequiredMixin, AssayMeasurementTypeMixin, CreateView):
+    pass
+
+
+class AssayMeasurementTypeUpdate(CreatorOrSuperuserRequiredMixin, AssayMeasurementTypeMixin, UpdateView):
+    pass
+
+
+class AssayMeasurementTypeDetail(AssayMeasurementTypeMixin, DetailView):
+    pass
+
+
+class AssayMeasurementTypeList(ListHandlerMixin, ListView):
+    model = AssayMeasurementType
+
+
+class AssaySampleLocationMixin(FormHandlerMixin):
+    model = AssaySampleLocation
+    form_class = AssaySampleLocationForm
+
+
+class AssaySampleLocationAdd(OneGroupRequiredMixin, AssaySampleLocationMixin, CreateView):
+    pass
+
+
+class AssaySampleLocationUpdate(CreatorOrSuperuserRequiredMixin, AssaySampleLocationMixin, UpdateView):
+    pass
+
+
+# TODO: PERHAPS THIS SHOULD NOT BE HERE
+class AssaySampleLocationList(ListHandlerMixin, ListView):
+    model = AssaySampleLocation
+    # template_name = 'assays/assaylocation_list.html'
+
+
+class AssaySettingMixin(FormHandlerMixin):
+    model = AssaySetting
+    form_class = AssaySettingForm
+
+
+class AssaySettingAdd(OneGroupRequiredMixin, AssaySettingMixin, CreateView):
+    pass
+
+
+class AssaySettingUpdate(CreatorOrSuperuserRequiredMixin, AssaySettingMixin, UpdateView):
+    pass
+
+
+class AssaySettingDetail(AssaySettingMixin, DetailView):
+    pass
+
+
+class AssaySettingList(ListHandlerMixin, ListView):
+    model = AssaySetting
+
+
+class AssaySupplierMixin(FormHandlerMixin):
+    model = AssaySupplier
+    form_class = AssaySupplierForm
+
+
+class AssaySupplierAdd(OneGroupRequiredMixin, AssaySupplierMixin, CreateView):
+    pass
+
+
+class AssaySupplierUpdate(CreatorOrSuperuserRequiredMixin, AssaySupplierMixin, UpdateView):
+    pass
+
+
+class AssaySupplierDetail(DetailView):
+    pass
+
+
+class AssaySupplierList(ListHandlerMixin, ListView):
+    model = AssaySupplier
+
+
+def get_component_display_for_model(model):
+    return {
+        'verbose_name': model._meta.verbose_name,
+        'verbose_name_plural': model._meta.verbose_name_plural,
+        'list_url': model.get_list_url(),
+        'add_url': model.get_add_url()
+    }
+
+
+class AssayStudyComponents(TemplateView):
+    template_name = 'assays/assaystudycomponents.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyComponents, self).get_context_data(**kwargs)
+
+        # Adds the word "editable" to the page
+        context.update({
+            'assay_components': [
+                get_component_display_for_model(x) for x in
+                [
+                    AssayTarget.objects.first(),
+                    AssayMethod.objects.first(),
+                    AssayMeasurementType.objects.first(),
+                    PhysicalUnits.objects.first(),
+                    AssaySampleLocation.objects.first(),
+                    AssaySetting.objects.first(),
+                    AssaySupplier.objects.first(),
+                    AssayReference.objects.first(),
+                ]
+            ],
+            'model_components': [
+                get_component_display_for_model(x) for x in
+                [
+                    # Note that sample location is more accurately placed here
+                    AssaySampleLocation.objects.first(),
+                    apps.get_model(app_label='microdevices', model_name='manufacturer').objects.first(),
+                ]
+            ],
+            'cell_components': [
+                get_component_display_for_model(x) for x in
+                [
+                    apps.get_model(app_label='cellsamples', model_name='biosensor').objects.first(),
+                    apps.get_model(app_label='cellsamples', model_name='supplier').objects.first(),
+                ]
+            ],
+        })
+
+        return context

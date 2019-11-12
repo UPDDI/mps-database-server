@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block breadcrumbs %}
+    <li class="active">Study Components</li>
+{% endblock %}
+
+{% block content %}
+    <div class="padded-bottom">
+        <legend>
+            <h2 class="text-center">
+                Study Components
+            </h2>
+        </legend>
+
+        <h3>Assay Components</h3>
+        <table class="table table-hover table-striped table-responsive">
+            <tbody>
+                {% for section in assay_components %}
+                    <tr>
+                        <td>
+                            <a class="btn btn-primary" href="{{ section.list_url }}">
+                                View {{ section.verbose_name_plural }}
+                            </a>
+                        </td>
+                        <td>
+                            <a class="btn btn-success" href="{{ section.add_url }}">
+                                Add {{ section.verbose_name }}
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Model Components</h3>
+        <table class="table table-hover table-striped table-responsive">
+            <tbody>
+                {% for section in model_components %}
+                    <tr>
+                        <td>
+                            <a class="btn btn-primary" href="{{ section.list_url }}">
+                                View {{ section.verbose_name_plural }}
+                            </a>
+                        </td>
+                        <td>
+                            <a class="btn btn-success" href="{{ section.add_url }}">
+                                Add {{ section.verbose_name }}
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Cell Components</h3>
+        <table class="table table-hover table-striped table-responsive">
+            <tbody>
+                {% for section in cell_components %}
+                    <tr>
+                        <td>
+                            <a class="btn btn-primary" href="{{ section.list_url }}">
+                                View {{ section.verbose_name_plural }}
+                            </a>
+                        </td>
+                        <td>
+                            <a class="btn btn-success" href="{{ section.add_url }}">
+                                Add {{ section.verbose_name }}
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

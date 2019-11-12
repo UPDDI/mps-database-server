@@ -4,17 +4,17 @@ $(document).ready(function() {
         "sDom": '<B<"row">lfrtip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
-        "order": [[1, "asc"]],
+        "order": [[2, "asc"]],
         "aoColumnDefs": [
             {
                 "className": "dt-center",
                 "bSortable": false,
                 "width": '5%',
-                "targets": [0]
+                "targets": [0, 1]
             },
             {
                 "bSortable": false,
-                "aTargets": [0]
+                "aTargets": [0, 1]
             },
         ]
     });

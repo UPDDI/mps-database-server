@@ -14,7 +14,8 @@ from .forms import (
     OrganModelProtocolCellFormsetFactory,
     OrganModelProtocolSettingFormsetFactory,
     OrganModelReferenceFormSetFactory,
-    MicrodeviceReferenceFormSetFactory
+    MicrodeviceReferenceFormSetFactory,
+    ManufacturerForm
 )
 from .models import (
     Microdevice,
@@ -25,11 +26,21 @@ from .models import (
     OrganModelCell,
     OrganModelProtocolCell,
     OrganModelProtocolSetting,
+    Manufacturer
 )
 
 from cellsamples.models import CellSample
 
-from mps.mixins import SpecificGroupRequiredMixin, PermissionDenied, user_is_active, FormHandlerMixin
+from mps.mixins import (
+    SpecificGroupRequiredMixin,
+    PermissionDenied,
+    user_is_active,
+    FormHandlerMixin,
+    OneGroupRequiredMixin,
+    CreatorOrSuperuserRequiredMixin,
+    ListHandlerMixin,
+    DetailHandlerMixin
+)
 from mps.base.models import save_forms_with_tracking
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
@@ -254,6 +265,27 @@ class OrganModelProtocolUpdate(FormHandlerMixin, UpdateView):
         })
 
         return context
+
+
+class ManufacturerMixin(FormHandlerMixin):
+    model = Manufacturer
+    form_class = ManufacturerForm
+
+
+class ManufacturerAdd(OneGroupRequiredMixin, ManufacturerMixin, CreateView):
+    pass
+
+
+class ManufacturerUpdate(CreatorOrSuperuserRequiredMixin, ManufacturerMixin, UpdateView):
+    pass
+
+
+class ManufacturerDetail(DetailHandlerMixin, DetailView):
+    pass
+
+
+class ManufacturerList(ListHandlerMixin, ListView):
+    model = Manufacturer
 
 
 # class OrganModelProtocolUpdate(UpdateView):

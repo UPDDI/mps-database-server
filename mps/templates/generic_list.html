@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block breadcrumbs %}
+    <li><a href="{% url 'assays-studycomponents' %}">Study Components</a></li>
+    <li class="active">{{ model_verbose_name_plural }}</li>
+{% endblock %}
+
+{% block content %}
+    <div class="padded-bottom">
+        <legend>
+            <h2 class="text-center">
+                {{ model_verbose_name_plural }}
+            </h2>
+        </legend>
+
+        <div class="row text-center padded-bottom">
+            {# Sloppy: relative url with add slammed on #}
+            <a href="add/"  class="btn btn-lg btn-success" role="button">Add {{ model_verbose_name }}</a>
+        </div>
+
+        <div>
+            <table id="list_table" class="display" cellspacing="0" width="100%" hidden>
+                <thead>
+                    <tr>
+                        <th>Edit</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for object in object_list %}
+                     <tr>
+                        <td><a class="btn btn-primary" href="{{ object.get_update_url }}">Edit</a></td>
+                        <td>{{ object.name }}</td>
+                        <td>{{ object.description }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# Sloppy, can always be revised with later #}
+    <script>
+        $(document).ready(function() {
+            window.TABLE = $('#list_table').DataTable({
+                "iDisplayLength": 100,
+                "sDom": '<B<"row">lfrtip>',
+                fixedHeader: {headerOffset: 50},
+                responsive: true,
+                "order": [
+                    [1, "asc"]
+                ],
+                "aoColumnDefs": [
+                    {
+                        "bSortable": false,
+                        "width": '5%',
+                        "targets": [0]
+                    },
+                ]
+            });
+        });
+    </script>
+{% endblock %}

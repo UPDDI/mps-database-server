@@ -6,6 +6,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}
+    <li><a href="{% url 'assays-studycomponents' %}">Study Components</a></li>
     <li class="active">Units</li>
 {% endblock %}
 
@@ -16,10 +17,16 @@
                 Units List
             </h2>
         </legend>
+
+        <div class="row text-center padded-bottom">
+            <a href="{% url 'assays-physicalunits-add' %}"  class="btn btn-lg btn-success" role="button">Add Unit</a>
+        </div>
+
         <div id="units">
             <table id="units-table" class="display" cellspacing="0" width="100%" hidden>
                 <thead>
                     <tr>
+                        <th>Edit</th>
                         <th>Unit</th>
                         <th>Unit Type</th>
                         <th>Description</th>
@@ -30,6 +37,7 @@
                 {% for unit in object_list %}
                      <tr>
                         {# Luke doesn't like 'unit.unit', but I think it's just peachy.#}
+                        <td><a class="btn btn-primary" href="{{ unit.get_update_url }}">Edit</a></td>
                         <td>{{ unit.unit }}</td>
                         <td>{{ unit.unit_type }}</td>
                         <td>{{ unit.description }}</td>

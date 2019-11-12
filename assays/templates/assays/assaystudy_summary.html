@@ -104,8 +104,8 @@
         <tbody>
             {% for assay in object.assaystudyassay_set.all %}
                 <tr class="inline" id="assay-{{ forloop.counter0 }}">
-                    <td><a href="/assays/targets/{{ assay.target.id }}" target="_blank">{{ assay.target }}</a></td>
-                    <td><a href="/assays/methods/{{ assay.method.id }}" target="_blank">{{ assay.method }}</a></td>
+                    <td><a href="/assays/target/{{ assay.target.id }}" target="_blank">{{ assay.target }}</a></td>
+                    <td><a href="/assays/method/{{ assay.method.id }}" target="_blank">{{ assay.method }}</a></td>
                     <td>{{ assay.unit }}</td>
                 </tr>
             {% endfor %}

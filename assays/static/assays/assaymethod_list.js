@@ -4,11 +4,15 @@ $(document).ready(function() {
         "sDom": '<B<"row">lfrtip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
-        "order": [[1, "asc"]],
+        "order": [[2, "asc"]],
         "aoColumnDefs": [
             {
                 "className": "dt-center",
-                "targets": [0,2,5]
+                "targets": [0, 1, 2, 5]
+            },
+            {
+                "bSortable": false,
+                "aTargets": [0, 1]
             },
             {
                 "responsivePriority": 1,
