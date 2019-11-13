@@ -1,5 +1,5 @@
 from django.db import models
-from mps.base.models import LockableModel
+from mps.base.models import LockableModel, FrontEndModel
 
 from django.utils.safestring import mark_safe
 
@@ -47,7 +47,12 @@ def chembl_compound(chemblid):
     }
 
 
-class Compound(LockableModel):
+class Compound(FrontEndModel, LockableModel):
+
+    class Meta(object):
+        ordering = ('name',)
+        verbose_name = 'Compound'
+
     # compound_id = AutoField(primary_key=True)
     # The name, rather than the chemblid and/or inchikey, is unique
     name = models.CharField(
@@ -307,9 +312,6 @@ class Compound(LockableModel):
         verbose_name='Post-marketing'
     )
 
-    class Meta(object):
-        ordering = ('name',)
-
     def __str__(self):
         return '{0}'.format(self.name)
 
@@ -359,12 +361,6 @@ class Compound(LockableModel):
 
     image.allow_tags = True
     image.short_description = 'Image'
-
-    def get_absolute_url(self):
-        return "/compounds/{}/".format(self.id)
-
-    def get_post_submission_url(self):
-        return "/compounds/"
 
 
 # TODO THIS MODEL IS DEPRECATED

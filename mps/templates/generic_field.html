@@ -1,3 +1,6 @@
+{% if hidden %}
+    <div style="display: none;">
+{% endif %}
 {% if field.errors %}
     {% for error in field.errors %}
         <div class="alert alert-danger" role="alert">
@@ -6,22 +9,20 @@
             {{ error }}
         </div>
     {% endfor %}
-{% if hidden %}
-    <div hidden>
-{% else %}
-    <div class="form-group has-error">
-{% endif %}
-{% else %}
-{% if hidden %}
-    <div style="display: none;">
+<div class="form-group has-error">
 {% else %}
 <div class="form-group">
-{% endif %}
 {% endif %}
     <label for="{{ field.id_for_label }}" class="col-sm-2 control-label">
         {{ field.label_tag }}
     </label>
     <div class="col-sm-10">
         {{ field }}
+        {% if field.field.widget.attrs.data_add_url %}
+            <a class="popup-link" data-href="{{ field.field.widget.attrs.data_add_url }}?popup=1" data-window-name="{{ field.field.widget.attrs.data_model }}">
+                <span class="glyphicon glyphicon-plus text-success" aria-hidden="true"></span>
+                Create New {{ field.field.widget.attrs.data_verbose_name }}
+            </a>
+        {% endif %}
     </div>
 </div>

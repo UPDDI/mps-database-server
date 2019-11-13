@@ -77,7 +77,7 @@ class Manufacturer(FrontEndModel, LockableModel):
     'manufacturer',
     'organmodel_set'
 ])
-class Microdevice(LockableModel):
+class Microdevice(FrontEndModel, LockableModel):
     """A Microdevice describes a physical vessel for performing experiments (a plate, chip, etc.)"""
     class Meta(object):
         verbose_name = 'Device'
@@ -239,17 +239,11 @@ class Microdevice(LockableModel):
     def __str__(self):
         return self.name
 
-    def get_absolute_url(self):
-        return "/microdevices/device/{}/".format(self.id)
-
-    def get_post_submission_url(self):
-        return '/microdevices/device/'
-
 
 @reversion.register(follow=[
     'organmodelprotocol_set'
 ])
-class OrganModel(LockableModel):
+class OrganModel(FrontEndModel, LockableModel):
     """An Organ Model describes a way of preparing a device to emulate a particular organ"""
     class Meta(object):
         verbose_name = 'MPS Model'
@@ -368,12 +362,6 @@ class OrganModel(LockableModel):
 
     def __str__(self):
         return self.name
-
-    def get_absolute_url(self):
-        return "/microdevices/model/{}/".format(self.id)
-
-    def get_post_submission_url(self):
-        return '/microdevices/model/'
 
 
 # class OrganModelImage(models.Model):

@@ -3150,14 +3150,26 @@ class AssayStudyComponents(TemplateView):
             'model_components': [
                 get_component_display_for_model(x) for x in
                 [
+                    apps.get_model(app_label='microdevices', model_name='microdevice').objects.first(),
+                    apps.get_model(app_label='microdevices', model_name='organmodel').objects.first(),
                     # Note that sample location is more accurately placed here
                     AssaySampleLocation.objects.first(),
                     apps.get_model(app_label='microdevices', model_name='manufacturer').objects.first(),
                 ]
             ],
+            # NOTE WE COULD, IF WE WANTED, ADD COMPOUND SUPPLIER HERE
+            'compound_components': [
+                get_component_display_for_model(x) for x in
+                [
+                    apps.get_model(app_label='compounds', model_name='compound').objects.first(),
+                ]
+            ],
             'cell_components': [
                 get_component_display_for_model(x) for x in
                 [
+                    apps.get_model(app_label='cellsamples', model_name='celltype').objects.first(),
+                    apps.get_model(app_label='cellsamples', model_name='cellsubtype').objects.first(),
+                    apps.get_model(app_label='cellsamples', model_name='cellsample').objects.first(),
                     apps.get_model(app_label='cellsamples', model_name='biosensor').objects.first(),
                     apps.get_model(app_label='cellsamples', model_name='supplier').objects.first(),
                 ]

@@ -64,10 +64,29 @@ class BootstrapForm(forms.ModelForm):
                     self.fields[field].label += '*'
 
             # Not really a good idea to use "private" attributes...
+            # A lot of stuff, I should just make a widget or something
             if hasattr(self.fields[field], '_queryset'):
                 if hasattr(self.fields[field]._queryset, 'model'):
-                    self.fields[field].widget.attrs['data-app'] = self.fields[field]._queryset.model._meta.app_label
-                    self.fields[field].widget.attrs['data-model'] = self.fields[field]._queryset.model._meta.object_name
+                    # Usually one would use a hyphen rather than an underscore
+                    # self.fields[field].widget.attrs['data-app'] = self.fields[field]._queryset.model._meta.app_label
+                    self.fields[field].widget.attrs['data_app'] = self.fields[field]._queryset.model._meta.app_label
+
+                    # self.fields[field].widget.attrs['data-model'] = self.fields[field]._queryset.model._meta.object_name
+                    self.fields[field].widget.attrs['data_model'] = self.fields[field]._queryset.model._meta.object_name
+
+                    self.fields[field].widget.attrs['data_verbose_name'] = self.fields[field]._queryset.model._meta.verbose_name
+
+                    # DUMB
+                    # self.fields[field].widget.attrs['data_add_url'] = reverse(
+                    #     '{}-{}-add'.format(
+                    #         self.fields[field]._queryset.model._meta.app_label,
+                    #         self.fields[field]._queryset.model._meta.model_name,
+                    #     )
+                    # )
+
+                    # Possibly dumber
+                    if hasattr(self.fields[field]._queryset.model, 'get_add_url_manager'):
+                        self.fields[field].widget.attrs['data_add_url'] = self.fields[field]._queryset.model.get_add_url_manager()
 
             # Crude way to indicate default
             if hasattr(self.fields[field], 'initial'):

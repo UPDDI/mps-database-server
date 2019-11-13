@@ -15,6 +15,16 @@ class FrontEndModel(models.Model):
     class Meta(object):
         abstract = True
 
+    # OVERKILL: allows us to immediately get add url for stuff that can be added on the front end
+    @classmethod
+    def get_add_url_manager(self):
+        return reverse(
+            '{}-{}-add'.format(
+                self._meta.app_label,
+                self._meta.model_name
+            )
+        )
+
     def get_absolute_url(self):
         return reverse(
             '{}-{}-detail'.format(
