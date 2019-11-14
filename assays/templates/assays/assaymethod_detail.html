@@ -6,6 +6,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}
+    <li><a href="{% url 'assays-studycomponents' %}">Study Components</a></li>
     <li><a href="/assays/method/">Methods</a></li>
     <li class="active">{{ object.name }}</li>
 {% endblock %}

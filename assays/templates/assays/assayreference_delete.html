@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block breadcrumbs %}
+    <li><a href="{% url 'assays-studycomponents' %}">Study Components</a></li>
     <li><a href="/assays/assayreference/">References</a></li>
     <li>
         <a href="{{ object.get_absolute_url }}"><em>{{ object.title }}</em></a>
