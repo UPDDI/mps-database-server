@@ -172,7 +172,7 @@
         {% for compound in object.assaysetupcompound_set.all %}
             <tr>
                 <td>
-                    <a href="{% url 'compound-detail' compound.compound_instance.compound.id %}">
+                    <a href="{% url 'compounds-compound-detail' compound.compound_instance.compound.id %}">
                         {{ compound.compound_instance.compound }}
                     </a>
                 </td>

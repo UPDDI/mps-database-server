@@ -285,7 +285,7 @@
                     <td>{{ protocol.protocol_file }}</td>
                     {% if protocol.id.value %}
                     <td>
-                        <a href="{% url 'protocol-update' protocol.id.value %}" class="btn btn-primary">Edit</a>
+                        <a href="{% url 'microdevices-organmodelprotocol-update' protocol.id.value %}" class="btn btn-primary">Edit</a>
                     </td>
                     {% else %}
                     <td></td>
