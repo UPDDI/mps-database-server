@@ -25,7 +25,9 @@
                     <tr>
                         <th>Edit</th>
                         <th>Name</th>
+                        {% if object_list.0.description != None %}
                         <th>Description</th>
+                        {% endif %}
                     </tr>
                 </thead>
 
@@ -34,7 +36,9 @@
                      <tr>
                         <td><a class="btn btn-primary" href="{{ object.get_update_url }}">Edit</a></td>
                         <td>{{ object.name }}</td>
+                        {% if object_list.0.description != None %}
                         <td>{{ object.description }}</td>
+                        {% endif %}
                     </tr>
                 {% endfor %}
                 </tbody>
