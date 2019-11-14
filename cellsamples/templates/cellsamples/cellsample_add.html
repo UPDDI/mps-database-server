@@ -9,6 +9,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}
+    <li><a href="{% url 'assays-studycomponents' %}">Study Components</a></li>
     <li><a href="/cellsamples/cellsample/">Cell Samples</a></li>
     <li class="active">
         {% if object %}

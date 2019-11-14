@@ -235,17 +235,6 @@
     <legend>Study Setup</legend>
 
     {% include 'generic_field.html' with field=form.organ_model label="MPS Model" %}
-    <div class="row">
-        <div class="col-sm-2"></div>
-        <div class="col-sm-10">
-            <a class="popup-link" data-href="/microdevices/model/add/?popup=1" data-window-name="compounds">
-                <span class="glyphicon glyphicon-plus text-success" aria-hidden="true"></span>
-                Create New MPS Model
-            </a>
-        </div>
-    </div>
-
-    <br>
 
     {# Use the show/hide from organ_model_filtering #}
     <div id="protocol_div">

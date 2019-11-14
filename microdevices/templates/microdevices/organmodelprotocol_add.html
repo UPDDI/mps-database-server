@@ -9,6 +9,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}
+    <li><a href="{% url 'assays-studycomponents' %}">Study Components</a></li>
     <li><a href="/microdevices/model">MPS Models</a></li>
     {% if object %}
     <li><a href="{{ object.organ_model.get_absolute_url }}update">Edit {{ object.organ_model }}</a></li>

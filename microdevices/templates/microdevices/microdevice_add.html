@@ -15,6 +15,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}
+    <li><a href="{% url 'assays-studycomponents' %}">Study Components</a></li>
     <li><a href="/microdevices/device">Devices</a></li>
     <li class="active">
         {% if object %}

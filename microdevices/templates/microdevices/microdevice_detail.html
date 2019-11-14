@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block breadcrumbs %}
+    <li><a href="{% url 'assays-studycomponents' %}">Study Components</a></li>
     <li><a href="/microdevices/device">Devices</a></li>
     <li class="active">{{ object.name }}</li>
 {% endblock %}

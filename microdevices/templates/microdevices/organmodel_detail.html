@@ -2,6 +2,7 @@
 {% load humanize %}
 
 {% block breadcrumbs %}
+    <li><a href="{% url 'assays-studycomponents' %}">Study Components</a></li>
     <li><a href="/microdevices/model">MPS Models</a></li>
     <li class="active">{{ object.name }}</li>
 {% endblock %}
