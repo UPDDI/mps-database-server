@@ -178,10 +178,7 @@
     <legend>Cell Types</legend>
 
     {# Add new #}
-    <a class="popup-link" data-href="/cellsamples/celltype/add?popup=1" data-window-name="celltype">
-        <span class="glyphicon glyphicon-plus text-success" aria-hidden="true"></span>
-        Create New Cell Type
-    </a>
+    {% include 'generic_popup_link.html' with field=cell_formset.0.cell_type %}
     <br>
     <br>
 

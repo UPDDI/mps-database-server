@@ -288,7 +288,14 @@
                         <th colspan="3">Compound*</th>
                     </tr>
                     <tr>
-                        <td colspan="3">{{ compound.compound }}</td>
+                        <td colspan="3">
+                            {{ compound.compound }}
+                            {# Crude, special exception #}
+                            <a class="popup-link" data-href="{% url 'compounds-compound-add' %}?popup=1" data-window-name="compound">
+                                <span class="glyphicon glyphicon-plus text-success" aria-hidden="true"></span>
+                                Create New Compound
+                            </a>
+                        </td>
                     </tr>
                     <tr>
                         {# Hidden input for Update (need id to associate) #}
@@ -319,13 +326,18 @@
                     </tr>
                     <tr>
                         <td>{{ compound.concentration }}</td>
-                        <td>{{ compound.concentration_unit }}</td>
+                        <td>
+                            {{ compound.concentration_unit }}
+                            {% include 'generic_popup_link.html' with field=compound.concentration_unit %}
+                        </td>
                     </tr>
                 </table>
                 <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
                     <tr>
                         <th class="bg-success" colspan="3">Addition Time*</th>
                         <th class="bg-info" colspan="3">Duration*</th>
+                        <th class="bg-warning">Addition Location*</th>
+                        <th class="bg-danger">Delete</th>
                     </tr>
                     <tr>
                         <th class="bg-success">Day</th>
@@ -334,8 +346,8 @@
                         <th class="bg-info">Day</th>
                         <th class="bg-info">Hour</th>
                         <th class="bg-info">Minute</th>
-                        <th class="bg-warning">Addition Location*</th>
-                        <th class="bg-danger">Delete</th>
+                        <td class="bg-warning">{{ compound.addition_location }}</td>
+                        <td class="bg-danger">{{ compound.DELETE }}</td>
                     </tr>
                     <tr>
                         <td hidden>
@@ -348,8 +360,10 @@
                         <td class="bg-info">{{ compound.duration_day }}</td>
                         <td class="bg-info">{{ compound.duration_hour }}</td>
                         <td class="bg-info">{{ compound.duration_minute }}</td>
-                        <td class="bg-warning">{{ compound.addition_location }}</td>
-                        <td class="bg-danger">{{ compound.DELETE }}</td>
+                        <td class="bg-warning">
+                            {% include 'generic_popup_link.html' with field=compound.addition_location %}
+                        </td>
+                        <td class="bg-danger"></td>
                     </tr>
                 </table>
                 </td>
@@ -392,10 +406,7 @@
     <p>
         Click a magnifying glass to see a list of available cell samples. Use 'e' for scientific notation: 1e+3 = 1000.
         <br>
-        <a class="popup-link" data-href="/cellsamples/cellsample/add?popup=1" data-window-name="cellsample">
-            <span class="glyphicon glyphicon-plus text-success" aria-hidden="true"></span>
-            Create New Cell Sample
-        </a>
+        {% include 'generic_popup_link.html' with field=cell_formset.0.cell_sample %}
     </p>
 {#    <a id="add_button-{{ cell_formset.prefix }}" class="btn btn-success" role="button">Add Cells</a>#}
 
@@ -467,7 +478,10 @@
                         <label class="small" id="id_{{ cell_formset.prefix }}-{{ forloop.counter0 }}-cell_sample_label"></label>
                     </td>
                     <td>{{ cell.passage }}</td>
-                    <td>{{ cell.biosensor }}</td>
+                    <td>
+                        {{ cell.biosensor }}
+                        {% include 'generic_popup_link.html' with field=cell.biosensor %}
+                    </td>
                     </tr>
                 </table>
                 <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
@@ -477,13 +491,18 @@
                     </tr>
                     <tr>
                         <td title="Use 'e' for scientific notation: 1e+3 = 1000">{{ cell.density }}</td>
-                        <td>{{ cell.density_unit }}</td>
+                        <td>
+                            {{ cell.density_unit }}
+                            {% include 'generic_popup_link.html' with field=cell.density_unit %}
+                        </td>
                     </tr>
                 </table>
                 <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
                     <tr>
                         <th class="bg-success" colspan="3">Addition Time*</th>
 {#                        <th class="bg-info" colspan="3">Duration*</th>#}
+                        <th class="bg-warning">Addition Location*</th>
+                        <th class="bg-danger">Delete</th>
                     </tr>
                     <tr>
                         <th class="bg-success">Day</th>
@@ -492,8 +511,8 @@
 {#                        <th class="bg-info">Day</th>#}
 {#                        <th class="bg-info">Hour</th>#}
 {#                        <th class="bg-info">Minute</th>#}
-                        <th class="bg-warning">Addition Location*</th>
-                        <th class="bg-danger">Delete</th>
+                        <td class="bg-warning">{{ cell.addition_location }}</td>
+                        <td class="bg-danger">{{ cell.DELETE }}</td>
                     </tr>
                     <tr>
                         <td hidden>
@@ -506,8 +525,8 @@
 {#                        <td class="bg-info">{{ cell.duration_day }}</td>#}
 {#                        <td class="bg-info">{{ cell.duration_hour }}</td>#}
 {#                        <td class="bg-info">{{ cell.duration_minute }}</td>#}
-                        <td class="bg-warning">{{ cell.addition_location }}</td>
-                        <td class="bg-danger">{{ cell.DELETE }}</td>
+                        <td class="bg-warning">{% include 'generic_popup_link.html' with field=cell.addition_location %}</td>
+                        <td class="bg-danger"></td>
                     </tr>
                 </table>
                 </td>
@@ -595,15 +614,23 @@
                                 <input id="id_{{ setting_formset.prefix }}-{{ forloop.counter0 }}-id" name="{{ setting_formset.prefix }}-{{ forloop.counter0 }}-id" type="hidden" value="{{ setting.id.value }}">
                             </td>
                         {% endif %}
-                        <td>{{ setting.setting }}</td>
+                        <td>
+                            {{ setting.setting }}
+                            {% include 'generic_popup_link.html' with field=setting.setting %}
+                        </td>
                         <td>{{ setting.value }}</td>
-                        <td>{{ setting.unit }}</td>
+                        <td>
+                            {{ setting.unit }}
+                            {% include 'generic_popup_link.html' with field=setting.unit %}
+                        </td>
                     </tr>
                 </table>
                 <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
                     <tr>
                         <th class="bg-success" colspan="3">Addition Time*</th>
                         <th class="bg-info" colspan="3">Duration*</th>
+                        <th class="bg-warning">Addition Location*</th>
+                        <th class="bg-danger">Delete</th>
                     </tr>
                     <tr>
                         <th class="bg-success">Day</th>
@@ -612,8 +639,8 @@
                         <th class="bg-info">Day</th>
                         <th class="bg-info">Hour</th>
                         <th class="bg-info">Minute</th>
-                        <th class="bg-warning">Addition Location*</th>
-                        <th class="bg-danger">Delete</th>
+                        <td class="bg-warning">{{ setting.addition_location }}</td>
+                        <td class="bg-danger">{{ setting.DELETE }}</td>
                     </tr>
                     <tr>
                         <td hidden>
@@ -626,8 +653,8 @@
                         <td class="bg-info">{{ setting.duration_day }}</td>
                         <td class="bg-info">{{ setting.duration_hour }}</td>
                         <td class="bg-info">{{ setting.duration_minute }}</td>
-                        <td class="bg-warning">{{ setting.addition_location }}</td>
-                        <td class="bg-danger">{{ setting.DELETE }}</td>
+                        <td class="bg-warning">{% include 'generic_popup_link.html' with field=setting.addition_location %}</td>
+                        <td class="bg-danger"></td>
                     </tr>
                 </table>
                 </td>

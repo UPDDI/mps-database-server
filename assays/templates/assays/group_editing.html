@@ -141,10 +141,7 @@
     <tr>
         <td colspan="3">
             {{ form.compound_compound }}
-            <a class="popup-link" data-href="/compounds/add/?popup=1" data-window-name="compounds">
-                <span class="glyphicon glyphicon-plus text-success" aria-hidden="true"></span>
-                Create New Compound
-            </a>
+            {% include 'generic_popup_link.html' with field=form.compound_compound %}
         </td>
     </tr>
     <tr>
@@ -165,7 +162,10 @@
         </tr>
         <tr>
             <td>{{ form.compound_concentration }}</td>
-            <td>{{ form.compound_concentration_unit }}</td>
+            <td>
+                {{ form.compound_concentration_unit }}
+                {% include 'generic_popup_link.html' with field=form.compound_concentration_unit %}
+            </td>
         </tr>
         {% comment %}
         <tr>
@@ -185,6 +185,7 @@
         <tr>
             <th class="bg-success" colspan="3">Addition Time*</th>
             <th class="bg-info" colspan="3">Duration*</th>
+            <th class="bg-warning">Addition Location*</th>
         </tr>
         <tr>
             <th class="bg-success">Day</th>
@@ -193,7 +194,7 @@
             <th class="bg-info">Day</th>
             <th class="bg-info">Hour</th>
             <th class="bg-info">Minute</th>
-            <th class="bg-warning">Addition Location*</th>
+            <td class="bg-warning">{{ form.compound_addition_location }}</td>
         </tr>
         <tr>
             <td class="bg-success">{{ form.compound_addition_time_day }}</td>
@@ -202,7 +203,9 @@
             <td class="bg-info">{{ form.compound_duration_day }}</td>
             <td class="bg-info">{{ form.compound_duration_hour }}</td>
             <td class="bg-info">{{ form.compound_duration_minute }}</td>
-            <td class="bg-warning">{{ form.compound_addition_location }}</td>
+            <td class="bg-warning">
+                {% include 'generic_popup_link.html' with field=form.compound_addition_location %}
+            </td>
         </tr>
     </table>
     </div>
@@ -230,7 +233,10 @@
             <label class="small" id="id_cell_sample_label"></label>
         </td>
         <td>{{ form.cell_passage }}</td>
-        <td>{{ form.cell_biosensor }}</td>
+        <td>
+            {{ form.cell_biosensor }}
+            {% include 'generic_popup_link.html' with field=form.cell_biosensor %}
+        </td>
         </tr>
     </table>
     <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
@@ -240,13 +246,17 @@
         </tr>
         <tr>
             <td title="Use 'e' for scientific notation: 1e+3 = 1000">{{ form.cell_density }}</td>
-            <td>{{ form.cell_density_unit }}</td>
+            <td>
+                {{ form.cell_density_unit }}
+                {% include 'generic_popup_link.html' with field=form.cell_density_unit %}
+            </td>
         </tr>
     </table>
     <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
         <tr>
             <th class="bg-success" colspan="3">Addition Time*</th>
     {#                        <th class="bg-info" colspan="3">Duration*</th>#}
+            <th class="bg-warning">Addition Location*</th>
         </tr>
         <tr>
             <th class="bg-success">Day</th>
@@ -255,7 +265,7 @@
     {#                        <th class="bg-info">Day</th>#}
     {#                        <th class="bg-info">Hour</th>#}
     {#                        <th class="bg-info">Minute</th>#}
-            <th class="bg-warning">Addition Location*</th>
+            <td class="bg-warning">{{ form.cell_addition_location }}</td>
         </tr>
         <tr>
 
@@ -265,7 +275,7 @@
     {#                        <td class="bg-info">{{ form.cell_duration_day }}</td>#}
     {#                        <td class="bg-info">{{ form.cell_duration_hour }}</td>#}
     {#                        <td class="bg-info">{{ form.cell_duration_minute }}</td>#}
-            <td class="bg-warning">{{ form.cell_addition_location }}</td>
+            <td class="bg-warning">{% include 'generic_popup_link.html' with field=form.cell_addition_location %}</td>
         </tr>
     </table>
     </div>
@@ -284,15 +294,22 @@
             <th>Unit*</th>
         </tr>
         <tr>
-            <td>{{ form.setting_setting }}</td>
+            <td>
+                {{ form.setting_setting }}
+                {% include 'generic_popup_link.html' with field=form.setting_setting %}
+            </td>
             <td>{{ form.setting_value }}</td>
-            <td>{{ form.setting_unit }}</td>
+            <td>
+                {{ form.setting_unit }}
+                {% include 'generic_popup_link.html' with field=form.setting_unit %}
+            </td>
         </tr>
     </table>
     <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
         <tr>
             <th class="bg-success" colspan="3">Addition Time*</th>
             <th class="bg-info" colspan="3">Duration*</th>
+            <th class="bg-warning">Addition Location*</th>
         </tr>
         <tr>
             <th class="bg-success">Day</th>
@@ -301,7 +318,7 @@
             <th class="bg-info">Day</th>
             <th class="bg-info">Hour</th>
             <th class="bg-info">Minute</th>
-            <th class="bg-warning">Addition Location*</th>
+            <td class="bg-warning">{{ form.setting_addition_location }}</td>
         </tr>
         <tr>
             <td class="bg-success">{{ form.setting_addition_time_day }}</td>
@@ -310,7 +327,7 @@
             <td class="bg-info">{{ form.setting_duration_day }}</td>
             <td class="bg-info">{{ form.setting_duration_hour }}</td>
             <td class="bg-info">{{ form.setting_duration_minute }}</td>
-            <td class="bg-warning">{{ form.setting_addition_location }}</td>
+            <td class="bg-warning">{% include 'generic_popup_link.html' with field=form.setting_addition_location %}</td>
         </tr>
     </table>
     </div>
