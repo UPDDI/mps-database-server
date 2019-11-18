@@ -6,6 +6,7 @@ from .models import (
     TIME_CONVERSIONS,
     AssayDataPoint,
     AssayDataFileUpload,
+    AssayPlateReaderMapDataFile,
     AssaySubtarget,
     AssayMatrixItem,
     AssayStudyAssay,
@@ -2869,3 +2870,44 @@ def one_sample_power_analysis(one_sample_data, sig_level, one_sample_compound, o
 
         # Power analysis results will be returned by user's input
         power_analysis_result = one_sample_power_analysis_calculation(sample_data, sig_level, differences, sample_size, power)
+
+
+##### Plate reader map file upload - in process
+class PlateReaderMapDataFileAdd:
+    """Upload Plate Reader Assay file"""
+    def __init__(self, current_file, study, user, current_data_file_upload=None, save=False):
+        self.current_file = current_file
+        self.user = user
+        if save:
+            self.data_file_upload = AssayPlateReaderMapDataFile(
+                file_location=current_file.url,
+                created_by=user,
+                modified_by=user,
+                study=study
+            )
+        else:
+            self.data_file_upload = AssayPlateReaderMapDataFile()
+        self.study = study
+        self.save = save
+        self.preview_data = {
+            'readout_data': [],
+        }
+        self.errors = []
+
+    #def process_data(self, data_list, sheet=''):
+
+
+    def process_csv_file(self):
+        data_reader = unicode_csv_reader(self.current_file, delimiter=',')
+        data_list = data_reader
+
+    def process_file(self):
+        # Save the data upload if necessary (ostensibly save should only run after validation)
+        if self.save:
+            self.data_file_upload.save()
+
+        self.current_file.seek(0, 0)
+        try:
+            self.process_excel_file()
+        except xlrd.XLRDError:
+            self.process_csv_file()

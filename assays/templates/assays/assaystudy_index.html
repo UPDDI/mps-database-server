@@ -38,6 +38,8 @@
                     <a href="images" class="btn btn-primary" role="button">Images</a>
                     {% if user_is_group_editor and not object.signed_off_by %}
                     <a href="upload" class="btn btn-primary" role="button">Upload Data</a>
+                    <a href="{% url 'assayplatereadermap-index' object.id %}" class="btn btn-primary" role="button">Assay Plate Reader Maps</a>
+{#                    <a href="{% url 'assayplatereaderfile-index' object.id %}" class="btn btn-primary" role="button">Assay Plate Reader Files</a>#}
                     {% endif %}
                 </div>
                 {% if user_is_group_editor %}
@@ -198,57 +200,57 @@
         </div>
         {% endif %}
     </div>
-
     {% if not user_is_group_admin and user_is_group_editor and not object.signed_off_by %}
     <div hidden id="ready_for_sign_off_section" title="Indicate Study is Ready for Sign Off">
-    <form id="ready_for_sign_off_form">
+        <form id="ready_for_sign_off_form">
 
-        <div class="alert alert-info" role="alert">
-            <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>
-            <span class="sr-only">Info:</span>
-            This form, when submitted, will send an email to the group's PI indicating that the study is ready for Sign Off.
-        </div>
+            <div class="alert alert-info" role="alert">
+                <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>
+                <span class="sr-only">Info:</span>
+                This form, when submitted, will send an email to the group's PI indicating that the study is ready for Sign Off.
+            </div>
 
-        <label for="email">Message:</label>
-        <div class="input-group padded-bottom">
-            {# Inline style is in poor taste #}
-            <textarea name="message" class="form-control" id="id_message" rows="4" style="width: 775px;"
-                    placeholder="Write a message to accompany your request for a Sign Off."></textarea>
-        </div>
+            <label for="email">Message:</label>
+            <div class="input-group padded-bottom">
+                {# Inline style is in poor taste #}
+                <textarea name="message" class="form-control" id="id_message" rows="4" style="width: 775px;"
+                        placeholder="Write a message to accompany your request for a Sign Off."></textarea>
+            </div>
 
-        <div class="well well-lg">
-        <label for="captcha">Please Type What You See</label>
-        <div class="input-group">
-            {{ ready_for_sign_off_form.captcha }}
+            <div class="well well-lg">
+            <label for="captcha">Please Type What You See</label>
+            <div class="input-group">
+                {{ ready_for_sign_off_form.captcha }}
+            </div>
+            </div>
+        </form>
+
+        <div hidden id="email_failure" class="alert alert-danger" role="alert">
+            <h3>
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Danger:</span>
+                Your request has failed.
+                <br>
+                <br>
+                <span id="email_failure_message"></span>
+                <br>
+                <br>
+                Please refresh the page and try again.
+            </h3>
         </div>
+        <div hidden id="email_success" class="alert alert-success" role="alert">
+            <h3>
+                <span class="glyphicon glyphicon-check" aria-hidden="true"></span>
+                <span class="sr-only">Success:</span>
+                Your request has succeeded. Your message:
+                <br>
+                <br>
+                <span id="email_message"></span>
+                <br>
+                <br>
+                Was sent to users that can Sign Off on the study.
+            </h3>
         </div>
-    </form>
-    <div hidden id="email_failure" class="alert alert-danger" role="alert">
-        <h3>
-            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-            <span class="sr-only">Danger:</span>
-            Your request has failed.
-            <br>
-            <br>
-            <span id="email_failure_message"></span>
-            <br>
-            <br>
-            Please refresh the page and try again.
-        </h3>
-    </div>
-    <div hidden id="email_success" class="alert alert-success" role="alert">
-        <h3>
-            <span class="glyphicon glyphicon-check" aria-hidden="true"></span>
-            <span class="sr-only">Success:</span>
-            Your request has succeeded. Your message:
-            <br>
-            <br>
-            <span id="email_message"></span>
-            <br>
-            <br>
-            Was sent to users that can Sign Off on the study.
-        </h3>
-    </div>
     </div>
     {% endif %}
 

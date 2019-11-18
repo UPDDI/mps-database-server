@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% comment %}{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/editable_studies/">Editable Studies</a></li>
+    <li>
+        <a href="{{ object.study.get_absolute_url }}"><em>{{ object.study }}</em></a>
+    </li>
+    <li>
+        <a href="{{ object.get_absolute_url }}update">Update</a>
+    </li>
+    <li class="active">Delete</li>
+{% endblock %}{% endcomment %}
+
+
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/">Studies</a>
+        <li><a href="{% url 'assayplatereadermap-index' object.study.id %}">Assay Plate Reader Maps</a>
+    <li class="active">
+        <em>{{ object }}</em>
+    </li>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+
+        {# Title of page #}
+        <div class="padded-bottom">
+            <div class="well">
+                <h1 class="text-center">
+                    <em><b>Assay Plate Reader Map Delete
+                    </b></em><br><br>
+                    Delete Well Plate Map: <em>{{ object }}</em>
+                <br>
+                </h1>
+                {% csrf_token %}
+            </div>
+        </div>
+
+        <h2 class="text-danger">Are you sure you want to delete the Assay Plate Reader Map:<br><b>{{ object }}</b>?</h2>
+        <hr>
+        <div class="padded-bottom">
+            <button type="submit" class="btn btn-danger">Confirm Deletion</button>
+        </div>
+    </form>
+{% endblock %}

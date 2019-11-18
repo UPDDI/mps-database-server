@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/">Studies</a></li>
+    <li><a href="{{ object.get_absolute_url }}">{{ object }}</a></li>
+    <li class="active">Assay Plate Reader Maps</li>
+{% endblock %}
+
+{% block load_js %}
+    <script src="{% static "assays/assayplatereadermap_index.js" %}"></script>
+{% endblock %}
+
+{% block content %}
+    {% include 'tracking.html' with study_submit='true' %}
+
+    {# Title of page #}
+    <div class="padded-bottom">
+        <div class="well">
+            <h1 class="text-center">
+                <em><b>Assay Plate Reader Map List</b></em><br><br>
+                Study: {{ object }}
+            </h1>
+        </div>
+
+        <div>
+            <h2>
+                {# Hide setup add buttons if the study is marked reviewed #}
+                {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
+                <div>
+                    <a href="{% url 'assayplatereadermap-add' object.id %}" class="btn btn-success" role="button">Add Map</a>
+                </div>
+                {% endif %}
+            </h2>
+        </div>
+
+
+        {% if assayplatereadermaps %}
+        {#    {{distinct_base_plate_map}}#}
+        {#    {{ reduce_distinct_base_name }}#}
+        {% comment %}
+        Keep for now as example of grouping table may need later
+        <div>
+        <h3>List of Base Plate Map Name and Count of Associated Specific Plate Maps</h3>
+            <table id="reduce_distinct_base_name" class="display table table-striped table-hover" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>Base Assay Plate Reader Map Name</th>
+                        <th>Size</th>
+                        <th># Sample Times</th>
+                        <th>Standard Target/Method/Unit</th>
+                        <th>Number of Associated Specific Plate Maps</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for map in reduce_distinct_base_name %}
+                    <tr>
+                        <td>{{ map.0 }}</td>
+                        <td>{{ map.1 }}</td>
+                        <td>{{ map.2 }}</td>
+                        <td>{{ map.3 }}</td>
+                        <td>{{ map.4 }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endcomment %}
+
+        <div>
+            <div><p id="plate_map_index_tooltip"></p>
+                <label for="plate_map_index_tooltip">Plate Map List &nbsp;</label>
+            </div>
+            <table id="assayplatereadermaps" class="display table table-striped table-hover" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th>View or Edit</th>
+                    <th>Name</th>
+                    <th>Size</th>
+                    <th>Sample Time Unit</th>
+                    <th>Plate Reader Unit</th>
+{#                    <th>Standard </th>#}
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for plate in assayplatereadermaps %}
+                <tr>
+                    <td class="no-wrap">
+                            <a class="btn btn-primary" href="{% url 'assayplatereadermap-view' plate.id  %}">View </a>
+                            {% if not object.signed_off_by %}
+                                <a class="btn btn-primary" href="{% url 'assayplatereadermap-update' plate.id  %}">Edit </a>
+                            {% endif %}
+                    </td>
+                    <!--<td>ID: {{ plate.id }} - NAME: {{ plate.name }}</td>-->
+                    <td>{{ plate.name }}</td>
+                    <td>{{ plate.device }}</td>
+                    <td>{{ plate.time_unit }}</td>
+                    <td>{{ plate.plate_reader_unit }}</td>
+{#                    <td>{{ plate.study_assay }}</td>#}
+                    <td>{{ plate.description }}</td>
+
+                    {% comment %}
+                    <td>
+                        {% for apmitem in plate.assayplatereadermapitem_set.all|dictsort:"name" %}
+                            {{ apmitem.name }}-{{ apmitem.matrix_item }};
+                        {% endfor %}
+                    </td>
+                    {% endcomment %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% else %}
+        <div class="alert alert-warning" role="alert">
+            No assay plate maps exist for this study
+        </div>
+        {% endif %}
+    </div>
+
+{% endblock %}
+

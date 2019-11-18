@@ -43,7 +43,8 @@ from microdevices.models import (
 # from mps.settings import TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX
 from .forms import (
     AssayStudyDataUploadForm,
-    ReadyForSignOffForm
+    ReadyForSignOffForm,
+    AssayPlateReaderMapDataFileAddForm,
 )
 
 from .utils import (
@@ -4289,6 +4290,42 @@ def clone_study(request):
         content_type="application/json"
     )
 
+
+# plate map making the map from an existing matrix
+def fetch_assay_study_matrix_for_platemap(request):
+    this_study = request.POST.get('study', '0')
+    this_matrix = request.POST.get('matrix', '0')
+
+    if not this_matrix:
+        return HttpResponseServerError()
+
+    data = {}
+    data_to_return = []
+    #data.update({ 'mi_list': [this_study, this_matrix], })
+
+    this_queryset = AssayMatrixItem.objects.filter(
+        study_id=this_study
+    ).filter(
+        matrix_id=this_matrix
+    ).prefetch_related(
+        'matrix',
+    ).order_by('matrix__name', 'row_index', 'column_index', 'name', )
+
+    for each in this_queryset:
+        data_fields = {
+            'matrix_item_id': each.id,
+            'matrix_item_name': each.name,
+            'matrix_item_row_index': each.row_index,
+            'matrix_item_column_index': each.column_index,
+        }
+        data_to_return.append(data_fields)
+
+    data.update({ 'mi_list': data_to_return, })
+
+    return HttpResponse(json.dumps(data),
+                        content_type="application/json")
+
+
 # TODO TODO TODO
 switch = {
     'fetch_center_id': {'call': fetch_center_id},
@@ -4353,10 +4390,9 @@ switch = {
         'call': clone_study,
         'validation': study_editor_validation
     },
-    # 'fetch_dropdown': {
-    #     'call': fetch_dropdown,
-    #     'validation': valid_user_validation
-    # }
+    'fetch_assay_study_matrix_for_platemap': {
+        'call': fetch_assay_study_matrix_for_platemap
+    },
 }
 
 

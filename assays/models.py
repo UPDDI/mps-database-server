@@ -3485,3 +3485,150 @@ class AssayCategory(FlaggableModel):
 
     def __str__(self):
         return '{}'.format(self.name)
+
+
+##### ASSAY PLATE MAP SECTION
+class AssayPlateReaderMap(FlaggableModel):
+    """Assay Plate Reader Map is a assay plate map"""
+    class Meta(object):
+        verbose_name_plural = 'Assay Plate Reader Map'
+        unique_together = [('study', 'name')]
+    study = models.ForeignKey(AssayStudy, blank=True, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255, blank=True)
+    description = models.CharField(max_length=2000, blank=True, default='')
+    device = models.IntegerField(
+        verbose_name='Device Size',
+        default=24, blank=True,
+        choices=( (24, '24 Well Plate'), (96, '96 Well Plate'), (384, '384 Well Plate') )
+    )
+    time_unit = models.CharField(
+        max_length=8,
+        default='day', blank=True,
+        choices=( ('day', 'Day'), ('hour', 'Hour'), ('minute', 'Minute') )
+    )
+    plate_reader_unit = models.ForeignKey(
+        'assays.PhysicalUnits',
+        null=True, blank=True,
+        on_delete=models.CASCADE
+    )
+    study_assay = models.ForeignKey('assays.AssayStudyAssay', null=True, blank=True, on_delete=models.CASCADE)
+    def __str__(self):
+        return '{0}'.format(self.name)
+    def get_absolute_url(self):
+        return '/assays/assayplatereadermap/{}/'.format(self.id)
+    def get_post_submission_url(self):
+        return '/assays/assaystudy/{}/assayplatereadermap/'.format(self.study_id)
+    def get_delete_url(self):
+        return '{}delete/'.format(self.get_absolute_url())
+
+# Get upload file location
+def upload_plate_reader_file_location(instance, filename):
+    return '/'.join(['plate_reader', str(instance.id), filename])
+
+class AssayPlateReaderMapDataFile(models.Model):
+    class Meta(object):
+        verbose_name = 'Assay Plate Reader Imported File'
+        unique_together = [
+            ('study', 'plate_reader_file'),
+        ]
+    study = models.ForeignKey(AssayStudy, blank=True, on_delete=models.CASCADE)
+    name = models.CharField(verbose_name='File Name', max_length=255, blank=True)
+    description = models.CharField(max_length=2000, blank=True, default='')
+    plate_reader_file = models.FileField(
+        upload_to=upload_plate_reader_file_location,
+        verbose_name='Plate Reader Data File',
+        blank=True, null=True
+    )
+    def __str__(self):
+        return '{0}'.format(self.name)
+    def get_absolute_url(self):
+        return '/assays/assayplatereaderfile/{}/'.format(self.id)
+    def get_post_submission_url(self):
+        return '/assays/assaystudy/{}/assayplatereaderfile/'.format(self.study_id)
+    def get_delete_url(self):
+        return '{}delete/'.format(self.get_absolute_url())
+
+class AssayPlateReaderMapDataFileBlock(models.Model):
+    class Meta(object):
+        verbose_name = 'Assay Plate Reader Data Block'
+        unique_together = [
+            ('study', 'data_block', 'assayplatereadermapdatafile'),
+        ]
+    study = models.ForeignKey(AssayStudy, blank=True, on_delete=models.CASCADE)
+    assayplatereadermap = models.ForeignKey(AssayPlateReaderMap, on_delete=models.CASCADE)
+    assayplatereadermapdatafile = models.ForeignKey('AssayPlateReaderMapDataFile', null=True, blank=True, on_delete=models.CASCADE)
+    name = models.CharField(verbose_name='Block Name', max_length=255, blank=True)
+    description = models.CharField(max_length=2000, blank=True, default='')
+    data_block = models.IntegerField(default=1, null=True)
+    # this will be a link later - when get to the processing part of the app
+    processing_set = models.IntegerField(null=True)
+    def __str__(self):
+        return '{0}'.format(self.name)
+
+class AssayPlateReaderMapItem(models.Model):
+    class Meta(object):
+        verbose_name = 'Assay Plate Reader Map Item'
+        unique_together = [
+            ('study', 'assayplatereadermap', 'plate_index'),
+        ]
+    study = models.ForeignKey(AssayStudy, blank=True, on_delete=models.CASCADE)
+    assayplatereadermap = models.ForeignKey(AssayPlateReaderMap, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, blank=True, default="none")
+    row_index = models.IntegerField(default=999, blank=True)
+    column_index = models.IntegerField(default=999, blank=True)
+    plate_index = models.IntegerField(default=999, blank=True)
+    matrix_item = models.ForeignKey(AssayMatrixItem, null=True, blank=True, on_delete=models.CASCADE)
+    well_use = models.CharField(
+        verbose_name='Well Use',
+        max_length=8,
+        default='empty', blank=True,
+        choices=( ('sample', 'Sample'), ('standard', 'Standard'), ('blank', 'Blank'), ('empty', 'Empty/Unused') )
+    )
+    location = models.ForeignKey('AssaySampleLocation', null=True, blank=True, default=0, on_delete=models.CASCADE)
+    # should be the standard concentration input (associated unit should be in the plate map model)
+    standard_value = models.FloatField(default=0, null=True, blank=True)
+    def __str__(self):
+        return '{0}'.format(self.name)
+    def get_absolute_url(self):
+        return '/assays/assayplatereadermapitem/{}/'.format(self.id)
+    def get_post_submission_url(self):
+        return '/assays/assayplatereadermapitem/'
+    def get_delete_url(self):
+        return '{}delete/'.format(self.get_absolute_url())
+
+class AssayPlateReaderMapItemValue(models.Model):
+    class Meta(object):
+        verbose_name = 'Assay Plate Reader Map Raw Value'
+        unique_together = [
+            ('study', 'assayplatereadermap', 'assayplatereadermapdatafile', 'assayplatereadermapdatafileblock', 'plate_index', 'time'),
+        ]
+    study = models.ForeignKey(AssayStudy, blank=True, on_delete=models.CASCADE)
+    assayplatereadermap = models.ForeignKey(AssayPlateReaderMap, on_delete=models.CASCADE)
+    assayplatereadermapdatafile = models.ForeignKey('AssayPlateReaderMapDataFile', null=True, blank=True, on_delete=models.CASCADE)
+    assayplatereadermapdatafileblock = models.ForeignKey('AssayPlateReaderMapDataFileBlock', null=True, blank=True, on_delete=models.CASCADE)
+    plate_index = models.IntegerField(default=999, blank=True)
+    well_use = models.CharField(
+        verbose_name='Well Use',
+        max_length=8,
+        default='empty', blank=True,
+        choices=( ('sample', 'Sample'), ('standard', 'Standard'), ('blank', 'Blank'), ('empty', 'Empty/Unused') )
+    )
+    #raw value read from the plate for all wells in this plate
+    value = models.FloatField(null=True, blank=True)
+    time = models.FloatField(default=0, null=True, blank=True)
+    caution_flag = models.CharField(max_length=255, default='', null=True, blank=True)
+    excluded = models.BooleanField(default=False, null=True, blank=True)
+    replaced = models.BooleanField(default=False)
+    notes = models.CharField(max_length=255, default='', null=True, blank=True)
+    replicate = models.CharField(max_length=255, default='', null=True, blank=True)
+    def __str__(self):
+        return '{0}'.format(self.name)
+    def get_absolute_url(self):
+        return '/assays/assayplatereadermapitem/{}/'.format(self.id)
+    def get_post_submission_url(self):
+        return '/assays/assayplatereadermapitem/'
+    def get_delete_url(self):
+        return '{}delete/'.format(self.get_absolute_url())
+
+#TODO need a model for the status of the processing (where in the loading, calibration, and processing)
+##### END ASSAY PLATE MAP SECTION
