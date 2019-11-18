@@ -40,13 +40,13 @@
                     <a href="upload" class="btn btn-primary" role="button">Upload Data</a>
                     {% endif %}
                 </div>
+                {% if user_is_group_editor %}
+                    <a id="clone_study_request" class="btn btn-info" role="button">Clone this Study</a>
+                {% endif %}
                 {% if not user_is_group_admin and user_is_group_editor and not object.signed_off_by %}
                 <div>
                     <a id="indicate_study_is_ready_for_sign_off" class="btn btn-success" role="button">Indicate Study is Ready for Sign Off</a>
                 </div>
-                {% endif %}
-                {% if user_is_group_editor %}
-                    <a id="clone_study_request" class="btn btn-info" role="button">Clone this Study</a>
                 {% endif %}
                 {% if user_is_group_admin %}
                     <div class="row text-center small-padding-top">
@@ -253,11 +253,36 @@
     {% endif %}
 
     {% if user_is_group_editor %}
-    <div hidden id="clone_study_section" title="Indicate Study is Ready for Sign Off">
+    <div hidden id="clone_study_section" title="Clone this Study">
     <div class="alert alert-info" role="alert">
-        <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>
+        <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
         <span class="sr-only">Info:</span>
-        Cloning a study will create a new study in the database that is the same as this study with "Clone-" added to its name and the names of all of its Matrices and Matrix Items. None of the data points will be cloned, however.
+        Cloning a Study will create a copy of the Study.
+        <br>
+        <hr>
+        The following related data <strong>will be copied as is:</strong>
+        <ul>
+            <li>Matrices</li>
+            <li>Matrix Items</li>
+            <li>Assays</li>
+        </ul>
+        <br>
+        The following <strong>will be modified:</strong>
+        <ul>
+            <li>The Study Name will have "Clone-" appended to the front</li>
+            <li>The Description will indicate what the Study was cloned from</li>
+            <li>The Creator will be changed to the User performing the clone</li>
+            <li>The Start Date will change to the current time</li>
+        </ul>
+        <br>
+        The following <strong>will NOT be included:</strong>
+        <ul>
+            <li>Protocol</li>
+            <li>Images</li>
+            <li>Data Points</li>
+            <li>Supporting Data</li>
+            <li>References</li>
+        </ul>
     </div>
     <div hidden id="clone_failure" class="alert alert-danger" role="alert">
         <h3>

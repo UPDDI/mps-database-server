@@ -4172,19 +4172,37 @@ def get_pubmed_reference_data(request):
 
 
 # Crude method to clone
-def make_clone(object_to_clone, special_handling=None, attributes_to_change=None):
+def make_clone(request, object_to_clone, special_handling=None, attributes_to_change=None):
     object_to_clone.id = None
     object_to_clone.pk = None
 
     # Special handling for study involves changing the name and start date
     if special_handling == 'STUDY':
+        # Add clone parent to description
+        object_to_clone.description = 'Cloned from Study {}.\n{}'.format(
+            str(object_to_clone),
+            object_to_clone.description
+        )
+
         object_to_clone.name = 'Clone-' + object_to_clone.name
         object_to_clone.start_date = timezone.now()
+
+        # Exclude files like images and protocols
+        # SUBJECT TO CHANGE:
+        # MIGHT BE A GOOD IDEA TO PROGRAMMATICALLY ACQUIRE ALL FILE FIELDS
+        object_to_clone.protocol = None
+        object_to_clone.image = None
 
     if attributes_to_change:
         for attribute, value in attributes_to_change.items():
             if hasattr(object_to_clone, attribute):
                 setattr(object_to_clone, attribute, value)
+
+    if hasattr(object_to_clone, 'created_by'):
+        setattr(object_to_clone, 'created_by', request.user)
+
+    if hasattr(object_to_clone, 'modified_by'):
+        setattr(object_to_clone, 'modified_by', request.user)
 
     object_to_clone.save()
 
@@ -4209,7 +4227,7 @@ def clone_study(request):
 
     # Crude method to clone
     # NOTE, undo signed_off_by and restricted
-    new_study_id = make_clone(study_to_clone, special_handling='STUDY', attributes_to_change={'signed_off_by_id': None, 'restricted': True})
+    new_study_id = make_clone(request, study_to_clone, special_handling='STUDY', attributes_to_change={'signed_off_by_id': None, 'restricted': True})
 
     # Restore (crude)
     study_to_clone = get_object_or_404(AssayStudy, pk=request.POST.get('study'))
@@ -4219,7 +4237,7 @@ def clone_study(request):
         clone_attributes = {
             'study_id': new_study_id
         }
-        make_clone(assay, attributes_to_change=clone_attributes)
+        make_clone(request, assay, attributes_to_change=clone_attributes)
 
     # Don't clone references or supporting data
 
@@ -4230,7 +4248,7 @@ def clone_study(request):
             'study_id': new_study_id
         }
         original_matrix_id = matrix.id
-        new_matrix_id = make_clone(matrix, attributes_to_change=clone_attributes)
+        new_matrix_id = make_clone(request, matrix, attributes_to_change=clone_attributes)
         matrix_to_matrix.update({
             original_matrix_id: new_matrix_id
         })
@@ -4243,7 +4261,7 @@ def clone_study(request):
             'matrix_id': matrix_to_matrix.get(matrix_item.matrix_id)
         }
         original_matrix_item_id = matrix_item.id
-        new_matrix_item_id = make_clone(matrix_item, attributes_to_change=clone_attributes)
+        new_matrix_item_id = make_clone(request, matrix_item, attributes_to_change=clone_attributes)
         matrix_item_to_matrix_item.update({
             original_matrix_item_id: new_matrix_item_id
         })
@@ -4256,11 +4274,11 @@ def clone_study(request):
         }
         # Horrible nested loops, can take a very long time!
         for cell in matrix_item.assaysetupcell_set.all():
-            make_clone(cell, attributes_to_change=clone_attributes)
+            make_clone(request, cell, attributes_to_change=clone_attributes)
         for compound in matrix_item.assaysetupcompound_set.all():
-            make_clone(compound, attributes_to_change=clone_attributes)
+            make_clone(request, compound, attributes_to_change=clone_attributes)
         for setting in matrix_item.assaysetupsetting_set.all():
-            make_clone(setting, attributes_to_change=clone_attributes)
+            make_clone(request, setting, attributes_to_change=clone_attributes)
 
     data.update({
         'new_study_id': AssayStudy.objects.get(id=new_study_id).get_absolute_url()

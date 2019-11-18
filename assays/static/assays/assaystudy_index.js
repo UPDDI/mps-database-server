@@ -67,7 +67,7 @@ $(document).ready(function() {
     // TODO CHANGE POPUP BEHAVIOR
     var clone_study_section = $('#clone_study_section');
     clone_study_section.dialog({
-       height:500,
+       height:800,
        width:900,
        modal: true,
        buttons: {
