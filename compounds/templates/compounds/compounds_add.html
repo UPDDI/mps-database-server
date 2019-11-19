@@ -67,18 +67,23 @@
         </div>
     {% endif %}
 
+    {% comment %}
     <div class="form-group">
         <label for="name" class="col-sm-2 control-label">Name*</label>
         <div class="col-sm-10">
           {{ form.name }}
         </div>
     </div>
+    {% endcomment %}
+
+    {% include 'generic_field.html' with field=form.name %}
 
     <div class="alert alert-info" role="alert">
             <span class="sr-only">Info:</span>
             Enter ChEMBL ID (CHEMBL####) and click "Retrieve" to automatically fill in data:
     </div>
 
+    {% comment %}
     <div class="form-group">
         <label for="chemblid" class="col-sm-2 control-label compounds-compound">ChEMBL ID</label>
         <div class="col-sm-10">
@@ -90,6 +95,9 @@
 {#          </button>#}
         </div>
     </div>
+    {% endcomment %}
+
+    {% include 'generic_field.html' with field=form.chemblid %}
 
     <div class="row padded-bottom">
         <div class="col-sm-2"></div>
@@ -103,21 +111,29 @@
     </div>
 
 {#    Might as well just automatically acquire pubchem ID#}
+    {% comment %}
     <div class="form-group">
         <label for="pubchemid" class="col-sm-2 control-label compounds-compound">PubChem ID</label>
         <div class="col-sm-10">
           {{ form.pubchemid }}
         </div>
     </div>
+    {% endcomment %}
+
+    {% include 'generic_field.html' with field=form.pubchemid %}
 
     {% include 'generic_field.html' with field=form.drugbank_id label="DrugBank ID" %}
 
+    {% comment %}
     <div class="form-group">
         <label for="inchikey" class="col-sm-2 control-label">IUPAC Standard InChI Key</label>
         <div class="col-sm-10">
           {{ form.inchikey }}
         </div>
     </div>
+    {% endcomment %}
+
+    {% include 'generic_field.html' with field=form.inchikey %}
 
     {# TODO REVISE #}
     <div class="form-group">
@@ -175,12 +191,16 @@
 
     {% include 'generic_field.html' with field=form.drug_class label="Drug Class" %}
 
+    {% comment %}
     <div class="form-group">
         <label for="species" class="col-sm-2 control-label">Species</label>
         <div class="col-sm-10">
           {{ form.species }}
         </div>
     </div>
+    {% endcomment %}
+
+    {% include 'generic_field.html' with field=form.species %}
 
     {% include 'generic_field.html' with field=form.protein_binding label="Protein Binding" %}
 
@@ -190,77 +210,117 @@
 
     <legend>Molecular Properties</legend>
 
+    {% comment %}
     <div class="form-group">
         <label for="molecular_formula" class="col-sm-2 control-label">Molecular Formula</label>
         <div class="col-sm-10">
           {{ form.molecular_formula }}
         </div>
     </div>
+    {% endcomment %}
 
+    {% include 'generic_field.html' with field=form.molecular_formula %}
+
+    {% comment %}
     <div class="form-group">
         <label for="molecular_weight" class="col-sm-2 control-label">Molecular Weight</label>
         <div class="col-sm-10">
           {{ form.molecular_weight }}
         </div>
     </div>
+    {% endcomment %}
 
+    {% include 'generic_field.html' with field=form.molecular_weight %}
+
+    {% comment %}
     <div class="form-group">
         <label for="rotatable_bonds" class="col-sm-2 control-label">Rotatable Bonds</label>
         <div class="col-sm-10">
           {{ form.rotatable_bonds }}
         </div>
     </div>
+    {% endcomment %}
 
+    {% include 'generic_field.html' with field=form.rotatable_bonds %}
+
+    {% comment %}
     <div class="form-group">
         <label for="acidic_pka" class="col-sm-2 control-label">Acidic pKa (ACD)</label>
         <div class="col-sm-10">
           {{ form.acidic_pka }}
         </div>
     </div>
+    {% endcomment %}
 
+    {% include 'generic_field.html' with field=form.acidic_pka %}
+
+    {% comment %}
     <div class="form-group">
         <label for="basic_pka" class="col-sm-2 control-label">Basic pKa (ACD)</label>
         <div class="col-sm-10">
           {{ form.basic_pka }}
         </div>
     </div>
+    {% endcomment %}
 
+    {% include 'generic_field.html' with field=form.basic_pka %}
+
+    {% comment %}
     <div class="form-group">
         <label for="logp" class="col-sm-2 control-label">LogP (ACD)</label>
         <div class="col-sm-10">
           {{ form.logp }}
         </div>
     </div>
+    {% endcomment %}
 
+    {% include 'generic_field.html' with field=form.logp %}
+
+    {% comment %}
     <div class="form-group">
         <label for="logd" class="col-sm-2 control-label">LogD (ACD)</label>
         <div class="col-sm-10">
           {{ form.logd }}
         </div>
     </div>
+    {% endcomment %}
 
+    {% include 'generic_field.html' with field=form.logd %}
+
+    {% comment %}
     <div class="form-group">
         <label for="alogp" class="col-sm-2 control-label">ALogP</label>
         <div class="col-sm-10">
           {{ form.alogp }}
         </div>
     </div>
+    {% endcomment %}
+
+    {% include 'generic_field.html' with field=form.alogp %}
 
     <legend>Molecular Identifiers</legend>
 
+    {% comment %}
     <div class="form-group">
         <label for="smiles" class="col-sm-2 control-label">Smiles</label>
         <div class="col-sm-10">
           {{ form.smiles }}
         </div>
     </div>
+    {% endcomment %}
 
+    {% include 'generic_field.html' with field=form.smiles %}
+
+    {% comment %}
     <div class="form-group">
         <label for="synonyms" class="col-sm-2 control-label">Synonyms</label>
         <div class="col-sm-10">
           {{ form.synonyms }}
         </div>
     </div>
+    {% endcomment %}
+
+    {% include 'generic_field.html' with field=form.synonyms %}
 
     <legend>Summaries</legend>
 
@@ -279,6 +339,20 @@
     {# TODO MAKE SURE TARGETS ARE WORKING #}
     {{ formset.management_form }}
     <legend>Targets/Interactions</legend>
+
+    {% if formset.errors %}
+        {% for dict in formset.errors %}
+            {% for key,value in dict.items %}
+                {% if key %}
+                    <div class="alert alert-danger" role="alert">
+                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                        <span class="sr-only">Error:</span>
+                        {{ forloop.parentloop.counter }}.) {{ key }} : {{ value }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
 
     <a id="add_button-compoundtarget_set" class="btn btn-success" role="button">Add Target</a>
     <table class="table table-striped inlines" id="compoundtarget_set-group"  name="targets">
