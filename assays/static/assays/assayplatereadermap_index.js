@@ -21,6 +21,9 @@ $(document).ready(function() {
     //     "order": [[2, "asc"]],
     // });
 
+    // Activates Bootstrap tooltips
+    $('[data-toggle="tooltip"]').tooltip({container:"body", html: true});
+
     function escapeHtml(html) {
         return $('<div>').text(html).html();
     }

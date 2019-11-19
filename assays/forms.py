@@ -2475,6 +2475,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
             self.instance.study = self.study
 
         my_instance = self.instance
+        #note that, if leave selectize on, will need to change js file $("#id_device").val(matrix_size);
         self.fields['device'].widget.attrs['class'] += ' no-selectize'
         self.fields['ns_file_pk_block_pk'].widget.attrs['class'] += ' no-selectize'
         self.fields['name'].initial = "map-" + datetime.datetime.now().strftime ("%Y%m%d")+"-"+ datetime.datetime.now().strftime('%H:%M:%S')

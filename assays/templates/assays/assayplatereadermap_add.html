@@ -134,15 +134,21 @@
                     </div>
                     <div class="pick-a-matrix hidden">
                         <div class="row">
-                            <div class="col-md-8">
-                                {% include 'generic_field.html' with field=assay_map_additional_info.se_matrix label="Matrix*"  %}
+                            <div class="col-md-2">
+                                <p align="right"><b><em>Matrix*</em></b></p>
+                            </div>
+                            <div class="col-md-6">
+                                {{ assay_map_additional_info.se_matrix }}
                             </div>
                         </div>
                     </div>
                     <div class="pick-a-plate">
                         <div class="row">
-                            <div class="col-md-8">
-                                {% include 'generic_field.html' with field=form.device label="Plate Size*"  %}
+                            <div class="col-md-2">
+                                <p align="right"><b><em>Plate Size*</em></b></p>
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.device }}
                             </div>
                         </div>
                     </div>
@@ -165,22 +171,31 @@
                 {% endif %}
 
                 <div class="row">
-                    <div class="col-md-8">
-                        {% include 'generic_field.html' with field=form.name label="Map Name*"  %}
+                    <div class="col-md-2">
+                        <p align="right"><b><em>Map Name*</em></b></p>
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.name }}
                     </div>
                     <div class="col-md-4">
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">
-                        {% include 'generic_field.html' with field=form.description label="Description (optional)" %}
+                    <div class="col-md-2">
+                        <p align="right"><b><em>Description (optional)</em></b></p>
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.description }}
                     </div>
                     <div class="col-md-4">
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">
-                        {% include 'generic_field.html' with field=form.time_unit label="Time Unit*" %}
+                    <div class="col-md-2">
+                        <p align="right"><b><em>Time Unit*</em></b></p>
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.time_unit }}
                     </div>
                     <div class="col-md-4">
                         <div><p id="sample_time_unit_tooltip"></p>
@@ -189,8 +204,11 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">
-                        {% include 'generic_field.html' with field=form.plate_reader_unit label="Plate Reader Unit*" %}
+                    <div class="col-md-2">
+                        <p align="right"><b><em>Plate Reader Unit*</em></b></p>
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.plate_reader_unit }}
                     </div>
                     <div class="col-md-4">
                         <div><p id="plate_reader_unit_tooltip"></p>
@@ -200,11 +218,11 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-8">
-                        <div>
-                            {# this one must be correct on the save #}
-                            {% include 'generic_field.html' with field=form.study_assay label="Standard"  %}
-                        </div>
+                    <div class="col-md-2">
+                        <p align="right"><b><em>Standard</em></b></p>
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.study_assay }}
                     </div>
                      <div class="col-md-1">
                          <div><p id="standard_tooltip"></p>
@@ -449,7 +467,7 @@
                                 <div class="col-md-2">
                                     <div>
 {#                                        <label class="sample-section hidden"><input type="radio" name="sample_change" value="matrix_item"> Apply </label>#}
-                                        <input class="big-checkbox" type="checkbox" name="change_matrix_item" value="matrix_item" checked />
+                                        <input id="checkbox_matrix_item" class="big-checkbox" type="checkbox" name="change_matrix_item" value="matrix_item" checked />
                                     </div>
                                 </div>
                                 <div class="col-md-2 ">
@@ -461,7 +479,7 @@
                                 <div class="col-md-2">
                                     <div>
 {#                                        <label class="sample-section hidden"><input type="radio" name="sample_change" value="location"> Apply </label>#}
-                                        <input class="big-checkbox" type="checkbox" name="change_location" value="matrix_location" checked />
+                                        <input id="checkbox_matrix_location" class="big-checkbox" type="checkbox" name="change_location" value="matrix_location" checked />
                                     </div>
                                 </div>
                                 <div class="col-md-2">
@@ -473,7 +491,7 @@
                                 <div class="col-md-2">
                                     <div>
 {#                                        <label class="sample-section hidden"><input type="radio" name="sample_change" value="time"> Apply </label>#}
-                                        <input class="big-checkbox" type="checkbox" name="change_time" value="matrix_time" checked />
+                                        <input id="checkbox_matrix_time" class="big-checkbox" type="checkbox" name="change_time" value="matrix_time" checked />
                                     </div>
                                 </div>
                             </div>
@@ -506,12 +524,11 @@
                         {% if review %}
                         {% else %}
                         <div class="standard-section hidden">
-                            <div class="col-md-4">
-{#                                <label>#}
-{#                                Standard Value#}
-{#                                </label>#}
-{#                                {{ assay_map_additional_info.se_standard_value }}#}
-                                {% include 'generic_field.html' with field=assay_map_additional_info.se_standard_value label="Value"  %}
+                            <div class="col-md-2">
+                                <p align="right"><b><em>Standard Value</em></b></p>
+                            </div>
+                            <div class="col-md-2">
+                                {{ assay_map_additional_info.se_standard_value }}
                             </div>
                         </div>
                         {% endif %}
@@ -523,13 +540,13 @@
                 {% if review %}
                 {% else %}
                     <div class="row">
-                        <legend>Options for Dragging in Plate Map</legend>
+                        <legend>Options for Drag/Apply in Plate Map</legend>
                         <div class="col-md-4">
                             <div class=row">
                                 <label>Drag Action </label>
                             </div>
                             <div class=row">
-                                <input type="radio" name="change_method" value="copy" checked> Copy When Dragging
+                                <input type="radio" name="change_method" value="copy" checked> Copy When Drag/Apply
                             </div>
                             <div class=row">
                                 <input type="radio" name="change_method" value="increment"> Increment (Time or Standard Value only)

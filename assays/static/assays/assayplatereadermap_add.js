@@ -34,6 +34,12 @@ $(document).ready(function () {
     let global_plate_imatrix_item_row_column_index = [];
     let global_plate_study_id = parseInt(document.getElementById ("this_study_id").innerText.trim());
 
+    document.getElementById("id_description").style.marginTop = "5px";
+    document.getElementById("id_description").style.marginBottom = "5px";
+    document.getElementById("checkbox_matrix_item").style.marginTop = "13px";
+    document.getElementById("checkbox_matrix_location").style.marginTop = "13px";
+    document.getElementById("checkbox_matrix_time").style.marginTop = "13px";
+
     // set based on add or update and if the plate map has been assigned to a file-block
     let global_plate_number_file_block_sets = 0;
     try {
@@ -292,6 +298,7 @@ $(document).ready(function () {
     // when loading, what and how to load the plate
     // if add page, start with empty table (plate), if existing, pull from formsets
     if ($("#check_load").html() === 'add') {
+        document.getElementById("id_device").style.marginBottom = "5px";
         global_plate_size = 24;
         plateLabels("adding");
     } else {
@@ -310,6 +317,7 @@ $(document).ready(function () {
         //console.log("mypk: ", my_matrix_pk)
         removeFormsets();
         let matrix_size = 0;
+        // these come directly from the views.py for all the matrices...gets size of selected on (not from ajax call)
         let matrix_list_size_split_1 = $("#matrix_list_size").text().trim()
         let matrix_list_size_split = matrix_list_size_split_1.substring(1, matrix_list_size_split_1.length-1).split(", ");
         let matrix_list_pk_split_1 = $("#matrix_list_pk").text().trim()
@@ -324,6 +332,7 @@ $(document).ready(function () {
         //console.log("ms: ", matrix_size)
         $("#id_device").val(matrix_size);
         global_plate_size = $("#id_device").val();
+        //console.log("size in matrix select ", global_plate_size)
         getMatrixItemList();
     });
 
@@ -507,6 +516,7 @@ $(document).ready(function () {
     // make the basis for the plate map based on the plate size
     // call when page is loaded and, if add page, when plate size is changed
     function plateLabels(aore) {
+        //console.log("just in plateLables size ", global_plate_size)
         let size = global_plate_size;
         let row_labels = [];
         let col_labels = [];
@@ -1043,6 +1053,9 @@ $(document).ready(function () {
             which_change_number = which_change_number + 1;
         });
     }
+
+    // Activates Bootstrap tooltips
+    $('[data-toggle="tooltip"]').tooltip({container:"body", html: true});
 
     // functions for the tooltips
     function escapeHtml(html) {
