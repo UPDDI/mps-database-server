@@ -51,7 +51,6 @@
 
     <legend>Study Details</legend>
 
-    {% comment %}
     {% if form.group.errors %}
         {% for error in form.group.errors %}
             <div class="alert alert-danger" role="alert">
@@ -67,15 +66,8 @@
         <label for="group" class="col-sm-2 control-label">Group*</label>
         <div class="col-sm-10">
           {{ form.group }}
-
+          <span id="center_name"></span>
         </div>
-    </div>
-    {% endcomment %}
-
-    {% include 'generic_field.html' with field=form.group %}
-
-    <div>
-        <span id="center_name"></span>
     </div>
 
     {% if form.non_field_errors %}
@@ -108,7 +100,6 @@
 
     {% include 'generic_field.html' with field=form.name label="Study Name*" %}
 
-    {% comment %}
     {% if form.start_date.errors %}
         {% for error in form.start_date.errors %}
             <div class="alert alert-danger" role="alert">
@@ -135,15 +126,6 @@
           </div>
         </div>
     </div>
-    {% endcomment %}
-
-    {% include 'generic_field.html' with field=form.start_date %}
-
-    <div>
-        This date specifies when treatment of devices began
-        <br>
-        Format: [yyyy-mm-dd]
-    </div>
 
     {% include 'generic_field.html' with field=form.description label="Description" %}
 
@@ -159,7 +141,6 @@
         </div>
     </div>
 
-    {% comment %}
     {% if form.protocol.errors %}
         {% for error in form.protocol.errors %}
             <div class="alert alert-danger" role="alert">
@@ -184,19 +165,7 @@
             </div>
         </div>
     </div>
-    {% endcomment %}
 
-    {% include 'generic_field.html' with field=form.protocol %}
-
-    <div>
-        You can upload a file for this study's protocol.
-        <br>
-        The protocol should be <em>specific to this study</em> (i.e. not an MPS model protocol).
-        <br>
-        <b>Preferred Format: PDF</b>
-    </div>
-
-    {% comment %}
     {% if form.image.errors %}
         {% for error in form.image.errors %}
             <div class="alert alert-danger" role="alert">
@@ -219,9 +188,6 @@
             </p>
         </div>
     </div>
-    {% endcomment %}
-
-    {% include 'generic_field.html' with field=form.image %}
 
     <div id="image_display">
         <div id="current_display">
