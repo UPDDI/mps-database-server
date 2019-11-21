@@ -145,8 +145,8 @@
         </td>
     </tr>
     <tr>
-        <th>Supplier*</th>
-        <th>Lot*</th>
+        <th>Supplier</th>
+        <th>Lot</th>
         <th>Receipt Date</th>
     </tr>
     <tr>
@@ -248,7 +248,7 @@
             <td title="Use 'e' for scientific notation: 1e+3 = 1000">{{ form.cell_density }}</td>
             <td>
                 {{ form.cell_density_unit }}
-                {% include 'generic_popup_link.html' with field=form.cell_density_unit %}
+                {# {% include 'generic_popup_link.html' with field=form.cell_density_unit %} #}
             </td>
         </tr>
     </table>

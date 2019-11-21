@@ -45,17 +45,17 @@
 
     <legend>MPS Model</legend>
 
-    {% include 'generic_field.html' with field=form.name label="Model Name*" %}
+    {% include 'generic_field.html' with field=form.name %}
 
-    {% include 'generic_field.html' with field=form.alt_name label="Alternative Name" %}
+    {% include 'generic_field.html' with field=form.alt_name %}
 
-    {% include 'generic_field.html' with field=form.center label="Center*" %}
+    {% include 'generic_field.html' with field=form.center %}
 
-    {% include 'generic_field.html' with field=form.base_model label="Base Model" %}
+    {% include 'generic_field.html' with field=form.base_model %}
 
-    {% include 'generic_field.html' with field=form.organ label="Organ*" %}
+    {% include 'generic_field.html' with field=form.organ %}
 
-    {% include 'generic_field.html' with field=form.device label="Organ*" %}
+    {% include 'generic_field.html' with field=form.device %}
 
     {% comment %}
     {% if form.device.errors %}

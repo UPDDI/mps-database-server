@@ -290,11 +290,7 @@
                     <tr>
                         <td colspan="3">
                             {{ compound.compound }}
-                            {# Crude, special exception #}
-                            <a class="popup-link" data-href="{% url 'compounds-compound-add' %}?popup=1" data-window-name="compound">
-                                <span class="glyphicon glyphicon-plus text-success" aria-hidden="true"></span>
-                                Create New Compound
-                            </a>
+                            {% include 'generic_popup_link.html' with field=compound.compound %}
                         </td>
                     </tr>
                     <tr>
@@ -309,8 +305,8 @@
                             {{ compound.compound_instance }}
                         </td>
                     <tr>
-                        <th>Supplier*</th>
-                        <th>Lot*</th>
+                        <th>Supplier</th>
+                        <th>Lot</th>
                         <th>Receipt Date</th>
                     </tr>
                     <tr>
@@ -493,7 +489,7 @@
                         <td title="Use 'e' for scientific notation: 1e+3 = 1000">{{ cell.density }}</td>
                         <td>
                             {{ cell.density_unit }}
-                            {% include 'generic_popup_link.html' with field=cell.density_unit %}
+                            {# {% include 'generic_popup_link.html' with field=cell.density_unit %} #}
                         </td>
                     </tr>
                 </table>

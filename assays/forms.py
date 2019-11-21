@@ -591,6 +591,22 @@ class SetupFormsMixin(BootstrapForm):
         for current_field in add_required_to:
             self.fields[current_field].widget.attrs['class'] += ' required'
 
+            # Sloppy
+            if hasattr(self.fields[current_field], '_queryset'):
+                if hasattr(self.fields[current_field]._queryset, 'model'):
+                    # Usually one would use a hyphen rather than an underscore
+                    # self.fields[field].widget.attrs['data-app'] = self.fields[field]._queryset.model._meta.app_label
+                    self.fields[current_field].widget.attrs['data_app'] = self.fields[current_field]._queryset.model._meta.app_label
+
+                    # self.fields[field].widget.attrs['data-model'] = self.fields[field]._queryset.model._meta.object_name
+                    self.fields[current_field].widget.attrs['data_model'] = self.fields[current_field]._queryset.model._meta.object_name
+
+                    self.fields[current_field].widget.attrs['data_verbose_name'] = self.fields[current_field]._queryset.model._meta.verbose_name
+
+                    # Possibly dumber
+                    if hasattr(self.fields[current_field]._queryset.model, 'get_add_url_manager'):
+                        self.fields[current_field].widget.attrs['data_add_url'] = self.fields[current_field]._queryset.model.get_add_url_manager()
+
     ### ADDING SETUP CELLS
     cell_cell_sample = forms.IntegerField(required=False)
     cell_biosensor = forms.ModelChoiceField(
@@ -1164,6 +1180,25 @@ class AssaySetupCompoundInlineFormSet(BaseInlineFormSet):
                 form.fields['lot_text'].initial = current_compound_instance.lot
                 form.fields['receipt_date'].initial = current_compound_instance.receipt_date
 
+            # VERY SLOPPY
+            form.fields['compound'].widget.attrs['class'] += ' required'
+
+            current_field = 'compound'
+            if hasattr(form.fields[current_field], '_queryset'):
+                if hasattr(form.fields[current_field]._queryset, 'model'):
+                    # Usually one would use a hyphen rather than an underscore
+                    # form.fields[field].widget.attrs['data-app'] = form.fields[field]._queryset.model._meta.app_label
+                    form.fields[current_field].widget.attrs['data_app'] = form.fields[current_field]._queryset.model._meta.app_label
+
+                    # form.fields[field].widget.attrs['data-model'] = form.fields[field]._queryset.model._meta.object_name
+                    form.fields[current_field].widget.attrs['data_model'] = form.fields[current_field]._queryset.model._meta.object_name
+
+                    form.fields[current_field].widget.attrs['data_verbose_name'] = form.fields[current_field]._queryset.model._meta.verbose_name
+
+                    # Possibly dumber
+                    if hasattr(form.fields[current_field]._queryset.model, 'get_add_url_manager'):
+                        form.fields[current_field].widget.attrs['data_add_url'] = form.fields[current_field]._queryset.model.get_add_url_manager()
+
     # TODO THIS IS NOT DRY
     def save(self, commit=True):
         # Get forms_data (excluding those with delete or no data)
@@ -1732,7 +1767,11 @@ class AssayStudySetForm(SignOffMixin, BootstrapForm):
 
 class AssayReferenceForm(BootstrapForm):
 
-    query_term = forms.CharField(initial='', required=False)
+    query_term = forms.CharField(
+        initial='',
+        required=False,
+        label='PubMed ID / DOI'
+    )
 
     class Meta(object):
         model = AssayReference

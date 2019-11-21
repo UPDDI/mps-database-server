@@ -188,7 +188,7 @@ $(document).ready(function () {
     }
 
     // Crude: Triggers to spawn popups
-    $('.popup-link').click(function() {
+    $(document).on('click', '.popup-link', function() {
         window.open(
             $(this).attr('data-href'),
             $(this).attr('data-window-name'),
