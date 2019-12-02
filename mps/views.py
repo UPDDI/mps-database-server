@@ -126,7 +126,7 @@ def custom_search(request):
 
 def mps_help(request):
     c = {
-        ###'version': len(os.listdir(MEDIA_ROOT + '/excel_templates/')),
+        'version': len(os.listdir(MEDIA_ROOT + '/excel_templates/')),
         'glossary': Definition.objects.exclude(definition='')
     }
 

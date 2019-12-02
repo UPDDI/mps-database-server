@@ -15,7 +15,8 @@ WIDGETS_TO_ADD_FORM_CONTROL_TO = {
     "<class 'django.forms.widgets.Textarea'>": True,
     "<class 'django.forms.widgets.DateInput'>": True,
     "<class 'django.forms.widgets.Select'>": True,
-    "<class 'django.forms.widgets.NumberInput'>": True
+    "<class 'django.forms.widgets.NumberInput'>": True,
+    "<class 'django.forms.widgets.URLInput'>": True,
 }
 
 DATE_INPUT_WIDGET = "<class 'django.forms.widgets.DateInput'>"
@@ -90,7 +91,10 @@ class BootstrapForm(forms.ModelForm):
 
             # Crude way to indicate default
             if hasattr(self.fields[field], 'initial'):
-                self.fields[field].widget.attrs['data-default'] = self.fields[field].initial
+                if self.fields[field].initial:
+                    self.fields[field].widget.attrs['data-default'] = self.fields[field].initial
+                else:
+                    self.fields[field].widget.attrs['data-default'] = ''
 
 
 class SignOffMixin(BootstrapForm):

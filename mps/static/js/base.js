@@ -39,7 +39,7 @@ $(document).ready(function () {
         'onclick',
         "window.open('/help/"
         + anchor +
-        "','win','toolbars=0,width=1200,height=760,left=200,top=200,scrollbars=1,resizable=1')"
+        "','help','toolbars=0,width=1200,height=760,left=200,top=200,scrollbars=1,resizable=1')"
     );
 
     if (url.indexOf('/assaymatrix/') > -1) {
@@ -125,7 +125,7 @@ $(document).ready(function () {
         'onclick',
         "window.open('/help/" +
         anchor +
-        "','win','toolbars=0,width=1000,height=760,left=200,top=200,scrollbars=1,resizable=1')"
+        "','help','toolbars=0,width=1000,height=760,left=200,top=200,scrollbars=1,resizable=1')"
     );
 
     // Navbar select
