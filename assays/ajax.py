@@ -4217,6 +4217,9 @@ def make_clone(request, object_to_clone, special_handling=None, attributes_to_ch
         object_to_clone.protocol = None
         object_to_clone.image = None
 
+        # Get rid of repro_nums
+        object_to_clone.repro_nums = ''
+
     if attributes_to_change:
         for attribute, value in attributes_to_change.items():
             if hasattr(object_to_clone, attribute):
