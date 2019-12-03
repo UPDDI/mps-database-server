@@ -8,6 +8,8 @@ $(document).ready(function() {
     // Hide initially
     studies_table.hide();
 
+    var at_least_one_pie_chart = false;
+
     function reproPie() {
         studies_table.show();
 
@@ -50,6 +52,8 @@ $(document).ready(function() {
                         ['Acceptable', parseInt(pie[1])],
                         ['Poor', parseInt(pie[2])]
                     ]);
+
+                    at_least_one_pie_chart = true;
                 }
                 // else {
                 //     pieData = google.visualization.arrayToDataTable([
@@ -117,6 +121,13 @@ $(document).ready(function() {
                     'targets': [10]
                 }
             ],
+            initComplete: function() {
+                // CRUDE WAY TO DISCERN IF IS EDITABLE STUDIES / NO PIE CHARTS
+                if (!at_least_one_pie_chart) {
+                    // Hide the column for pie charts
+                    studies_table.DataTable().column(10).visible(false);
+                }
+            },
             drawCallback: function () {
                 // Show when done
                 studies_table.show('slow');
