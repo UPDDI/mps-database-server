@@ -876,6 +876,7 @@ def get_data_points_for_charting(
         percent_control,
         include_all,
         truncate_negative,
+        start_at_zero,
         dynamic_excluded,
         criteria=None,
         post_filter=None,
@@ -895,6 +896,7 @@ def get_data_points_for_charting(
     interval_type - the type of interval (std, ste, etc)
     percent_control - whether to use percent control (WIP)
     include_all - whether to include all values
+    start_at_zero - whether to start times at zero (study to study)
     dynamic_excluded - dic of data points to exclude
     study - supplied only if needed to get percent control values (validating data sets and so on)
     matrix_item - supplied only when data is for an individual matrix_item
@@ -912,6 +914,10 @@ def get_data_points_for_charting(
     use_key_discrimination = key == 'device'
 
     all_sample_locations = {}
+
+    # Find lowest time for each study
+    # study_id -> lowest_time
+    study_lowest_time = {}
 
     # Accommodation of "special" grouping
     group_sample_location = True
@@ -1164,6 +1170,12 @@ def get_data_points_for_charting(
             # Update all_sample_locations
             all_sample_locations.update({sample_location: True})
 
+            # Update the lowest time for each study
+            if time < study_lowest_time.get(raw.study_id, 2147483647):
+                study_lowest_time.update({
+                    raw.study_id: time
+                })
+
     # Nesting like this is a little sloppy, flat > nested
     for target, units in list(initial_data.items()):
         for unit, tags in list(units.items()):
@@ -1312,8 +1324,12 @@ def get_data_points_for_charting(
 
                             else:
                                 time = time_concentration
+                                adjusted_time = time_concentration - study_lowest_time.get(study_id)
 
                                 if not percent_control:
+                                    if start_at_zero:
+                                        time = adjusted_time
+
                                     all_values.setdefault(time, []).append(value)
                                     all_intervals.update({time: interval})
 
@@ -1326,6 +1342,9 @@ def get_data_points_for_charting(
 
                                     adjusted_value = (value / control_value) * 100
                                     adjusted_interval = (interval / control_value) * 100
+
+                                    if start_at_zero:
+                                        time = adjusted_time
 
                                     all_values.setdefault(time, []).append(adjusted_value)
                                     all_intervals.update({time: adjusted_interval})
@@ -1487,6 +1506,7 @@ def fetch_data_points(request):
         request.POST.get('percent_control', ''),
         request.POST.get('include_all', ''),
         request.POST.get('truncate_negative', ''),
+        request.POST.get('start_at_zero', ''),
         json.loads(request.POST.get('dynamic_excluded', '{}')),
         study=studies,
         matrix_item=matrix_item,
@@ -1564,6 +1584,7 @@ def validate_data_file(request):
             percent_control,
             include_all,
             truncate_negative,
+            start_at_zero,
             dynamic_quality,
             study=studies,
             new_data=True,
@@ -2879,6 +2900,7 @@ def fetch_data_points_from_filters(request):
                 request.POST.get('percent_control', ''),
                 request.POST.get('include_all', ''),
                 request.POST.get('truncate_negative', ''),
+                request.POST.get('start_at_zero', ''),
                 json.loads(request.POST.get('dynamic_excluded', '{}')),
                 study=studies,
                 matrix_item=matrix_item,
@@ -2978,6 +3000,7 @@ def fetch_data_points_from_study_set(request):
                 request.POST.get('percent_control', ''),
                 request.POST.get('include_all', ''),
                 request.POST.get('truncate_negative', ''),
+                request.POST.get('start_at_zero', ''),
                 json.loads(request.POST.get('dynamic_excluded', '{}')),
                 study=studies,
                 matrix_item=None,
