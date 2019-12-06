@@ -42,6 +42,7 @@ from assays.models import (
     AssayPlateReaderMapDataFile,
     AssayPlateReaderMapDataFileBlock,
     #AssayPlateReaderMapDataFileLine,
+    AssayCategory
 )
 from compounds.models import Compound, CompoundInstance, CompoundSupplier
 from microdevices.models import (
@@ -840,16 +841,27 @@ class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
     ### INCREMENTER
     compound_concentration_increment = forms.FloatField(required=False, initial=1)
-    compound_concentration_increment_type = forms.ChoiceField(choices=(
-        ('/', 'Divide'),
-        ('*', 'Multiply'),
-        ('+', 'Add'),
-        ('-', 'Subtract')
-    ), required=False)
-    compound_concentration_increment_direction = forms.ChoiceField(choices=(
-        ('lrd', 'Left to Right and Down'),
-        ('rlu', 'Right to Left and Up')
-    ), required=False)
+    compound_concentration_increment_type = forms.ChoiceField(
+        choices=(
+            ('/', 'Divide'),
+            ('*', 'Multiply'),
+            ('+', 'Add'),
+            ('-', 'Subtract')
+        ),
+        required=False
+    )
+    compound_concentration_increment_direction = forms.ChoiceField(
+        choices=(
+            ('lr', 'Left to Right'),
+            ('d', 'Down'),
+            ('rl', 'Right to Left'),
+            ('u', 'Up'),
+            ('lrd', 'Left to Right and Down'),
+            ('rlu', 'Right to Left and Up')
+        ),
+        required=False,
+        initial='lr'
+    )
 
     # Options for deletion
     delete_option = forms.ChoiceField(
@@ -2334,7 +2346,16 @@ class AssayMatrixFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         self.fields['test_type'].widget.attrs['style'] = 'width:100px;'
 
 
+# PLEASE NOTE CRUDE HANDLING OF m2m
 class AssayTargetForm(BootstrapForm):
+    # For adding to category m2m
+    category = forms.ModelMultipleChoiceField(
+        queryset=AssayCategory.objects.all().order_by('name'),
+        # Should this be required?
+        required=False,
+        # empty_label='All'
+    )
+
     class Meta(object):
         model = AssayTarget
         exclude = tracking
@@ -2343,8 +2364,41 @@ class AssayTargetForm(BootstrapForm):
             'description': forms.Textarea(attrs={'cols': 50, 'rows': 3}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super(AssayTargetForm, self).__init__(*args, **kwargs)
+
+        # Get category if possible
+        if self.instance:
+            self.initial_categories = AssayCategory.objects.filter(
+                targets__id=self.instance.id
+            )
+            self.fields['category'].initial = (
+                self.initial_categories
+            )
+
+    def save(self, commit=True):
+        new_target = super(AssayTargetForm, self).save(commit)
+
+        if commit and self.cleaned_data.get('category', None):
+            for current_category in self.cleaned_data.get('category', None):
+                current_category.targets.add(self.instance)
+
+            # Crude removal
+            for initial_category in self.initial_categories:
+                if initial_category not in self.cleaned_data.get('category', None):
+                    initial_category.targets.remove(self.instance)
+
+        return new_target
+
 
 class AssayMethodForm(BootstrapForm):
+    # For adding to category m2m
+    target = forms.ModelMultipleChoiceField(
+        queryset=AssayTarget.objects.all().order_by('name'),
+        # Needs to be required, methods need a target to be used
+        # required=False
+    )
+
     class Meta(object):
         model = AssayMethod
         exclude = tracking
@@ -2352,6 +2406,31 @@ class AssayMethodForm(BootstrapForm):
         widgets = {
             'description': forms.Textarea(attrs={'cols': 50, 'rows': 3}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super(AssayMethodForm, self).__init__(*args, **kwargs)
+
+        # Get target if possible
+        if self.instance:
+            self.initial_targets = AssayTarget.objects.filter(
+                methods__id=self.instance.id
+            )
+            self.fields['target'].initial = (
+                self.initial_targets
+            )
+
+    def save(self, commit=True):
+        new_method = super(AssayMethodForm, self).save(commit)
+
+        for current_target in self.cleaned_data.get('target', None):
+            current_target.methods.add(self.instance)
+
+        # Crude removal
+        for initial_target in self.initial_targets:
+            if initial_target not in self.cleaned_data.get('target', None):
+                initial_target.methods.remove(self.instance)
+
+        return new_method
 
 
 class PhysicalUnitsForm(BootstrapForm):

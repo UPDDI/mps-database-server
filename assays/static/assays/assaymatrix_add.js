@@ -614,13 +614,34 @@ $(document).ready(function () {
             current_value,
             increment_key,
             index,
-            number_of_items
+            number_of_items,
+            row,
+            first_row,
+            last_row,
+            column,
+            first_column,
+            last_column
     ) {
         var increment = incrementers[increment_key]['increment'].val();
         var increment_direction = incrementers[increment_key]['direction'].val();
         var increment_type = incrementers[increment_key]['type'].val();
 
-        if (increment_direction === 'rlu') {
+        if (increment_direction === 'lr') {
+            index = column - first_column;
+        }
+        else if (increment_direction === 'rl') {
+            index = (last_column - first_column) - (column - first_column);
+        }
+        else if (increment_direction === 'd') {
+            index = row - first_row;
+        }
+        else if (increment_direction === 'u') {
+            index = (last_row - first_row) - (row - first_row);
+        }
+        else if (increment_direction === 'lrd') {
+            index = index;
+        }
+        else if (increment_direction === 'rlu') {
             index = number_of_items - 1 - index;
         }
 
@@ -685,9 +706,17 @@ $(document).ready(function () {
 
         var number_of_items = $('.ui-selected').length;
 
+        var first_row = $('.ui-selected').first().attr('data-row-index');
+        var first_column = $('.ui-selected').first().attr('data-column-index');
+        var last_row = $('.ui-selected').last().attr('data-row-index');
+        var last_column = $('.ui-selected').last().attr('data-column-index');
+
         $('.ui-selected').each(function(index) {
             var current_item_id = $(this).attr(item_id_attribute);
             if (current_item_id) {
+                var row = $(this).attr('data-row-index');
+                var column = $(this).attr('data-column-index');
+
                 var new_form = generate_form(prefix);
 
                 // TODO PERHAPS THIS SHOULD BE IN values_to_inject ARG, but doesn't matter too much, would need to accomodate incrementer anyway
@@ -696,7 +725,18 @@ $(document).ready(function () {
                     var current_value = $(this).val();
                     // I BELIEVE I AM SAFE IN ASSUMING THAT ALL MY FORMS WILL JUST HAVE INPUT, NO SELECT OR WHATEVER
                     if (incrementers[field_name]) {
-                        current_value = default_incrementer(current_value, field_name, index, number_of_items);
+                        current_value = default_incrementer(
+                            current_value,
+                            field_name,
+                            index,
+                            number_of_items,
+                            row,
+                            first_row,
+                            last_row,
+                            column,
+                            first_column,
+                            last_column,
+                        );
                     }
                     new_form.find('input[name$="' + field_name + '"]').val(current_value);
                 });
@@ -716,7 +756,15 @@ $(document).ready(function () {
 
         var number_of_items = $('.ui-selected').length;
 
+        var first_row = $('.ui-selected').first().attr('data-row-index');
+        var first_column = $('.ui-selected').first().attr('data-column-index');
+        var last_row = $('.ui-selected').last().attr('data-row-index');
+        var last_column = $('.ui-selected').last().attr('data-column-index');
+
         $('.ui-selected').each(function(index) {
+            var row = $(this).attr('data-row-index');
+            var column = $(this).attr('data-column-index');
+
             var current_form = $('#' + item_prefix + '-' + $(this).attr(item_form_index_attribute));
             // console.log(current_form);
 
@@ -726,7 +774,18 @@ $(document).ready(function () {
                 var current_value = $(this).val();
                 // I BELIEVE I AM SAFE IN ASSUMING THAT ALL MY FORMS WILL JUST HAVE INPUT, NO SELECT OR WHATEVER
                 if (incrementers[field_name]) {
-                    current_value = default_incrementer(current_value, field_name, index, number_of_items);
+                    current_value = default_incrementer(
+                        current_value,
+                        field_name,
+                        index,
+                        number_of_items,
+                        row,
+                        first_row,
+                        last_row,
+                        column,
+                        first_column,
+                        last_column,
+                    );
                 }
 
                 var form_field_to_add_to = current_form.find('input[name$="' + field_name + '"]');
@@ -817,8 +876,19 @@ $(document).ready(function () {
         refresh_all_contents_from_forms();
     }
 
+    function programmatic_select(current_selection) {
+        $('.ui-selected').not(current_selection).removeClass('ui-selected').addClass('ui-unselecting');
+
+        current_selection.not('.ui-selected').addClass('ui-selecting');
+
+        matrix_table_selector.selectable('refresh');
+
+        matrix_table_selector.data('ui-selectable')._mouseStop(null);
+    }
+
     function apply_action_to_all() {
-        $(item_display_class).addClass('ui-selected');
+        // $(item_display_class).addClass('ui-selected');
+        programmatic_select($(item_display_class));
         matrix_add_content_to_selected();
     }
 
@@ -828,7 +898,8 @@ $(document).ready(function () {
         // Get the column index
         var row_index = $(this).attr('data-row-to-apply');
         // Add the ui-selected class to the column
-        $(item_display_class + '[data-row-index="' + row_index + '"]').addClass('ui-selected');
+        // $(item_display_class + '[data-row-index="' + row_index + '"]').addClass('ui-selected');
+        programmatic_select($($(item_display_class + '[data-row-index="' + row_index + '"]')));
         // Make the call
         matrix_add_content_to_selected();
     }
@@ -839,7 +910,8 @@ $(document).ready(function () {
         // Get the column index
         var column_index = $(this).attr('data-column-to-apply');
         // Add the ui-selected class to the column
-        $(item_display_class + '[data-column-index="' + column_index + '"]').addClass('ui-selected');
+        // $(item_display_class + '[data-column-index="' + column_index + '"]').addClass('ui-selected');
+        programmatic_select($(item_display_class + '[data-column-index="' + column_index + '"]'));
         // Make the call
         matrix_add_content_to_selected();
     }

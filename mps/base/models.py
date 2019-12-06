@@ -216,6 +216,7 @@ class FlaggableRestrictedModel(RestrictedModel):
         abstract = True
 
 
+# Unusual, crude way to deal with differenting update and add
 def save_forms_with_tracking(self, form, formset=None, update=False):
     """Save tracking data
     Params:
@@ -237,7 +238,9 @@ def save_forms_with_tracking(self, form, formset=None, update=False):
             form.instance.signed_off_by = None
             form.instance.signed_off_date = None
 
-        self.object = form.save(commit=False)
+        # Might as well just do a full save? Technically a double transaction, but should be okay (simplifies some problems when dealing with forms)
+        self.object = form.save()
+        # self.object = form.save(commit=False)
 
         # Else if Add
         if not update:
