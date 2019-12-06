@@ -86,6 +86,7 @@ six
 sqlparse
 # Statistical profiling
 statprof
+statsmodels
 # suds
 # Validation support for WSGI
 # wsgiref
@@ -117,3 +118,4 @@ django-registration
 # R
 rpy2
 sympy
+statsmodels

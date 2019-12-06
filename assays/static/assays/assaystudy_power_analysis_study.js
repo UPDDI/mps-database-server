@@ -18,16 +18,21 @@ $(document).ready(function () {
 
     var compounds_table_container = $('#compounds-table-container');
     var average_values_chart_selector = $('#values-vs-time-graph')[0];
+    var power_analysis_method_container = $('#power-analysis-method-container');
     var power_analysis_two_sample_container_selector = $('#two-sample-power-analysis-container');
     var power_analysis_one_sample_container_selector = $('#one-sample-power-analysis-container');
     var power_analysis_values_graph = $("#pa-value-graph")[0];
     var power_analysis_p_value_graph = $("#pa-p-value-graph")[0];
     var power_analysis_power_graph = $("#pa-power-graph")[0];
     var power_analysis_sample_size_graph = $("#pa-sample-size-graph")[0];
+
+    var one_sample_time_points_table_container = $('#one-sample-time-points-table-container')
     var one_sample_power_analysis_report_container = $("#one-sample-power-analysis-report");
     var one_sample_summary_table = $("#one-sample-summary-table");
     var one_sample_multi_graph = $("#one-sample-multi-graph")[0];
     var one_sample_power_analysis_container = $("#one-sample-power-analysis-container");
+    var one_sample_diff = $("#one-sample-diff");
+    var one_sample_percent = $("#one-sample-percent");
 
     var cohen_tooltip = "Cohen's D is the mean difference divided by the square root of the pooled variance.";
     var glass_tooltip = "Glass' Δ is the mean difference dividied by the standard deviation of the 'control' group.";
@@ -171,7 +176,7 @@ $(document).ready(function () {
             width: '5%'
         },
         {
-            title: "Time Points",
+            title: "Time (Days)",
             "render": function (data, type, row) {
                 return row.replace("Day ", "");
             },
@@ -179,32 +184,32 @@ $(document).ready(function () {
         }
     ];
 
-    // one_sample_time_points_table_columns = [
-    //     {
-    //         title: "Include",
-    //         "render": function (data, type, row, meta) {
-    //             if (type === 'display') {
-    //                 return '<input type="checkbox" class="big-checkbox one-sample-time-point-checkbox" data-time-point="'+ row[1] +'">';
-    //             }
-    //             return '';
-    //         },
-    //         "className": "dt-body-center",
-    //         "createdCell": function (td, cellData, rowData, row, col) {
-    //             if (cellData) {
-    //                 $(td).css('vertical-align', 'middle');
-    //             }
-    //         },
-    //         "sortable": false,
-    //         width: '5%'
-    //     },
-    //     {
-    //         title: "Time Points",
-    //         "render": function (data, type, row) {
-    //             return row[1];
-    //         },
-    //         "className": "dt-body-center",
-    //     }
-    // ];
+    one_sample_time_points_table_columns = [
+        {
+            title: "Include",
+            "render": function (data, type, row, meta) {
+                if (type === 'display') {
+                    return '<input type="checkbox" class="big-checkbox one-sample-time-point-checkbox" data-time-point="'+ row[1] +'">';
+                }
+                return '';
+            },
+            "className": "dt-body-center",
+            "createdCell": function (td, cellData, rowData, row, col) {
+                if (cellData) {
+                    $(td).css('vertical-align', 'middle');
+                }
+            },
+            "sortable": false,
+            width: '5%'
+        },
+        {
+            title: "Time (Days)",
+            "render": function (data, type, row) {
+                return row[1];
+            },
+            "className": "dt-body-center",
+        }
+    ];
 
     var sample_size_google_options = {
         // TOO SPECIFIC, OBVIOUSLY
@@ -470,62 +475,64 @@ $(document).ready(function () {
         var checkbox = $(this);
 
         // Hide One Sample Time Points Table if it exists
-        if ($('#one-sample-time-points-table_wrapper')) {
-            $('#one-sample-time-points-table_wrapper').hide();
+        if ($('one-sample-time-points-table-container')) {
+            $('one-sample-time-points-table-container').hide();
         }
         $(one_sample_power_analysis_container).hide();
 
+        // Adjust spacing of options
+        $("#power-analysis-options").removeClass("col-sm-offset-6");
+
         if ($('#power-analysis-options input[type="radio"][name="sample-num"]:checked').val() === 'two-sample') {
-            if (active_compounds_checkboxes < 3) {
-                if (checkbox.is(':checked')) {
-                    active_compounds_checkboxes += 1;
-                    if (active_compounds_checkboxes === 2) {
-                        $('.power-analysis-compounds-checkbox').each(function(){
-                            if (!this.checked) {
-                                $(this).parent().parent().hide();
-                            }
-                        });
-                        $('#power-analysis-button').attr('disabled', false);
-                    }
-                } else {
-                    active_compounds_checkboxes -= 1;
-                    if (active_compounds_checkboxes === 1) {
-                        $('.power-analysis-compounds-checkbox').each(function(){
-                            if (!this.checked) {
-                                $(this).parent().parent().show();
-                            }
-                        });
-                    }
-                    $('#power-analysis-button').attr('disabled', true);
+            if (checkbox.is(':checked')) {
+                active_compounds_checkboxes += 1;
+                if (active_compounds_checkboxes === 2) {
+                    $('.power-analysis-compounds-checkbox').each(function(){
+                        if (!this.checked) {
+                            $(this).parent().parent().hide();
+                        }
+                    });
+                    $('#power-analysis-button').attr('disabled', false);
                 }
+            } else {
+                active_compounds_checkboxes -= 1;
+                if (active_compounds_checkboxes === 1) {
+                    $('.power-analysis-compounds-checkbox').each(function(){
+                        if (!this.checked) {
+                            $(this).parent().parent().show();
+                        }
+                    });
+                }
+                $('#power-analysis-button').attr('disabled', true);
             }
         } else if ($('#power-analysis-options input[type="radio"][name="sample-num"]:checked').val() === 'one-sample') {
-            if (active_compounds_checkboxes < 2) {
-                if (checkbox.is(':checked')) {
-                    active_compounds_checkboxes += 1;
-                    if (active_compounds_checkboxes === 1) {
-                        $('.power-analysis-compounds-checkbox').each(function() {
-                            if (!this.checked) {
-                                $(this).parent().parent().hide();
-                            }
-                        });
-                        $('#power-analysis-button').attr('disabled', true);
-                        create_one_sample_content();
-                    }
-                } else {
-                    active_compounds_checkboxes -= 1;
-                    if (active_compounds_checkboxes === 0) {
-                        $('.power-analysis-compounds-checkbox').each(function() {
-                            if (!this.checked) {
-                                $(this).parent().parent().show();
-                            }
-                        });
-                    }
+            if (checkbox.is(':checked')) {
+                active_compounds_checkboxes += 1;
+                if (active_compounds_checkboxes === 1) {
+                    $('.power-analysis-compounds-checkbox').each(function() {
+                        if (!this.checked) {
+                            $(this).parent().parent().hide();
+                        }
+                    });
                     $('#power-analysis-button').attr('disabled', true);
+                    create_one_sample_content();
                 }
+            } else {
+                active_compounds_checkboxes -= 1;
+                if (active_compounds_checkboxes === 0) {
+                    $('.power-analysis-compounds-checkbox').each(function() {
+                        if (!this.checked) {
+                            $(this).parent().parent().show();
+                        }
+                    });
+                    // Adjust spacing of options
+                    $("#power-analysis-options").addClass("col-sm-offset-6");
+                    // Hide one sample timepoints table
+                    one_sample_time_points_table_container.hide();
+                }
+                $('#power-analysis-button').attr('disabled', true);
             }
         }
-
         empty_graph_containers();
     });
 
@@ -542,49 +549,53 @@ $(document).ready(function () {
         draw_power_vs_sample_size_chart();
     });
 
-    // // One Sample Time Point Table Checkbox click event
-    // $(document).on("click", ".one-sample-time-point-checkbox", function() {
-    //     var checkbox = $(this);
-    //     one_sample_time_point = checkbox.attr('data-time-point');
-    //     if (checkbox.is(':checked')) {
-    //         $('.one-sample-time-point-checkbox').each(function() {
-    //             if (!this.checked) {
-    //                 $(this).attr('disabled', true);
-    //             }
-    //         });
-    //         $('#power-analysis-button').attr('disabled', false);
-    //         $('#summary-time').text(one_sample_time_point);
-    //         var current_group = $('.power-analysis-group-checkbox:visible').first().attr('data-power-analysis-group');
-    //         var compound_only = $('.power-analysis-compounds-checkbox:visible').first().attr('data-power-analysis-compound');
-    //         var one_sample_data = JSON.parse(JSON.stringify(pass_to_power_analysis_dict[current_group][compound_only]));
-    //         var the_goods = [];
-    //         var mean, std;
-    //         remove_col(one_sample_data, 0);
-    //         remove_col(one_sample_data, 1);
-    //         remove_col(one_sample_data, 1);
-    //         for (var x = 0; x < one_sample_data.length; x++) {
-    //             if (one_sample_data[x][0] === one_sample_time_point * 1440) {
-    //                 the_goods.push(one_sample_data[x][1]);
-    //             }
-    //         }
-    //         mean = the_goods.reduce((a,b) => a+b)/(the_goods.length);
-    //         std = Math.sqrt(the_goods.map(x => Math.pow(x-mean,2)).reduce((a,b) => a+b)/(the_goods.length));
-    //         $('#summary-sample-number').text(the_goods.length);
-    //         $('#summary-mean').text(mean.toFixed(5));
-    //         $('#summary-std').text(std.toFixed(5));
-    //     } else {
-    //         $('.one-sample-time-point-checkbox').each(function() {
-    //             if ($(this).attr('disabled')) {
-    //                 $(this).attr('disabled', false);
-    //             }
-    //         });
-    //         $('#power-analysis-button').attr('disabled', true);
-    //         $('#summary-time').html('&nbsp;');
-    //         $('#summary-sample-number').html('&nbsp;');
-    //         $('#summary-mean').html('&nbsp;');
-    //         $('#summary-std').html('&nbsp;');
-    //     }
-    // });
+    // One Sample Time Point Table Checkbox click event
+    $(document).on("click", ".one-sample-time-point-checkbox", function() {
+        var checkbox = $(this);
+        one_sample_time_point = checkbox.attr('data-time-point');
+        if (checkbox.is(':checked')) {
+            $('.one-sample-time-point-checkbox').each(function() {
+                if (!this.checked) {
+                    $(this).attr('disabled', true);
+                }
+            });
+            $('#power-analysis-button').attr('disabled', false);
+            $('#summary-time').text(one_sample_time_point);
+            var current_group = $('.power-analysis-group-checkbox:visible').first().attr('data-power-analysis-group');
+            var compound_only = $('.power-analysis-compounds-checkbox:visible').first().attr('data-power-analysis-compound');
+            var one_sample_data = JSON.parse(JSON.stringify(pass_to_power_analysis_dict[current_group][compound_only]));
+            var the_goods = [];
+            var mean, std;
+            remove_col(one_sample_data, 0);
+            remove_col(one_sample_data, 1);
+            remove_col(one_sample_data, 1);
+            for (var x = 0; x < one_sample_data.length; x++) {
+                if (one_sample_data[x][0] === one_sample_time_point * 1440) {
+                    the_goods.push(one_sample_data[x][1]);
+                }
+            }
+            mean = the_goods.reduce((a,b) => a+b)/(the_goods.length);
+            std = Math.sqrt(the_goods.map(x => Math.pow(x-mean,2)).reduce((a,b) => a+b)/(the_goods.length));
+            $('#summary-sample-number').text(the_goods.length);
+            $('#summary-mean').text(mean.toFixed(3));
+            $('#summary-std').text(std.toFixed(3));
+        } else {
+            $('.one-sample-time-point-checkbox').each(function() {
+                if ($(this).attr('disabled')) {
+                    $(this).attr('disabled', false);
+                }
+            });
+            $('#power-analysis-button').attr('disabled', true);
+            $('#summary-time').html('&nbsp;');
+            $('#summary-sample-number').html('&nbsp;');
+            $('#summary-mean').html('&nbsp;');
+            $('#summary-std').html('&nbsp;');
+            $('#one-sample-diff').val('');
+            $('#one-sample-percent').val('');
+            $('#one-sample-size').val('');
+            $('#one-sample-power').val('0.8');
+        }
+    });
 
     function make_compounds_datatable(group_num){
         compounds_table = $('#compounds-table').DataTable({
@@ -961,14 +972,29 @@ $(document).ready(function () {
     // Handle changes to Sample Numbering type
     $('input[type=radio][name=sample-num]').change(function() {
         // Hide One Sample Time Points Table if it exists
-        if ($('#one-sample-time-points-table_wrapper')) {
-            $('#one-sample-time-points-table_wrapper').hide();
-        }
+        one_sample_time_points_table_container.hide();
         $(one_sample_power_analysis_container).hide();
+
+        // Clear One Sample Input Fields
+        $('#power-analysis-button').attr('disabled', true);
+        $('#summary-time').html('&nbsp;');
+        $('#summary-sample-number').html('&nbsp;');
+        $('#summary-mean').html('&nbsp;');
+        $('#summary-std').html('&nbsp;');
+        $('#one-sample-diff').val('');
+        $('#one-sample-percent').val('');
+        $('#one-sample-size').val('');
+        $('#one-sample-power').val('0.8');
+
+        // Hide One Sample Field Warning
+        $('#os-field-warning').hide();
+
+        // Adjust spacing of options
+        $("#power-analysis-options").removeClass("col-sm-offset-6");
 
         if (this.value == 'two-sample') {
             $('#power-analysis-button').attr('disabled', true);
-            $('#power-analysis-method').show();
+            power_analysis_method_container.show();
             $('#one-sample-time-points-table').hide();
             $('.power-analysis-compounds-checkbox').each(function(){
                 if (!this.checked) {
@@ -977,7 +1003,7 @@ $(document).ready(function () {
             });
         }
         else if (this.value == 'one-sample') {
-            $('#power-analysis-method').hide();
+            power_analysis_method_container.hide();
             $('#one-sample-time-points-table').show();
             $('#power-analysis-button').attr('disabled', true);
             if (active_compounds_checkboxes === 1) {
@@ -997,8 +1023,9 @@ $(document).ready(function () {
                         $(this).attr("checked", false);
                     }
                 });
+                // Adjust spacing of options
+                $("#power-analysis-options").addClass("col-sm-offset-6");
             }
-
             empty_graph_containers();
         }
     });
@@ -1018,22 +1045,6 @@ $(document).ready(function () {
             e.preventDefault();
         }
     });
-
-    // // Handle changes to one sample power level input
-    // $('#one-sample-power').change(function() {
-    //     one_sample_power = $('#one-sample-power').val();
-    //     if (one_sample_power < 0 || one_sample_power > 1 || one_sample_power == '') {
-    //         one_sample_power = 0.8;
-    //         $('#one-sample-power').val('0.8');
-    //     }
-    // });
-    //
-    // // Manage input to one sample power level input
-    // document.querySelector('#one-sample-power').addEventListener("keypress", function (e) {
-    //     if (e.key.length === 1 && e.key !== '.' && isNaN(e.key) && !e.ctrlKey && isNaN(e.key) && !e.metaKey || e.key === '.' && e.target.value.toString().indexOf('.') > -1) {
-    //         e.preventDefault();
-    //     }
-    // });
 
     // Pivot the Sample Size vs Power data
     function get_pivot_array(data_array, row_index, col_index, data_index) {
@@ -1135,44 +1146,86 @@ $(document).ready(function () {
     }
 
     // Generate table for selection of one-sample power analysis time points
-    // function create_one_sample_content() {
-    //     var current_group = $('.power-analysis-group-checkbox:visible').first().attr('data-power-analysis-group');
-    //     var compound_one_sample = $('.power-analysis-compounds-checkbox:visible').first().attr('data-power-analysis-compound');
-    //     var raw_time_points_data = pass_to_power_analysis_dict[current_group][compound_one_sample];
-    //     var one_sample_time_points_table_data = [];
-    //     var timepoints_present = {};
-    //     for (var x = 0; x < raw_time_points_data.length; x++) {
-    //         if (!timepoints_present[raw_time_points_data[x][1]/1440]) {
-    //             timepoints_present[raw_time_points_data[x][1]/1440] = true;
-    //             one_sample_time_points_table_data.push(['', raw_time_points_data[x][1]/1440]);
-    //         }
-    //     }
-    //
-    //     one_sample_time_points_table = $('#one-sample-time-points-table').DataTable({
-    //         data: one_sample_time_points_table_data,
-    //         columns: one_sample_time_points_table_columns,
-    //         paging: false,
-    //         searching: false,
-    //         info: false,
-    //         destroy: true,
-    //         "scrollY": "340px",
-    //         "order": [1, 'asc'],
-    //     });
-    //
-    //     // Reveal One Sample Time Points Table
-    //     if ($('#one-sample-time-points-table_wrapper')) {
-    //         $('#one-sample-time-points-table_wrapper').show();
-    //     }
-    //     $(one_sample_power_analysis_container).show();
-    // }
-    //
-    // $('#one-sample-diff').focus(function() {
-    //     $('#one-sample-percent').val('');
-    // });
-    //
-    // $('#one-sample-percent').focus(function() {
-    //     $('#one-sample-diff').val('');
-    // });
+    function create_one_sample_content() {
+        var current_group = $('.power-analysis-group-checkbox:visible').first().attr('data-power-analysis-group');
+        var compound_one_sample = $('.power-analysis-compounds-checkbox:visible').first().attr('data-power-analysis-compound');
+        var raw_time_points_data = pass_to_power_analysis_dict[current_group][compound_one_sample];
+        var one_sample_time_points_table_data = [];
+        var timepoints_present = {};
+        for (var x = 0; x < raw_time_points_data.length; x++) {
+            if (!timepoints_present[raw_time_points_data[x][1]/1440]) {
+                timepoints_present[raw_time_points_data[x][1]/1440] = true;
+                one_sample_time_points_table_data.push(['', raw_time_points_data[x][1]/1440]);
+            }
+        }
+
+        one_sample_time_points_table = $('#one-sample-time-points-table').DataTable({
+            data: one_sample_time_points_table_data,
+            columns: one_sample_time_points_table_columns,
+            paging: false,
+            searching: false,
+            info: false,
+            destroy: true,
+            "scrollY": "340px",
+            "order": [1, 'asc'],
+        });
+
+        // Reveal One Sample Time Points Table
+        one_sample_time_points_table_container.show();
+        one_sample_power_analysis_container.show();
+        one_sample_time_points_table.columns.adjust();
+    }
+
+    //TODO OS DIFFS
+    $('#one-sample-diff').blur(function() {
+        var mean = $('#summary-mean').text();
+        var diff = $('#one-sample-diff').val();
+        if ($.isNumeric(diff)) {
+            $('#one-sample-percent').val((diff / mean * 100).toFixed(3));
+        } else {
+            $('#one-sample-percent').val('');
+            $('#one-sample-diff').val('');
+        }
+    });
+
+    $('#one-sample-percent').blur(function() {
+        var mean = $('#summary-mean').text();
+        var perc = $('#one-sample-percent').val();
+        if ($.isNumeric(perc)) {
+            $('#one-sample-diff').val((mean * (perc * .01)).toFixed(3));
+        } else {
+            $('#one-sample-percent').val('');
+            $('#one-sample-diff').val('');
+        }
+    });
+
+    $('#one-sample-size').blur(function() {
+        if (!$.isNumeric($('#one-sample-size').val())) {
+            $('#one-sample-size').val('');
+        }
+    });
+
+    // Handle changes to one sample power level input
+    $('#one-sample-power').change(function() {
+        one_sample_power = $('#one-sample-power').val();
+        if (one_sample_power >= 1 || one_sample_power === 0) {
+            one_sample_power = 1;
+            $('#one-sample-power').val('0.8');
+        }
+    });
+
+    $('#one-sample-power').blur(function() {
+        if (!$.isNumeric($('#one-sample-power').val())) {
+            $('#one-sample-power').val('');
+        }
+    });
+
+    // Manage input to one sample power level input
+    document.querySelector('#one-sample-power').addEventListener("keypress", function (e) {
+        if (e.key.length === 1 && e.key !== '.' && isNaN(e.key) && !e.ctrlKey && isNaN(e.key) && !e.metaKey || e.key === '.' && e.target.value.toString().indexOf('.') > -1) {
+            e.preventDefault();
+        }
+    });
 
     function fetch_two_sample_power_analysis_results() {
         var current_group = $('.power-analysis-group-checkbox:visible').first().attr('data-power-analysis-group');
@@ -1255,48 +1308,154 @@ $(document).ready(function () {
             });
     }
 
-    // function fetch_one_sample_power_analysis_results() {
-    //     var current_group = $('.power-analysis-group-checkbox:visible').first().attr('data-power-analysis-group');
-    //     var compound_only = $('.power-analysis-compounds-checkbox:visible').first().attr('data-power-analysis-compound');
-    //
-    //     empty_graph_containers();
-    //
-    //     window.spinner.spin(
-    //         document.getElementById("spinner")
-    //     );
-    //
-    //     // NOTE: AJAX "success" and "error" are deprecated for 1.8, need to use "done" and "fail"
-    //     // Consider calling AJAX functions directly
-    //     $.ajax(
-    //             "/assays_ajax/",
-    //             {
-    //                 data: {
-    //                     call: 'fetch_one_sample_power_analysis_results',
-    //                     csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
-    //                     full_data: JSON.stringify(pass_to_power_analysis_dict[current_group][compound_only]),
-    //                     one_sample_compound: compound_only,
-    //                     sig: significance_level,
-    //                     one_sample_tp: one_sample_time_point,
-    //                     diff: one_sample_time_point,
-    //                     diff_percentage: one_sample_time_point,
-    //                     sample_size: one_sample_time_point,
-    //                     power: one_sample_time_point
-    //                 },
-    //                 type: 'POST',
-    //             }
-    //         )
-    //         .done(function(data) {
-    //             // Stop spinner
-    //             window.spinner.stop();
-    //
-    //             power_analysis_one_sample_container_selector.attr('hidden', false);
-    //         })
-    //         .fail(function(xhr, errmsg, err) {
-    //             // Stop spinner
-    //             window.spinner.stop();
-    //
-    //             alert('An error has occurred, please try different selections.');
-    //             console.log(xhr.status + ": " + xhr.responseText);
-    //         });
-    // }
+    function fetch_one_sample_power_analysis_results() {
+        var current_group = $('.power-analysis-group-checkbox:visible').first().attr('data-power-analysis-group');
+        var compound_only = $('.power-analysis-compounds-checkbox:visible').first().attr('data-power-analysis-compound');
+        var os_diff = $('#one-sample-diff').val();
+        var os_sample_size = $('#one-sample-size').val();
+        var os_power = $('#one-sample-power').val();
+
+        if ((os_power === '' && os_sample_size === '' && os_diff === '') || (os_power !== '' && os_sample_size !== '' && os_diff !== '')) {
+            $('#os-field-warning').show();
+            return;
+        } else {
+            $('#os-field-warning').hide();
+        }
+
+        empty_graph_containers();
+
+        window.spinner.spin(
+            document.getElementById("spinner")
+        );
+
+        // NOTE: AJAX "success" and "error" are deprecated for 1.8, need to use "done" and "fail"
+        // Consider calling AJAX functions directly
+        $.ajax(
+                "/assays_ajax/",
+                {
+                    data: {
+                        call: 'fetch_one_sample_power_analysis_results',
+                        csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
+                        full_data: JSON.stringify(pass_to_power_analysis_dict[current_group][compound_only]),
+                        one_sample_compound: compound_only,
+                        sig: significance_level,
+                        one_sample_tp: one_sample_time_point,
+                        os_diff: os_diff,
+                        os_sample_size: os_sample_size,
+                        os_power: os_power
+                    },
+                    type: 'POST',
+                }
+            )
+            .done(function(data) {
+                // Stop spinner
+                window.spinner.stop();
+
+                if (data.power_analysis_data.error) {
+                    console.log(data.power_analysis_data.error)
+                }
+                else if (Object.keys(data.power_analysis_data).length == 1) {
+                    if ("Differences" in data.power_analysis_data) {
+                        if (data.power_analysis_data.Differences == null) {
+
+                        } else {
+                            data.power_analysis_data.Differences = data.power_analysis_data.Differences.toFixed(3)
+                        }
+                        $(one_sample_multi_graph).html('<div class="well text-center"><br><br><br><h3>Differences</h3><br><h4>'+data.power_analysis_data.Differences+'</h4><br><br><br></div>');
+                    }
+                    else if ("Sample Size" in data.power_analysis_data) {
+                        if (data.power_analysis_data["Sample Size"] == null) {
+
+                        } else {
+                            data.power_analysis_data['Sample Size'] = data.power_analysis_data['Sample Size'].toFixed(3)
+                        }
+                        $(one_sample_multi_graph).html('<div class="well text-center"><br><br><br><h3>Sample Size</h3><br><h4>'+data.power_analysis_data['Sample Size']+'</h4><br><br><br></div>');
+                    }
+                    else if ("Power" in data.power_analysis_data) {
+                        if (data.power_analysis_data.Power == null) {
+
+                        } else {
+                            data.power_analysis_data.Power = data.power_analysis_data.Power.toFixed(3)
+                        }
+                        $(one_sample_multi_graph).html('<div class="well text-center"><br><br><br><h3>Power</h3><br><h4>'+data.power_analysis_data.Power+'</h4><br><br><br></div>');
+                    }
+                }
+                else {
+                    power_analysis_one_sample_container_selector.attr('hidden', false);
+
+                    data.power_analysis_data.data.unshift([data.power_analysis_data.columns[0], data.power_analysis_data.columns[1]]);
+
+                    var one_sample_chart_data = data.power_analysis_data.data;
+
+                    var title = ['Differences', 'Sample Size', 'Power'];
+                    title = title.filter(e => e !== data.power_analysis_data.columns[0] && e !== data.power_analysis_data.columns[1]);
+
+                    var one_sample_multi_graph_options = {
+                        title: title,
+                        interpolateNulls: true,
+                        titleTextStyle: {
+                            fontSize: 18,
+                            bold: true,
+                            underline: true
+                        },
+                        legend: {
+                            title: 'Time (Days)',
+                            position: 'top',
+                            maxLines: 5,
+                            textStyle: {
+                                bold: true
+                            }
+                        },
+                        hAxis: {
+                            // Begins empty
+                            title: data.power_analysis_data.columns[0],
+                            textStyle: {
+                                bold: true
+                            },
+                            titleTextStyle: {
+                                fontSize: 14,
+                                bold: true,
+                                italic: false
+                            },
+                            minValue: 0,
+                            scaleType: 'mirrorLog'
+                        },
+                        vAxis: {
+                            title: data.power_analysis_data.columns[1],
+                            format: '',
+                            textStyle: {
+                                bold: true
+                            },
+                            titleTextStyle: {
+                                fontSize: 14,
+                                bold: true,
+                                italic: false
+                            },
+                            // This doesn't seem to interfere with displaying negative values
+                            minValue: 0,
+                            viewWindowMode: 'explicit'
+                        },
+                        pointSize: 0,
+                        'chartArea': {
+                            'width': '90%',
+                            'height': '65%'
+                        },
+                        'height': 400,
+                        // Individual point tooltips, not aggregate
+                        focusTarget: 'datum',
+                    };
+
+                    one_sample_chart_data = google.visualization.arrayToDataTable(one_sample_chart_data);
+                    one_sample_graph = new google.visualization.LineChart(one_sample_multi_graph);
+                    one_sample_graph.draw(one_sample_chart_data, one_sample_multi_graph_options);
+                }
+            })
+            .fail(function(xhr, errmsg, err) {
+                // Stop spinner
+                window.spinner.stop();
+
+                alert('An error has occurred, please try different selections.');
+                console.log(xhr.status + ": " + xhr.responseText);
+            });
+    }
 });
