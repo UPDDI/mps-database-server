@@ -185,6 +185,8 @@ $(document).ready(function() {
         max_interpolation_size = $('#max_interpolation_size').val();
         initial_norm = $('#initial_norm').prop('checked') ? 1 : 0;
 
+        start_at_zero = $('#start_at_zero').prop('checked') ? 1 : 0;
+
         // Loading Piechart
         loadingPie();
 
@@ -345,6 +347,7 @@ $(document).ready(function() {
                     criteria: JSON.stringify(window.GROUPING.group_criteria),
                     post_filter: JSON.stringify(window.GROUPING.current_post_filter),
                     inter_level: inter_level,
+                    start_at_zero: start_at_zero,
                     max_interpolation_size: max_interpolation_size,
                     initial_norm: initial_norm,
                     csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken

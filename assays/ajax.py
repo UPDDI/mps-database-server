@@ -861,6 +861,7 @@ def get_data_points_for_charting(
         percent_control,
         include_all,
         truncate_negative,
+        start_at_zero,
         dynamic_excluded,
         criteria=None,
         post_filter=None,
@@ -880,6 +881,7 @@ def get_data_points_for_charting(
     interval_type - the type of interval (std, ste, etc)
     percent_control - whether to use percent control (WIP)
     include_all - whether to include all values
+    start_at_zero - whether to start times at zero (study to study)
     dynamic_excluded - dic of data points to exclude
     study - supplied only if needed to get percent control values (validating data sets and so on)
     matrix_item - supplied only when data is for an individual matrix_item
@@ -897,6 +899,10 @@ def get_data_points_for_charting(
     use_key_discrimination = key == 'device'
 
     all_sample_locations = {}
+
+    # Find lowest time for each study
+    # study_id -> lowest_time
+    study_lowest_time = {}
 
     # Accommodation of "special" grouping
     group_sample_location = True
@@ -1149,6 +1155,12 @@ def get_data_points_for_charting(
             # Update all_sample_locations
             all_sample_locations.update({sample_location: True})
 
+            # Update the lowest time for each study
+            if time < study_lowest_time.get(raw.study_id, 2147483647):
+                study_lowest_time.update({
+                    raw.study_id: time
+                })
+
     # Nesting like this is a little sloppy, flat > nested
     for target, units in list(initial_data.items()):
         for unit, tags in list(units.items()):
@@ -1297,8 +1309,12 @@ def get_data_points_for_charting(
 
                             else:
                                 time = time_concentration
+                                adjusted_time = time_concentration - study_lowest_time.get(study_id)
 
                                 if not percent_control:
+                                    if start_at_zero:
+                                        time = adjusted_time
+
                                     all_values.setdefault(time, []).append(value)
                                     all_intervals.update({time: interval})
 
@@ -1311,6 +1327,9 @@ def get_data_points_for_charting(
 
                                     adjusted_value = (value / control_value) * 100
                                     adjusted_interval = (interval / control_value) * 100
+
+                                    if start_at_zero:
+                                        time = adjusted_time
 
                                     all_values.setdefault(time, []).append(adjusted_value)
                                     all_intervals.update({time: adjusted_interval})
@@ -1472,6 +1491,7 @@ def fetch_data_points(request):
         request.POST.get('percent_control', ''),
         request.POST.get('include_all', ''),
         request.POST.get('truncate_negative', ''),
+        request.POST.get('start_at_zero', ''),
         json.loads(request.POST.get('dynamic_excluded', '{}')),
         study=studies,
         matrix_item=matrix_item,
@@ -1549,6 +1569,7 @@ def validate_data_file(request):
             percent_control,
             include_all,
             truncate_negative,
+            start_at_zero,
             dynamic_quality,
             study=studies,
             new_data=True,
@@ -1588,6 +1609,11 @@ def fetch_assay_study_reproducibility(request):
     unit_id_filter = request.POST.get('unit_id', '')
     sample_location_id_filter = request.POST.get('sample_location_id', '')
     method_id_filter = request.POST.get('method_id', '')
+    start_at_zero = request.POST.get('start_at_zero', '')
+
+    # Find lowest time for each study
+    # study_id -> lowest_time
+    study_lowest_time = {}
 
     # If chip data
     matrix_items = AssayMatrixItem.objects.filter(
@@ -1777,6 +1803,12 @@ def fetch_assay_study_reproducibility(request):
             point.matrix_item.organ_model.name: True
         })
 
+        # Update the lowest time for each study
+        if point.time < study_lowest_time.get(point.study_id, 2147483647):
+            study_lowest_time.update({
+                point.study_id: point.time
+            })
+
     repro_data.append([
         'Study ID',
         'Chip ID',
@@ -1787,10 +1819,15 @@ def fetch_assay_study_reproducibility(request):
     ])
 
     for point in data_points:
+        time = point.time
+
+        if start_at_zero:
+            time = point.time - study_lowest_time.get(point.study_id)
+
         repro_data.append([
             point.study.name,
             point.matrix_item.name,
-            point.time,
+            time,
             point.standard_value,
             point.data_group
         ])
@@ -2831,6 +2868,7 @@ def fetch_data_points_from_filters(request):
                 request.POST.get('percent_control', ''),
                 request.POST.get('include_all', ''),
                 request.POST.get('truncate_negative', ''),
+                request.POST.get('start_at_zero', ''),
                 json.loads(request.POST.get('dynamic_excluded', '{}')),
                 study=studies,
                 matrix_item=matrix_item,
@@ -2848,6 +2886,7 @@ def fetch_data_points_from_filters(request):
             inter_level = int(request.POST.get('inter_level', 1))
             max_interpolation_size = int(request.POST.get('max_interpolation_size', 2))
             initial_norm = int(request.POST.get('initial_norm', 0))
+            start_at_zero = request.POST.get('start_at_zero', 0)
 
             data = get_inter_study_reproducibility(
                 data_points,
@@ -2855,6 +2894,7 @@ def fetch_data_points_from_filters(request):
                 inter_level,
                 max_interpolation_size,
                 initial_norm,
+                start_at_zero,
                 criteria
             )
 
@@ -2930,6 +2970,7 @@ def fetch_data_points_from_study_set(request):
                 request.POST.get('percent_control', ''),
                 request.POST.get('include_all', ''),
                 request.POST.get('truncate_negative', ''),
+                request.POST.get('start_at_zero', ''),
                 json.loads(request.POST.get('dynamic_excluded', '{}')),
                 study=studies,
                 matrix_item=None,
@@ -2947,6 +2988,7 @@ def fetch_data_points_from_study_set(request):
             inter_level = int(request.POST.get('inter_level', 1))
             max_interpolation_size = int(request.POST.get('max_interpolation_size', 2))
             initial_norm = int(request.POST.get('initial_norm', 0))
+            start_at_zero = request.POST.get('start_at_zero', 0)
 
             data = get_inter_study_reproducibility(
                 data_points,
@@ -2954,6 +2996,7 @@ def fetch_data_points_from_study_set(request):
                 inter_level,
                 max_interpolation_size,
                 initial_norm,
+                start_at_zero,
                 criteria
             )
 
@@ -2973,6 +3016,7 @@ def get_inter_study_reproducibility(
         inter_level,
         max_interpolation_size,
         initial_norm,
+        start_at_zero,
         criteria
     ):
     # Organization is assay -> unit -> compound/tag -> field -> time -> value
@@ -3020,6 +3064,10 @@ def get_inter_study_reproducibility(
 
     sets_intra_points = {}
 
+    # Find lowest time for each study
+    # study_id -> lowest_time
+    study_lowest_time = {}
+
     # CRUDE
     if criteria:
         group_sample_location = 'sample_location' in criteria.get('special', [])
@@ -3048,6 +3096,15 @@ def get_inter_study_reproducibility(
     data_point_attribute_getter_base_values = tuple_attrgetter(*base_value_tuple)
     data_point_attribute_getter_current_values = tuple_attrgetter(*current_value_tuple)
 
+    # Bad
+    if start_at_zero:
+        for point in data_points:
+            # Update the lowest time for each study
+            if point.time < study_lowest_time.get(point.study_id, 2147483647):
+                study_lowest_time.update({
+                    point.study_id: point.time
+                })
+
     for point in data_points:
         point.standard_value = point.value
         item_id = point.matrix_item_id
@@ -3073,8 +3130,14 @@ def get_inter_study_reproducibility(
             sets_intra_points[current_group] = {}
         if study_name not in sets_intra_points[current_group]:
             sets_intra_points[current_group][study_name] = []
+
+        time = point.time
+
+        if start_at_zero:
+            time = point.time - study_lowest_time.get(point.study_id)
+
         sets_intra_points[current_group][study_name].append([
-            point.time,
+            time,
             point.value,
             point.matrix_item_id
         ])
@@ -3130,10 +3193,15 @@ def get_inter_study_reproducibility(
     final_chart_data = {}
 
     for point in data_points:
+        time = point.time
+
+        if start_at_zero:
+            time = point.time - study_lowest_time.get(point.study_id)
+
         inter_data.append([
             point.study.name,
             point.matrix_item.name,
-            point.time,
+            time,
             # NOTE USE OF STANDARD VALUE RATHER THAN VALUE
             point.standard_value,
             point.study.group.name,
@@ -3153,7 +3221,7 @@ def get_inter_study_reproducibility(
             legend, {}
         ).setdefault(
             # NOTE CONVERT TO DAYS
-            point.time / 1440.0, []
+            time / 1440.0, []
         ).append((point.standard_value, matrix_item_id_to_tooltip_string.get(point.matrix_item_id)))
 
         initial_chart_data.setdefault(
@@ -3164,7 +3232,7 @@ def get_inter_study_reproducibility(
             legend, {}
         ).setdefault(
             # NOTE CONVERT TO DAYS
-            point.time / 1440.0, []
+            time / 1440.0, []
         ).append(point.standard_value)
 
     for this_set, chart_groups in list(initial_chart_data.items()):
