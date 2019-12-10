@@ -310,7 +310,7 @@ $(document).ready(function () {
                     // SLOPPY
                     percent_control: $('#use_percent_control').prop('checked') ? true: '',
                     // Sloppy
-                    start_at_zero: $('#start_at_zero').prop('checked') ? 1 : 0,
+                    start_at_zero: $('#start_at_zero').prop('checked') ? 1 : '',
                 },
                 type: 'POST',
                 dataSrc: function(json) {
