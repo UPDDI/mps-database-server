@@ -308,7 +308,7 @@ $(document).ready(function () {
                     sample_location_id: $.urlParam('s'),
                     method_id: $.urlParam('m'),
                     // Sloppy
-                    start_at_zero: $('#start_at_zero').prop('checked') ? 1 : 0,
+                    start_at_zero: $('#start_at_zero').prop('checked') ? 1 : '',
                 },
                 type: 'POST',
                 dataSrc: function(json) {

@@ -80,6 +80,8 @@ $(document).ready(function() {
     var max_interpolation_size = $('#max_interpolation_size').val();
     var initial_norm = $('#initial_norm').prop('checked') ? 1 : 0;
 
+    var start_at_zero = $('#start_at_zero').prop('checked') ? 1 : '';
+
     var status_column_index = 14;
     var icc_column_index = 12;
 
@@ -128,6 +130,8 @@ $(document).ready(function() {
     var first_run = true;
 
     window.INTER_REPRO.show_repro = function() {
+        start_at_zero = $('#start_at_zero').prop('checked') ? 1 : '';
+
         // STUPID: CONTRIVED: BAD
         if (first_run && $.urlParam('p')) {
             var data = {
@@ -140,7 +144,8 @@ $(document).ready(function() {
                 post_filter: JSON.stringify(window.GROUPING.current_post_filter),
                 csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
                 // CONTRIVED
-                key: 'device'
+                key: 'device',
+                start_at_zero: start_at_zero
             };
 
             // Show spinner
@@ -184,8 +189,6 @@ $(document).ready(function() {
         inter_level = $('#inter_level_by_center').prop('checked') ? 1 : 0;
         max_interpolation_size = $('#max_interpolation_size').val();
         initial_norm = $('#initial_norm').prop('checked') ? 1 : 0;
-
-        start_at_zero = $('#start_at_zero').prop('checked') ? 1 : 0;
 
         // Loading Piechart
         loadingPie();
