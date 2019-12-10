@@ -1624,6 +1624,11 @@ def fetch_assay_study_reproducibility(request):
     unit_id_filter = request.POST.get('unit_id', '')
     sample_location_id_filter = request.POST.get('sample_location_id', '')
     method_id_filter = request.POST.get('method_id', '')
+    start_at_zero = request.POST.get('start_at_zero', '')
+
+    # Find lowest time for each study
+    # study_id -> lowest_time
+    study_lowest_time = {}
 
     use_percent_control = request.POST.get('percent_control', '')
 
@@ -1859,6 +1864,12 @@ def fetch_assay_study_reproducibility(request):
             point.matrix_item.organ_model.name: True
         })
 
+        # Update the lowest time for each study
+        if point.time < study_lowest_time.get(point.study_id, 2147483647):
+            study_lowest_time.update({
+                point.study_id: point.time
+            })
+
     repro_data.append([
         'Study ID',
         'Chip ID',
@@ -1871,10 +1882,16 @@ def fetch_assay_study_reproducibility(request):
     for point in data_points:
         # SLOPPY AND BAD
         if point.standard_value is not None:
+
+            time = point.time
+
+            if start_at_zero:
+                time = point.time - study_lowest_time.get(point.study_id)
+
             repro_data.append([
                 point.study.name,
                 point.matrix_item.name,
-                point.time,
+                time,
                 point.standard_value,
                 point.data_group
             ])
@@ -2918,6 +2935,7 @@ def fetch_data_points_from_filters(request):
             inter_level = request.POST.get('inter_level', 'center')
             max_interpolation_size = int(request.POST.get('max_interpolation_size', 2))
             initial_norm = int(request.POST.get('initial_norm', 0))
+            start_at_zero = request.POST.get('start_at_zero', 0)
 
             data = get_inter_study_reproducibility(
                 data_points,
@@ -2925,6 +2943,7 @@ def fetch_data_points_from_filters(request):
                 inter_level,
                 max_interpolation_size,
                 initial_norm,
+                start_at_zero,
                 criteria
             )
 
@@ -3018,6 +3037,7 @@ def fetch_data_points_from_study_set(request):
             inter_level = request.POST.get('inter_level', 'center')
             max_interpolation_size = int(request.POST.get('max_interpolation_size', 2))
             initial_norm = int(request.POST.get('initial_norm', 0))
+            start_at_zero = request.POST.get('start_at_zero', 0)
 
             data = get_inter_study_reproducibility(
                 data_points,
@@ -3025,6 +3045,7 @@ def fetch_data_points_from_study_set(request):
                 inter_level,
                 max_interpolation_size,
                 initial_norm,
+                start_at_zero,
                 criteria
             )
 
@@ -3044,6 +3065,7 @@ def get_inter_study_reproducibility(
         inter_level,
         max_interpolation_size,
         initial_norm,
+        start_at_zero,
         criteria
     ):
     # Organization is assay -> unit -> compound/tag -> field -> time -> value
@@ -3093,6 +3115,11 @@ def get_inter_study_reproducibility(
 
     group_to_center = {}
 
+    # Find lowest time for each study
+    # study_id -> lowest_time
+    study_lowest_time = {}
+
+
     # CRUDE
     if criteria:
         group_sample_location = 'sample_location' in criteria.get('special', [])
@@ -3120,6 +3147,15 @@ def get_inter_study_reproducibility(
 
     data_point_attribute_getter_base_values = tuple_attrgetter(*base_value_tuple)
     data_point_attribute_getter_current_values = tuple_attrgetter(*current_value_tuple)
+
+    # Bad
+    if start_at_zero:
+        for point in data_points:
+            # Update the lowest time for each study
+            if point.time < study_lowest_time.get(point.study_id, 2147483647):
+                study_lowest_time.update({
+                    point.study_id: point.time
+                })
 
     for point in data_points:
         center_or_group = point.study.group.name
@@ -3153,8 +3189,14 @@ def get_inter_study_reproducibility(
             sets_intra_points[current_group] = {}
         if study_name not in sets_intra_points[current_group]:
             sets_intra_points[current_group][study_name] = []
+
+        time = point.time
+
+        if start_at_zero:
+            time = point.time - study_lowest_time.get(point.study_id)
+
         sets_intra_points[current_group][study_name].append([
-            point.time,
+            time,
             point.value,
             point.matrix_item_id
         ])
@@ -3217,10 +3259,16 @@ def get_inter_study_reproducibility(
             center_or_group = group_to_center[point.study.group.name]
         # DON'T MAKE KLUDGES LIKE THE ABOVE PLEASE
 
+
+        time = point.time
+
+        if start_at_zero:
+            time = point.time - study_lowest_time.get(point.study_id)
+
         inter_data.append([
             point.study.name,
             point.matrix_item.name,
-            point.time,
+            time,
             # NOTE USE OF STANDARD VALUE RATHER THAN VALUE
             point.standard_value,
             center_or_group,
@@ -3241,7 +3289,7 @@ def get_inter_study_reproducibility(
             legend, {}
         ).setdefault(
             # NOTE CONVERT TO DAYS
-            point.time / 1440.0, []
+            time / 1440.0, []
         ).append((point.standard_value, matrix_item_id_to_tooltip_string.get(point.matrix_item_id)))
 
         initial_chart_data.setdefault(
@@ -3252,7 +3300,7 @@ def get_inter_study_reproducibility(
             legend, {}
         ).setdefault(
             # NOTE CONVERT TO DAYS
-            point.time / 1440.0, []
+            time / 1440.0, []
         ).append(point.standard_value)
 
     for this_set, chart_groups in list(initial_chart_data.items()):

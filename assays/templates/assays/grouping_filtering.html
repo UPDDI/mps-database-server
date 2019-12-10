@@ -751,15 +751,14 @@
 <div id="charting_sidebar_section">
     {% include "assays/chart_options.html" with chart_prefix='charts' %}
 </div>
-{% endif %}
-
-{% if repro == 'true' %}
+{% else %}
 <div id="repro_sidebar_section">
 <h3 class="text-center">
     <u>Reproducibility Properties</u>
 </h3>
 
 <ul class="list-unstyled components padded-bottom" id="repro_options_tables">
+    {% if repro == 'true' %}
     <li>
         <div class="well" id="inter_level">
             {# Subject to removal #}
@@ -795,6 +794,15 @@
         <div class="well" id="max_interpolation_size_section">
             <label for="max_interpolation_size">Maximum Interpolation Size</label>
             <input id="max_interpolation_size" class="form-control" type="number" value="2">
+        </div>
+    </li>
+    {% endif %}
+    <li>
+        <div class="well">
+            <label for="start_at_zero">
+                <input type="checkbox" name="start_at_zero" id="start_at_zero" />
+                Start Time Points at 0
+            </label>
         </div>
     </li>
 </ul>
