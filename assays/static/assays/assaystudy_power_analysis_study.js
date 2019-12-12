@@ -575,7 +575,7 @@ $(document).ready(function () {
                 }
             }
             mean = the_goods.reduce((a,b) => a+b)/(the_goods.length);
-            std = Math.sqrt(the_goods.map(x => Math.pow(x-mean,2)).reduce((a,b) => a+b)/(the_goods.length));
+            std = Math.sqrt(the_goods.map(x => Math.pow(x-mean,2)).reduce((a,b) => a+b)/(the_goods.length - 1));
             $('#summary-sample-number').text(the_goods.length);
             $('#summary-mean').text(mean.toFixed(3));
             $('#summary-std').text(std.toFixed(3));
@@ -1418,7 +1418,6 @@ $(document).ready(function () {
                                 italic: false
                             },
                             minValue: 0,
-                            scaleType: 'mirrorLog'
                         },
                         vAxis: {
                             title: data.power_analysis_data.columns[1],
