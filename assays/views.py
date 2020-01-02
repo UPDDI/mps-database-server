@@ -1377,24 +1377,14 @@ class AssayMatrixUpdate(StudyGroupMixin, UpdateView):
         # TODO SORTING CAN MAKE SURE THAT THE FORMS APPEAR IN THE RIGHT ORDER, BUT DECREASE PERFORMANCE
         compound_queryset = AssaySetupCompound.objects.filter(
             matrix_item__in=matrix_item_queryset
-        ).order_by(
-            'addition_time',
-            'compound_instance'
         )
 
         cell_queryset = AssaySetupCell.objects.filter(
             matrix_item__in=matrix_item_queryset
-        ).order_by(
-            'addition_time',
-            'cell_sample',
         )
 
         setting_queryset = AssaySetupSetting.objects.filter(
             matrix_item__in=matrix_item_queryset
-        ).order_by(
-            'addition_time',
-            'setting',
-            'unit'
         )
 
         if self.request.POST:
@@ -1537,24 +1527,14 @@ class AssayMatrixDetail(StudyGroupMixin, DetailView):
         # TODO SORTING CAN MAKE SURE THAT THE FORMS APPEAR IN THE RIGHT ORDER, BUT DECREASE PERFORMANCE
         compound_queryset = AssaySetupCompound.objects.filter(
             matrix_item__in=matrix_item_queryset
-        ).order_by(
-            'addition_time',
-            'compound_instance'
         )
 
         cell_queryset = AssaySetupCell.objects.filter(
             matrix_item__in=matrix_item_queryset
-        ).order_by(
-            'addition_time',
-            'cell_sample',
         )
 
         setting_queryset = AssaySetupSetting.objects.filter(
             matrix_item__in=matrix_item_queryset
-        ).order_by(
-            'addition_time',
-            'setting',
-            'unit'
         )
 
         context['item_formset'] = AssayMatrixItemFormSetFactory(
@@ -2772,24 +2752,14 @@ class AssayMatrixNew(StudyGroupMixin, UpdateView):
         # TODO SORTING CAN MAKE SURE THAT THE FORMS APPEAR IN THE RIGHT ORDER, BUT DECREASE PERFORMANCE
         compound_queryset = AssaySetupCompound.objects.filter(
             matrix_item__in=matrix_item_queryset
-        ).order_by(
-            'addition_time',
-            'compound_instance'
         )
 
         cell_queryset = AssaySetupCell.objects.filter(
             matrix_item__in=matrix_item_queryset
-        ).order_by(
-            'addition_time',
-            'cell_sample',
         )
 
         setting_queryset = AssaySetupSetting.objects.filter(
             matrix_item__in=matrix_item_queryset
-        ).order_by(
-            'addition_time',
-            'setting',
-            'unit'
         )
 
         if self.request.POST:
