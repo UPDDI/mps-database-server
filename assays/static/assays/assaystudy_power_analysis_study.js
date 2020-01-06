@@ -419,6 +419,7 @@ $(document).ready(function () {
         $(power_analysis_p_value_graph).empty();
         $(power_analysis_power_graph).empty();
         $(power_analysis_sample_size_graph).empty();
+        $(one_sample_multi_graph).empty();
         $('#time-points-table_wrapper').hide();
         $('#error-container').hide();
         avg_val_graph_check();
@@ -1208,9 +1209,9 @@ $(document).ready(function () {
     // Handle changes to one sample power level input
     $('#one-sample-power').change(function() {
         one_sample_power = $('#one-sample-power').val();
-        if (one_sample_power >= 1 || one_sample_power === 0) {
-            one_sample_power = 1;
-            $('#one-sample-power').val('0.8');
+        if (one_sample_power >= 1 || one_sample_power <= 0) {
+            //one_sample_power = 0.8;
+            $('#one-sample-power').val('');
         }
     });
 
@@ -1317,9 +1318,20 @@ $(document).ready(function () {
 
         if ((os_power === '' && os_sample_size === '' && os_diff === '') || (os_power !== '' && os_sample_size !== '' && os_diff !== '')) {
             $('#os-field-warning').show();
+            $('#os-field-warning-sample-size').hide();
+            empty_graph_containers();
             return;
         } else {
             $('#os-field-warning').hide();
+        }
+
+        if ((os_power === '' && os_sample_size !== '' && os_sample_size <2 && os_diff !== '') || (os_power !== '' && os_sample_size !== '' && os_sample_size <2 && os_diff === '') || (os_power === '' && os_sample_size <2 && os_diff === '')){
+            $('#os-field-warning-sample-size').show();
+            $('#os-field-warning').hide();
+            empty_graph_containers();
+            return;
+        } else {
+            $('#os-field-warning-sample-size').hide();
         }
 
         empty_graph_containers();

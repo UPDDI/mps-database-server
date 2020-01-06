@@ -2586,7 +2586,7 @@ def create_power_analysis_group_table(group_count, study_data):
 
 # One Sample Power Analysis
 def pa1_predict_sample_size_given_delta_and_power(delta, power, sig_level, sd):
-    if power > 0 and power < 1 and delta > 0 and sd != 0:
+    if power > sig_level and power < 1 and delta > 0 and sd != 0:
         es_value = delta/sd
         result = tt_solve_power(effect_size=es_value, nobs=None, alpha=sig_level, power=power, alternative='two-sided')
         if np.isscalar(result):
@@ -2612,7 +2612,7 @@ def pa1_predicted_power_given_delta_and_sample_size(delta, sample_size, sig_leve
 
 
 def pa1_predicted_delta_given_sample_size_and_power(sample_size, power, sig_level, sd):
-    if power > 0 and power < 1 and sample_size > 0 and sd != 0:
+    if power > sig_level and power < 1 and sample_size > 0 and sd != 0:
         result = tt_solve_power(effect_size=None, nobs=sample_size, alpha=sig_level, power=power, alternative='two-sided')
         if np.isscalar(result):
             delta = result * sd
@@ -2635,7 +2635,7 @@ def one_sample_power_analysis_calculation(sample_data, sig_level, differences, s
         if ~np.isnan(differences):
             if np.isnan(power) and np.isnan(sample_size):
                 pw_columns = ['Sample Size', 'Power']
-                sample_size_array = np.arange(2, 101, 0.2)  # Sample size is up to 100
+                sample_size_array = np.arange(2, 101, 0.1)  # Sample size is up to 100
                 power_analysis_result = pd.DataFrame(index=range(len(sample_size_array)), columns=pw_columns)
                 for i_size in range(len(sample_size_array)):
                     sample_size_loc=sample_size_array[i_size]
@@ -2644,10 +2644,10 @@ def one_sample_power_analysis_calculation(sample_data, sig_level, differences, s
                     power_analysis_result.iloc[i_size, 1] = power_value
 
         # Given sample size
-        if ~np.isnan(sample_size):
+        if ~np.isnan(sample_size) and sample_size >= 2:
             if np.isnan(differences) and np.isnan(power):
                 pw_columns = ['Differences', 'Power']
-                power_array = np.arange(0.01, 0.99, 0.01)  # power is between 0 and 1
+                power_array = np.arange(sig_level+0.01, 0.9999, 0.01)  # power is between 0 and 1
                 power_analysis_result = pd.DataFrame(index=range(len(power_array)), columns=pw_columns)
                 for i_size in range(len(power_array)):
                     power_loc = power_array[i_size]
@@ -2660,7 +2660,7 @@ def one_sample_power_analysis_calculation(sample_data, sig_level, differences, s
         if ~np.isnan(power):
             if np.isnan(differences) and np.isnan(sample_size):
                 pw_columns = ['Sample Size', 'Differences']
-                sample_size_array = np.arange(2, 101, 0.2)  # power is between 0 and 1
+                sample_size_array = np.arange(2, 101, 0.1)  # power is between 0 and 1
                 power_analysis_result = pd.DataFrame(index=range(len(sample_size_array)), columns=pw_columns)
                 for i_size in range(len(sample_size_array)):
                     sample_size_loc = sample_size_array[i_size]
@@ -2711,6 +2711,7 @@ def one_sample_power_analysis(one_sample_data,
     )
 
     power_group_data = power_group_data.dropna(subset=['Value'])
+
     # number of unique compounds
     compound_group = power_group_data[["Compound Treatment(s)"]]
     compound_unique_group = compound_group.drop_duplicates()
