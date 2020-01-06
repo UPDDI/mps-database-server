@@ -141,6 +141,12 @@ import pytz
 
 from django.apps import apps
 
+# File writing
+from io import BytesIO
+import xlsxwriter
+from assays.utils import DEFAULT_CSV_HEADER
+from mps.settings import TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX
+
 # TODO Refactor imports
 # TODO REFACTOR CERTAIN WHITTLING TO BE IN FORM AS OPPOSED TO VIEW
 # TODO Rename get_absolute_url when the function does not actually return the model's URL
@@ -1198,6 +1204,188 @@ class AssayStudyDelete(DeletionMixin, DeleteView):
     model = AssayStudy
     template_name = 'assays/assaystudy_delete.html'
     success_url = '/assays/assaystudy/'
+
+
+class AssayStudyTemplate(ObjectGroupRequiredMixin, DetailView):
+    model = AssayStudy
+
+    def render_to_response(self, context, **response_kwargs):
+        # The workbook is just in memory
+        current_output = BytesIO()
+        current_template = xlsxwriter.Workbook(current_output)
+
+        for assay_index, current_assay in enumerate(self.object.assaystudyassay_set.all()):
+            current_sheet = current_template.add_worksheet('Assay {}'.format(assay_index + 1))
+
+            # Set up formats
+            chip_red = current_template.add_format()
+            chip_red.set_bg_color('#ff6f69')
+            chip_green = current_template.add_format()
+            chip_green.set_bg_color('#96ceb4')
+
+            # Write the base files
+            # Some danger here, must change this and other template
+            initial = [
+                DEFAULT_CSV_HEADER,
+                [
+                    # Chip ID
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    # Target
+                    str(current_assay.target.name),
+                    None,
+                    # Method
+                    str(current_assay.method.name),
+                    # Sample
+                    None,
+                    None,
+                    # Value Unit
+                    str(current_assay.unit.unit),
+                    None,
+                    None,
+                    None,
+                    None
+                ]
+            ]
+
+            # Set the initial values
+
+            initial_format = [
+                [chip_red] * 17,
+                [
+                    chip_green,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    chip_green,
+                    None,
+                    chip_green,
+                    chip_green,
+                    None,
+                    chip_green,
+                    None,
+                    None,
+                    None,
+                    None
+                ]
+            ]
+
+            # Write out initial
+            for row_index, row in enumerate(initial):
+                for column_index, column in enumerate(row):
+                    cell_format = initial_format[row_index][column_index]
+                    current_sheet.write(row_index, column_index, column, cell_format)
+
+            # Set column widths
+            # Chip
+            current_sheet.set_column('A:A', 20)
+            current_sheet.set_column('B:B', 20)
+            current_sheet.set_column('C:C', 20)
+            current_sheet.set_column('D:D', 15)
+            current_sheet.set_column('E:E', 10)
+            current_sheet.set_column('F:F', 10)
+            current_sheet.set_column('G:G', 10)
+            current_sheet.set_column('H:H', 20)
+            current_sheet.set_column('I:I', 10)
+            current_sheet.set_column('J:J', 20)
+            current_sheet.set_column('K:K', 15)
+            current_sheet.set_column('L:L', 10)
+            current_sheet.set_column('M:M', 10)
+            current_sheet.set_column('N:N', 10)
+            current_sheet.set_column('O:O', 10)
+            current_sheet.set_column('P:P', 10)
+            current_sheet.set_column('Q:Q', 100)
+            # chip_sheet.set_column('I:I', 20)
+            # chip_sheet.set_column('J:J', 15)
+            # chip_sheet.set_column('K:K', 10)
+            # chip_sheet.set_column('L:L', 10)
+            # chip_sheet.set_column('M:M', 10)
+            # chip_sheet.set_column('N:N', 10)
+            # chip_sheet.set_column('O:O', 10)
+            # chip_sheet.set_column('P:P', 100)
+
+            current_sheet.set_column('BA:BD', 30)
+
+            # Get list of chip IDS for this study
+            chips = AssayMatrixItem.objects.filter(
+                study_id=self.object.id
+            ).order_by('name').values_list('name', flat=True)
+
+            # Get list of value units  (TODO CHANGE ORDER_BY)
+            value_units = PhysicalUnits.objects.filter(
+                availability__contains='readout'
+            ).order_by(
+                'base_unit__unit',
+                'scale_factor'
+            ).values_list('unit', flat=True)
+
+            # List of targets
+            targets = AssayTarget.objects.all().order_by(
+                'name'
+            ).values_list('name', flat=True)
+
+            # List of methods
+            methods = AssayMethod.objects.all().order_by(
+                'name'
+            ).values_list('name', flat=True)
+
+            # List of sample locations
+            sample_locations = AssaySampleLocation.objects.all().order_by(
+                'name'
+            ).values_list('name', flat=True)
+
+            for index, value in enumerate(chips):
+                current_sheet.write(index, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX + 4, value)
+
+            for index, value in enumerate(sample_locations):
+                current_sheet.write(index, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX + 3, value)
+
+            for index, value in enumerate(methods):
+                current_sheet.write(index, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX + 2, value)
+
+            for index, value in enumerate(value_units):
+                current_sheet.write(index, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX + 1, value)
+
+            for index, value in enumerate(targets):
+                current_sheet.write(index, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX, value)
+
+            chips_range = '=$BE$1:$BE$' + str(len(chips))
+
+            value_units_range = '=$BB$1:$BB$' + str(len(value_units))
+
+            targets_range = '=$BA$1:$BA$' + str(len(targets))
+            methods_range = '=$BC$1:$BC$' + str(len(methods))
+            sample_locations_range = '=$BD$1:$BD$' + str(len(sample_locations))
+
+
+            current_sheet.data_validation('A2', {'validate': 'list',
+                                       'source': chips_range})
+            current_sheet.data_validation('H2', {'validate': 'list',
+                                              'source': targets_range})
+            current_sheet.data_validation('J2', {'validate': 'list',
+                                       'source': methods_range})
+            current_sheet.data_validation('K2', {'validate': 'list',
+                                       'source': sample_locations_range})
+            current_sheet.data_validation('M2', {'validate': 'list',
+                                       'source': value_units_range})
+
+        current_template.close()
+
+        # Return
+        # Set response to binary
+        # For xlsx
+        response = HttpResponse(current_output.getvalue(), content_type='application/ms-excel')
+        response['Content-Disposition'] = 'attachment;filename="' + str(self.object) + '.xlsx"'
+
+        return response
 
 
 def get_cell_samples_for_selection(user, setups=None):
