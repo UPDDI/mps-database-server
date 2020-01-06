@@ -2368,7 +2368,7 @@ class AssayTargetForm(BootstrapForm):
         super(AssayTargetForm, self).__init__(*args, **kwargs)
 
         # Get category if possible
-        if self.instance:
+        if self.instance and self.instance.id:
             self.initial_categories = AssayCategory.objects.filter(
                 targets__id=self.instance.id
             )
@@ -2412,7 +2412,7 @@ class AssayMethodForm(BootstrapForm):
         super(AssayMethodForm, self).__init__(*args, **kwargs)
 
         # Get target if possible
-        if self.instance:
+        if self.instance and self.instance.id:
             self.initial_targets = AssayTarget.objects.filter(
                 methods__id=self.instance.id
             )
