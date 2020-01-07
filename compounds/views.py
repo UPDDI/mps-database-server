@@ -3,7 +3,7 @@ from .models import Compound, CompoundTarget
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 # from django.utils.decorators import method_decorator
 # from django.contrib.auth.decorators import login_required
-from mps.mixins import SpecificGroupRequiredMixin, FormHandlerMixin
+from mps.mixins import SpecificGroupRequiredMixin, FormHandlerMixin, OneGroupRequiredMixin, SuperuserRequiredMixin
 # from django.shortcuts import render_to_response
 # from django.template import RequestContext
 from .forms import (
@@ -82,12 +82,14 @@ class CompoundsMixin(FormHandlerMixin):
     )
 
 
-class CompoundsAdd(SpecificGroupRequiredMixin, CompoundsMixin, CreateView):
-    required_group_name = 'Add Compounds Front'
+class CompoundsAdd(OneGroupRequiredMixin, CompoundsMixin, CreateView):
+    # required_group_name = 'Add Compounds Front'
+    pass
 
 
-class CompoundsUpdate(SpecificGroupRequiredMixin, CompoundsMixin, UpdateView):
-    required_group_name = 'Change Compounds Front'
+class CompoundsUpdate(SuperuserRequiredMixin, CompoundsMixin, UpdateView):
+    # required_group_name = 'Change Compounds Front'
+    pass
 
 
 # Currently, compounds report basically begins as just a compounds list

@@ -37,6 +37,7 @@ from mps.mixins import (
     user_is_active,
     FormHandlerMixin,
     OneGroupRequiredMixin,
+    SuperuserRequiredMixin,
     CreatorOrSuperuserRequiredMixin,
     ListHandlerMixin,
     DetailHandlerMixin
@@ -67,12 +68,15 @@ class MicrodeviceMixin(FormHandlerMixin):
 
         return context
 
-class MicrodeviceAdd(SpecificGroupRequiredMixin, MicrodeviceMixin, CreateView):
-    required_group_name = 'Add Microdevices Front'
+class MicrodeviceAdd(OneGroupRequiredMixin, MicrodeviceMixin, CreateView):
+    # required_group_name = 'Add Microdevices Front'
+    pass
 
 
-class MicrodeviceUpdate(SpecificGroupRequiredMixin, MicrodeviceMixin, UpdateView):
-    required_group_name = 'Change Microdevices Front'
+# Exception
+class MicrodeviceUpdate(CreatorOrSuperuserRequiredMixin, MicrodeviceMixin, UpdateView):
+    # required_group_name = 'Change Microdevices Front'
+    pass
 
 
 class MicrodeviceList(ListView):
@@ -139,8 +143,9 @@ class OrganModelMixin(FormHandlerMixin):
             # return redirect('{}update/'.format(self.object.get_absolute_url()))
 
 
-class OrganModelAdd(SpecificGroupRequiredMixin, OrganModelMixin, CreateView):
-    required_group_name = 'Add Microdevices Front'
+class OrganModelAdd(OneGroupRequiredMixin, OrganModelMixin, CreateView):
+    # required_group_name = 'Add Microdevices Front'
+    pass
 
 
 # PLEASE NOTE THE SPECIAL dispatch
@@ -276,7 +281,7 @@ class ManufacturerAdd(OneGroupRequiredMixin, ManufacturerMixin, CreateView):
     pass
 
 
-class ManufacturerUpdate(CreatorOrSuperuserRequiredMixin, ManufacturerMixin, UpdateView):
+class ManufacturerUpdate(SuperuserRequiredMixin, ManufacturerMixin, UpdateView):
     pass
 
 
