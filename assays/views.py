@@ -106,7 +106,7 @@ from mps.mixins import (
     CreatorOrSuperuserRequiredMixin,
     FormHandlerMixin,
     ListHandlerMixin,
-    CreatorOrSuperuserRequiredMixin
+    SuperuserRequiredMixin
 )
 
 from mps.base.models import save_forms_with_tracking
@@ -2017,7 +2017,7 @@ class AssayStudySetUpdate(CreatorOrSuperuserRequiredMixin, AssayStudySetMixin, U
 #
 #
 # # TODO REFACTOR
-# class AssayStudySetUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
+# class AssayStudySetUpdate(SuperuserRequiredMixin, UpdateView):
 #     model = AssayStudySet
 #     template_name = 'assays/assaystudyset_add.html'
 #     form_class = AssayStudySetForm
@@ -2351,7 +2351,7 @@ class AssayReferenceDetail(DetailView):
     template_name = 'assays/assayreference_detail.html'
 
 
-# class AssayReferenceUpdate(CreatorOrSuperuserRequiredMixin, UpdateView):
+# class AssayReferenceUpdate(SuperuserRequiredMixin, UpdateView):
 #     model = AssayReference
 #     template_name = 'assays/assayreference_add.html'
 #     form_class = AssayReferenceForm
@@ -2555,7 +2555,7 @@ class AssayTargetAdd(OneGroupRequiredMixin, AssayTargetMixin, CreateView):
     pass
 
 
-class AssayTargetUpdate(CreatorOrSuperuserRequiredMixin, AssayTargetMixin, UpdateView):
+class AssayTargetUpdate(SuperuserRequiredMixin, AssayTargetMixin, UpdateView):
     pass
 
 
@@ -2598,7 +2598,7 @@ class AssayMethodAdd(OneGroupRequiredMixin, AssayMethodMixin, CreateView):
     pass
 
 
-class AssayMethodUpdate(CreatorOrSuperuserRequiredMixin, AssayMethodMixin, UpdateView):
+class AssayMethodUpdate(SuperuserRequiredMixin, AssayMethodMixin, UpdateView):
     pass
 
 
@@ -2662,7 +2662,7 @@ class PhysicalUnitsAdd(OneGroupRequiredMixin, PhysicalUnitsMixin, CreateView):
     pass
 
 
-class PhysicalUnitsUpdate(CreatorOrSuperuserRequiredMixin, PhysicalUnitsMixin, UpdateView):
+class PhysicalUnitsUpdate(SuperuserRequiredMixin, PhysicalUnitsMixin, UpdateView):
     pass
 
 
@@ -2691,7 +2691,7 @@ class AssayMeasurementTypeAdd(OneGroupRequiredMixin, AssayMeasurementTypeMixin, 
     pass
 
 
-class AssayMeasurementTypeUpdate(CreatorOrSuperuserRequiredMixin, AssayMeasurementTypeMixin, UpdateView):
+class AssayMeasurementTypeUpdate(SuperuserRequiredMixin, AssayMeasurementTypeMixin, UpdateView):
     pass
 
 
@@ -2712,7 +2712,7 @@ class AssaySampleLocationAdd(OneGroupRequiredMixin, AssaySampleLocationMixin, Cr
     pass
 
 
-class AssaySampleLocationUpdate(CreatorOrSuperuserRequiredMixin, AssaySampleLocationMixin, UpdateView):
+class AssaySampleLocationUpdate(SuperuserRequiredMixin, AssaySampleLocationMixin, UpdateView):
     pass
 
 
@@ -2731,7 +2731,7 @@ class AssaySettingAdd(OneGroupRequiredMixin, AssaySettingMixin, CreateView):
     pass
 
 
-class AssaySettingUpdate(CreatorOrSuperuserRequiredMixin, AssaySettingMixin, UpdateView):
+class AssaySettingUpdate(SuperuserRequiredMixin, AssaySettingMixin, UpdateView):
     pass
 
 
@@ -2752,7 +2752,7 @@ class AssaySupplierAdd(OneGroupRequiredMixin, AssaySupplierMixin, CreateView):
     pass
 
 
-class AssaySupplierUpdate(CreatorOrSuperuserRequiredMixin, AssaySupplierMixin, UpdateView):
+class AssaySupplierUpdate(SuperuserRequiredMixin, AssaySupplierMixin, UpdateView):
     pass
 
 
