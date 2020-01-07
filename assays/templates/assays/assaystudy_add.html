@@ -254,6 +254,15 @@
             To remove filtering by Assay Category for a row, click the Assay Category dropdown of interest and press backspace
     </p>
 
+    {# Add new #}
+    {% include 'generic_popup_link.html' with field=study_assay_formset.0.target %}
+    <br>
+    {% include 'generic_popup_link.html' with field=study_assay_formset.0.method %}
+    <br>
+    {% include 'generic_popup_link.html' with field=study_assay_formset.0.unit %}
+    <br>
+    <br>
+
     <a id="add_button-{{ study_assay_formset.prefix }}" class="btn btn-success" role="button">Add Assay</a>
     <table class="table table-striped inlines" id="{{ study_assay_formset.prefix }}-group"  name="assays">
         <thead>

@@ -1,3 +1,9 @@
+// Solving issues by adding to global scope is tasteless
+window.ASSAYS = {
+    // AJAX call and refresh relationships
+    refresh_assay_relationships: null
+};
+
 $(document).ready(function () {
     var group_selector = $('#id_group');
     var center_name_selector = $('#center_name');
@@ -104,24 +110,28 @@ $(document).ready(function () {
         }
     }
 
-    $.ajax({
-        url: "/assays_ajax/",
-        type: "POST",
-        dataType: "json",
-        data: {
-            call: 'fetch_assay_associations',
-            csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
-        },
-    })
-    .done(function (json) {
-        category_to_targets = json.category_to_targets;
-        target_to_methods = json.target_to_methods;
+    window.ASSAYS.refresh_assay_relationships = function() {
+        $.ajax({
+            url: "/assays_ajax/",
+            type: "POST",
+            dataType: "json",
+            data: {
+                call: 'fetch_assay_associations',
+                csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
+            },
+        })
+        .done(function (json) {
+            category_to_targets = json.category_to_targets;
+            target_to_methods = json.target_to_methods;
 
-        apply_filters_to_all_rows();
-    })
-    .fail(function (xhr, errmsg, err) {
-        console.log(xhr.status + ": " + xhr.responseText);
-    });
+            apply_filters_to_all_rows();
+        })
+        .fail(function (xhr, errmsg, err) {
+            console.log(xhr.status + ": " + xhr.responseText);
+        });
+    };
+
+    window.ASSAYS.refresh_assay_relationships();
 
     // MAKE SURE ALL INLINES FOR ASSAYS ARE SELECTED AND NOTHING ELSE, PLEASE
     // IDEALLY WOULD NOT TRIGGER ON UNIT CHANGE
