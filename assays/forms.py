@@ -407,9 +407,11 @@ class AssayStudyAssayInlineFormSet(BaseInlineFormSet):
 
         method_queryset = AssayMethod.objects.all().order_by('name')
 
-        unit_queryset = PhysicalUnits.objects.filter(
-            availability__icontains='readout'
-        ).order_by('unit_type__unit_type', 'base_unit__unit', 'scale_factor')
+        # unit_queryset = PhysicalUnits.objects.filter(
+        #     availability__icontains='readout'
+        # ).order_by('unit_type__unit_type', 'base_unit__unit', 'scale_factor')
+
+        unit_queryset = PhysicalUnits.objects.order_by('unit_type__unit_type', 'base_unit__unit', 'scale_factor')
 
         category_queryset = AssayCategory.objects.all().order_by('name')
 
