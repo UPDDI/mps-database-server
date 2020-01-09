@@ -2378,6 +2378,10 @@ class AssayTargetForm(BootstrapForm):
                 self.initial_categories
             )
 
+        # Sort the methods
+        # Would it be better to have this applied to all method queries?
+        self.fields['methods'].queryset = AssayMethod.objects.all().order_by('name')
+
     def save(self, commit=True):
         new_target = super(AssayTargetForm, self).save(commit)
 

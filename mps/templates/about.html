@@ -340,6 +340,31 @@ about/global_search.jpg
             </ul>
         </div>
 
+        <div id="anchor_recent_releases">&nbsp;</div>
+        <div id="about_recent_releases" class="padded-bottom large-padding-top">
+            <h1 class="sub1-bars">Recently Released Studies</h1>
+            <table hidden id="about_recently_released_studies_table" class="display">
+                <thead>
+                    <tr>
+                        <th>View</th>
+                        <th>Study Name</th>
+                        <th>Description</th>
+                        <th>Sign Off Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for study in recently_released_studies %}
+                    <tr>
+                        <td><a class="btn btn-primary" href="{% url 'assays-assaystudy-index' study.id %}">View</a></td>
+                        <td>{{ study.name }}</td>
+                        <td>{{ study.description }}</td>
+                        <td>{{ study.signed_off_date|date:"M d, Y" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
         <div id="anchor_releases">&nbsp;</div>
         <div id="about_releases" class="padded-bottom large-padding-top">
             <h1 class="sub1-bars">Scheduled Study Releases in Next {{ number_of_days }} Days</h1>
