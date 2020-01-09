@@ -67,6 +67,21 @@ $(document).ready(function () {
         responsive: true
     });
 
+    // Prefix of "about" more or less superfluous
+    $('#about_recently_released_studies_table').DataTable({
+        dom: 'B<"row">lfrtip',
+        displayLength: 10,
+        responsive: true,
+        order: [3, 'desc'],
+        columnDefs: [
+            {
+                visible: false,
+                sortable: false,
+                targets: [3]
+            }
+        ]
+    });
+
 /*    var about_models_and_centers_table = $('#about_models_and_centers_table').DataTable({
         dom: 'B<"row">lfrtip',
         "iDisplayLength": 10,
@@ -80,15 +95,22 @@ $(document).ready(function () {
         initComplete: function() {
             var initial_hash = window.location.hash;
             if (initial_hash) {
-                if (initial_hash === '#anchor_models_distinct') {
+                if (initial_hash === '#anchor_releases') {
                     $('html, body').animate({
-                        scrollTop: 2800
-                    }, 500);
-                } else if (initial_hash === '#anchor_faqs') {
+                        scrollTop: 3200
+                    }, 1000);
+                }
+                else if (initial_hash === '#anchor_models_distinct') {
                     $('html, body').animate({
-                        scrollTop: 3500
-                    }, 500);
-                } else {
+                        scrollTop: 4200
+                    }, 1000);
+                }
+                else if (initial_hash === '#anchor_faqs') {
+                    $('html, body').animate({
+                        scrollTop: 4800
+                    }, 1000);
+                }
+                else {
                     $('html, body').animate({
                         scrollTop: $(initial_hash).offset().top - offset
                     }, 500);

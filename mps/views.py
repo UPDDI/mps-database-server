@@ -228,10 +228,23 @@ def mps_about(request):
     for current_tuple, count in distinct_by_name_and_center.items():
         reduce_distinct_to_list.append([current_tuple[0], current_tuple[1], count])
 
+    # Get 25 studies that are public with the latest sign off
+    recently_released_studies = AssayStudy.objects.filter(
+        restricted=False
+    ).exclude(
+        signed_off_date__isnull=True
+    ).order_by(
+        '-signed_off_date'
+    )[:25]
+
+    for study in recently_released_studies:
+        study.released_on = study.signed_off_date + timedelta(days=365.2425)
+
     full_context = {
         'number_of_days': number_of_days,
         'about_studies': signed_off_restricted_studies,
         'about_models_distinct': reduce_distinct_to_list,
+        'recently_released_studies': recently_released_studies
     }
 
     return render(request, 'about.html', full_context)
