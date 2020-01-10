@@ -5,7 +5,7 @@ from django.views.generic import (
     DetailView,
     UpdateView,
     TemplateView,
-    DeleteView
+    DeleteView,
 )
 from django.http import HttpResponse
 from cellsamples.models import CellSample
@@ -53,6 +53,7 @@ from assays.forms import (
     AssayStudySupportingDataFormSetFactory,
     AssayStudyAssayFormSetFactory,
     AssayStudyReferenceFormSetFactory,
+    AssayStudyDeleteForm,
     AssayMatrixForm,
     AssayMatrixItemFullForm,
     AssayMatrixItemFormSetFactory,
@@ -1199,11 +1200,23 @@ class AssayStudyDataUpload(ObjectGroupRequiredMixin, UpdateView):
             return self.render_to_response(self.get_context_data(form=form))
 
 
-class AssayStudyDelete(DeletionMixin, DeleteView):
-    """Delete a Setup"""
+class AssayStudyDelete(CreatorOrSuperuserRequiredMixin, UpdateView):
+    """Soft Delete a Study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_delete.html'
     success_url = '/assays/assaystudy/'
+    form_class = AssayStudyDeleteForm
+
+    def form_valid(self, form):
+        # Check permissions again
+        if is_group_editor(self.request.user, self.object.group.name):
+            # Change the group
+            # CONTRIVED
+            self.object.modified_by = self.request.user
+            self.object.group_id = 21
+            self.object.save()
+
+        return redirect(self.success_url)
 
 
 class AssayStudyTemplate(ObjectGroupRequiredMixin, DetailView):
@@ -1753,7 +1766,7 @@ class AssayMatrixDetail(StudyGroupMixin, DetailView):
         return context
 
 
-class AssayMatrixDelete(DeletionMixin, DeleteView):
+class AssayMatrixDelete(CreatorOrSuperuserRequiredMixin, DeleteView):
     """Delete a Setup"""
     model = AssayMatrix
     template_name = 'assays/assaymatrix_delete.html'
@@ -1882,7 +1895,7 @@ class AssayMatrixItemDetail(StudyGroupMixin, DetailView):
     detail = True
 
 
-class AssayMatrixItemDelete(DeletionMixin, DeleteView):
+class AssayMatrixItemDelete(CreatorOrSuperuserRequiredMixin, DeleteView):
     """Delete a Setup"""
     model = AssayMatrixItem
     template_name = 'assays/assaymatrixitem_delete.html'

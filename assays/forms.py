@@ -1642,6 +1642,12 @@ AssayMatrixItemFormSetFactory = inlineformset_factory(
 )
 
 
+class AssayStudyDeleteForm(forms.ModelForm):
+    class Meta(object):
+        model = AssayStudy
+        fields = []
+
+
 class AssayStudySignOffForm(SignOffMixin, BootstrapForm):
     class Meta(object):
         model = AssayStudy
