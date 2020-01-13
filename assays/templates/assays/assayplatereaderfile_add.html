@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block load_js %}
+    <script src="{% static "assays/assayplatereaderfile_add.js" %}"></script>
+{% endblock %}
+
+{# only the add page uses this template, so do not have to make conditional #}
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/">Studies</a>
+    <li><a href="{{ form.instance.study.get_absolute_url }}">{{ form.instance.study }}</a></li>
+    <li><a href="{% url 'assayplatereaderfile-index' form.instance.study_id %}">Assay Plate Reader Files</a>
+    <li class="active">
+        Add
+    </li>
+{% endblock %}
+
+{# only the add page uses this template, so do not have to make conditional #}
+{% block content %}
+    <form class="form-horizontal" method="post" enctype="multipart/form-data">
+        <div class="padded-bottom">
+            {# title - structure of templates - HANDY #}
+            <div class="well">
+                <h1 class="text-center">
+                    <em><b>
+                    Add Assay Plate Reader Plate Map Data File
+                    </b></em>
+                    <br>
+                    <br>
+                    to Study {{ form.instance.study }}
+                    <br>
+                {% csrf_token %}
+                </h1>
+            </div>
+
+            {# pass to js file #}
+            <div>
+                {# need this in javascript to pass to ajax #}
+                <div class="hidden" id="this_study_id" >
+                    {{form.instance.study_id}}
+                </div>
+            </div>
+
+            {# main #}
+            <div>
+                <legend>Data File Upload</legend>
+
+                <label for="plate_reader_file" class="col-sm-2 control-label">Upload File</label>
+                <div class="col-sm-10">
+                    <input type="file" name="plate_reader_file" class="btn btn-primary btn-lg" id="id_plate_reader_file">
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h3><em>After choosing a file, click the Submit Button to attach the file to the study and continue.</em></h3>
+                    </div>
+                </div>
+            </div>
+
+            {# error handling #}
+            <div>
+                {% if form.errors %}
+                    <h2>List of Errors (form)</h2>
+                    {% for error in form.plate_reader_file.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                            <span class="sr-only">Error:</span>
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                            <span class="sr-only">Error:</span>
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                    <div class="form-group has-error">
+                {% else %}
+                    <div class="form-group">
+                {% endif %}
+                {% if form.errors %}
+                    </div>
+                {% else %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {# include error and submit #}
+            <div>
+                <div>
+                    {% if not review %}
+                        {% include "submit.html" with flag="y" creator=object.created_by.id %}
+                    {% endif %}
+                </div>
+
+                {% include 'errors.html' %}
+
+                {% comment %}            <h6>tracking begin</h6>
+                {% include 'tracking.html' %}
+                <h6>tracking end</h6>{% endcomment %}
+            </div>
+
+        </div>
+
+{#        <div class="hidden">#}
+{#            <h2>For Development Testing</h2>#}
+{#            For testing<br>#}
+{#            form.errors<br>#}
+{#            {{ form.errors }}<br>#}
+{#        </div>#}
+
+    </form>
+{% endblock %}
+

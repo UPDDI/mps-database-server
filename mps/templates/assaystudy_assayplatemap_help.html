@@ -1,0 +1,58 @@
+{# This is help information that can be shown on the plate map page (or other places, as needed) #}
+<div class="padded-bottom">
+    <h2>Assay Plate Reader Map - How Information is Accessed and Edited</h2>
+{#    <p> <b>Editable in this Assay Plate Map</b>  - <em>Editable in Study Setup, selected in Assay Plate Map</em> - not editable in GUI</p>#}
+    <table class="table table-striped table-bordered " >
+        <thead>
+            <tr role="row">
+                <th>One for Each Plate Map</th>
+                <th>One for Each Well in a Plate Map</th>
+                <th>One for Each File/Block For Each Well in a Plate Map </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr role="row">
+                <td> Plate Map Name <br>
+                     Plate Map Description <br>
+                     Plate Format (size) <br>
+                     Unit of Time (sample and sample collection) <br>
+                     Instrument Reader Unit (raw input file unit) <br>
+                     Volume Unit (sample volume and well volume) <br>
+                     Cell Count <br>
+                     Standard Method/Target/Unit (processed data unit)
+                </td>
+                <td> Study Matrix Item (chip) <br>
+                     Assay Well Label (A1, A2, etc.)<br>
+                     Well Content (sample, blank, empty, standard) <br>
+                     Sample Location <br>
+                     Dilution Factor <br>
+                     Sample Collection Volume <br>
+                     Sample Collection Time (duration over which volume was collected)<br>
+                     Plate Map Sample Time (used as default if no over write sample time given during file upload)
+                </td>
+                <td> Sample Time (copied from plate map sample time or from the overwrite sample time)<br>
+                     Raw Value (imported from file/block) <br>
+                     Adjusted Value (Raw Value - Average Trip Blanks) <br>
+                     Fitted Value (Calibrated value in units provided in Standard Method/Target/Unit) <br>
+                     Caution Flag <br>
+                     Excluded <br>
+                     Notes <br>
+                     Replicate Number<br>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+    <div >
+        <legend>Summary of the Important Information from the Table Above</legend>
+        <li>When an assay plate map is in use by more than one data file/block (some files may have more than one block of data), correctly understanding what gets updated is essential to correct data processing. </li>
+        <li>When samples are positioned the same way on an assay plate, and only the sample time is changing from file/block to file/block, the same assay plate map may be used for those file/blocks.</li>
+        <li>When samples are positioned the same way on an assay plate, but there are different dilution factors, sample volumes, or sample collection duration times from file/block to file/block, an assay plate map must be made for each (only the sample time can change from file/block to file/block to use the same plate map).</li>
+        <li>Plate map sample times are associated to a specific plate map should be set prior to file upload. The over write sample time is set during file upload.</li>
+        <li>Raw values (imported from the plate reader file) are associated to a specific file/block. Raw values cannot be edited in the plate map GUI. </li>
+        <li>A standard's Method/Target/Unit is assigned to a plate map. </li>
+        <li>Editing the Plate Map Sample Time AFTER file upload will not change the over write Sample Time saved during file upload.</li>
+        <li>Editing the sample location for a file/block in the plate map GUI will change the sample location for ALL file/blocks associated to the plate map.</li>
+    </div>
+</div>

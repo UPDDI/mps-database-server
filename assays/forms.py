@@ -42,7 +42,13 @@ from assays.models import (
     AssayPlateReaderMapDataFile,
     AssayPlateReaderMapDataFileBlock,
     #AssayPlateReaderMapDataFileLine,
-    AssayCategory
+    AssayCategory,
+    AssayPlateReaderMapDataProcessing,
+    assay_plate_reader_time_unit_choices,
+    assay_plate_reader_well_use_choices,
+    assay_plate_reader_map_info_plate_size_choices,
+    assay_plate_reader_volume_unit_choices,
+    assay_plate_reader_file_delimiter_choices,
 )
 from compounds.models import Compound, CompoundInstance, CompoundSupplier
 from microdevices.models import (
@@ -62,16 +68,17 @@ from .utils import (
     TIME_CONVERSIONS,
     # EXCLUDED_DATA_POINT_CODE,
     AssayFileProcessor,
-    PlateReaderMapDataFileAdd,
     get_user_accessible_studies,
 )
 from django.utils import timezone
 
 from mps.templatetags.custom_filters import is_group_admin, filter_groups, ADMIN_SUFFIX
 
-from django.core.exceptions import NON_FIELD_ERRORS
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 
 import ujson as json
+
+import os
 
 # TODO REFACTOR WHITTLING TO BE HERE IN LIEU OF VIEW
 # TODO REFACTOR FK QUERYSETS TO AVOID N+1
@@ -314,7 +321,7 @@ class DicModelChoiceField(forms.Field):
         return value
 
     def valid_value(self, value):
-        "Check to see if the provided value is a valid choice"
+        # "Check to see if the provided value is a valid choice"
         if str(value.id) in self.dic.get(self.name):
             return True
         return False
@@ -2500,23 +2507,29 @@ class AssaySupplierForm(BootstrapForm):
 
 ### ASSAY PLATE MAP START
 ##### monkey patch to display method target and unit combo as needed in the assay plate map page
+#####
+# sck - ASSAY PLATE MAP START
+
+
+# monkey patch to display method target and unit combo as needed in the assay plate map page
 class AbstractClassAssayStudyAssay(AssayStudyAssay):
     class Meta:
         proxy = True
 
     def __str__(self):
-        return '{0} by {1} ({2})'.format(self.target, self.method, self.unit)
+        return 'TARGET: {0}  METHOD: {1}  ({2})'.format(self.target, self.method, self.unit)
 
 
-##### Get info to populate pick lists; no qc needed on this form, just to use on webpage
+# Get info to populate pick lists; no qc needed on this form, just to use on webpage to allow user selections
 class AssayPlateReadMapAdditionalInfoForm(forms.Form):
-    """Form for Assay Plate Reader Map add extra info for dropdown"""
-    #initilize with the study_id as a kwarg
+    """Form for Assay Plate Reader Map add/update/view extra info for dropdowns that are just used in GUI (not saved)."""
+
     def __init__(self, *args, **kwargs):
         study_id = kwargs.pop('study_id', None)
         self.user = kwargs.pop('user', None)
         super(AssayPlateReadMapAdditionalInfoForm, self).__init__(*args, **kwargs)
-        # note that the non-selectized versions are manipulated in javascript, they are not displayed to the user
+        # note that the non-selectized versions are manipulated in javascript to facilitate the plate map
+        # they are not displayed to the user (they are hidden)
         self.fields['se_matrix_item'].queryset = AssayMatrixItem.objects.filter(study_id=study_id).order_by('name',)
         self.fields['ns_matrix_item'].queryset = AssayMatrixItem.objects.filter(study_id=study_id).order_by('name',)
         self.fields['ns_matrix_item'].widget.attrs.update({'class': 'no-selectize'})
@@ -2524,8 +2537,11 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
         self.fields['se_matrix'].queryset = AssayMatrix.objects.filter(
             study_id=study_id
         ).order_by('name',)
-        #self.fields['se_matrix'].widget.attrs.update({'class': 'no-selectize'})
         self.fields['se_matrix'].widget.attrs.update({'class': ' required'})
+        self.fields['se_platemap'].queryset = AssayPlateReaderMap.objects.filter(
+            study_id=study_id
+        ).order_by('name',)
+        self.fields['se_platemap'].widget.attrs.update({'class': ' required'})
 
     ns_matrix_item = forms.ModelChoiceField(
         queryset=AssayMatrixItem.objects.none(),
@@ -2539,11 +2555,15 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
         queryset=AssayMatrix.objects.none(),
         required=False,
     )
+    se_platemap = forms.ModelChoiceField(
+        queryset=AssayPlateReaderMap.objects.none(),
+        required=False,
+    )
     se_well_use = forms.ChoiceField(
-        choices=(('empty', 'Empty/Unused'), ('sample', 'Sample'), ('standard', 'Standard'), ('blank', 'Blank'))
+        choices=assay_plate_reader_well_use_choices
     )
     se_time_unit = forms.ChoiceField(
-        choices=(('day', 'Day'), ('hour', 'Hour'), ('minute', 'Minute'))
+        choices=assay_plate_reader_time_unit_choices
     )
     se_location = forms.ModelChoiceField(
          queryset=AssaySampleLocation.objects.all(),
@@ -2556,68 +2576,82 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
     se_increment_operation = forms.ChoiceField(
         choices=(('divide', 'Divide'), ('multiply', 'Multiply'), ('subtract', 'Subtract'), ('add', 'Add'))
     )
-
-    se_time = forms.DecimalField(
+    form_number_time = forms.DecimalField(
         required=False,
         initial=1,
     )
-    se_time.widget.attrs.update({'class': 'form-control'})
-
-    se_standard_value = forms.DecimalField(
+    form_number_time.widget.attrs.update({'class': 'form-control'})
+    form_number_default_time = forms.DecimalField(
+        required=False,
+        initial=1,
+    )
+    form_number_default_time.widget.attrs.update({'class': 'form-control'})
+    form_number_standard_value = forms.DecimalField(
         required=False,
         initial=0,
     )
-    se_standard_value.widget.attrs.update({'class': 'form-control'})
-
-    se_increment_value = forms.DecimalField(
+    form_number_standard_value.widget.attrs.update({'class': 'form-control'})
+    form_number_dilution_factor = forms.DecimalField(
+        required=False,
+        initial=1,
+    )
+    form_number_dilution_factor.widget.attrs.update({'class': 'form-control'})
+    form_number_collection_volume = forms.DecimalField(
         required=False,
         initial=0,
     )
-    se_increment_value.widget.attrs.update({'class': 'form-control'})
+    form_number_collection_volume.widget.attrs.update({'class': 'form-control'})
+    form_number_collection_time = forms.DecimalField(
+        required=False,
+        initial=0,
+    )
+    form_number_collection_time.widget.attrs.update({'class': 'form-control'})
+    form_number_increment_value = forms.DecimalField(
+        required=False,
+        initial=0,
+    )
+    form_number_increment_value.widget.attrs.update({'class': 'form-control'})
 
 
-##### Parent for plate reader map page
+# Parent for plate reader map page
 class AssayPlateReaderMapForm(BootstrapForm):
     """Form for Assay Plate Reader Map"""
 
     class Meta(object):
         model = AssayPlateReaderMap
-        fields = ['id', 'name', 'description', 'device', 'study_assay', 'time_unit', 'plate_reader_unit']
+        fields = [
+            # 'id', do not need in queryset
+            'name',
+            'description',
+            'device',
+            'study_assay',
+            'time_unit',
+            'volume_unit',
+            'cell_count',
+        ]
         widgets = {
             'description': forms.Textarea(attrs={'cols': 50, 'rows': 3}),
         }
 
     def __init__(self, *args, **kwargs):
-        my_test = kwargs.pop('extra', 0)
-        se_file_block = kwargs.pop('extra', 0)
-        ns_file_pk_block_pk = kwargs.pop('extra', 0)
-        # TODO sck note to self: still need to decide if will keep a template plate map
-        #  (where a set of items and values have NO file/block), or assign during first file upload
-        number_file_block_combos = kwargs.pop('extra', 0)
         self.study = kwargs.pop('study', None)
         self.user = kwargs.pop('user', None)
         super(AssayPlateReaderMapForm, self).__init__(*args, **kwargs)
 
-        # need this because, remember, the plate map doesn't come WITH a study, must tell it which
-        # not having this caused blank study_assay in the update page (add page worked okay)
+        # need these or get blank study_assay in the update page (add page worked okay without)
         if not self.study and self.instance.study:
             self.study = self.instance.study
-
         if self.study:
             self.instance.study = self.study
 
         my_instance = self.instance
-        #note that, if leave selectize on, will need to change js file $("#id_device").val(matrix_size);
-        self.fields['device'].widget.attrs['class'] += ' no-selectize'
-        self.fields['ns_file_pk_block_pk'].widget.attrs['class'] += ' no-selectize'
-        self.fields['name'].initial = "map-" + datetime.datetime.now().strftime ("%Y%m%d")+"-"+ datetime.datetime.now().strftime('%H:%M:%S')
 
-        #may need to revisit this later, do for now so ADD will work
-        self.fields['se_file_block'].required = False
-        self.fields['ns_file_pk_block_pk'].required = False
-        self.fields['number_file_block_combos'].required = False
-        self.fields['my_test'].required = False
-
+        # note that, if leave selectize on, will need to change js file $("#id_device").val(matrix_size);
+        # self.fields['device'].widget.attrs['class'] += ' no-selectize'
+        self.fields['name'].initial = "map-" + datetime.datetime.now().strftime("%Y%m%d")+"-"+datetime.datetime.now().strftime('%H:%M:%S')
+        self.fields['name'].widget.attrs['class'] += ' required'
+        self.fields['device'].widget.attrs['class'] += ' required'
+        self.fields['time_unit'].widget.attrs['class'] += ' required'
         self.fields['study_assay'].queryset = AbstractClassAssayStudyAssay.objects.filter(
             study_id=self.study
         ).prefetch_related(
@@ -2625,74 +2659,121 @@ class AssayPlateReaderMapForm(BootstrapForm):
             'method',
             'unit',
         )
+        self.fields['study_assay'].widget.attrs['class'] += ' required'
 
         ######
+        # START section to deal with raw data showing in the plate map after file assignment
         # this will populate a dropdown that lets the user pick which file block to see on the page
-        # note that, if one or more file blocks must be attached to the plate map to return something
-        # might revisit this if decide to handle empty templates. Here, they would just be ignored if they exist.
+        # note that, as of 20200111, there is one value set with null file
+        # So, only look for those that have a populated file block id
+        # get a record in the table with the plate index of 0 and that have a file block id
         as_value_formset = AssayPlateReaderMapItemValue.objects.filter(
             assayplatereadermap=my_instance.id
         ).filter(
             plate_index=0
         ).filter(
             assayplatereadermapdatafileblock__isnull=False
+        ).prefetch_related(
+            'assayplatereadermapdatafile',
+            'assayplatereadermapdatafileblock',
+        ).order_by(
+            'assayplatereadermapdatafileblock__id',
+            'plate_index',
         )
-        number_value_sets = len(as_value_formset)
-        self.fields['number_file_block_combos'].initial = number_value_sets
+        #
+        distinct_plate_map_with_select_string = []
+        distinct_plate_map_with_block_pk = []
+        number_filed_combos = len(as_value_formset)
 
-        distinct_plate_map = []
-        distinct_plate_map_pk = []
+        # queryset should have one record for each value SET that HAS a file-block associated to it
+        # make a choice list/field for the file-block combos for this plate map
+        if number_filed_combos > 0:
+            i = 0
+            for record in as_value_formset:
+                short_file_name = os.path.basename(str(record.assayplatereadermapdatafile.plate_reader_file))
+                data_block_label = str(record.assayplatereadermapdatafileblock.data_block)
+                data_block_metadata = record.assayplatereadermapdatafileblock.data_block_metadata
+                # data_file_id_str = str(record.assayplatereadermapdatafile.id)
+                data_file_block_id_str = str(record.assayplatereadermapdatafileblock.id)
+                # make a choice tuple list for showing selections and a choice tuple list of containing the file pk and block pk for javascript
+                pick_value = str(i)
+                pick_string = 'FILE: ' + short_file_name + ' BLOCK: ' + data_block_label + '  ' + data_block_metadata
+                # pick_string_pk = data_file_id_str + '-' + data_file_block_id_str
+                pick_string_block_pk = data_file_block_id_str
+                distinct_plate_map_with_select_string.append((pick_value, pick_string))
+                distinct_plate_map_with_block_pk.append((pick_value, pick_string_block_pk))
+                i = i + 1
 
-        # queryset should have one record for each value set that HAS a file-block associated to it
-        i = 0
-        for record in as_value_formset:
-            pick_value = str(i)
-            pick_string = record.assayplatereadermapdatafile.name + '-' + record.assayplatereadermapdatafileblock.name
-            pick_string_pk = str(record.assayplatereadermapdatafile.id) + '-' + str(record.assayplatereadermapdatafileblock.id)
-            distinct_plate_map.append((pick_value, pick_string))
-            distinct_plate_map_pk.append((pick_value, pick_string_pk))
-            i = i+1
+        # self.fields['ns_file_pk_block_pk'].widget.attrs['class'] += ' no-selectize'
+        self.fields['form_number_file_block_combos'].required = False
+        self.fields['form_number_file_block_combos'].initial = number_filed_combos
+        self.fields['se_block_select_string'].required = False
+        self.fields['se_block_select_string'].widget.attrs['class'] += ' required'
+        self.fields['se_block_select_string'].choices = distinct_plate_map_with_select_string
+        self.fields['ns_block_select_pk'].required = False
+        self.fields['ns_block_select_pk'].widget.attrs.update({'class': 'no-selectize'})
+        self.fields['ns_block_select_pk'].choices = distinct_plate_map_with_block_pk
 
-        self.fields['se_file_block'].choices = distinct_plate_map
-        self.fields['ns_file_pk_block_pk'].choices = distinct_plate_map_pk
-        self.fields['my_test'].initial = distinct_plate_map_pk
-        self.fields['device'].widget.attrs['class'] += ' required'
-        self.fields['name'].widget.attrs['class'] += ' required'
-        self.fields['time_unit'].widget.attrs['class'] += ' required'
-        self.fields['plate_reader_unit'].widget.attrs['class'] += ' required'
+    form_number_file_block_combos = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+    se_block_select_string = forms.ChoiceField()
+    ns_block_select_pk = forms.ChoiceField()
+    # END section to deal with raw data showing in the plate map after file assignment
 
-    se_file_block = forms.ChoiceField()
-    ns_file_pk_block_pk = forms.ChoiceField()
-    my_test = forms.CharField(widget=forms.TextInput())
-    number_file_block_combos = forms.CharField(widget=forms.TextInput())
+    # print("MAIN FORM")
 
-
-##### There should be a complete set of items for each saved plate map (one for each well in the selected plate)
+# There should be a complete set of items for each saved plate map (one for each well in the selected plate)
 class AssayPlateReaderMapItemForm(forms.ModelForm):
     """Form for Assay Plate Reader Map Item"""
 
     class Meta(object):
         model = AssayPlateReaderMapItem
-        exclude = tracking + ('study',)
+        # exclude = tracking + ('study',)
+        fields = [
+            # 'id', do not need
+            'matrix_item',
+            'location',
+            'name',
+            'row_index',
+            'column_index',
+            'plate_index',
+            'standard_value',
+            'dilution_factor',
+            'collection_volume',
+            'collection_time',
+            'default_time',
+            'well_use',
+        ]
 
-    # doing this here made the formsets selectized (override something of base formatting)...don't do it this way
-    # keep here for reference
+    # keep here for reference of what not to do if want form to be selectized
     # def __init__(self, *args, **kwargs):
     #     super(AssayPlateReaderMapItemForm, self).__init__(*args, **kwargs)
     #     self.fields['name'].widget.attrs.update({'class': ' no-selectize'})
 
 
-##### Item values are sets that correspond to items. Each set should have a match to a well in the plate map.
+# Item VALUES are sets that correspond to items. Each set should have a match to a well in the plate map.
+# If not file/blocks attached to plate map, will have one set of values (with one value for each item)
+# If one file/block attached to plate map, will have two sets of values (one for the file, one null file) etc.
 class AssayPlateReaderMapItemValueForm(forms.ModelForm):
     """Form for Assay Plate Reader Map Item Value"""
+
     class Meta(object):
         model = AssayPlateReaderMapItemValue
-        #exclude = tracking + ('study', )
-        fields = ['id', 'assayplatereadermapdatafile', 'assayplatereadermapdatafileblock', 'plate_index',
-                  'value', 'time', 'well_use', ]
+        # it is worth noting that there is a nuance to excluding or setting fields
+        # exclude = tracking + ('study', )
+        fields = [
+            # 'id', do not need
+            # 'assayplatereadermapdatafile', do not need
+            # 'assayplatereadermapitem', do not need
+            'assayplatereadermapdatafileblock',
+            'plate_index',
+            'raw_value',
+            'time',
+            'well_use',
+        ]
 
 
-##### Formset for items (custom_fields remove the select options for all the formsets - saves page load time)
+# Formset for items
+# IMPORTANT - custom_fields remove the select options for all the formsets - saves ALOT of page load time is long lists
 class AssayPlateReaderMapItemFormSet(BaseInlineFormSetForcedUniqueness):
     custom_fields = (
         'matrix_item',
@@ -2707,11 +2788,14 @@ class AssayPlateReaderMapItemFormSet(BaseInlineFormSetForcedUniqueness):
         if not self.study:
             self.study = self.instance.study
 
-        self.dic = get_dic_for_custom_choice_field(self)
-
+        # use the filter to get matrix items in this study ONLY - makes the dic much smaller
+        # this speed up the custom_fields
+        filters = {'matrix_item': {'study_id': self.study.id}}
+        self.dic = get_dic_for_custom_choice_field(self, filters=filters)
         for form in self.forms:
             for field in self.custom_fields:
                 form.fields[field] = DicModelChoiceField(field, self.model, self.dic)
+
             if self.study:
                 form.instance.study = self.study
             if form.instance.pk:
@@ -2719,31 +2803,29 @@ class AssayPlateReaderMapItemFormSet(BaseInlineFormSetForcedUniqueness):
             else:
                 form.instance.created_by = self.user
 
-
-##### Formset for item values (custom_fields remove the select options for all the formsets - saves page load time)
+# Formset for item values
 class AssayPlateReaderMapItemValueFormSet(BaseInlineFormSetForcedUniqueness):
-    # FUTURE PERFORMANCE NOTE: may need to add the file and block if performance gets slow because there are many in the database
     custom_fields = (
-        #'matrix_item',
-        'assayplatereadermapdatafile', 'assayplatereadermapdatafileblock',
+        'assayplatereadermapdatafileblock',
     )
 
     def __init__(self, *args, **kwargs):
-        # Get the study
         self.study = kwargs.pop('study', None)
         self.user = kwargs.pop('user', None)
         super(AssayPlateReaderMapItemValueFormSet, self).__init__(*args, **kwargs)
-        self.queryset = self.queryset.order_by('assayplatereadermapdatafile', 'assayplatereadermapdatafileblock', 'plate_index')
-        #https://stackoverflow.com/questions/13387446/changing-the-display-order-of-forms-in-a-formset
 
         if not self.study:
             self.study = self.instance.study
 
-        self.dic = get_dic_for_custom_choice_field(self)
+        # use the filter to get matrix items in this study ONLY - makes the dic much smaller
+        # this speed up the custom_fields
+        filters = {'assayplatereadermapdatafileblock': {'study_id': self.study.id}}
+        self.dic = get_dic_for_custom_choice_field(self, filters=filters)
 
         for form in self.forms:
             for field in self.custom_fields:
                 form.fields[field] = DicModelChoiceField(field, self.model, self.dic)
+
             if self.study:
                 form.instance.study = self.study
             if form.instance.pk:
@@ -2751,38 +2833,255 @@ class AssayPlateReaderMapItemValueFormSet(BaseInlineFormSetForcedUniqueness):
             else:
                 form.instance.created_by = self.user
 
-##### Formset factory for item and value
-#https://stackoverflow.com/questions/29881734/creating-django-form-from-more-than-two-models
+        # HANDY had this up before the self.forms loop, but needed to move it down to work
+        # self.queryset = self.queryset.order_by('assayplatereadermapdatafile', 'assayplatereadermapdatafileblock', 'plate_index')
+        # https://stackoverflow.com/questions/13387446/changing-the-display-order-of-forms-in-a-formset
+        self.queryset = self.queryset.order_by('assayplatereadermapdatafileblock', 'plate_index')
+
+
+# Formset factory for item and value
+# https://stackoverflow.com/questions/29881734/creating-django-form-from-more-than-two-models
 AssayPlateReaderMapItemFormSetFactory = inlineformset_factory(
     AssayPlateReaderMap,
     AssayPlateReaderMapItem,
     formset=AssayPlateReaderMapItemFormSet,
     form=AssayPlateReaderMapItemForm,
     extra=1,
-    #study is not needed and it adds overhead on load and save if included
     exclude=tracking + ('study',),
 )
+
+
 AssayPlateReaderMapItemValueFormSetFactory = inlineformset_factory(
     AssayPlateReaderMap,
     AssayPlateReaderMapItemValue,
     formset=AssayPlateReaderMapItemValueFormSet,
     form=AssayPlateReaderMapItemValueForm,
     extra=1,
-    #study is not needed and it adds overhead on load and save if included
     exclude=tracking + ('study',),
 )
-##### end plate reader map page
+# end plate reader map page
+#####
 
-##### Start plate reader file page
 
-##### Add a plate reader file to the study - in process
+#####
+# Start plate reader file page
+
+# Add a plate reader file to the study (just add the file and check the file extension, no data processing)
 class AssayPlateReaderMapDataFileAddForm(BootstrapForm):
     """Form for Plate Reader Data File Upload"""
     pass
 
-##### Parent for plate reader file page - not using yet - still in process
-class AssayPlateReaderMapDataFileUpdateForm(BootstrapForm):
-    """Form for Assay Plate Reader Map Data File """
-    pass
+    class Meta(object):
+        model = AssayPlateReaderMapDataFile
+        fields = ('plate_reader_file', )
 
-### ASSAY PLATE MAP END
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        self.study = kwargs.pop('study', None)
+        super(AssayPlateReaderMapDataFileAddForm, self).__init__(*args, **kwargs)
+
+        # need or blank study_assay in the update page (add page worked okay)
+        if not self.study and self.instance.study:
+            self.study = self.instance.study
+        if self.study:
+            self.instance.study = self.study
+
+    # check the file extension of the loaded file to make sure the user is not adding spreadsheet files
+    # https://medium.com/@literallywords/server-side-file-extension-validation-in-django-2-1-b8c8bc3245a0
+    def clean_plate_reader_file(self):
+        data = self.cleaned_data['plate_reader_file']
+        # Run file extension check
+        file_extension = os.path.splitext(data.name)[1]
+        if file_extension not in ['.csv', '.tsv', '.txt']:
+            if '.xl' in file_extension or '.wk' in file_extension or '.12' in file_extension:
+                raise ValidationError(
+                     "This appears to be an spreadsheet file. To upload, add ~blank to the first column below every block of data and export to a tab delimited file and try again.",
+                     code='invalid'
+                )
+            else:
+                raise ValidationError(
+                     "Invalid file extension - must be in ['.csv', '.tsv', '.txt']",
+                     code='invalid'
+                )
+        return data
+
+# UPDATE and VIEW (ADD is separate - above) - user routed here after adding a file to complete other needed info
+class AssayPlateReaderMapDataFileForm(BootstrapForm):
+    """Form for Assay Plate Reader Map Data File"""
+
+    class Meta(object):
+        model = AssayPlateReaderMapDataFile
+        fields = ['id', 'description', 'file_delimiter', 'upload_plate_size', 'plate_reader_file', ]
+        widgets = {
+            'description': forms.Textarea(attrs={'cols': 50, 'rows': 3}),
+            'upload_plate_size': forms.TextInput(attrs={'readonly': 'readonly',
+                                                 'style': 'border-style: none;',
+                                                 'style': 'background-color: transparent;'
+                                                        }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.study = kwargs.pop('study', None)
+        self.user = kwargs.pop('user', None)
+        # # ??
+        # filename_only = kwargs.pop('extra', 0)
+        super(AssayPlateReaderMapDataFileForm, self).__init__(*args, **kwargs)
+
+        # need this because, remember, the plate map doesn't come WITH a study, must tell it which
+        if not self.study and self.instance.study:
+            self.study = self.instance.study
+            # print("file form self.study ",self.study)
+        if self.study:
+            self.instance.study = self.study
+            # print("file form self.instance.study ",self.instance.study)
+
+        my_instance = self.instance
+        # print("file form my_instance ", my_instance)
+
+        # to display the file name without the whole path
+        form_filename_only = os.path.basename(str(my_instance.plate_reader_file))
+        self.fields['form_filename_only'].initial = form_filename_only
+
+    se_form_plate_size = forms.ChoiceField(
+        required=False,
+        choices=assay_plate_reader_map_info_plate_size_choices
+    )
+    form_number_blocks = forms.IntegerField(
+        required=False,
+        initial=1,
+    )
+    form_number_blank_columns = forms.IntegerField(
+        required=False,
+        initial=1,
+    )
+    form_filename_only = forms.CharField(
+        required=False,
+    )
+    # PI wants to select options for file processing
+    # Currently, the choices for file formats are HARDCODED here
+    # if we actually iron out the "sanctioned" file formats, these could go into a table and be available in the admin
+    # BUT, reading/processing of the format would still need to be build, so maybe better NOT to put in admin....
+
+    se_file_format_select = forms.ChoiceField(
+        required=False,
+        initial=0,
+        choices=(
+            (0,    'Select a File Format'),
+            (1, 'Softmax Pro 5.3 (Molecular Devices M5 Series)'),
+            # (2, 'Wallac EnVision Manager Version 1.12 (EnVision)'),
+            (9999, 'Auto Detect (Some Rules Apply)'),
+        )
+    )
+
+
+class AssayPlateReaderMapDataFileBlockForm(forms.ModelForm):
+    """Form for Assay Plate Reader Data File Block """
+
+    class Meta(object):
+        model = AssayPlateReaderMapDataFileBlock
+        # fields = ('id', 'data_block', 'data_block_metadata', 'line_start', 'line_end', 'delimited_start', 'delimited_end', 'over_write_sample_time', 'assayplatereadermap'])
+        exclude = tracking + ('study',)
+
+        # this could go in AssayPlateReaderMapDataFileBlockForm or AssayPlateReaderMapFileBlockFormSet
+        # but if do in formset, the widgets down get the form control!
+        # fields = ('id', 'data_block', 'data_block_metadata', 'line_start', 'line_end', 'delimited_start', 'delimited_end', 'over_write_sample_time', 'assayplatereadermap')
+        widgets = {
+            # 'form_selected_plate_map_time_unit': forms.TextInput(attrs={'readonly': 'readonly',
+            #                                                             'style': 'background-color: transparent;',
+            #                                                             }),
+            'data_block': forms.NumberInput(attrs={'readonly': 'readonly',
+                                                   # 'style': 'box-shadow:inset 0px, 0px 0px ;',
+                                                   # 'style': 'border-style: none;',
+                                                   # 'style': 'border-width: 0;',
+                                                   # 'style': 'border-color: transparent;',
+                                                   'style': 'background-color: transparent;',
+                                                   }),
+            'line_start': forms.NumberInput(attrs={'class': 'form-control'}),
+            'line_end': forms.NumberInput(attrs={'class': 'form-control'}),
+            'delimited_start': forms.NumberInput(attrs={'class': 'form-control'}),
+            'delimited_end': forms.NumberInput(attrs={'class': 'form-control'}),
+            'over_write_sample_time': forms.NumberInput(attrs={'class': 'form-control'}),
+            'data_block_metadata': forms.Textarea(attrs={'cols': 80, 'rows': 1, 'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        # Get the study
+        self.study = kwargs.pop('study', None)
+        self.user = kwargs.pop('user', None)
+        super(AssayPlateReaderMapDataFileBlockForm, self).__init__(*args, **kwargs)
+        # this made the dropdown behave when copied with the formset!
+        # SUPER IMPORTANT and HANDY when need to copy formsets with dropdowns - if have selectized, it is a big mess
+        self.fields['assayplatereadermap'].widget.attrs.update({'class': ' no-selectize'})
+
+    # move to the java script...it will be better for the user
+    # def clean(self):
+    #     # print("self",self)
+    #     # this goes through each formset and evaluates
+    #     # put things here that need to check before save
+    #     cleaned_data = self.cleaned_data
+    #
+    #     c_data_block = self.cleaned_data.get('data_block')
+    #     print('c_data_block ', c_data_block)
+    #     c_line_start = self.cleaned_data.get('line_start')
+    #     c_line_end = self.cleaned_data.get('line_end')
+    #     c_delimited_start = self.cleaned_data.get('delimited_start')
+    #     c_delimited_end = self.cleaned_data.get('delimited_end')
+    #
+    #     if c_data_block is not None:
+    #         if c_line_end < c_line_start:
+    #             raise forms.ValidationError("The line end ("+str(c_line_end)+") is less than or equal to the line start ("+str(c_line_start)+") in DATA BLOCK: "+str(c_data_block)+". That means no lines were selected. Fix it."
+    #                                         , code="invalid",)
+    #         if c_delimited_end < c_delimited_start:
+    #             raise forms.ValidationError("The column end is less than or equal to the column start in DATA BLOCK: "+str(c_data_block)+". That means no columns were selected. Fix it."
+    #                                         , code="invalid",)
+    #
+    #     return cleaned_data
+
+    # not currently using to limit what is removed from the map item table - consider added this feature later
+    form_changed_something_in_block = forms.IntegerField(
+        initial=0,
+        required=False,
+    )
+    form_selected_plate_map_time_unit = forms.CharField(
+        required=False,
+    )
+
+# formsets
+class AssayPlateReaderMapFileBlockFormSet(BaseInlineFormSetForcedUniqueness):
+
+    def __init__(self, *args, **kwargs):
+        # Get the study
+        self.study = kwargs.pop('study', None)
+        self.user = kwargs.pop('user', None)
+        super(AssayPlateReaderMapFileBlockFormSet, self).__init__(*args, **kwargs)
+
+        if not self.study:
+            self.study = self.instance.study
+
+        idx = 0
+        for formset in self.forms:
+            # print(idx, " forms.py AssayPlateReaderMapFileBlockFormSet ")
+            # print(formset)
+            # for field in self.custom_fields:
+            #     form.fields[field] = field
+            if self.study:
+                formset.instance.study = self.study
+            if formset.instance.pk:
+                formset.instance.modified_by = self.user
+            else:
+                formset.instance.created_by = self.user
+            idx = idx + 1
+
+
+AssayPlateReaderMapDataFileBlockFormSetFactory = inlineformset_factory(
+    AssayPlateReaderMapDataFile,
+    AssayPlateReaderMapDataFileBlock,
+    formset=AssayPlateReaderMapFileBlockFormSet,
+    form=AssayPlateReaderMapDataFileBlockForm,
+    extra=1,
+    exclude=tracking + ('study',),
+)
+
+
+# ASSAY PLATE MAP END
+#####

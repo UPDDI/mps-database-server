@@ -30,6 +30,10 @@ from .models import (
     attr_getter,
     tuple_attrgetter,
     get_split_times,
+    AssayPlateReaderMap,
+    AssayPlateReaderMapItem,
+    AssayPlateReaderMapItemValue,
+    AssayPlateReaderMapDataFile,
 )
 from microdevices.models import (
     MicrophysiologyCenter,
@@ -61,7 +65,9 @@ from .utils import (
     intra_status_for_inter,
     two_sample_power_analysis,
     one_sample_power_analysis,
-    create_power_analysis_group_table
+    create_power_analysis_group_table,
+    review_plate_reader_data_file_format,
+    get_the_plate_layout_info_for_assay_plate_map
 )
 
 import csv
@@ -77,6 +83,9 @@ from django.template.loader import render_to_string
 from mps.mixins import user_is_valid_study_viewer
 
 # from django.utils import timezone
+
+from django.db.models import Avg, Max, Min
+from django.db import connection
 
 import numpy as np
 from scipy.stats.mstats import gmean
@@ -4377,8 +4386,91 @@ def clone_study(request):
     )
 
 
-# plate map making the map from an existing matrix
+# sck - assay plate map - fetch information about matrix item setup
+def fetch_information_for_plate_map_matrix_item_setup(request):
+    """
+    Assay Plate Map - Getting the information for matrix item setup to display in plate map when clicked.
+    """
+
+    study_id = request.POST.get('study', '0')
+
+    if not study_id:
+        return HttpResponseServerError()
+
+    matrix_items = AssayMatrixItem.objects.filter(
+        study_id=study_id
+    # ).prefetch_related(
+    #     'matrix',
+    # ).order_by('matrix__name', 'name',
+    )
+
+    # for matrix_item in matrix_items:
+    #     print(matrix_item)
+    #     print(matrix_item.id)
+    #     print(matrix_item.name)
+    #     print(matrix_item.assaysetupcompound_set)
+    #     print(matrix_item.assaysetupcell_set)
+    #     print(matrix_item.assaysetupsetting_set)
+    #     print(matrix_item.stringify_compounds())
+    #     print(matrix_item.stringify_cells())
+    #     print(matrix_item.stringify_settings())
+    #     print(matrix_item.matrix.name)
+
+    data = {}
+    data_to_return = []
+
+    for each in matrix_items:
+        data_fields = {
+            'matrix_item_id': each.id,
+            'compound': each.stringify_compounds(),
+            'cell': each.stringify_cells(),
+            'setting': each.stringify_settings(),
+        }
+        data_to_return.append(data_fields)
+
+    data.update({'mi_list': data_to_return, })
+    return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+# sck - assay plate map - fetch information about plate layout by size
+def fetch_information_for_plate_map_layout(request):
+    """
+    Assay Plate Map All - Getting the information on how to layout a plate map based on plate size (calls utility).
+    """
+
+    plate_size = request.POST.get('plate_size', '0')
+
+    if not plate_size:
+        return HttpResponseServerError()
+
+    # this function is in utils.py
+    layout_info = get_the_plate_layout_info_for_assay_plate_map(plate_size)
+
+    # return from utils.py => [col_labels, row_labels, row_contents]
+    col_labels = layout_info[0]
+    row_labels = layout_info[1]
+    row_contents = layout_info[2]
+
+    data = {}
+    data_to_return = []
+
+    data_fields = {
+        'col_labels': col_labels,
+        'row_labels': row_labels,
+        'row_contents': row_contents,
+    }
+    data_to_return.append(data_fields)
+
+    data.update({'packed_lists': data_to_return, })
+    return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+# sck - assay plate map - start a plate map from an existing study matrix
 def fetch_assay_study_matrix_for_platemap(request):
+    """
+    Assay Plate Map Add - Start an assay plate map from an existing study matrix.
+    """
+
     this_study = request.POST.get('study', '0')
     this_matrix = request.POST.get('matrix', '0')
 
@@ -4387,7 +4479,6 @@ def fetch_assay_study_matrix_for_platemap(request):
 
     data = {}
     data_to_return = []
-    #data.update({ 'mi_list': [this_study, this_matrix], })
 
     this_queryset = AssayMatrixItem.objects.filter(
         study_id=this_study
@@ -4406,7 +4497,217 @@ def fetch_assay_study_matrix_for_platemap(request):
         }
         data_to_return.append(data_fields)
 
-    data.update({ 'mi_list': data_to_return, })
+    data.update({'mi_list': data_to_return, })
+    return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+# sck - assay plate map - start a plate map from an existing study plate map
+def fetch_assay_study_platemap_for_platemap(request):
+    """
+    Assay Plate Map Add - Start an assay plate map from an existing plate map.
+    """
+
+    this_study = request.POST.get('study', '0')
+    this_platemap = request.POST.get('platemap', '0')
+
+    # if not plate map was sent here, for some reason, or, if the platemap got corrupted and was non-numeric, exit
+    if not this_platemap:
+        return HttpResponseServerError()
+    elif not this_platemap.isnumeric():
+        return HttpResponseServerError()
+
+    this_queryset = AssayPlateReaderMapItem.objects.filter(
+        study_id=this_study
+    ).filter(
+        assayplatereadermap_id=this_platemap
+    ).prefetch_related(
+        'assayplatereadermap',
+    ).order_by('plate_index', 'pk', )
+
+    this_platemap = AssayPlateReaderMap.objects.filter(
+        id=this_platemap
+    )
+
+    data = {}
+    data_to_return = []
+
+    # may want to just send the plate map info once. quickest for now, but sends same info more than needed.
+    for my_map in this_platemap:
+        map_name = my_map.name
+        map_description = my_map.description
+        map_device = my_map.device
+        map_time_unit = my_map.time_unit
+        map_volume_unit = my_map.volume_unit
+        map_cell_count = my_map.cell_count
+        map_study_assay_id = my_map.study_assay_id
+
+    for each in this_queryset:
+        # print(each)
+        # fields = each.__dict__
+        # for field, value in fields.items():
+        #     print(field, value)
+        data_fields = {
+            'name': map_name,
+            'description': map_description,
+            'device': map_device,
+            'time_unit': map_time_unit,
+            'volume_unit': map_volume_unit,
+            'cell_count': map_cell_count,
+            'study_assay_id': map_study_assay_id,
+            'well_name': each.name,
+            'matrix_item_id': each.matrix_item_id,
+            'well_use': each.well_use,
+            'location_id': each.location_id,
+            'default_time': each.default_time,
+            'standard_value': each.standard_value,
+            'dilution_factor': each.dilution_factor,
+            'collection_volume': each.collection_volume,
+            'collection_time': each.collection_time
+        }
+
+        data_to_return.append(data_fields)
+        data.update({'platemap_info': data_to_return, })
+
+    return HttpResponse(json.dumps(data),
+                        content_type="application/json")
+
+
+# sck - Assay Plate Reader Upload Data File (for the UPDATE file form)
+def fetch_review_plate_reader_data_file(request):
+    """
+    Assay PLATE READER FILE UPDATE pull information when viewing or updating and existing plate map FILE (calls utility).
+    """
+
+    this_file_id = request.POST.get('this_file_id', '0')
+
+    this_file_format_selected = request.POST.get('this_file_format_selected', '0')
+    file_delimiter = request.POST.get('file_delimiter', '0')
+    form_plate_size = request.POST.get('form_plate_size', '0')
+    form_number_blocks = request.POST.get('form_number_blocks', '0')
+    form_number_blank_columns = request.POST.get('form_number_blank_columns', '0')
+    set_delimiter = request.POST.get('set_delimiter', '0')
+    set_plate_size = request.POST.get('set_plate_size', '0')
+    set_number_blocks = request.POST.get('set_number_blocks', '0')
+    set_number_blank_columns = request.POST.get('set_number_blocks', '0')
+
+    if not this_file_id:
+        return HttpResponseServerError()
+
+    set_dict = {}
+    set_dict.update({'file_delimiter': file_delimiter})
+    set_dict.update({'form_plate_size': form_plate_size})
+    set_dict.update({'form_number_blocks': form_number_blocks})
+    set_dict.update({'form_number_blank_columns': form_number_blank_columns})
+
+    set_dict.update({'set_delimiter': set_delimiter})
+    set_dict.update({'set_plate_size': set_plate_size})
+    set_dict.update({'set_number_blocks': set_number_blocks})
+    set_dict.update({'set_number_blank_columns': set_number_blank_columns})
+
+    set_dict.update({'this_file_format_selected': this_file_format_selected})
+
+    this_queryset = AssayPlateReaderMapDataFile.objects.get(
+        id=this_file_id
+    )
+
+    # using .read() used bytes, so changed to open()
+    # my_file_object = this_queryset.plate_reader_file.read().decode('utf-8')
+    # my_file_object = this_queryset.plate_reader_file.read()
+    my_file_object = this_queryset.plate_reader_file.open()
+
+    # this function is in utils.py
+    file_info = review_plate_reader_data_file_format(my_file_object, set_dict)
+
+    data = {}
+    data_fields = {}
+    data_to_return = []
+    idx = 1
+    # file_info is a list with a dictionary FOR EACH BLOCK (with the fields)
+    for each in file_info:
+        # print(each)
+        data_fields = {
+            'data_block': idx,
+            'data_block_metadata': each.get('data_block_metadata'),
+
+            'line_start': each.get('line_start'),
+            'line_end': each.get('line_end'),
+
+            'delimited_start': each.get('delimited_start'),
+            'delimited_end': each.get('delimited_end'),
+
+            'block_delimiter': each.get('block_delimiter'),
+            'plate_size': each.get('plate_size'),
+            'calculated_number_of_blocks': each.get('calculated_number_of_blocks'),
+            # 'calculated_number_of_blank_columns': each.get('calculated_number_of_blank_columns'),
+        }
+        data_to_return.append(data_fields)
+        idx = idx + 1
+
+    data.update({'file_block_info': data_to_return, })
+    return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+# sck - Assay Plate Reader Update Data File Blocks - Selected Plate Size
+def fetch_plate_reader_data_block_plate_map_size(request):
+    """
+        Assay PLATE READER FILE UPDATE return plate size of selected plate map.
+    """
+
+    platemap_id_stringify = request.POST.get('platemap_id_stringify', '0')
+    # print("platemap_id_stringify ", platemap_id_stringify)
+
+    if not platemap_id_stringify:
+        return HttpResponseServerError()
+
+    # print(platemap_id_stringify)
+    # print(type(platemap_id_stringify))
+    # print(len(platemap_id_stringify))
+    platemap_id_stringify1 = platemap_id_stringify[1:]
+    platemap_id_stringify2 = platemap_id_stringify1[:-1]
+    # print(platemap_id_stringify2)
+    platemap_id_list = platemap_id_stringify2.split(",")
+    # print(platemap_id_list)
+    # print(len(platemap_id_list))
+
+    data = {}
+    data_to_return = []
+
+    for this_platemap in platemap_id_list:
+        # print("this_platemap ", this_platemap)
+        # print(len(this_platemap))
+
+        if this_platemap == '""':
+            # print("if")
+            map_device = ""
+            map_time_unit = ""
+            my_id = ""
+            # print(my_id)
+        else:
+            # print('else')
+            a = this_platemap[1:]
+            b = a[:-1]
+            my_id = int(b)
+            # print(my_id)
+            match_platemap = AssayPlateReaderMap.objects.filter(
+                id=my_id
+            )
+            # is only one in queryset
+            for each in match_platemap:
+                map_device = each.device
+                map_time_unit = each.time_unit
+
+        map_device = map_device
+        map_time_unit = map_time_unit
+
+        data_fields = {
+            'device': map_device,
+            'time_unit': map_time_unit,
+        }
+        data_to_return.append(data_fields)
+
+    data.update({'platemap_size_and_unit': data_to_return, })
+
+    # print(data)
 
     return HttpResponse(json.dumps(data),
                         content_type="application/json")
@@ -4478,6 +4779,21 @@ switch = {
     },
     'fetch_assay_study_matrix_for_platemap': {
         'call': fetch_assay_study_matrix_for_platemap
+    },
+    'fetch_assay_study_platemap_for_platemap': {
+        'call': fetch_assay_study_platemap_for_platemap
+    },
+    'fetch_information_for_plate_map_layout': {
+        'call': fetch_information_for_plate_map_layout
+    },
+    'fetch_review_plate_reader_data_file': {
+        'call': fetch_review_plate_reader_data_file
+    },
+    'fetch_plate_reader_data_block_plate_map_size': {
+        'call': fetch_plate_reader_data_block_plate_map_size
+    },
+    'fetch_information_for_plate_map_matrix_item_setup': {
+        'call': fetch_information_for_plate_map_matrix_item_setup
     },
 }
 

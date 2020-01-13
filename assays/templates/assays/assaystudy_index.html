@@ -39,7 +39,7 @@
                     {% if user_is_group_editor and not object.signed_off_by %}
                     <a href="upload" class="btn btn-primary" role="button">Upload Data</a>
                     <a href="{% url 'assayplatereadermap-index' object.id %}" class="btn btn-primary" role="button">Assay Plate Reader Maps</a>
-{#                    <a href="{% url 'assayplatereaderfile-index' object.id %}" class="btn btn-primary" role="button">Assay Plate Reader Files</a>#}
+                    <a href="{% url 'assayplatereaderfile-index' object.id %}" class="btn btn-primary" role="button">Assay Plate Reader Files</a>
                     {% endif %}
                 </div>
                 {% if user_is_group_editor %}

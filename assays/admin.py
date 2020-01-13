@@ -52,7 +52,6 @@ from assays.models import (
     AssayPlateReaderMapItem,
     AssayPlateReaderMapDataFile,
     AssayPlateReaderMapDataFileBlock,
-    #AssayPlateReaderMapDataFileLine,
     AssayPlateReaderMapItemValue,
 )
 from microdevices.models import MicrophysiologyCenter
@@ -1483,21 +1482,21 @@ admin.site.register(AssayDataFileUpload, AssayDataFileUploadAdmin)
 # the relationship between the item and item value tables needs to be controlled by the GUI
 class AssayPlateReaderMapAdmin(ImportExportModelAdmin):
     model = AssayPlateReaderMap
-    list_display = ('name', 'description', 'device', 'study_assay', 'time_unit', 'plate_reader_unit', 'study_assay')
+    list_display = ('name', 'description', 'device', 'study_assay', 'time_unit', 'study_assay', 'volume_unit', 'cell_count')
     search_fields = ('name', 'description')
 
 admin.site.register(AssayPlateReaderMap, AssayPlateReaderMapAdmin)
 
 class AssayPlateReaderMapDataFileAdmin(ImportExportModelAdmin):
-    model = AssayPlateReaderMapDataFileBlock
-    list_display = ('name', 'description')
-    search_fields = ('name', 'description')
+    model = AssayPlateReaderMapDataFile
+    list_display = ('description', )
+    search_fields = ('description',)
 
 admin.site.register(AssayPlateReaderMapDataFile, AssayPlateReaderMapDataFileAdmin)
 
 class AssayPlateReaderMapDataFileBlockAdmin(ImportExportModelAdmin):
     model = AssayPlateReaderMapDataFileBlock
-    list_display = ('name', 'description', 'assayplatereadermap', 'assayplatereadermapdatafile', 'data_block', 'processing_set')
-    search_fields = ('name', 'description')
+    list_display = ('assayplatereadermap', 'assayplatereadermapdatafile', 'data_block', 'assayplatereadermapdataprocessing')
+    search_fields = ('data_block',)
 
 admin.site.register(AssayPlateReaderMapDataFileBlock, AssayPlateReaderMapDataFileBlockAdmin)

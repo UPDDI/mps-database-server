@@ -3,7 +3,7 @@
 {% block breadcrumbs %}
     <li><a href="/assays/assaystudy/">Studies</a>
     <li><a href="{{ object.study.get_absolute_url }}">{{ object.study }}</a></li>
-    <li><a href="{% url 'assayplatereadermap-index' object.study.id %}">Assay Plate Reader Maps</a>
+    <li><a href="{% url 'assayplatereadermap-index' object.study.id %}">Assay Plate Reader Data Files</a>
     <li class="active">
         <em>{{ object }}</em>
     </li>
@@ -15,16 +15,16 @@
         <div class="padded-bottom">
             <div class="well">
                 <h1 class="text-center">
-                    <em><b>Assay Plate Reader Map Delete
+                    <em><b>Assay Plate Reader Data File Delete
                     </b></em><br><br>
-                    Delete Well Plate Map: <em>{{ object }}</em>
+                    Delete Assay Data File: <em>{{ object }}</em>
                 <br>
                 </h1>
                 {% csrf_token %}
             </div>
         </div>
 
-        <h2 class="text-danger">Are you sure you want to delete the Assay Plate Reader Map:<br><b>{{ object }}</b>?</h2>
+        <h2 class="text-danger">Are you sure you want to delete the Assay Plate Reader File:<br><b>{{ object }}</b>?</h2>
         <hr>
         <div class="padded-bottom">
             <button type="submit" class="btn btn-danger">Confirm Deletion</button>
