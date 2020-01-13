@@ -40,7 +40,8 @@ from mps.mixins import (
     SuperuserRequiredMixin,
     CreatorOrSuperuserRequiredMixin,
     ListHandlerMixin,
-    DetailHandlerMixin
+    DetailHandlerMixin,
+    SuperuserRequiredMixin
 )
 from mps.base.models import save_forms_with_tracking
 from django.contrib.auth.decorators import login_required, user_passes_test

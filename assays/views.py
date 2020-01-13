@@ -1200,20 +1200,41 @@ class AssayStudyDataUpload(ObjectGroupRequiredMixin, UpdateView):
             return self.render_to_response(self.get_context_data(form=form))
 
 
-class AssayStudyDelete(CreatorOrSuperuserRequiredMixin, UpdateView):
+class AssayStudyDelete(DeletionMixin, UpdateView):
     """Soft Delete a Study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_delete.html'
     success_url = '/assays/assaystudy/'
     form_class = AssayStudyDeleteForm
 
+    # For DeletionMixin
+    ignore_propagation = True
+
+    # Shouldn't trigger emails
     def form_valid(self, form):
         # Check permissions again
         if is_group_editor(self.request.user, self.object.group.name):
             # Change the group
             # CONTRIVED
             self.object.modified_by = self.request.user
+            # Change group to hide
             self.object.group_id = 21
+            # Remove sign off
+            self.object.signed_off_by = None
+            # Restrict
+            self.object.restricted = True
+            # REMOVE COLLABORATOR GROUPS
+            self.object.collaborator_groups.clear()
+
+            tz = pytz.timezone('US/Eastern')
+
+            # Note deletion in study (crude)
+            self.object.description = 'Deleted by {} on {}\n{}'.format(
+                self.request.user,
+                datetime.now(tz),
+                self.object.description
+            )
+
             self.object.save()
 
         return redirect(self.success_url)
@@ -1399,7 +1420,6 @@ class AssayStudyTemplate(ObjectGroupRequiredMixin, DetailView):
         response['Content-Disposition'] = 'attachment;filename="' + str(self.object) + '.xlsx"'
 
         return response
-
 
 def get_cell_samples_for_selection(user, setups=None):
     """Returns the cell samples to be listed in setup views
@@ -1771,6 +1791,9 @@ class AssayMatrixDelete(CreatorOrSuperuserRequiredMixin, DeleteView):
     model = AssayMatrix
     template_name = 'assays/assaymatrix_delete.html'
 
+    # Allow deletes regardless of dependencies
+    ignore_propagation = True
+
     def get_success_url(self):
         return self.object.study.get_absolute_url()
 
@@ -1899,6 +1922,9 @@ class AssayMatrixItemDelete(CreatorOrSuperuserRequiredMixin, DeleteView):
     """Delete a Setup"""
     model = AssayMatrixItem
     template_name = 'assays/assaymatrixitem_delete.html'
+
+    # Allow deletes regardless of dependencies
+    ignore_propagation = True
 
     def get_success_url(self):
         return self.object.study.get_absolute_url()

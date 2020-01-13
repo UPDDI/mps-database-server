@@ -345,15 +345,17 @@ class DeletionMixin(object):
 
         can_be_deleted = True
 
-        for current_field in self.object._meta.get_fields():
-            # TODO MODIFY TO CHECK M2M MANAGERS IN THE FUTURE
-            # TODO REVISE
-            if str(type(current_field)) == "<class 'django.db.models.fields.reverse_related.ManyToOneRel'>":
-                manager = getattr(self.object, current_field.name + '_set')
-                count = manager.count()
-                if count > 0:
-                    can_be_deleted = False
-                    break
+        # If this view has "ignore_propagation", don't bother with this_
+        if not getattr(self, 'ignore_propagation', None):
+            for current_field in self.object._meta.get_fields():
+                # TODO MODIFY TO CHECK M2M MANAGERS IN THE FUTURE
+                # TODO REVISE
+                if str(type(current_field)) == "<class 'django.db.models.fields.reverse_related.ManyToOneRel'>":
+                    manager = getattr(self.object, current_field.name + '_set')
+                    count = manager.count()
+                    if count > 0:
+                        can_be_deleted = False
+                        break
 
         if not can_be_deleted:
             return PermissionDenied(

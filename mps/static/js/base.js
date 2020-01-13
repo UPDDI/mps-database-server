@@ -167,7 +167,7 @@ $(document).ready(function () {
             );
         }
         else {
-            // Crude propogation
+            // Crude propagation
             var current_window = window.opener;
             while (current_window) {
                 // SLOPPY
