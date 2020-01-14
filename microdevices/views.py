@@ -273,6 +273,12 @@ class OrganModelProtocolUpdate(FormHandlerMixin, UpdateView):
         return context
 
 
+class OrganModelProtocolDetail(DetailView):
+    """Displays details for an Organ Model Protocol"""
+    model = OrganModelProtocol
+    template_name = 'microdevices/organmodelprotocol_detail.html'
+
+
 class ManufacturerMixin(FormHandlerMixin):
     model = Manufacturer
     form_class = ManufacturerForm

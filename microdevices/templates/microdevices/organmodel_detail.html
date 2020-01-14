@@ -182,4 +182,29 @@
         </tbody>
     </table>
     {% endif %}
+
+    {% if object.organmodelprotocol_set.count %}
+    <legend>Protocols</legend>
+
+    <table class="table table-striped table-bordered table-nonfluid" style="background-color: #C4CBB7;">
+        <thead>
+            <tr>
+                <th>View</th>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for protocol in object.organmodelprotocol_set.all %}
+            <tr>
+                <td>
+                    <a class="btn btn-primary" href="{% url 'microdevices-organmodelprotocol-detail' protocol.id %}">View</a>
+                </td>
+                <td>{{ protocol.name }}</td>
+                <td>{{ protocol.description }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
 {% endblock %}
