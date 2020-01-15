@@ -28,7 +28,7 @@ urlpatterns = [
     url(r'^microdevices/model/add/$', OrganModelAdd.as_view(), name='microdevices-organmodel-add'),
     url(r'^microdevices/model/(?P<pk>[0-9]+)/update/$', OrganModelUpdate.as_view(), name='microdevices-organmodel-update'),
 
-    url(r'^microdevices/protocol/(?P<pk>[0-9]+)/update/$', OrganModelProtocolDetail.as_view(), name='microdevices-organmodelprotocol-detail'),
+    url(r'^microdevices/protocol/(?P<pk>[0-9]+)/$', OrganModelProtocolDetail.as_view(), name='microdevices-organmodelprotocol-detail'),
     url(r'^microdevices/protocol/(?P<pk>[0-9]+)/update/$', OrganModelProtocolUpdate.as_view(), name='microdevices-organmodelprotocol-update'),
 
     url(r'^microdevices/center/(?P<pk>[0-9]+)/$', MicrophysiologyCenterDetail.as_view(), name='microdevices-microphysiologycenter-detail'),
