@@ -266,7 +266,8 @@ $(document).ready(function () {
         pointSize: 0,
         'chartArea': {
             'width': '90%',
-            'height': '65%'
+            'height': '65%',
+            left: 100
         },
         'height': 400,
         // Individual point tooltips, not aggregate
@@ -793,7 +794,8 @@ $(document).ready(function () {
             pointSize: 5,
             'chartArea': {
                 'width': '70%',
-                'height': '70%'
+                'height': '70%',
+                left: 100
             },
             'height': min_height,
             // Individual point tooltips, not aggregate
@@ -987,8 +989,10 @@ $(document).ready(function () {
         $('#one-sample-size').val('');
         $('#one-sample-power').val('0.8');
 
-        // Hide One Sample Field Warning
+        // Hide One Sample Warnings
         $('#os-field-warning').hide();
+        $('#os-field-warning-sample-size').hide();
+        $('#os-field-warning-below-zero').hide();
 
         // Adjust spacing of options
         $("#power-analysis-options").removeClass("col-sm-offset-6");
@@ -1319,19 +1323,34 @@ $(document).ready(function () {
         if ((os_power === '' && os_sample_size === '' && os_diff === '') || (os_power !== '' && os_sample_size !== '' && os_diff !== '')) {
             $('#os-field-warning').show();
             $('#os-field-warning-sample-size').hide();
+            $('#os-field-warning-below-zero').hide();
             empty_graph_containers();
             return;
         } else {
             $('#os-field-warning').hide();
         }
 
-        if ((os_power === '' && os_sample_size !== '' && os_sample_size <2 && os_diff !== '') || (os_power !== '' && os_sample_size !== '' && os_sample_size <2 && os_diff === '') || (os_power === '' && os_sample_size <2 && os_diff === '')){
+        if ((os_power === '' && os_sample_size !== '' && os_sample_size < 2 && os_diff !== '') || (os_power !== '' && os_sample_size !== '' && os_sample_size < 2 && os_diff === '') || (os_power === '' && os_sample_size < 2 && os_diff === '')){
             $('#os-field-warning-sample-size').show();
             $('#os-field-warning').hide();
+            $('#os-field-warning-below-zero').hide();
             empty_graph_containers();
             return;
         } else {
             $('#os-field-warning-sample-size').hide();
+        }
+
+        var negative_check = [parseFloat(os_power), parseFloat(os_sample_size), parseFloat(os_diff)];
+        for (var q = 0; q < 3; q++){
+            if (negative_check[q] < 0){
+                $('#os-field-warning-below-zero').show();
+                $('#os-field-warning-sample-size').hide();
+                $('#os-field-warning').hide();
+                empty_graph_containers();
+                return;
+            } else {
+                $('#os-field-warning-below-zero').hide();
+            }
         }
 
         empty_graph_containers();
@@ -1373,7 +1392,7 @@ $(document).ready(function () {
                         } else {
                             data.power_analysis_data.Differences = data.power_analysis_data.Differences.toFixed(3)
                         }
-                        $(one_sample_multi_graph).html('<div class="well text-center"><br><br><br><h3>Differences</h3><br><h4>'+data.power_analysis_data.Differences+'</h4><br><br><br></div>');
+                        $(one_sample_multi_graph).html('<div class="well text-center"><br><br><br><h3>Differences</h3><br><h4>'+data.power_analysis_data.Differences+'</h4><br><h3>% Change (from mean)</h3><br><h4>'+(data.power_analysis_data.Differences / $('#summary-mean').text() * 100).toFixed(3)+'</h4><br><br><br></div>');
                     }
                     else if ("Sample Size" in data.power_analysis_data) {
                         if (data.power_analysis_data["Sample Size"] == null) {
@@ -1449,7 +1468,8 @@ $(document).ready(function () {
                         pointSize: 0,
                         'chartArea': {
                             'width': '90%',
-                            'height': '65%'
+                            'height': '65%',
+                            left: 100
                         },
                         'height': 400,
                         // Individual point tooltips, not aggregate
