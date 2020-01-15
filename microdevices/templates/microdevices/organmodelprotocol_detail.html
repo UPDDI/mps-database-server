@@ -35,6 +35,7 @@
                     {{ object.name }}
                 </td>
             </tr>
+            {% if protocol_access %}
             <tr>
                 <th>
                     Protocol File
@@ -43,6 +44,7 @@
                     <a href="/media/{{ object.protocol_file }}">{{ object.protocol_file }}</a>
                 </td>
             </tr>
+            {% endif %}
             {% if object.description %}
             <tr>
                 <th>

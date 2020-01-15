@@ -386,6 +386,7 @@
     </p>
 
     {# Add new #}
+    {% comment %}
     {% include 'generic_popup_link.html' with field=study_assay_formset.0.target %}
     <br>
     {% include 'generic_popup_link.html' with field=study_assay_formset.0.method %}
@@ -393,15 +394,31 @@
     {% include 'generic_popup_link.html' with field=study_assay_formset.0.unit %}
     <br>
     <br>
+    {% endcomment %}
 
     <a id="add_button-{{ study_assay_formset.prefix }}" class="btn btn-success" role="button">Add Assay</a>
     <table class="table table-striped inlines" id="{{ study_assay_formset.prefix }}-group"  name="assays">
         <thead>
             <tr>
                 <th>Assay Category</th>
-                <th>Target/Analyte*</th>
-                <th>Method/Kit*</th>
-                <th>Readout Unit*</th>
+                <th>
+                    Target/Analyte*
+                    <div>
+                        {% include 'generic_popup_link.html' with field=study_assay_formset.0.target %}
+                    </div>
+                </th>
+                <th>
+                    Method/Kit*
+                    <div>
+                        {% include 'generic_popup_link.html' with field=study_assay_formset.0.method %}
+                    </div>
+                </th>
+                <th>
+                    Readout Unit*
+                    <div>
+                        {% include 'generic_popup_link.html' with field=study_assay_formset.0.unit %}
+                    </div>
+                </th>
                 <th>Delete</th>
             </tr>
         </thead>

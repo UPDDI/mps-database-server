@@ -198,18 +198,20 @@ class OrganModelDetail(DetailView):
     def get_context_data(self, **kwargs):
         context = super(OrganModelDetail, self).get_context_data(**kwargs)
 
-        assays = ValidatedAssay.objects.filter(organ_model_id=self.object.id).prefetch_related('assay', 'assay__assay_type')
+        # Deprecated!
+        # assays = ValidatedAssay.objects.filter(organ_model_id=self.object.id).prefetch_related('assay', 'assay__assay_type')
 
-        if self.object.center and any(i in self.object.center.groups.all() for i in self.request.user.groups.all()):
-            protocols = OrganModelProtocol.objects.filter(
-                organ_model_id=self.object.id
-            ).order_by('-version')
-        else:
-            protocols = None
+        # if self.object.center and any(i in self.object.center.groups.all() for i in self.request.user.groups.all()):
+        #     protocols = OrganModelProtocol.objects.filter(
+        #         organ_model_id=self.object.id
+        #     ).order_by('-version')
+        # else:
+        #     protocols = None
 
         context.update({
-            'assays': assays,
-            'protocols': protocols,
+            # 'assays': assays,
+            # 'protocols': protocols,
+            'protocol_access': self.object.center and any(i in self.object.center.groups.all() for i in self.request.user.groups.all())
         })
 
         return context
@@ -277,6 +279,15 @@ class OrganModelProtocolDetail(DetailView):
     """Displays details for an Organ Model Protocol"""
     model = OrganModelProtocol
     template_name = 'microdevices/organmodelprotocol_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(OrganModelProtocolDetail, self).get_context_data(**kwargs)
+
+        context.update({
+            'protocol_access': self.object.organ_model.center and any(i in self.object.organ_model.center.groups.all() for i in self.request.user.groups.all())
+        })
+
+        return context
 
 
 class ManufacturerMixin(FormHandlerMixin):

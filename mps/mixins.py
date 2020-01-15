@@ -321,13 +321,13 @@ class DeletionMixin(object):
         study_sign_off = False
 
         if not group and study:
-            group = study.group
+            # group = study.group
             study_sign_off = study.signed_off_by
 
-            group = group.name
-
-            if not is_group_admin(self.request.user, group):
-                return PermissionDenied(self.request, 'Only group admins can perform this action. Please contact your group admin.')
+            # group = group.name
+            #
+            # if not is_group_admin(self.request.user, group):
+            #     return PermissionDenied(self.request, 'Only group admins can perform this action. Please contact your group admin.')
 
             if study_sign_off:
                 return PermissionDenied(
@@ -339,13 +339,13 @@ class DeletionMixin(object):
                         study.signed_off_by.last_name
                     )
                 )
-        else:
-            if self.request.user.id != self.object.created_by_id:
-                return PermissionDenied(self.request, 'Only the creator of this entry can perform this action. Please contact an administrator or the creator of this entry.')
+
+        if self.request.user.id != self.object.created_by_id:
+            return PermissionDenied(self.request, 'Only the creator of this entry can perform this action. Please contact an administrator or the creator of this entry.')
 
         can_be_deleted = True
 
-        # If this view has "ignore_propagation", don't bother with this_
+        # If this view has "ignore_propagation", don't bother with this
         if not getattr(self, 'ignore_propagation', None):
             for current_field in self.object._meta.get_fields():
                 # TODO MODIFY TO CHECK M2M MANAGERS IN THE FUTURE

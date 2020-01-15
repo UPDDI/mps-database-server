@@ -1247,6 +1247,9 @@ class AssayStudyDelete(DeletionMixin, UpdateView):
                 self.object.description
             )
 
+            self.object.name = 'DELETED-{}'.format(self.object.name)
+            self.object.flagged = True
+
             self.object.save()
 
         return redirect(self.success_url)

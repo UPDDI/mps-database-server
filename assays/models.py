@@ -195,7 +195,7 @@ class PhysicalUnits(FrontEndModel, LockableModel):
     """Measures of concentration and so on"""
 
     class Meta(object):
-        verbose_name = 'Physical Unit'
+        verbose_name = 'Unit'
         ordering = ['unit_type', 'unit']
 
     # USE NAME IN LIEU OF UNIT (unit.unit is confusing and dumb)

@@ -192,6 +192,9 @@
                 <th>View</th>
                 <th>Name</th>
                 <th>Description</th>
+                {% if protocol_access %}
+                <th>Protocol</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -202,6 +205,11 @@
                 </td>
                 <td>{{ protocol.name }}</td>
                 <td>{{ protocol.description }}</td>
+                {% if protocol_access %}
+                <td>
+                    <a href="/media/{{ protocol.protocol_file }}">{{ protocol.protocol_file }}</a>
+                </td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>

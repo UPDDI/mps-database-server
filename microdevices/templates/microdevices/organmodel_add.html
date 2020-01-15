@@ -150,7 +150,12 @@
     <table class="table table-striped inlines" id="{{ location_formset.prefix }}-group" name="locations">
         <thead>
             <tr>
-                <th>Location*</th>
+                <th>
+                    Location*
+                    <div>
+                        {% include 'generic_popup_link.html' with field=location_formset.0.sample_location %}
+                    </div>
+                </th>
                 <th>Notes*</th>
                 <th>Delete</th>
             </tr>
@@ -178,9 +183,9 @@
     <legend>Cell Types</legend>
 
     {# Add new #}
-    {% include 'generic_popup_link.html' with field=cell_formset.0.cell_type %}
-    <br>
-    <br>
+    {# {% include 'generic_popup_link.html' with field=cell_formset.0.cell_type %} #}
+    {# <br> #}
+    {# <br> #}
 
     {% if cell_formset.non_form_errors %}
         <div class="alert alert-danger" role="alert">
@@ -208,7 +213,12 @@
     <table class="table table-striped inlines" id="{{ cell_formset.prefix }}-group" name="cells">
         <thead>
             <tr>
-                <th>Cell Type*</th>
+                <th>
+                    Cell Type*
+                    <div>
+                        {% include 'generic_popup_link.html' with field=cell_formset.0.cell_type %}
+                    </div>
+                </th>
                 {# <th>Count*</th> #}
                 <th>Delete</th>
             </tr>
