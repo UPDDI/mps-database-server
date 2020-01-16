@@ -108,6 +108,14 @@ $(document).ready(function () {
         }, 250);
     }
 
+    // Jump to top after page change
+    // CRUDE
+   $(document).on('page.dt', '.dataTables_wrapper', function () {
+        $('html, body').animate({
+            scrollTop: $(this).offset().top - 75
+        }, 500);
+    });
+
     window.TABLES.add_new_row_to_selection_list = function(
         current_app,
         current_model,
