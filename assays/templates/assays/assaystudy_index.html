@@ -28,6 +28,7 @@
         <div class="well">
             <h1 class="text-center">
                 {{ object }}
+                {% comment %}
                 <div>
                     {% if user_is_group_editor and not object.signed_off_by %}
                         <a href="update" class="btn btn-primary" role="button">Edit This Study</a>
@@ -66,7 +67,71 @@
                     <a href="/admin/assays/assaystudy/{{ object.id }}" class="btn btn-success" role="button">Change Group Access for this Study</a>
                 </div>
                 {% endif %}
+                {% endcomment %}
             </h1>
+            <div class="text-center">
+                <span class="dropdown btn-group">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="analyze_edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        Analyze/Edit
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="analyze_edit">
+                        <li><a href="summary">Study Summary</a></li>
+                        <li><a href="reproducibility">Reproducibility</a></li>
+                        <li><a href="power_analysis">Power Analysis</a></li>
+                        <li><a href="images">Images</a></li>
+                        {% if user_is_group_editor %}
+                            <li role="separator" class="divider"></li>
+                            {% if not object.signed_off_by %}
+                                <li><a href="update">Edit This Study</a></li>
+                            {% endif %}
+                            <li><a id="clone_study_request" role="button">Clone this Study</a></li>
+                        {% endif %}
+                    </ul>
+                </span>
+                {% if user_is_group_editor and not object.signed_off_by %}
+                <span class="dropdown btn-group">
+                    <button class="btn btn-warning dropdown-toggle" type="button" id="add_data" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        Add Data
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="add_data">
+                        <li><a href="upload">Upload Data</a></li>
+                        <li><a href="{% url 'assayplatereadermap-index' object.id %}">Assay Plate Reader Maps</a></li>
+                        <li><a href="{% url 'assayplatereaderfile-index' object.id %}">Assay Plate Reader Files</a></li>
+                    </ul>
+                </span>
+                {% endif %}
+
+                {% comment %}
+                {% if user_is_group_editor and not object.signed_off_by %}
+                <a href="upload" class="btn btn-warning" role="button">Upload Data</a>
+                {% endif %}
+                {% endcomment %}
+
+                {% if user_is_group_admin or user_is_stakeholder_admin or user.is_superuser or show_indicate_study_sign_off or not user_is_group_admin and user_is_group_editor and not object.signed_off_by%}
+                <span class="dropdown btn-group">
+                    <button class="btn btn-success dropdown-toggle" type="button" id="sign_off_permissions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        Sign Off/Permission
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="sign_off_permissions">
+                        {% if not user_is_group_admin and user_is_group_editor and not object.signed_off_by %}
+                            <li><a id="indicate_study_is_ready_for_sign_off" role="button">Indicate Study is Ready for Sign Off</a></li>
+                        {% endif %}
+                        {% if user_is_group_admin %}
+                            <li><a href="sign_off">View/Edit Sign Off Status of this Study</a></li>
+                        {% endif %}
+                        {% if user_is_stakeholder_admin %}
+                            <li><a href="sign_off">View/Edit Approval Status of this Study</a></li>
+                        {% endif %}
+                        {% if user.is_superuser %}
+                            <li><a href="/admin/assays/assaystudy/{{ object.id }}">Change Group Access for this Study</a></li>
+                        {% endif %}
+                    </ul>
+                </span>
+                {% endif %}
+            </div>
         </div>
 
         <legend>
