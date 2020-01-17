@@ -556,12 +556,6 @@ $(document).ready(function () {
         var checkbox = $(this);
         one_sample_time_point = checkbox.attr('data-time-point');
         if (checkbox.is(':checked')) {
-            $('.one-sample-time-point-checkbox').each(function() {
-                if (!this.checked) {
-                    $(this).attr('disabled', true);
-                }
-            });
-            $('#power-analysis-button').attr('disabled', false);
             $('#summary-time').text(one_sample_time_point);
             var current_group = $('.power-analysis-group-checkbox:visible').first().attr('data-power-analysis-group');
             var compound_only = $('.power-analysis-compounds-checkbox:visible').first().attr('data-power-analysis-compound');
@@ -576,12 +570,32 @@ $(document).ready(function () {
                     the_goods.push(one_sample_data[x][1]);
                 }
             }
+            if (the_goods === undefined || the_goods.length === 0) {
+                empty_graph_containers();
+                $('#error-text').text("Cannot Perform Power Analysis With No Data Points.");
+                $('#error-container').show();
+                return;
+            }
             mean = the_goods.reduce((a,b) => a+b)/(the_goods.length);
             std = Math.sqrt(the_goods.map(x => Math.pow(x-mean,2)).reduce((a,b) => a+b)/(the_goods.length - 1));
             $('#summary-sample-number').text(the_goods.length);
             $('#summary-mean').text(mean.toFixed(3));
             $('#summary-std').text(std.toFixed(3));
+            if (std === 0) {
+                empty_graph_containers();
+                $('#error-text').text("Cannot Perform Power Analysis With a Standard Deviation of 0.");
+                $('#error-container').show();
+                return;
+            }
+            empty_graph_containers();
+            $('.one-sample-time-point-checkbox').each(function() {
+                if (!this.checked) {
+                    $(this).attr('disabled', true);
+                }
+            });
+            $('#power-analysis-button').attr('disabled', false);
         } else {
+            empty_graph_containers();
             $('.one-sample-time-point-checkbox').each(function() {
                 if ($(this).attr('disabled')) {
                     $(this).attr('disabled', false);
@@ -989,11 +1003,6 @@ $(document).ready(function () {
         $('#one-sample-size').val('');
         $('#one-sample-power').val('0.8');
 
-        // Hide One Sample Warnings
-        $('#os-field-warning').hide();
-        $('#os-field-warning-sample-size').hide();
-        $('#os-field-warning-below-zero').hide();
-
         // Adjust spacing of options
         $("#power-analysis-options").removeClass("col-sm-offset-6");
 
@@ -1299,6 +1308,7 @@ $(document).ready(function () {
 
                 if ($('div[id^="google-visualization-errors-all"]')[0]) {
                     power_analysis_two_sample_container_selector.hide();
+                    $('#error-text').text("Power Analysis Cannot be Completed on This Dataset.");
                     $('#error-container').show();
                 } else {
                     $('#error-container').hide();
@@ -1321,36 +1331,34 @@ $(document).ready(function () {
         var os_power = $('#one-sample-power').val();
 
         if ((os_power === '' && os_sample_size === '' && os_diff === '') || (os_power !== '' && os_sample_size !== '' && os_diff !== '')) {
-            $('#os-field-warning').show();
-            $('#os-field-warning-sample-size').hide();
-            $('#os-field-warning-below-zero').hide();
             empty_graph_containers();
+            $('#error-text').text("Cannot Run Analysis if the \"Differences\", \"Sample Size\", and \"Power\" Fields Are Completely Filled or Empty.");
+            $('#error-container').show();
             return;
-        } else {
-            $('#os-field-warning').hide();
         }
 
-        if ((os_power === '' && os_sample_size !== '' && os_sample_size < 2 && os_diff !== '') || (os_power !== '' && os_sample_size !== '' && os_sample_size < 2 && os_diff === '') || (os_power === '' && os_sample_size < 2 && os_diff === '')){
-            $('#os-field-warning-sample-size').show();
-            $('#os-field-warning').hide();
-            $('#os-field-warning-below-zero').hide();
+        if ((os_power === '' && os_sample_size !== '' && os_sample_size < 2 && os_diff !== '') || (os_power !== '' && os_sample_size !== '' && os_sample_size < 2 && os_diff === '') || (os_power === '' && os_sample_size < 2 && os_diff === '')) {
             empty_graph_containers();
+            $('#error-text').text("Sample Size Cannot be Less Than 2.");
+            $('#error-container').show();
             return;
-        } else {
-            $('#os-field-warning-sample-size').hide();
         }
 
         var negative_check = [parseFloat(os_power), parseFloat(os_sample_size), parseFloat(os_diff)];
         for (var q = 0; q < 3; q++){
             if (negative_check[q] < 0){
-                $('#os-field-warning-below-zero').show();
-                $('#os-field-warning-sample-size').hide();
-                $('#os-field-warning').hide();
                 empty_graph_containers();
+                $('#error-text').text("Negative Values Are Not Permitted.");
+                $('#error-container').show();
                 return;
-            } else {
-                $('#os-field-warning-below-zero').hide();
             }
+        }
+
+        if (os_power <= significance_level || os_power >= 1) {
+            empty_graph_containers();
+            $('#error-text').text("Power Must be Greater Than Significance Level and Less Than 1.");
+            $('#error-container').show();
+            return;
         }
 
         empty_graph_containers();
@@ -1382,21 +1390,27 @@ $(document).ready(function () {
                 // Stop spinner
                 window.spinner.stop();
 
-                if (data.power_analysis_data.error) {
-                    console.log(data.power_analysis_data.error)
+                if (data.power_analysis_data === null) {
+                    empty_graph_containers();
+                    $('#error-text').text("Power Analysis Cannot be Completed on This Dataset.");
+                    $('#error-container').show();
                 }
                 else if (Object.keys(data.power_analysis_data).length == 1) {
                     if ("Differences" in data.power_analysis_data) {
                         if (data.power_analysis_data.Differences == null) {
-
+                            empty_graph_containers();
+                            $('#error-text').text("Differences is Null. Try Removing a Value and Running Analysis Again.");
+                            $('#error-container').show();
                         } else {
-                            data.power_analysis_data.Differences = data.power_analysis_data.Differences.toFixed(3)
+                            data.power_analysis_data.Differences = data.power_analysis_data.Differences.toFixed(3);
                         }
                         $(one_sample_multi_graph).html('<div class="well text-center"><br><br><br><h3>Differences</h3><br><h4>'+data.power_analysis_data.Differences+'</h4><br><h3>% Change (from mean)</h3><br><h4>'+(data.power_analysis_data.Differences / $('#summary-mean').text() * 100).toFixed(3)+'</h4><br><br><br></div>');
                     }
                     else if ("Sample Size" in data.power_analysis_data) {
                         if (data.power_analysis_data["Sample Size"] == null) {
-
+                            empty_graph_containers();
+                            $('#error-text').text("Sample Size is Null. This May be Due to \"Differences\" Being Too Large A Value. Try Removing This Value and Running Analysis Again.");
+                            $('#error-container').show();
                         } else {
                             data.power_analysis_data['Sample Size'] = data.power_analysis_data['Sample Size'].toFixed(3)
                         }
@@ -1404,7 +1418,9 @@ $(document).ready(function () {
                     }
                     else if ("Power" in data.power_analysis_data) {
                         if (data.power_analysis_data.Power == null) {
-
+                            empty_graph_containers();
+                            $('#error-text').text("Power is Null. Try Removing a Value and Running Analysis Again.");
+                            $('#error-container').show();
                         } else {
                             data.power_analysis_data.Power = data.power_analysis_data.Power.toFixed(3)
                         }
