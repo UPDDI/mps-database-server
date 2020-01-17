@@ -1,7 +1,7 @@
 $(document).ready(function() {
     window.TABLE = $('#targets-table').DataTable({
         "iDisplayLength": 100,
-        "sDom": '<B<"row">lfrtip>',
+        "sDom": '<Bl<"row">frptip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
         "order": [[2, "asc"]],

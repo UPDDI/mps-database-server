@@ -16,7 +16,7 @@ $(document).ready(function() {
     // };
 
     var  data_table = $('#studies').DataTable( {
-        dom: 'B<"row">lfrtip',
+        dom: '<Bl<"row">frptip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
         "iDisplayLength": 50,
@@ -52,7 +52,7 @@ $(document).ready(function() {
 
     window.TABLE = $('#models').DataTable({
         "iDisplayLength": 100,
-        "sDom": '<B<"row">lfrtip>',
+        "sDom": '<Bl<"row">frptip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
         "order": [[3, "asc"], [2, "asc"]],

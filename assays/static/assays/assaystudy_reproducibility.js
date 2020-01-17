@@ -423,7 +423,7 @@ $(document).ready(function () {
             ],
             "order": [[11, 'desc'], [ 10, 'desc' ]],
             "responsive": true,
-            dom: 'B<"row">lfrtip',
+            dom: '<Bl<"row">frptip>',
             fixedHeader: {headerOffset: 50},
             deferRender: true,
             initComplete: function () {

@@ -1,6 +1,6 @@
 $(document).ready(function() {
     window.TABLE = $('#adverse_events').DataTable({
-        dom: 'B<"row">lfrtip',
+        dom: '<Bl<"row">frptip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
         iDisplayLength: 50,
