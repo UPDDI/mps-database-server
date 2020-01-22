@@ -1908,13 +1908,13 @@ class AssayStudy(FlaggableModel):
     total_device_volume = models.FloatField(
         null=True,
         blank=True,
-        verbose_name='Total Device Volume'
+        verbose_name='Total Device Volume (μL)'
     )
     # Relevant PBPK flow rate
     flow_rate = models.FloatField(
         null=True,
         blank=True,
-        verbose_name='Flow Rate'
+        verbose_name='Flow Rate (μL/hour)'
     )
 
     # TODO
