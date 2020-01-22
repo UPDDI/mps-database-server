@@ -87,16 +87,63 @@
         <label for="study_type" class="col-sm-2 control-label">Study Types*</label>
         <div class="col-sm-10">
             <label for="toxicity" style="padding-right: 10px;">Toxicity</label>
-              {{ form.toxicity }}
+            {{ form.toxicity }}
             <label for="efficacy" style="padding-left: 20px;padding-right: 10px;">Efficacy</label>
-              {{ form.efficacy }}
+            {{ form.efficacy }}
             <label for="disease" style="padding-left: 20px;padding-right: 10px;">Disease Model</label>
-              {{ form.disease }}
+            {{ form.disease }}
             {# Please note superficial edit from Cell Characterization to Chip Characterization #}
             {# This is subject to change #}
             <label for="cell_characterization" style="padding-left: 20px;padding-right: 10px;">Chip Characterization</label>
-              {{ form.cell_characterization }}
+            {{ form.cell_characterization }}
         </div>
+    </div>
+
+    {# Somewhat ugly break, not without reason #}
+    <div class="form-group">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-10">
+            <label for="pbpk" style="padding-right: 10px;" class="control-label">PBPK</label>
+            <input type="checkbox" name="pbpk" data-default="" id="id_pbpk">
+        </div>
+    </div>
+
+    <div hidden id="pbpk_section">
+
+    <div class="form-group">
+        <div class="col-sm-2"></div>
+        <div class="radio col-sm-10">
+            <label for="pbpk_steady_state">
+                <input type="radio" id="id_pbpk_steady_state_radio" name="pbpk_trigger_radio" value="pbpk_steady_state_radio" checked>
+                PBPK Steady State
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-sm-2"></div>
+        <div class="radio col-sm-10">
+            <label for="pbpk_bolus">
+                <input type="radio" id="id_pbpk_bolus_radio" name="pbpk_trigger_radio" value="pbpk_bolus_radio">
+                PBPK Bolus
+            </label>
+        </div>
+    </div>
+
+    {% include 'generic_field.html' with field=form.number_of_relevant_cells %}
+
+    <div hidden id="total_device_volume_container">
+        {% include 'generic_field.html' with field=form.total_device_volume %}
+    </div>
+    <div hidden id="flow_rate_container">
+        {% include 'generic_field.html' with field=form.flow_rate %}
+    </div>
+
+    <div style="display: none;">
+        {% include 'generic_field.html' with field=form.pbpk_steady_state %}
+        {% include 'generic_field.html' with field=form.pbpk_bolus %}
+    </div>
+
     </div>
 
     {# Proposed: Excluded for convenience #}

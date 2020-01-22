@@ -464,7 +464,7 @@ class AssayStudyForm(SignOffMixin, BootstrapForm):
         # clean the form data, before validation
         data = super(AssayStudyForm, self).clean()
 
-        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization']]):
+        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], ['pbpk_steady_state'], data['pbpk_bolus']]):
             raise forms.ValidationError('Please select at least one study type')
 
 
@@ -1894,7 +1894,7 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         # clean the form data, before validation
         data = super(AssayStudyFormNew, self).clean()
 
-        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization']]):
+        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], ['pbpk_steady_state'], data['pbpk_bolus']]):
             raise forms.ValidationError('Please select at least one study type')
 
         # SLOPPY NOT DRY

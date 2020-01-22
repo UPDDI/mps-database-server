@@ -15,3 +15,4 @@ additional_credentials.py
 .pydevproject
 .settings/*
 drugtrials/mps_AATCcredentials.py
+.vscode
