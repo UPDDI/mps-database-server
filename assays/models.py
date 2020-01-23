@@ -1890,11 +1890,13 @@ class AssayStudy(FlaggableModel):
     # Study types for pbpk
     pbpk_steady_state = models.BooleanField(
         default=False,
-        verbose_name='PBPK Steady State'
+        # verbose_name='PBPK Steady State'
+        verbose_name='Constant Infusion'
     )
     pbpk_bolus = models.BooleanField(
         default=False,
-        verbose_name='PBPK Bolus'
+        # verbose_name='PBPK Bolus'
+        verbose_name='Single Bolus'
     )
 
     # Estimate of PBPK relevant cells

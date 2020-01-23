@@ -111,7 +111,7 @@
         <div class="radio col-sm-10">
             <label for="pbpk_steady_state">
                 <input type="radio" id="id_pbpk_steady_state_radio" name="pbpk_trigger_radio" value="pbpk_steady_state_radio" checked>
-                PBPK Steady State
+                {{ form.pbpk_steady_state.label_tag }}
             </label>
         </div>
     </div>
@@ -121,7 +121,7 @@
         <div class="radio col-sm-10">
             <label for="pbpk_bolus">
                 <input type="radio" id="id_pbpk_bolus_radio" name="pbpk_trigger_radio" value="pbpk_bolus_radio">
-                PBPK Bolus
+                {{ form.pbpk_bolus.label_tag }}
             </label>
         </div>
     </div>

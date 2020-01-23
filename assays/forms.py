@@ -504,7 +504,7 @@ class AssayStudyFormAdmin(BootstrapForm):
         # clean the form data, before validation
         data = super(AssayStudyFormAdmin, self).clean()
 
-        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization']]):
+        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], ['pbpk_steady_state'], data['pbpk_bolus']]):
             raise forms.ValidationError('Please select at least one study type')
 
 

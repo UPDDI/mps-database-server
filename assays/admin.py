@@ -841,6 +841,17 @@ class AssayStudyAdmin(LockableAdmin):
             }
         ),
         (
+            'PBPK', {
+                'fields': (
+                    'pbpk_steady_state',
+                    'pbpk_bolus',
+                    'number_of_relevant_cells',
+                    'total_device_volume',
+                    'flow_rate',
+                )
+            }
+        ),
+        (
             'Protocol File Upload', {
                 'fields': (
                     'protocol',
