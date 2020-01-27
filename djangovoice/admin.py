@@ -14,6 +14,7 @@ class FeedbackResource(resources.ModelResource):
         model = Feedback
         fields = (
             'title',
+            'created',
             'type__title',
             'status__title',
             # 'duplicate',
@@ -28,6 +29,7 @@ class FeedbackResource(resources.ModelResource):
 class FeedbackAdmin(ImportExportModelAdmin):
     list_display = [
         '__str__',
+        'created',
         'type',
         'status',
         # 'duplicate',

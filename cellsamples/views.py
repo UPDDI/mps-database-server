@@ -15,7 +15,7 @@ from .forms import (
     SupplierForm,
     BiosensorForm
 )
-from mps.mixins import LoginRequiredMixin, OneGroupRequiredMixin, SpecificGroupRequiredMixin, PermissionDenied, user_is_active, FormHandlerMixin, DetailHandlerMixin, ListHandlerMixin, SuperuserRequiredMixin
+from mps.mixins import LoginRequiredMixin, OneGroupRequiredMixin, SpecificGroupRequiredMixin, PermissionDenied, user_is_active, FormHandlerMixin, DetailHandlerMixin, ListHandlerMixin, CreatorAndNotInUseMixin
 from mps.templatetags.custom_filters import filter_groups
 from django.shortcuts import redirect
 
@@ -37,7 +37,7 @@ class CellSampleAdd(OneGroupRequiredMixin, CellSampleMixin, CreateView):
     pass
 
 
-class CellSampleUpdate(SuperuserRequiredMixin, UpdateView):
+class CellSampleUpdate(CreatorAndNotInUseMixin, CellSampleMixin, UpdateView):
     # required_group_name = 'Change Cell Samples Front'
     pass
 
@@ -83,7 +83,7 @@ class CellTypeAdd(OneGroupRequiredMixin, CellTypeMixin, CreateView):
     pass
 
 
-class CellTypeUpdate(SuperuserRequiredMixin, CellTypeMixin, UpdateView):
+class CellTypeUpdate(CreatorAndNotInUseMixin, CellTypeMixin, UpdateView):
     # required_group_name = 'Change Cell Samples Front'
     pass
 
@@ -109,7 +109,7 @@ class CellSubtypeAdd(OneGroupRequiredMixin, CellSubtypeMixin, CreateView):
     pass
 
 
-class CellSubtypeUpdate(SuperuserRequiredMixin, CellSubtypeMixin, UpdateView):
+class CellSubtypeUpdate(CreatorAndNotInUseMixin, CellSubtypeMixin, UpdateView):
     # required_group_name = 'Change Cell Samples Front'
     pass
 
@@ -135,7 +135,7 @@ class SupplierAdd(OneGroupRequiredMixin, SupplierMixin, CreateView):
     pass
 
 
-class SupplierUpdate(SuperuserRequiredMixin, SupplierMixin, UpdateView):
+class SupplierUpdate(CreatorAndNotInUseMixin, SupplierMixin, UpdateView):
     pass
 
 
@@ -156,7 +156,7 @@ class BiosensorAdd(OneGroupRequiredMixin, BiosensorMixin, CreateView):
     pass
 
 
-class BiosensorUpdate(SuperuserRequiredMixin, BiosensorMixin, UpdateView):
+class BiosensorUpdate(CreatorAndNotInUseMixin, BiosensorMixin, UpdateView):
     pass
 
 

@@ -100,8 +100,8 @@ from assays.ajax import get_data_as_csv, fetch_data_points_from_filters
 from assays.utils import (
     AssayFileProcessor,
     get_user_accessible_studies,
-    add_update_plate_reader_data_map_item_values_from_file
-
+    add_update_plate_reader_data_map_item_values_from_file,
+    modify_templates
 )
 
 from django.forms.models import inlineformset_factory
@@ -122,7 +122,7 @@ from mps.mixins import (
     LoginRequiredMixin,
     OneGroupRequiredMixin,
     ObjectGroupRequiredMixin,
-    DeletionMixin,
+    StudyDeletionMixin,
     user_is_active,
     PermissionDenied,
     StudyGroupMixin,
@@ -132,7 +132,7 @@ from mps.mixins import (
     FormHandlerMixin,
     FormHandlerMixin,
     ListHandlerMixin,
-    SuperuserRequiredMixin
+    CreatorAndNotInUseMixin
 )
 
 from mps.base.models import save_forms_with_tracking
@@ -1212,15 +1212,12 @@ class AssayStudyDataUpload(ObjectGroupRequiredMixin, UpdateView):
             return self.render_to_response(self.get_context_data(form=form))
 
 
-class AssayStudyDelete(DeletionMixin, UpdateView):
+class AssayStudyDelete(StudyDeletionMixin, UpdateView):
     """Soft Delete a Study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_delete.html'
     success_url = '/assays/assaystudy/'
     form_class = AssayStudyDeleteForm
-
-    # For DeletionMixin
-    ignore_propagation = True
 
     # Shouldn't trigger emails
     def form_valid(self, form):
@@ -1801,13 +1798,10 @@ class AssayMatrixDetail(StudyGroupMixin, DetailView):
         return context
 
 
-class AssayMatrixDelete(CreatorOrSuperuserRequiredMixin, DeleteView):
+class AssayMatrixDelete(StudyDeletionMixin, DeleteView):
     """Delete a Setup"""
     model = AssayMatrix
     template_name = 'assays/assaymatrix_delete.html'
-
-    # Allow deletes regardless of dependencies
-    ignore_propagation = True
 
     def get_success_url(self):
         return self.object.study.get_absolute_url()
@@ -1933,13 +1927,10 @@ class AssayMatrixItemDetail(StudyGroupMixin, DetailView):
     detail = True
 
 
-class AssayMatrixItemDelete(CreatorOrSuperuserRequiredMixin, DeleteView):
+class AssayMatrixItemDelete(StudyDeletionMixin, DeleteView):
     """Delete a Setup"""
     model = AssayMatrixItem
     template_name = 'assays/assaymatrixitem_delete.html'
-
-    # Allow deletes regardless of dependencies
-    ignore_propagation = True
 
     def get_success_url(self):
         return self.object.study.get_absolute_url()
@@ -2279,7 +2270,7 @@ class AssayStudySetUpdate(CreatorOrSuperuserRequiredMixin, AssayStudySetMixin, U
 #
 #
 # # TODO REFACTOR
-# class AssayStudySetUpdate(SuperuserRequiredMixin, UpdateView):
+# class AssayStudySetUpdate(CreatorAndNotInUseMixin, UpdateView):
 #     model = AssayStudySet
 #     template_name = 'assays/assaystudyset_add.html'
 #     form_class = AssayStudySetForm
@@ -2613,7 +2604,7 @@ class AssayReferenceDetail(DetailView):
     template_name = 'assays/assayreference_detail.html'
 
 
-# class AssayReferenceUpdate(SuperuserRequiredMixin, UpdateView):
+# class AssayReferenceUpdate(CreatorAndNotInUseMixin, UpdateView):
 #     model = AssayReference
 #     template_name = 'assays/assayreference_add.html'
 #     form_class = AssayReferenceForm
@@ -2631,7 +2622,7 @@ class AssayReferenceDetail(DetailView):
 #             return self.render_to_response(self.get_context_data(form=form))
 
 
-class AssayReferenceDelete(DeletionMixin, DeleteView):
+class AssayReferenceDelete(CreatorAndNotInUseMixin, DeleteView):
     """Delete a Reference"""
     model = AssayReference
     template_name = 'assays/assayreference_delete.html'
@@ -3125,12 +3116,27 @@ class AssayTargetMixin(FormHandlerMixin):
     model = AssayTarget
     form_class = AssayTargetForm
 
+    templates_need_to_be_modified = False
+
+    def pre_save_processing(self, form):
+        """For dealing with new targets/changing names"""
+        # Modify templates immediately if new
+        if not self.object or not self.object.id:
+            self.templates_need_to_be_modified = True
+        elif self.object.name != form.cleaned_data.get('name', ''):
+            self.templates_need_to_be_modified = True
+        elif self.object.short_name != form.cleaned_data.get('short_name', ''):
+            self.templates_need_to_be_modified = True
+
+    def extra_form_processing(self):
+        if self.templates_need_to_be_modified:
+            modify_templates()
 
 class AssayTargetAdd(OneGroupRequiredMixin, AssayTargetMixin, CreateView):
     pass
 
 
-class AssayTargetUpdate(SuperuserRequiredMixin, AssayTargetMixin, UpdateView):
+class AssayTargetUpdate(CreatorAndNotInUseMixin, AssayTargetMixin, UpdateView):
     pass
 
 
@@ -3168,12 +3174,26 @@ class AssayMethodMixin(FormHandlerMixin):
     model = AssayMethod
     form_class = AssayMethodForm
 
+    templates_need_to_be_modified = False
+
+    def pre_save_processing(self, form):
+        """For dealing with new targets/changing names"""
+        # Modify templates immediately if new
+        if not self.object or not self.object.id:
+            self.templates_need_to_be_modified = True
+        elif self.object.name != form.cleaned_data.get('name', ''):
+            self.templates_need_to_be_modified = True
+
+    def extra_form_processing(self):
+        if self.templates_need_to_be_modified:
+            modify_templates()
+
 
 class AssayMethodAdd(OneGroupRequiredMixin, AssayMethodMixin, CreateView):
     pass
 
 
-class AssayMethodUpdate(SuperuserRequiredMixin, AssayMethodMixin, UpdateView):
+class AssayMethodUpdate(CreatorAndNotInUseMixin, AssayMethodMixin, UpdateView):
     pass
 
 
@@ -3232,12 +3252,26 @@ class PhysicalUnitsMixin(FormHandlerMixin):
     model = PhysicalUnits
     form_class = PhysicalUnitsForm
 
+    templates_need_to_be_modified = False
+
+    def pre_save_processing(self, form):
+        """For dealing with new targets/changing names"""
+        # Modify templates immediately if new
+        if not self.object or not self.object.id:
+            self.templates_need_to_be_modified = True
+        elif self.object.name != form.cleaned_data.get('name', ''):
+            self.templates_need_to_be_modified = True
+
+    def extra_form_processing(self):
+        if self.templates_need_to_be_modified:
+            modify_templates()
+
 
 class PhysicalUnitsAdd(OneGroupRequiredMixin, PhysicalUnitsMixin, CreateView):
     pass
 
 
-class PhysicalUnitsUpdate(SuperuserRequiredMixin, PhysicalUnitsMixin, UpdateView):
+class PhysicalUnitsUpdate(CreatorAndNotInUseMixin, PhysicalUnitsMixin, UpdateView):
     pass
 
 
@@ -3266,7 +3300,7 @@ class AssayMeasurementTypeAdd(OneGroupRequiredMixin, AssayMeasurementTypeMixin, 
     pass
 
 
-class AssayMeasurementTypeUpdate(SuperuserRequiredMixin, AssayMeasurementTypeMixin, UpdateView):
+class AssayMeasurementTypeUpdate(CreatorAndNotInUseMixin, AssayMeasurementTypeMixin, UpdateView):
     pass
 
 
@@ -3282,12 +3316,26 @@ class AssaySampleLocationMixin(FormHandlerMixin):
     model = AssaySampleLocation
     form_class = AssaySampleLocationForm
 
+    templates_need_to_be_modified = False
+
+    def pre_save_processing(self, form):
+        """For dealing with new targets/changing names"""
+        # Modify templates immediately if new
+        if not self.object or not self.object.id:
+            self.templates_need_to_be_modified = True
+        elif self.object.name != form.cleaned_data.get('name', ''):
+            self.templates_need_to_be_modified = True
+
+    def extra_form_processing(self):
+        if self.templates_need_to_be_modified:
+            modify_templates()
+
 
 class AssaySampleLocationAdd(OneGroupRequiredMixin, AssaySampleLocationMixin, CreateView):
     pass
 
 
-class AssaySampleLocationUpdate(SuperuserRequiredMixin, AssaySampleLocationMixin, UpdateView):
+class AssaySampleLocationUpdate(CreatorAndNotInUseMixin, AssaySampleLocationMixin, UpdateView):
     pass
 
 
@@ -3306,7 +3354,7 @@ class AssaySettingAdd(OneGroupRequiredMixin, AssaySettingMixin, CreateView):
     pass
 
 
-class AssaySettingUpdate(SuperuserRequiredMixin, AssaySettingMixin, UpdateView):
+class AssaySettingUpdate(CreatorAndNotInUseMixin, AssaySettingMixin, UpdateView):
     pass
 
 
@@ -3327,7 +3375,7 @@ class AssaySupplierAdd(OneGroupRequiredMixin, AssaySupplierMixin, CreateView):
     pass
 
 
-class AssaySupplierUpdate(SuperuserRequiredMixin, AssaySupplierMixin, UpdateView):
+class AssaySupplierUpdate(CreatorAndNotInUseMixin, AssaySupplierMixin, UpdateView):
     pass
 
 

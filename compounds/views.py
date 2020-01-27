@@ -3,7 +3,7 @@ from .models import Compound, CompoundTarget
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 # from django.utils.decorators import method_decorator
 # from django.contrib.auth.decorators import login_required
-from mps.mixins import SpecificGroupRequiredMixin, FormHandlerMixin, OneGroupRequiredMixin, SuperuserRequiredMixin
+from mps.mixins import SpecificGroupRequiredMixin, FormHandlerMixin, OneGroupRequiredMixin, CreatorAndNotInUseMixin
 # from django.shortcuts import render_to_response
 # from django.template import RequestContext
 from .forms import (
@@ -87,7 +87,7 @@ class CompoundsAdd(OneGroupRequiredMixin, CompoundsMixin, CreateView):
     pass
 
 
-class CompoundsUpdate(SuperuserRequiredMixin, CompoundsMixin, UpdateView):
+class CompoundsUpdate(CreatorAndNotInUseMixin, CompoundsMixin, UpdateView):
     # required_group_name = 'Change Compounds Front'
     pass
 

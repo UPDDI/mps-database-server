@@ -401,7 +401,9 @@ $(document).ready(function () {
     }
 
     function create_clone_button(index) {
-        return '<a data-clone-row-button="true" data-row="' + index + '" role="button" class="btn btn-info"><span class="glyphicon glyphicon-duplicate"></span></a>';
+        // Change clone button to read "Copy"
+        // return '<a data-clone-row-button="true" data-row="' + index + '" role="button" class="btn btn-info"><span class="glyphicon glyphicon-duplicate"></span></a>';
+        return '<a data-clone-row-button="true" data-row="' + index + '" role="button" class="btn btn-info">Copy</a>';
     }
 
     function replace_setup_data() {

@@ -13,6 +13,6 @@ additional_credentials.py
 # Ignore Eclipse files
 .project
 .pydevproject
-.settings/*
+/.settings
 drugtrials/mps_AATCcredentials.py
-.vscode
+/.vscode

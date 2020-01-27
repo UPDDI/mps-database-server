@@ -17,7 +17,8 @@ from assays.utils import (
     # save_assay_layout,
     # modify_qc_status_chip,
     # modify_qc_status_plate,
-    DEFAULT_CSV_HEADER
+    DEFAULT_CSV_HEADER,
+    modify_templates
 )
 # TODO SPAGHETTI CODE
 # from django.http import HttpResponseRedirect
@@ -70,9 +71,8 @@ from mps.base.admin import TrackableAdmin, LockableAdmin
 
 from .forms import AssayStudyFormAdmin #, AssayStudyConfigurationForm
 
-from mps.settings import MEDIA_ROOT, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX
-import os
-import xlsxwriter
+# import os
+# import xlsxwriter
 # from xlsxwriter.utility import xl_col_to_name
 
 from django.template.loader import render_to_string, TemplateDoesNotExist
@@ -88,144 +88,6 @@ import pytz
 from import_export.admin import ImportExportModelAdmin
 
 from django.utils.safestring import mark_safe
-
-
-def modify_templates():
-    """Writes totally new templates based on the dropdowns"""
-    # Where will I store the templates?
-    template_root = MEDIA_ROOT + '/excel_templates/'
-
-    version = 1
-    version += len(os.listdir(template_root))
-    version = str(version)
-
-    chip = xlsxwriter.Workbook(template_root + 'chip_template-' + version + '.xlsx')
-
-    chip_sheet = chip.add_worksheet()
-
-    # Set up formats
-    chip_red = chip.add_format()
-    chip_red.set_bg_color('#ff6f69')
-    chip_green = chip.add_format()
-    chip_green.set_bg_color('#96ceb4')
-
-    # Write the base files
-    chip_initial = [
-        DEFAULT_CSV_HEADER,
-        [''] * 17
-    ]
-
-    chip_initial_format = [
-        [chip_red] * 17,
-        [
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            chip_green,
-            None,
-            chip_green,
-            chip_green,
-            None,
-            chip_green,
-            None,
-            None,
-            None,
-            None
-        ]
-    ]
-
-    # Write out initial
-    for row_index, row in enumerate(chip_initial):
-        for column_index, column in enumerate(row):
-            cell_format = chip_initial_format[row_index][column_index]
-            chip_sheet.write(row_index, column_index, column, cell_format)
-
-    # Set column widths
-    # Chip
-    chip_sheet.set_column('A:A', 20)
-    chip_sheet.set_column('B:B', 20)
-    chip_sheet.set_column('C:C', 20)
-    chip_sheet.set_column('D:D', 15)
-    chip_sheet.set_column('E:E', 10)
-    chip_sheet.set_column('F:F', 10)
-    chip_sheet.set_column('G:G', 10)
-    chip_sheet.set_column('H:H', 20)
-    chip_sheet.set_column('I:I', 10)
-    chip_sheet.set_column('J:J', 20)
-    chip_sheet.set_column('K:K', 15)
-    chip_sheet.set_column('L:L', 10)
-    chip_sheet.set_column('M:M', 10)
-    chip_sheet.set_column('N:N', 10)
-    chip_sheet.set_column('O:O', 10)
-    chip_sheet.set_column('P:P', 10)
-    chip_sheet.set_column('Q:Q', 100)
-    # chip_sheet.set_column('I:I', 20)
-    # chip_sheet.set_column('J:J', 15)
-    # chip_sheet.set_column('K:K', 10)
-    # chip_sheet.set_column('L:L', 10)
-    # chip_sheet.set_column('M:M', 10)
-    # chip_sheet.set_column('N:N', 10)
-    # chip_sheet.set_column('O:O', 10)
-    # chip_sheet.set_column('P:P', 100)
-
-    chip_sheet.set_column('BA:BD', 30)
-
-    # Get list of value units  (TODO CHANGE ORDER_BY)
-    value_units = PhysicalUnits.objects.filter(
-        availability__contains='readout'
-    ).order_by(
-        'base_unit__unit',
-        'scale_factor'
-    ).values_list('unit', flat=True)
-
-    # List of targets
-    targets = AssayTarget.objects.all().order_by(
-        'name'
-    ).values_list('name', flat=True)
-
-    # List of methods
-    methods = AssayMethod.objects.all().order_by(
-        'name'
-    ).values_list('name', flat=True)
-
-    # List of sample locations
-    sample_locations = AssaySampleLocation.objects.all().order_by(
-        'name'
-    ).values_list('name', flat=True)
-
-    for index, value in enumerate(sample_locations):
-        chip_sheet.write(index, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX + 3, value)
-
-    for index, value in enumerate(methods):
-        chip_sheet.write(index, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX + 2, value)
-
-    for index, value in enumerate(value_units):
-        chip_sheet.write(index, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX + 1, value)
-
-    for index, value in enumerate(targets):
-        chip_sheet.write(index, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX, value)
-
-    value_units_range = '=$BB$1:$BB$' + str(len(value_units))
-
-    targets_range = '=$BA$1:$BA$' + str(len(targets))
-    methods_range = '=$BC$1:$BC$' + str(len(methods))
-    sample_locations_range = '=$BD$1:$BD$' + str(len(sample_locations))
-
-    chip_sheet.data_validation('H2', {'validate': 'list',
-                                      'source': targets_range})
-    chip_sheet.data_validation('J2', {'validate': 'list',
-                               'source': methods_range})
-    chip_sheet.data_validation('K2', {'validate': 'list',
-                               'source': sample_locations_range})
-    chip_sheet.data_validation('M2', {'validate': 'list',
-                               'source': value_units_range})
-
-    # Save
-    chip.close()
 
 
 # DEPRECATED

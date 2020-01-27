@@ -309,7 +309,7 @@ class AdminRequiredMixin(object):
         return super(AdminRequiredMixin, self).dispatch(*args, **kwargs)
 
 
-class DeletionMixin(object):
+class StudyDeletionMixin(object):
     """This mixin requires the user to be an admin and also needs the object to have no relations"""
     @method_decorator(login_required)
     @method_decorator(user_passes_test(user_is_active))
@@ -346,16 +346,35 @@ class DeletionMixin(object):
         can_be_deleted = True
 
         # If this view has "ignore_propagation", don't bother with this
-        if not getattr(self, 'ignore_propagation', None):
-            for current_field in self.object._meta.get_fields():
-                # TODO MODIFY TO CHECK M2M MANAGERS IN THE FUTURE
-                # TODO REVISE
-                if str(type(current_field)) == "<class 'django.db.models.fields.reverse_related.ManyToOneRel'>":
-                    manager = getattr(self.object, current_field.name + '_set')
-                    count = manager.count()
-                    if count > 0:
-                        can_be_deleted = False
-                        break
+        # if not getattr(self, 'ignore_propagation', None):
+        #     for current_field in self.object._meta.get_fields():
+        #         # TODO MODIFY TO CHECK M2M MANAGERS IN THE FUTURE
+        #         # TODO REVISE
+        #         if str(type(current_field)) == "<class 'django.db.models.fields.reverse_related.ManyToOneRel'>":
+        #             manager = getattr(self.object, current_field.name + '_set')
+        #             count = manager.count()
+        #             if count > 0:
+        #                 can_be_deleted = False
+        #                 break
+
+        # Gets rather specific... REFACTOR
+        # Check if there are data points, forbid if yes
+        if study and getattr(self.object, 'assaydatapoint_set', None):
+            if self.object.assaydatapoint_set.count() > 0:
+                return PermissionDenied(
+                    self.request,
+                    'Data Points depend on this, so it cannot be deleted.'
+                    ' Either delete the linked Data Points or contact a Database Administrator if you would like to delete this.'
+                )
+        elif study and getattr(self.object, 'assaymatrixitem_set', None):
+            # Inefficient
+            for matrix_item in self.object.assaymatrixitem_set.all():
+                if matrix_item.assaydatapoint_set.count() > 0:
+                    return PermissionDenied(
+                        self.request,
+                        'Data Points depend on this, so it cannot be deleted.'
+                        ' Either delete the linked Data Points or contact a Database Administrator if you would like to delete this.'
+                    )
 
         if not can_be_deleted:
             return PermissionDenied(
@@ -364,7 +383,50 @@ class DeletionMixin(object):
                 ' Either delete the linked entries or contact a Database Administrator if you would like to delete it.'
             )
 
-        return super(DeletionMixin, self).dispatch(*args, **kwargs)
+        return super(StudyDeletionMixin, self).dispatch(*args, **kwargs)
+
+
+class CreatorAndNotInUseMixin(object):
+    """This mixin requires the user to be the creator and prevents access if the model is in use"""
+    @method_decorator(login_required)
+    @method_decorator(user_passes_test(user_is_active))
+    def dispatch(self, *args, **kwargs):
+        # Superusers always have access
+        if self.request.user.is_authenticated and self.request.user.is_superuser:
+            return super(CreatorAndNotInUseMixin, self).dispatch(*args, **kwargs)
+
+        self.object = self.get_object()
+
+        # Make sure this is the creator
+        if self.request.user.id != self.object.created_by_id:
+            return PermissionDenied(self.request, 'Only the creator of this entry can perform this action. Please contact an administrator or the creator of this entry.')
+
+        can_be_modified = True
+
+        # relations_to_check = {
+        #     "<class 'django.db.models.fields.reverse_related.ManyToOneRel'>": True,
+        #     "<class 'django.db.models.fields.reverse_related.ManyToOneRel'>": True,
+        # }
+
+        for current_field in self.object._meta.get_fields():
+            # TODO MODIFY TO CHECK M2M MANAGERS IN THE FUTURE
+            # TODO REVISE
+            # if str(type(current_field)) in relations_to_check:
+            if str(type(current_field)) == "<class 'django.db.models.fields.reverse_related.ManyToOneRel'>":
+                manager = getattr(self.object, current_field.name + '_set')
+                count = manager.count()
+                if count > 0:
+                    can_be_modified = False
+                    break
+
+        if not can_be_modified:
+            return PermissionDenied(
+                self.request,
+                'Other entries depend on this, so it cannot be modified.'
+                ' Either delete the linked entries (if they belong to you) or contact a Database Administrator if you would like to delete it.'
+            )
+
+        return super(CreatorAndNotInUseMixin, self).dispatch(*args, **kwargs)
 
 
 # DEPRECATED
@@ -424,6 +486,10 @@ class FormHandlerMixin(RevisionMixin):
         })
 
         return kwargs
+
+    def pre_save_processing(self, form):
+        """For if there needs to be extra processing before a save"""
+        pass
 
     def extra_form_processing(self):
         """For if there needs to be extra processing after a save"""
@@ -505,6 +571,9 @@ class FormHandlerMixin(RevisionMixin):
                 all_formsets_valid = False
 
         if form.is_valid() and all_formsets_valid:
+            # May or may not do anything
+            self.pre_save_processing(form)
+
             save_forms_with_tracking(self, form, formset=all_formsets, update=self.is_update)
 
             # May or may not do anything

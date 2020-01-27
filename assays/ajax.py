@@ -2018,13 +2018,18 @@ def fetch_pre_submission_filters(request):
     ).exclude(
         organ_model_id=None
     ).prefetch_related(
-        'organ_model'
+        'organ_model__organ'
     )
 
     # Please note exclusion of null organ model here
     organ_models = sorted(list(set([
-        (matrix_item.organ_model_id, matrix_item.organ_model.name) for matrix_item in
-        accessible_matrix_items.exclude(organ_model_id=None)
+        (
+            matrix_item.organ_model_id,
+            '{} ({})'.format(
+                matrix_item.organ_model.name,
+                matrix_item.organ_model.organ,
+            )
+        ) for matrix_item in accessible_matrix_items.exclude(organ_model_id=None)
     ])), key=lambda x: x[1])
 
     organ_model_ids = {organ_model[0]: True for organ_model in organ_models}
