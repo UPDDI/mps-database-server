@@ -2003,7 +2003,11 @@ class AssayStudy(FlaggableModel):
 
     # TODO REVISE REVISE
     def __str__(self):
-        center_id = self.group.microphysiologycenter_set.first().center_id
+        first_center = self.group.microphysiologycenter_set.first()
+        if first_center:
+            center_id = first_center.center_id
+        else:
+            center_id = 'NO_CENTER'
         # study_types = self.get_study_types_string()
         return '-'.join([
             center_id,

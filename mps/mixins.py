@@ -360,7 +360,8 @@ class StudyDeletionMixin(object):
         # Gets rather specific... REFACTOR
         # Check if there are data points, forbid if yes
         if study and getattr(self.object, 'assaydatapoint_set', None):
-            if self.object.assaydatapoint_set.count() > 0:
+            # WARNING: The nature of replacement may change
+            if self.object.assaydatapoint_set.filter(replaced=False).count() > 0:
                 return PermissionDenied(
                     self.request,
                     'Data Points depend on this, so it cannot be deleted.'
@@ -369,7 +370,8 @@ class StudyDeletionMixin(object):
         elif study and getattr(self.object, 'assaymatrixitem_set', None):
             # Inefficient
             for matrix_item in self.object.assaymatrixitem_set.all():
-                if matrix_item.assaydatapoint_set.count() > 0:
+                # WARNING: The nature of replacement may change
+                if matrix_item.assaydatapoint_set.filter(replaced=False).count() > 0:
                     return PermissionDenied(
                         self.request,
                         'Data Points depend on this, so it cannot be deleted.'

@@ -1227,7 +1227,7 @@ class AssayStudyDelete(StudyDeletionMixin, UpdateView):
             # CONTRIVED
             self.object.modified_by = self.request.user
             # Change group to hide
-            self.object.group_id = 21
+            self.object.group_id = Group.objects.filter(name='DELETED')[0].id
             # Remove sign off
             self.object.signed_off_by = None
             # Restrict
