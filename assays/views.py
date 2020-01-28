@@ -298,7 +298,7 @@ def get_queryset_with_group_center_dictionary(queryset):
             group_center_map[group.id] = center
 
     for study in queryset:
-        study.center = group_center_map[study.group_id]
+        study.center = group_center_map.get(study.group_id, '')
 
 
 # Deprecated anyway
