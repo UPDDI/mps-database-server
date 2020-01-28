@@ -2797,63 +2797,63 @@ def pa1_predicted_delta_given_sample_size_and_power(sample_size, power, sig_leve
     return delta
 
 
-def one_sample_power_analysis_calculation(sample_data, sig_level, differences, sample_size, power):
+def one_sample_power_analysis_calculation(sample_data, sig_level, difference, sample_size, power):
     # Calculate the standard deviation of sample data
     sd = np.std(sample_data, ddof=1)
     if sd == 0:
         power_analysis_result = {'THE SAMPLE DATA ARE CONSTANT': ''}
-    if np.isnan(differences) and np.isnan(power) and np.isnan(sample_size):
+    if np.isnan(difference) and np.isnan(power) and np.isnan(sample_size):
         power_analysis_result = {'error': ''}
     else:
         # Given Diffrences
-        if ~np.isnan(differences):
+        if ~np.isnan(difference):
             if np.isnan(power) and np.isnan(sample_size):
                 pw_columns = ['Sample Size', 'Power']
                 sample_size_array = np.arange(2, 101, 0.1)  # Sample size is up to 100
                 power_analysis_result = pd.DataFrame(index=range(len(sample_size_array)), columns=pw_columns)
                 for i_size in range(len(sample_size_array)):
                     sample_size_loc=sample_size_array[i_size]
-                    power_value = pa1_predicted_power_given_delta_and_sample_size(differences, sample_size_loc, sig_level, sd)
+                    power_value = pa1_predicted_power_given_delta_and_sample_size(difference, sample_size_loc, sig_level, sd)
                     power_analysis_result.iloc[i_size, 0] = sample_size_loc
                     power_analysis_result.iloc[i_size, 1] = power_value
 
         # Given sample size
         if ~np.isnan(sample_size) and sample_size >= 2:
-            if np.isnan(differences) and np.isnan(power):
-                pw_columns = ['Differences', 'Power']
+            if np.isnan(difference) and np.isnan(power):
+                pw_columns = ['Difference', 'Power']
                 power_array = np.arange(sig_level+0.01, 0.9999, 0.01)  # power is between 0 and 1
                 power_analysis_result = pd.DataFrame(index=range(len(power_array)), columns=pw_columns)
                 for i_size in range(len(power_array)):
                     power_loc = power_array[i_size]
-                    differences_value = pa1_predicted_delta_given_sample_size_and_power(sample_size, power_loc, sig_level, sd)
-                    if differences_value > 0:
-                        power_analysis_result.iloc[i_size, 0] = differences_value
+                    difference_value = pa1_predicted_delta_given_sample_size_and_power(sample_size, power_loc, sig_level, sd)
+                    if difference_value > 0:
+                        power_analysis_result.iloc[i_size, 0] = difference_value
                     power_analysis_result.iloc[i_size, 1] = power_loc
 
         # Given power
         if ~np.isnan(power):
-            if np.isnan(differences) and np.isnan(sample_size):
-                pw_columns = ['Sample Size', 'Differences']
+            if np.isnan(difference) and np.isnan(sample_size):
+                pw_columns = ['Sample Size', 'Difference']
                 sample_size_array = np.arange(2, 101, 0.1)  # power is between 0 and 1
                 power_analysis_result = pd.DataFrame(index=range(len(sample_size_array)), columns=pw_columns)
                 for i_size in range(len(sample_size_array)):
                     sample_size_loc = sample_size_array[i_size]
-                    differences_value = pa1_predicted_delta_given_sample_size_and_power(sample_size_loc, power, sig_level, sd)
-                    if differences_value > 0:
-                        power_analysis_result.iloc[i_size, 1] = differences_value
+                    difference_value = pa1_predicted_delta_given_sample_size_and_power(sample_size_loc, power, sig_level, sd)
+                    if difference_value > 0:
+                        power_analysis_result.iloc[i_size, 1] = difference_value
                     power_analysis_result.iloc[i_size, 0] = sample_size_loc
 
-        # Given power and sample size predict differences
-        if (np.isnan(differences)) and (~np.isnan(power)) and (~np.isnan(sample_size)):
-            power_analysis_result = {'Differences': pa1_predicted_delta_given_sample_size_and_power(sample_size, power, sig_level, sd)}
+        # Given power and sample size predict difference
+        if (np.isnan(difference)) and (~np.isnan(power)) and (~np.isnan(sample_size)):
+            power_analysis_result = {'Difference': pa1_predicted_delta_given_sample_size_and_power(sample_size, power, sig_level, sd)}
 
-        # Given differences and sample size predict power
-        if (~np.isnan(differences)) and (np.isnan(power)) and (~np.isnan(sample_size)):
-            power_analysis_result = {'Power': pa1_predicted_power_given_delta_and_sample_size(differences, sample_size, sig_level, sd)}
+        # Given difference and sample size predict power
+        if (~np.isnan(difference)) and (np.isnan(power)) and (~np.isnan(sample_size)):
+            power_analysis_result = {'Power': pa1_predicted_power_given_delta_and_sample_size(difference, sample_size, sig_level, sd)}
 
-        # Given differences and power predict sample size
-        if (~np.isnan(differences)) and (~np.isnan(power)) and (np.isnan(sample_size)):
-            power_analysis_result = {'Sample Size': pa1_predict_sample_size_given_delta_and_power(differences, power, sig_level, sd)}
+        # Given difference and power predict sample size
+        if (~np.isnan(difference)) and (~np.isnan(power)) and (np.isnan(sample_size)):
+            power_analysis_result = {'Sample Size': pa1_predict_sample_size_given_delta_and_power(difference, power, sig_level, sd)}
             if np.isnan(power_analysis_result['Sample Size']):
                 power_analysis_result['Sample Size'] = None
     try:
@@ -2913,18 +2913,18 @@ def one_sample_power_analysis(one_sample_data,
     number_sample_population = len(sample_data)
     # The power analysis will be exceuted only when the sample population has more than one sample
     # Based the GUI's setting, return the power analysis results by calculated data or 2D curve
-    # At defined significance level, given Differences, predict sample size vs power curve
+    # At defined significance level, given Difference, predict sample size vs power curve
 
     if number_sample_population < 2:
-        print('Less than 2 samples')
+        return {'error': 'Less Than 2 Samples at Time Point'}
     else:
         ########################One Sample Power Analysis Parameter Setting   ###############################
         if os_diff_percentage != '':
-            differences = float(sample_mean * percent_change / 100)
+            difference = float(sample_mean * percent_change / 100)
         elif os_diff != '':
-            differences = float(os_diff)
+            difference = float(os_diff)
         else:
-            differences = np.NAN
+            difference = np.NAN
 
         if os_sample_size != '':
             sample_size = float(os_sample_size)
@@ -2936,9 +2936,15 @@ def one_sample_power_analysis(one_sample_data,
         else:
             power = np.NAN
 
-        # Power analysis results will be returned by user's input
-        power_analysis_result = one_sample_power_analysis_calculation(sample_data, sig_level, differences, sample_size, power)
+        # Check upper limit of delta, see if we exceed it.
+        if not np.isnan(power) and not np.isnan(difference):
+            sd = np.std(sample_data, ddof=1)
+            upper_limit = pa1_predicted_delta_given_sample_size_and_power(2, power, sig_level, sd) // 0.001 / 1000
+            if difference > upper_limit:
+                return {'error': 'The upper limit for \"Difference\" is: {} ({:e})'.format(upper_limit, upper_limit)}
 
+        # Power analysis results will be returned by user's input
+        power_analysis_result = one_sample_power_analysis_calculation(sample_data, sig_level, difference, sample_size, power)
         if type(power_analysis_result) is not dict and type(power_analysis_result) is not float:
             return power_analysis_result.to_dict('split')
         else:

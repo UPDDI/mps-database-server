@@ -485,7 +485,7 @@ $(document).ready(function () {
         // Adjust spacing of options
         $("#power-analysis-options").removeClass("col-sm-offset-6");
 
-        if ($('#power-analysis-options input[type="radio"][name="sample-num"]:checked').val() === 'two-sample') {
+        if ($('input[type="radio"][name="sample-num"]:checked').val() === 'two-sample') {
             if (checkbox.is(':checked')) {
                 active_compounds_checkboxes += 1;
                 if (active_compounds_checkboxes === 2) {
@@ -507,7 +507,7 @@ $(document).ready(function () {
                 }
                 $('#power-analysis-button').attr('disabled', true);
             }
-        } else if ($('#power-analysis-options input[type="radio"][name="sample-num"]:checked').val() === 'one-sample') {
+        } else if ($('input[type="radio"][name="sample-num"]:checked').val() === 'one-sample') {
             if (checkbox.is(':checked')) {
                 active_compounds_checkboxes += 1;
                 if (active_compounds_checkboxes === 1) {
@@ -566,7 +566,7 @@ $(document).ready(function () {
             remove_col(one_sample_data, 1);
             remove_col(one_sample_data, 1);
             for (var x = 0; x < one_sample_data.length; x++) {
-                if (one_sample_data[x][0] === one_sample_time_point * 1440) {
+                if (one_sample_data[x][0] === Math.floor(one_sample_time_point * 1440)) {
                     the_goods.push(one_sample_data[x][1]);
                 }
             }
@@ -574,26 +574,25 @@ $(document).ready(function () {
                 empty_graph_containers();
                 $('#error-text').text("Cannot Perform Power Analysis With No Data Points.");
                 $('#error-container').show();
-                return;
+            } else {
+                mean = the_goods.reduce((a,b) => a+b)/(the_goods.length);
+                std = Math.sqrt(the_goods.map(x => Math.pow(x-mean,2)).reduce((a,b) => a+b)/(the_goods.length - 1));
+                $('#summary-sample-number').text(the_goods.length);
+                $('#summary-mean').text(mean.toExponential(3));
+                $('#summary-std').text(std.toExponential(3));
+                if (std == 0 || isNaN(std)) {
+                    empty_graph_containers();
+                    $('#error-text').text("Cannot Perform Power Analysis With a Standard Deviation of 0 or NaN.");
+                    $('#error-container').show();
+                } else {
+                    $('#power-analysis-button').attr('disabled', false);
+                }
             }
-            mean = the_goods.reduce((a,b) => a+b)/(the_goods.length);
-            std = Math.sqrt(the_goods.map(x => Math.pow(x-mean,2)).reduce((a,b) => a+b)/(the_goods.length - 1));
-            $('#summary-sample-number').text(the_goods.length);
-            $('#summary-mean').text(mean.toFixed(3));
-            $('#summary-std').text(std.toFixed(3));
-            if (std === 0) {
-                empty_graph_containers();
-                $('#error-text').text("Cannot Perform Power Analysis With a Standard Deviation of 0.");
-                $('#error-container').show();
-                return;
-            }
-            empty_graph_containers();
             $('.one-sample-time-point-checkbox').each(function() {
                 if (!this.checked) {
                     $(this).attr('disabled', true);
                 }
             });
-            $('#power-analysis-button').attr('disabled', false);
         } else {
             empty_graph_containers();
             $('.one-sample-time-point-checkbox').each(function() {
@@ -712,7 +711,7 @@ $(document).ready(function () {
             searching: false,
             info: false,
             destroy: true,
-            "scrollY": "340px",
+            "scrollY": "200px",
             "order": [1, 'asc'],
         });
 
@@ -790,7 +789,7 @@ $(document).ready(function () {
                 title: '',
                 // If < 1000 and > 0.001 don't use scientific! (absolute value)
                 // y_axis_label_type
-                format: '',
+                format: 'scientific',
                 textStyle: {
                     bold: true
                 },
@@ -978,10 +977,10 @@ $(document).ready(function () {
     }
 
     $('#power-analysis-button').click(function() {
-        if ($('#power-analysis-options input[type="radio"][name="sample-num"]:checked').val() === 'two-sample') {
+        if ($('input[type="radio"][name="sample-num"]:checked').val() === 'two-sample') {
             fetch_two_sample_power_analysis_results();
         }
-        else if ($('#power-analysis-options input[type="radio"][name="sample-num"]:checked').val() === 'one-sample') {
+        else if ($('input[type="radio"][name="sample-num"]:checked').val() === 'one-sample') {
             fetch_one_sample_power_analysis_results();
         }
     });
@@ -1102,7 +1101,7 @@ $(document).ready(function () {
 
     function avg_val_graph_check() {
         var current_group, compound_first, compound_second;
-        if ($('#power-analysis-options input[type="radio"][name="sample-num"]:checked').val() === 'two-sample') {
+        if ($('input[type="radio"][name="sample-num"]:checked').val() === 'two-sample') {
             current_group = $('.power-analysis-group-checkbox:checked').first().attr('data-power-analysis-group');
             compound_first = $('.power-analysis-compounds-checkbox:checked').first().attr('data-power-analysis-compound');
             compound_second = $('.power-analysis-compounds-checkbox:checked').last().attr('data-power-analysis-compound');
@@ -1115,7 +1114,7 @@ $(document).ready(function () {
             } else {
                 $(power_analysis_values_graph).hide();
             }
-        } else if ($('#power-analysis-options input[type="radio"][name="sample-num"]:checked').val() === 'one-sample') {
+        } else if ($('input[type="radio"][name="sample-num"]:checked').val() === 'one-sample') {
             if (active_compounds_checkboxes === 1) {
                 current_group = $('.power-analysis-group-checkbox:checked').first().attr('data-power-analysis-group');
                 compound_first = $('.power-analysis-compounds-checkbox:checked').first().attr('data-power-analysis-compound');
@@ -1180,7 +1179,7 @@ $(document).ready(function () {
             searching: false,
             info: false,
             destroy: true,
-            "scrollY": "340px",
+            "scrollY": "240px",
             "order": [1, 'asc'],
         });
 
@@ -1190,11 +1189,11 @@ $(document).ready(function () {
         one_sample_time_points_table.columns.adjust();
     }
 
-    //TODO OS DIFFS
+    //OS DIFFS
     $('#one-sample-diff').blur(function() {
-        var mean = $('#summary-mean').text();
-        var diff = $('#one-sample-diff').val();
-        if ($.isNumeric(diff)) {
+        var mean = Number($('#summary-mean').text());
+        var diff = Number($('#one-sample-diff').val());
+        if ($.isNumeric(diff) && diff !== 0) {
             $('#one-sample-percent').val((diff / mean * 100).toFixed(3));
         } else {
             $('#one-sample-percent').val('');
@@ -1203,10 +1202,10 @@ $(document).ready(function () {
     });
 
     $('#one-sample-percent').blur(function() {
-        var mean = $('#summary-mean').text();
-        var perc = $('#one-sample-percent').val();
-        if ($.isNumeric(perc)) {
-            $('#one-sample-diff').val((mean * (perc * .01)).toFixed(3));
+        var mean = Number($('#summary-mean').text());
+        var perc = Number($('#one-sample-percent').val());
+        if ($.isNumeric(perc) && perc !== 0) {
+            $('#one-sample-diff').val((mean * (perc * .01)).toExponential());
         } else {
             $('#one-sample-percent').val('');
             $('#one-sample-diff').val('');
@@ -1307,6 +1306,7 @@ $(document).ready(function () {
                 draw_power_vs_sample_size_chart();
 
                 if ($('div[id^="google-visualization-errors-all"]')[0]) {
+                    console.log($('div[id^="google-visualization-errors-all"]')[0]);
                     power_analysis_two_sample_container_selector.hide();
                     $('#error-text').text("Power Analysis Cannot be Completed on This Dataset.");
                     $('#error-container').show();
@@ -1332,7 +1332,7 @@ $(document).ready(function () {
 
         if ((os_power === '' && os_sample_size === '' && os_diff === '') || (os_power !== '' && os_sample_size !== '' && os_diff !== '')) {
             empty_graph_containers();
-            $('#error-text').text("Cannot Run Analysis if the \"Differences\", \"Sample Size\", and \"Power\" Fields Are Completely Filled or Empty.");
+            $('#error-text').text("Cannot Run Analysis if the \"Difference\", \"Sample Size\", and \"Power\" Fields Are Completely Filled or Empty.");
             $('#error-container').show();
             return;
         }
@@ -1354,7 +1354,7 @@ $(document).ready(function () {
             }
         }
 
-        if (os_power <= significance_level || os_power >= 1) {
+        if (os_power !== '' && (os_power <= significance_level || os_power >= 1)) {
             empty_graph_containers();
             $('#error-text').text("Power Must be Greater Than Significance Level and Less Than 1.");
             $('#error-container').show();
@@ -1389,27 +1389,31 @@ $(document).ready(function () {
             .done(function(data) {
                 // Stop spinner
                 window.spinner.stop();
-
+                if ("error" in data.power_analysis_data) {
+                    empty_graph_containers();
+                    $('#error-text').text(data.power_analysis_data.error);
+                    $('#error-container').show();
+                }
                 if (data.power_analysis_data === null) {
                     empty_graph_containers();
                     $('#error-text').text("Power Analysis Cannot be Completed on This Dataset.");
                     $('#error-container').show();
                 }
                 else if (Object.keys(data.power_analysis_data).length == 1) {
-                    if ("Differences" in data.power_analysis_data) {
-                        if (data.power_analysis_data.Differences == null) {
+                    if ("Difference" in data.power_analysis_data) {
+                        if (data.power_analysis_data.Difference == null) {
                             empty_graph_containers();
-                            $('#error-text').text("Differences is Null. Try Removing a Value and Running Analysis Again.");
+                            $('#error-text').text("Difference is Null. Try Removing a Value and Running Analysis Again.");
                             $('#error-container').show();
                         } else {
-                            data.power_analysis_data.Differences = data.power_analysis_data.Differences.toFixed(3);
+                            data.power_analysis_data.Difference = data.power_analysis_data.Difference.toExponential(3);
                         }
-                        $(one_sample_multi_graph).html('<div class="well text-center"><br><br><br><h3>Differences</h3><br><h4>'+data.power_analysis_data.Differences+'</h4><br><h3>% Change (from mean)</h3><br><h4>'+(data.power_analysis_data.Differences / $('#summary-mean').text() * 100).toFixed(3)+'</h4><br><br><br></div>');
+                        $(one_sample_multi_graph).html('<div class="well text-center"><h4>Input<br>Sample Size: '+os_sample_size+'<br>Power: '+os_power+'<br>Output</h4><br><br><br><br><h3>Difference (from mean)</h3><br><h4>'+data.power_analysis_data.Difference+'</h4><br><h3>% Change (from mean)</h3><br><h4>'+(data.power_analysis_data.Difference / Number($('#summary-mean').text()) * 100).toExponential(3)+'</h4><br><br><br></div>');
                     }
                     else if ("Sample Size" in data.power_analysis_data) {
                         if (data.power_analysis_data["Sample Size"] == null) {
                             empty_graph_containers();
-                            $('#error-text').text("Sample Size is Null. This May be Due to \"Differences\" Being Too Large A Value. Try Removing This Value and Running Analysis Again.");
+                            $('#error-text').text("Sample Size is Null. This May be Due to \"Difference\" Being Too Large A Value. Try Removing This Value and Running Analysis Again.");
                             $('#error-container').show();
                         } else {
                             data.power_analysis_data['Sample Size'] = data.power_analysis_data['Sample Size'].toFixed(3)
@@ -1434,7 +1438,7 @@ $(document).ready(function () {
 
                     var one_sample_chart_data = data.power_analysis_data.data;
 
-                    var title = ['Differences', 'Sample Size', 'Power'];
+                    var title = ['Difference', 'Sample Size', 'Power'];
                     title = title.filter(e => e !== data.power_analysis_data.columns[0] && e !== data.power_analysis_data.columns[1]);
 
                     var one_sample_multi_graph_options = {
