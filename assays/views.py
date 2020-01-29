@@ -1366,9 +1366,7 @@ class AssayStudyTemplate(ObjectGroupRequiredMixin, DetailView):
             ).order_by('name').values_list('name', flat=True)
 
             # Get list of value units  (TODO CHANGE ORDER_BY)
-            value_units = PhysicalUnits.objects.filter(
-                availability__contains='readout'
-            ).order_by(
+            value_units = PhysicalUnits.objects.all().order_by(
                 'base_unit__unit',
                 'scale_factor'
             ).values_list('unit', flat=True)
