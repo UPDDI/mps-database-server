@@ -3,7 +3,12 @@
 
 {% block load_js %}
     <script src="{% static "assays/assayplatereaderfile_update.js" %}"></script>
-    {# need for on/off switches#}
+{% endblock %}
+
+{% block extrahead %}
+    {# this cannot be in the load_js because that block gets compressed (Luke's shell scripts) #}
+    {# CDN nedd to be ouside of compressor #}
+    {# Needed for toggling of on/off switches #}
     <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
     <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
 {% endblock %}
@@ -34,7 +39,7 @@
                     {% else %}
                         Review
                     {% endif %}
-                    Assay Plate Reader Plate File/Block
+                    Assay Plate Reader File with Block(s)
                     </b></em><br><br>
                     File:
                     <em>{{ form.form_filename_only.value }} </em>
@@ -112,7 +117,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="plate-map-page-field-contents">
+                                    <div class="required plate-map-page-field-contents">
                                         {{ form.se_file_format_select }}
                                     </div>
                                 </div>
@@ -344,7 +349,7 @@
                             <div class="col-md-12">
                                 <h3><em>This block information has already been <b>submitted</b>. </em></h3>
                                 <h4>The plate size and number of blocks cannot be edited after submission.</h4>
-                                <h4>The information in each block section (including adding a plate map) may be edited manually. </h4>
+                                <h4>The information in each block section (including adding an assay plate map) may be edited manually. </h4>
                                 <h4>To make changes to plate size or number of blocks, delete this file and add it again.</h4>
                             </div>
                         </div>
@@ -439,12 +444,12 @@
                                         <div class="col-md-3">
                                             <div class="plate-map-page-field-labels-large">
                                                 <div>
-                                                    <label>Plate Map to Use for Block*</label>
+                                                    <label>Assay Plate Map to Use for Block*</label>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
-                                            <div id="id_platemap_{{ forloop.counter }}" class="get-plate-map-changed plate-map-page-field-contents required">
+                                            <div id="id_platemap_{{ forloop.counter }}" class="required get-plate-map-changed plate-map-page-field-contents">
                                                 {{ form2.assayplatereadermap }}
                                             </div>
                                         </div>
@@ -475,12 +480,12 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
+                                        <div class="col-md-3">
                                             <div class="plate-map-page-field-contents ">
                                                 {{ form2.over_write_sample_time }}
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-6">
                                             <div class="plate-map-page-field-contents ">
                                                 <div>
                                                     {{ form2.form_selected_plate_map_time_unit }}
@@ -492,65 +497,65 @@
 
                                     <div class="row">
                                         <div class="col-md-3">
-                                            <div class="plate-map-page-field-labels-large">
+                                            <div class="plate-map-page-field-labels-medium">
                                                 <div>
                                                     <label>Start Line Number for this Block* </label>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="plate-map-page-field-contents required">
+                                        <div class="col-md-3">
+                                            <div class="required">
                                                 {{ form2.line_start }}
                                             </div>
                                         </div>
-                                        <div class="col-md-3"></div>
+                                        <div class="col-md-6"></div>
                                     </div>
 
                                     <div class="row">
                                         <div class="col-md-3">
-                                            <div class="plate-map-page-field-labels-large">
+                                            <div class="plate-map-page-field-labels-medium">
                                                 <div>
                                                     <label>End Line Number for this Block* </label>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="plate-map-page-field-contents required">
+                                        <div class="col-md-3">
+                                            <div class="required">
                                                 {{ form2.line_end }}
                                             </div>
                                         </div>
-                                        <div class="col-md-3"></div>
+                                        <div class="col-md-6"></div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-3">
-                                            <div class="plate-map-page-field-labels-large">
+                                            <div class="plate-map-page-field-labels-medium">
                                                 <div>
                                                     <label>First Column of this Block* </label>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="plate-map-page-field-contents required">
+                                        <div class="col-md-3">
+                                            <div class="required">
                                                 {{ form2.delimited_start }}
                                             </div>
                                         </div>
-                                        <div class="col-md-3"></div>
+                                        <div class="col-md-6"></div>
                                     </div>
 
                                     <div class="row">
                                         <div class="col-md-3">
-                                            <div class="plate-map-page-field-labels-large">
+                                            <div class="plate-map-page-field-labels-medium">
                                                 <div>
                                                     <label>Last Column of this Block* </label>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="plate-map-page-field-contents required">
+                                        <div class="col-md-3">
+                                            <div class="required">
                                                 {{ form2.delimited_end }}
                                             </div>
                                         </div>
-                                        <div class="col-md-3"></div>
+                                        <div class="col-md-6"></div>
                                     </div>
                                 </div>
 
@@ -566,7 +571,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-3">
-                        <div class="plate-map-page-field-labels-large">
+                        <div class="plate-map-page-field-labels-medium">
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -585,17 +590,17 @@
                 <div class="row">
                     <div class="col-md-12">
                         <h3><em>Important Information</em></h3>
-                        <p>The file block information may be saved with or without a plate map
-                            (so that file upload can be performed prior to plate map creation).
+                        <p>The file block information may be saved with or without an assay plate map
+                            (so that file upload can be performed prior to assay plate map creation).
                         </p>
-                        <p>A plate map must be selected and submitted for data from the data block to be processed.
+                        <p>An assay plate map must be selected and submitted for data from the data block to be processed.
                         </p>
                         <p>Each time the Submit Button is clicked, data from this file added during prior Submits
                             are removed (for all blocks) and re-added.
                             Thus, any downstream processing and/or annotation within the plate reader processing tool will be lost
                             (e.g., calibration, annotation).
                             HOWEVER, data for a block that has already been submitted to the main study
-                            (an option provided at the end of the plate reader processing workflow) will remain intact.
+                            (an option provided at the end of the assay plate reader data processing workflow) will remain intact.
                         </p>
                     </div>
                 </div>

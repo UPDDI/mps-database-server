@@ -19,7 +19,7 @@
     <div class="padded-bottom">
         <div class="well">
             <h1 class="text-center">
-                <em><b>Assay Plate Reader Map List</b></em>
+                <em><b>Assay Plate Map List</b></em>
                 <br>
                 <br>
                 Study: {{ object }}
@@ -27,32 +27,46 @@
         </div>
 
         <div>
-            <h2>
-                {# Hide setup add buttons if the study is marked reviewed #}
-                {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
-                    {% if not review %}
-                    <div>
-                        <a href="{% url 'assayplatereadermap-add' object.id %}" class="btn btn-success" role="button">Add Map</a>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        {# Hide setup add buttons if the study is marked reviewed #}
+                        {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
+                            {% if not review %}
+                            <div>
+                                <a href="{% url 'assayplatereadermap-add' object.id %}" class="btn btn-success" role="button">Add Plate Map</a>
+                            </div>
+                            {%  endif %}
+                        {% endif %}
                     </div>
-                    {%  endif %}
-                {% endif %}
-            </h2>
+                    <div class="col-md-6">
+                        <div>
+                {#            <a href="{% url 'assayplatereadermap-index' object.id %}" class="btn btn-primary" role="button">Jump to Assay Plate Reader Map List</a>#}
+                            <a href="{% url 'assayplatereaderfile-index' object.id %}" class="btn btn-primary" role="button">Jump to Assay Plate Reader File List</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         {% if assayplatereadermaps %}
             <div>
                 <div><p id="plate_map_index_tooltip"></p>
-                    <label for="plate_map_index_tooltip">Plate Map List &nbsp;</label>
+                    <label for="plate_map_index_tooltip">Assay Plate Map List &nbsp;</label>
                 </div>
                 <table id="assayplatereadermaps" class="display table table-striped table-hover" cellspacing="0" width="100%">
                 <thead>
                     <tr>
                         <th>View or Edit</th>
-                        <th>Plate Map Name</th>
+                        <th>Assay Plate Map Name</th>
                         <th>Plate Size</th>
+                        <th>Standard Unit</th>
+                        <th>Target, Method, Unit</th>
                         <th>Time Unit</th>
-                        <th>Standard</th>
+                        <th>Volume Unit</th>
+                        <th>Cell Count</th>
                         <th>Description</th>
+                        <th>File Count</th>
                         <th>Data Block Count</th>
                     </tr>
                 </thead>
@@ -67,9 +81,13 @@
                         </td>
                         <td>{{ plate.name }}</td>
                         <td>{{ plate.device }}</td>
-                        <td>{{ plate.time_unit }}</td>
+                        <td>{{ plate.standard_unit }}</td>
                         <td>{{ plate.new_study_assay }}</td>
+                        <td>{{ plate.time_unit }}</td>
+                        <td>{{ plate.volume_unit }}</td>
+                        <td>{{ plate.cell_count }}</td>
                         <td>{{ plate.description }}</td>
+                        <td>{{ plate.file_count }}</td>
                         <td>{{ plate.block_count }}</td>
                     </tr>
                 {% endfor %}

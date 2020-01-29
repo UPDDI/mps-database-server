@@ -3270,6 +3270,7 @@ def review_plate_reader_data_file_format(my_file_object, set_dict):
         max_number_of_rows_labeled_blank = 8888
         for each in file_list:
             if each[0].lower() == '~blank':
+                # print("fits: ", fits)
                 max_number_of_rows_labeled_blank = fits - 2
                 break
             fits = fits + 1
@@ -3427,7 +3428,7 @@ def review_plate_reader_data_file_format(my_file_object, set_dict):
         for each in file_list:
             # print(each[0])
             if each[0].lower() == '~blank':
-                end_block_indexes.append(fits)
+                end_block_indexes.append(fits-1)
             fits = fits + 1
 
         if len(end_block_indexes) > 0:
@@ -3570,12 +3571,13 @@ def add_update_plate_reader_data_map_item_values_from_file(
         i_de = d_end - 1
 
         if o_time == None:
-            overwrite_sample_time = "no"
+            true_to_overwrite_sample_time = False
         else:
-            overwrite_sample_time = "yes"
+            true_to_overwrite_sample_time = True
 
         try:
             # TODO-sck check this after get data in
+            # if there are data in the map item value table related to this file, remove them all
             instance = AssayPlateReaderMapItemValue.objects.filter(assayplatereadermapdatafileblock=pk_this_block)
             instance.delete()
             # TODO-sck - when add the processing part, may need to clean out other downstream if they do not cascade - check
@@ -3583,6 +3585,7 @@ def add_update_plate_reader_data_map_item_values_from_file(
             pass
 
         if platemap_id == None:
+            # there was not a plate map assigned to the current block of data in the loop
             # print("no platemap for this block ", pk_this_block, "  label ", block_label)
             pass
         else:
@@ -3635,12 +3638,13 @@ def add_update_plate_reader_data_map_item_values_from_file(
             # print(len(this_set_value_items))
 
             if len(raw_value_list) == len(this_set_value_items):
-                okay_to_continue = 'yes'
+                true_to_continue = True
             else:
-                okay_to_continue = 'no'
-                print("There is a very bad error - the number of cells in the block do not match the number of rows in the values set. Sandra should be notified. The user will not see there raw data in the plate map when they expect to.")
+                true_to_continue = False
+                err_msg = "There is a very bad error - the number of cells in the block do not match the number of rows in the values set. Sandra should be notified. The user will not see there raw data in the plate map when they expect to."
+                print(err_msg)
 
-            if okay_to_continue == 'yes':
+            if true_to_continue == True:
                 pidx = 0
                 for item in this_set_value_items:
                     # will be sorted by plate index and should go from 0 to size of plate minus 1
@@ -3650,7 +3654,7 @@ def add_update_plate_reader_data_map_item_values_from_file(
                         # build the instance and append it
 
                         # do not forget about the overwrite sample time if one was provided
-                        if overwrite_sample_time == 'yes':
+                        if true_to_overwrite_sample_time:
                             use_time = o_time
                         else:
                             use_time = item.time
@@ -3669,20 +3673,30 @@ def add_update_plate_reader_data_map_item_values_from_file(
                         # print(instance)
                         # add this list to the list of lists
                         list_of_instances.append(instance)
-                        okay_to_continue = 'yes'
+                        true_to_continue = True
                     else:
-                        okay_to_continue = 'no'
-                        print("There is a very bad error - the plate index of the data coming in did not match the value set. Sandra should be notified. The user will not see there raw data in the plate map when they expect to.")
+                        # true_to_continue = False
+                        err_msg = "There is a very bad error - the plate index of the data coming in did not match the value set. Sandra should be notified. The user will not see there raw data in the plate map when they expect to."
+                        print(err_msg)
+
                     pidx = pidx + 1
 
-            if okay_to_continue == 'yes':
-                # https://www.webforefront.com/django/multiplemodelrecords.html
-                # https://www.caktusgroup.com/blog/2011/09/20/bulk-inserts-django/
-                # http://stefano.dissegna.me/django-pg-bulk-insert.html
-                # https://stackoverflow.com/questions/15128705/how-to-insert-a-row-of-data-to-a-table-using-djangos-orm
-                # add the data to AssayPlateReaderMapItemValue
-                # print(list_of_instances)
-                AssayPlateReaderMapItemValue.objects.bulk_create(list_of_instances)
+    if true_to_continue:
+        # https://www.webforefront.com/django/multiplemodelrecords.html
+        # https://www.caktusgroup.com/blog/2011/09/20/bulk-inserts-django/
+        # http://stefano.dissegna.me/django-pg-bulk-insert.html
+        # https://stackoverflow.com/questions/15128705/how-to-insert-a-row-of-data-to-a-table-using-djangos-orm
+        # add the data to AssayPlateReaderMapItemValue
+        # print(list_of_instances)
+        # duplicating the pks when do all at once....
+        # this is much faster, but it only increments the pks for the first block...then, duplicate error!
+        AssayPlateReaderMapItemValue.objects.bulk_create(list_of_instances)
+        # with transaction.atomic():
+        #     # Loop over each store and invoke save() on each entry
+        #     for each in list_of_instances:
+        #         # save() method called on each member to create record
+        #         each.save()
+
 
     #         for query_instance in this_set.iterator():
     #             print(query_instance, query_instance.time, query_instance.well_use, query_instance.plate_index)

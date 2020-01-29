@@ -2608,7 +2608,7 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
     form_number_collection_time.widget.attrs.update({'class': 'form-control'})
     form_number_increment_value = forms.DecimalField(
         required=False,
-        initial=0,
+        initial=1,
     )
     form_number_increment_value.widget.attrs.update({'class': 'form-control'})
 
@@ -2627,6 +2627,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
             'study_assay',
             'time_unit',
             'volume_unit',
+            'standard_unit',
             'cell_count',
         ]
         widgets = {
@@ -2667,29 +2668,31 @@ class AssayPlateReaderMapForm(BootstrapForm):
         # note that, as of 20200111, there is one value set with null file
         # So, only look for those that have a populated file block id
         # get a record in the table with the plate index of 0 and that have a file block id
-        as_value_formset = AssayPlateReaderMapItemValue.objects.filter(
+        as_value_formset_with_file_block = AssayPlateReaderMapItemValue.objects.filter(
             assayplatereadermap=my_instance.id
         ).filter(
             plate_index=0
         ).filter(
             assayplatereadermapdatafileblock__isnull=False
-        ).prefetch_related(
-            'assayplatereadermapdatafile',
-            'assayplatereadermapdatafileblock',
+        # ).prefetch_related(
+        #     'assayplatereadermapdatafile',
+        #     'assayplatereadermapdatafileblock',
         ).order_by(
             'assayplatereadermapdatafileblock__id',
             'plate_index',
         )
-        #
+
         distinct_plate_map_with_select_string = []
         distinct_plate_map_with_block_pk = []
-        number_filed_combos = len(as_value_formset)
+        number_filed_combos = len(as_value_formset_with_file_block)
+
+        # print("print number of filed combos-forms.py: ", number_filed_combos)
 
         # queryset should have one record for each value SET that HAS a file-block associated to it
         # make a choice list/field for the file-block combos for this plate map
         if number_filed_combos > 0:
             i = 0
-            for record in as_value_formset:
+            for record in as_value_formset_with_file_block:
                 short_file_name = os.path.basename(str(record.assayplatereadermapdatafile.plate_reader_file))
                 data_block_label = str(record.assayplatereadermapdatafileblock.data_block)
                 data_block_metadata = record.assayplatereadermapdatafileblock.data_block_metadata
@@ -2756,6 +2759,8 @@ class AssayPlateReaderMapItemForm(forms.ModelForm):
 class AssayPlateReaderMapItemValueForm(forms.ModelForm):
     """Form for Assay Plate Reader Map Item Value"""
 
+    # 20200113 - changing so this formset is only called when adding and when update or view when no data are yet attached
+
     class Meta(object):
         model = AssayPlateReaderMapItemValue
         # it is worth noting that there is a nuance to excluding or setting fields
@@ -2764,7 +2769,9 @@ class AssayPlateReaderMapItemValueForm(forms.ModelForm):
             # 'id', do not need
             # 'assayplatereadermapdatafile', do not need
             # 'assayplatereadermapitem', do not need
-            'assayplatereadermapdatafileblock',
+            # next item - can remove later - do not need since, if there are matches, this formset will not be called
+            # but check rest is working first since will also affect formset (the custom_fields)
+            # 'assayplatereadermapdatafileblock',
             'plate_index',
             'raw_value',
             'time',
@@ -2803,11 +2810,14 @@ class AssayPlateReaderMapItemFormSet(BaseInlineFormSetForcedUniqueness):
             else:
                 form.instance.created_by = self.user
 
+        # print(self.queryset)
+
 # Formset for item values
 class AssayPlateReaderMapItemValueFormSet(BaseInlineFormSetForcedUniqueness):
-    custom_fields = (
-        'assayplatereadermapdatafileblock',
-    )
+    # changed way this worked on 20200114 and do not need this field any more
+    # custom_fields = (
+    #     'assayplatereadermapdatafileblock',
+    # )
 
     def __init__(self, *args, **kwargs):
         self.study = kwargs.pop('study', None)
@@ -2817,14 +2827,16 @@ class AssayPlateReaderMapItemValueFormSet(BaseInlineFormSetForcedUniqueness):
         if not self.study:
             self.study = self.instance.study
 
-        # use the filter to get matrix items in this study ONLY - makes the dic much smaller
-        # this speed up the custom_fields
-        filters = {'assayplatereadermapdatafileblock': {'study_id': self.study.id}}
-        self.dic = get_dic_for_custom_choice_field(self, filters=filters)
-
+        # changed way this worked on 20200114 and do not need this field any more - skip making the dic...
+        # # use the filter to get matrix items in this study ONLY - makes the dic much smaller
+        # # this speed up the custom_fields
+        # filters = {'assayplatereadermapdatafileblock': {'study_id': self.study.id}}
+        # self.dic = get_dic_for_custom_choice_field(self, filters=filters)
+        # # print(self.dic)
+        #
         for form in self.forms:
-            for field in self.custom_fields:
-                form.fields[field] = DicModelChoiceField(field, self.model, self.dic)
+            # for field in self.custom_fields:
+            #     form.fields[field] = DicModelChoiceField(field, self.model, self.dic)
 
             if self.study:
                 form.instance.study = self.study
@@ -2834,9 +2846,12 @@ class AssayPlateReaderMapItemValueFormSet(BaseInlineFormSetForcedUniqueness):
                 form.instance.created_by = self.user
 
         # HANDY had this up before the self.forms loop, but needed to move it down to work
+        # HANDY to know how to print a queryset to the console
         # self.queryset = self.queryset.order_by('assayplatereadermapdatafile', 'assayplatereadermapdatafileblock', 'plate_index')
         # https://stackoverflow.com/questions/13387446/changing-the-display-order-of-forms-in-a-formset
+        # print(self.queryset)
         self.queryset = self.queryset.order_by('assayplatereadermapdatafileblock', 'plate_index')
+        # print(self.queryset)
 
 
 # Formset factory for item and value
@@ -2996,10 +3011,10 @@ class AssayPlateReaderMapDataFileBlockForm(forms.ModelForm):
                                                    # 'style': 'border-color: transparent;',
                                                    'style': 'background-color: transparent;',
                                                    }),
-            'line_start': forms.NumberInput(attrs={'class': 'form-control'}),
-            'line_end': forms.NumberInput(attrs={'class': 'form-control'}),
-            'delimited_start': forms.NumberInput(attrs={'class': 'form-control'}),
-            'delimited_end': forms.NumberInput(attrs={'class': 'form-control'}),
+            'line_start': forms.NumberInput(attrs={'class': 'form-control required'}),
+            'line_end': forms.NumberInput(attrs={'class': 'form-control required'}),
+            'delimited_start': forms.NumberInput(attrs={'class': 'form-control required'}),
+            'delimited_end': forms.NumberInput(attrs={'class': 'form-control required'}),
             'over_write_sample_time': forms.NumberInput(attrs={'class': 'form-control'}),
             'data_block_metadata': forms.Textarea(attrs={'cols': 80, 'rows': 1, 'class': 'form-control'}),
         }
@@ -3009,9 +3024,11 @@ class AssayPlateReaderMapDataFileBlockForm(forms.ModelForm):
         self.study = kwargs.pop('study', None)
         self.user = kwargs.pop('user', None)
         super(AssayPlateReaderMapDataFileBlockForm, self).__init__(*args, **kwargs)
+
         # this made the dropdown behave when copied with the formset!
         # SUPER IMPORTANT and HANDY when need to copy formsets with dropdowns - if have selectized, it is a big mess
-        self.fields['assayplatereadermap'].widget.attrs.update({'class': ' no-selectize'})
+        self.fields['assayplatereadermap'].widget.attrs.update({'class': ' no-selectize required'})
+
 
     # move to the java script...it will be better for the user
     # def clean(self):
@@ -3048,6 +3065,21 @@ class AssayPlateReaderMapDataFileBlockForm(forms.ModelForm):
 
 # formsets
 class AssayPlateReaderMapFileBlockFormSet(BaseInlineFormSetForcedUniqueness):
+    custom_fields_for_limiting_list = (
+        'assayplatereadermap',
+    )
+
+    # tried putting this in the Form, but had some issues
+    # print(self.fields['assayplatereadermap'].queryset)
+    # #
+    # # next line makes it work
+    # self.study = 293
+    # print(self.study)
+    # self.fields['assayplatereadermap'].queryset = AssayPlateReaderMap.objects.filter(
+    #     study_id=self.study
+    # )
+    #
+    # # print(self.fields['assayplatereadermap'].queryset)
 
     def __init__(self, *args, **kwargs):
         # Get the study
@@ -3060,10 +3092,11 @@ class AssayPlateReaderMapFileBlockFormSet(BaseInlineFormSetForcedUniqueness):
 
         idx = 0
         for formset in self.forms:
-            # print(idx, " forms.py AssayPlateReaderMapFileBlockFormSet ")
-            # print(formset)
-            # for field in self.custom_fields:
-            #     form.fields[field] = field
+            for field in self.custom_fields_for_limiting_list:
+                formset.fields[field].queryset = AssayPlateReaderMap.objects.filter(
+                    study_id=self.study
+                    # study_id=293
+                )
             if self.study:
                 formset.instance.study = self.study
             if formset.instance.pk:

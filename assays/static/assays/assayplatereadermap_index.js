@@ -1,6 +1,6 @@
 $(document).ready(function() {
 
-    let global_plate_map_index_tooltip = "After a study has been setup in the database (and chips added to the study), assay plate maps can be create here. Making an assay plate map is the first step in using the assay plate reader upload and calibration feature.";
+    let global_plate_map_index_tooltip = "After a study has been setup in the database matrix items (i.e. chips) have been added to the study, assay plate maps can be create here. Making an assay plate map is the first step in using the assay plate reader upload and calibration feature.";
     $('#plate_map_index_tooltip').next().html($('#plate_map_index_tooltip').next().html() + make_escaped_tooltip(global_plate_map_index_tooltip));
 
     // to format the table - keep

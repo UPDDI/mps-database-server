@@ -1,6 +1,6 @@
 $(document).ready(function() {
 
-    let global_plate_file_index_tooltip = "After a study has been setup in the database (and chips added to the study), and an assay plate map has been created and saved, a file can be upload and associated to a plate map. Uploading a data file and associated its data to a plate map is the second step in using the assay plate reader upload and calibration feature.";
+    let global_plate_file_index_tooltip = "After a study has been setup in the database, and matrix items (i.e. chips) have been added to the study, and an assay plate map has been created and saved, a file can be upload and associated to an assay plate map. Uploading a data file and associating its data to an assay plate map is the second step in using the assay plate reader upload and calibration feature.";
     $('#plate_file_index_tooltip').next().html($('#plate_file_index_tooltip').next().html() + make_escaped_tooltip(global_plate_file_index_tooltip));
 
     //to format the table - keep

@@ -34,6 +34,9 @@ from .models import (
     AssayPlateReaderMapItem,
     AssayPlateReaderMapItemValue,
     AssayPlateReaderMapDataFile,
+    assay_plate_reader_map_info_shape_col_dict,
+    assay_plate_reader_map_info_shape_row_dict,
+    assay_plate_reader_map_info_plate_size_choices_list,
 )
 from microdevices.models import (
     MicrophysiologyCenter,
@@ -4391,59 +4394,18 @@ def clone_study(request):
     )
 
 
-# sck - assay plate map - fetch information about matrix item setup
-def fetch_information_for_plate_map_matrix_item_setup(request):
-    """
-    Assay Plate Map - Getting the information for matrix item setup to display in plate map when clicked.
-    """
-
-    study_id = request.POST.get('study', '0')
-
-    if not study_id:
-        return HttpResponseServerError()
-
-    matrix_items = AssayMatrixItem.objects.filter(
-        study_id=study_id
-    # ).prefetch_related(
-    #     'matrix',
-    # ).order_by('matrix__name', 'name',
-    )
-
-    # for matrix_item in matrix_items:
-    #     print(matrix_item)
-    #     print(matrix_item.id)
-    #     print(matrix_item.name)
-    #     print(matrix_item.assaysetupcompound_set)
-    #     print(matrix_item.assaysetupcell_set)
-    #     print(matrix_item.assaysetupsetting_set)
-    #     print(matrix_item.stringify_compounds())
-    #     print(matrix_item.stringify_cells())
-    #     print(matrix_item.stringify_settings())
-    #     print(matrix_item.matrix.name)
-
-    data = {}
-    data_to_return = []
-
-    for each in matrix_items:
-        data_fields = {
-            'matrix_item_id': each.id,
-            'compound': each.stringify_compounds(),
-            'cell': each.stringify_cells(),
-            'setting': each.stringify_settings(),
-        }
-        data_to_return.append(data_fields)
-
-    data.update({'mi_list': data_to_return, })
-    return HttpResponse(json.dumps(data), content_type="application/json")
-
-
 # sck - assay plate map - fetch information about plate layout by size
 def fetch_information_for_plate_map_layout(request):
     """
-    Assay Plate Map All - Getting the information on how to layout a plate map based on plate size (calls utility).
+    Assay Plate Map All - Getting the information on how to layout a plate map based on plate size (calls utility) and Assay Plate Map - Getting the information for matrix item setup to display in plate map when clicked.
     """
 
+    study_id = request.POST.get('study', '0')
     plate_size = request.POST.get('plate_size', '0')
+    yes_if_matrix_item_setup_already_run = request.POST.get('yes_if_matrix_item_setup_already_run', 'no')
+
+    if not study_id:
+        return HttpResponseServerError()
 
     if not plate_size:
         return HttpResponseServerError()
@@ -4466,7 +4428,66 @@ def fetch_information_for_plate_map_layout(request):
     }
     data_to_return.append(data_fields)
 
-    data.update({'packed_lists': data_to_return, })
+    matrix_data_to_return = []
+
+    if yes_if_matrix_item_setup_already_run == 'no':
+
+        matrix_items = AssayMatrixItem.objects.filter(
+            study_id=study_id
+        # ).prefetch_related(
+        #     'matrix',
+        # ).order_by('matrix__name', 'name',
+        )
+
+        # for matrix_item in matrix_items:
+        #     print(matrix_item)
+        #     print(matrix_item.id)
+        #     print(matrix_item.name)
+        #     print(matrix_item.assaysetupcompound_set)
+        #     print(matrix_item.assaysetupcell_set)
+        #     print(matrix_item.assaysetupsetting_set)
+        #     print(matrix_item.stringify_compounds())
+        #     print(matrix_item.stringify_cells())
+        #     print(matrix_item.stringify_settings())
+        #     print(matrix_item.matrix.name)
+
+        for each in matrix_items:
+            short_compound = ""
+            short_cell = ""
+            short_setting = ""
+
+            my_compound = each.stringify_compounds().split('\n')
+            my_cell = each.stringify_cells().split('\n')
+
+            # print("my_compound ", my_compound)
+
+            for idx, item in enumerate(my_compound):
+                if idx % 2 == 0:
+                    short_compound = short_compound + "  " + item
+            for idx, item in enumerate(my_cell):
+                if idx % 2 == 0:
+                    short_cell = short_cell + "  " + item
+            short_setting = each.stringify_settings()
+
+            # print('short_compound ', short_compound)
+
+            data_fields = {
+                'matrix_item_id': each.id,
+                'long_compound': each.stringify_compounds(),
+                'long_cell': each.stringify_cells(),
+                'long_setting': each.stringify_settings(),
+                'compound': short_compound,
+                'cell': short_cell,
+                'setting': short_setting,
+            }
+            matrix_data_to_return.append(data_fields)
+
+    # data.update({'mi_list': matrix_data_to_return, })
+    # data.update({'packed_lists': data_to_return, })
+
+    data.update({'mi_list': matrix_data_to_return,
+                 'packed_lists': data_to_return, })
+
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
@@ -4493,16 +4514,53 @@ def fetch_assay_study_matrix_for_platemap(request):
         'matrix',
     ).order_by('matrix__name', 'row_index', 'column_index', 'name', )
 
+    max_row_index = 0;
+    max_column_index = 0;
+
     for each in this_queryset:
+        if each.row_index > max_row_index:
+            max_row_index = each.row_index
+        if each.column_index > max_column_index:
+            max_column_index = each.column_index
+
         data_fields = {
             'matrix_item_id': each.id,
-            'matrix_item_name': each.name,
+            'matrix_item_text': each.name,
             'matrix_item_row_index': each.row_index,
             'matrix_item_column_index': each.column_index,
         }
+
         data_to_return.append(data_fields)
 
-    data.update({'mi_list': data_to_return, })
+    number_of_rows = max_row_index + 1
+    number_of_columns = max_column_index + 1
+
+    # HANDY - must sort in place or get empty list back
+    # copy list to new variable
+    plate_sizes = assay_plate_reader_map_info_plate_size_choices_list
+    # sort in place
+    plate_sizes.sort()
+    # print("list after sorting ", plate_sizes)
+
+    # if not found, use the largest plate (last one in sorted list)
+    my_size = plate_sizes[-1]
+    # HARDCODED - set the default...
+    my_column_size = 24;
+    for this_size in plate_sizes:
+        row_size = assay_plate_reader_map_info_shape_row_dict.get(this_size)
+        col_size = assay_plate_reader_map_info_shape_col_dict.get(this_size)
+        if number_of_rows <= row_size and number_of_columns <= col_size:
+            my_size = this_size
+            my_column_size = col_size
+            break
+
+    # print(data_to_return)
+
+    data.update({'mi_list': data_to_return,
+                 'device_size': my_size,
+                 'number_columns': my_column_size,
+                 })
+
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
@@ -4521,58 +4579,73 @@ def fetch_assay_study_platemap_for_platemap(request):
     elif not this_platemap.isnumeric():
         return HttpResponseServerError()
 
+    data = {}
+    platemap_data_to_return = []
+    data_to_return = []
+
+    this_platemap_queryset = AssayPlateReaderMap.objects.filter(
+        id=this_platemap
+    )
+
+    # should be just one
+    for this_map in this_platemap_queryset:
+        data_fields = {
+            'name': this_map.name,
+            'description': this_map.description,
+            'device': this_map.device,
+            'time_unit': this_map.time_unit,
+            'volume_unit': this_map.volume_unit,
+            'cell_count': this_map.cell_count,
+            'study_assay_id': this_map.study_assay_id,
+            'standard_unit': this_map.standard_unit
+        }
+        platemap_data_to_return.append(data_fields)
+
+    # print(platemap_data_to_return)
+
     this_queryset = AssayPlateReaderMapItem.objects.filter(
         study_id=this_study
     ).filter(
         assayplatereadermap_id=this_platemap
     ).prefetch_related(
         'assayplatereadermap',
+        'matrix_item',
+        'location',
     ).order_by('plate_index', 'pk', )
-
-    this_platemap = AssayPlateReaderMap.objects.filter(
-        id=this_platemap
-    )
-
-    data = {}
-    data_to_return = []
-
-    # may want to just send the plate map info once. quickest for now, but sends same info more than needed.
-    for my_map in this_platemap:
-        map_name = my_map.name
-        map_description = my_map.description
-        map_device = my_map.device
-        map_time_unit = my_map.time_unit
-        map_volume_unit = my_map.volume_unit
-        map_cell_count = my_map.cell_count
-        map_study_assay_id = my_map.study_assay_id
 
     for each in this_queryset:
         # print(each)
         # fields = each.__dict__
-        # for field, value in fields.items():
+        # for field, value in each.items():
         #     print(field, value)
+        try:
+            item_matrix_item_text = each.matrix_item.name
+        except:
+            item_matrix_item_text = "-"
+        try:
+            item_location_text = each.location.name
+        except:
+            item_location_text = "-"
+
         data_fields = {
-            'name': map_name,
-            'description': map_description,
-            'device': map_device,
-            'time_unit': map_time_unit,
-            'volume_unit': map_volume_unit,
-            'cell_count': map_cell_count,
-            'study_assay_id': map_study_assay_id,
-            'well_name': each.name,
-            'matrix_item_id': each.matrix_item_id,
+            # 'well_name': each.name,
             'well_use': each.well_use,
-            'location_id': each.location_id,
-            'default_time': each.default_time,
             'standard_value': each.standard_value,
+            'matrix_item': each.matrix_item_id,
+            'matrix_item_text': item_matrix_item_text,
+            'location': each.location_id,
+            'location_text': item_location_text,
             'dilution_factor': each.dilution_factor,
             'collection_volume': each.collection_volume,
-            'collection_time': each.collection_time
+            'collection_time': each.collection_time,
+            'default_time': each.default_time
         }
 
         data_to_return.append(data_fields)
-        data.update({'platemap_info': data_to_return, })
+        data.update({'platemap_info': platemap_data_to_return,
+                     'item_info': data_to_return, })
 
+    # print(data_to_return)
     return HttpResponse(json.dumps(data),
                         content_type="application/json")
 
@@ -4717,6 +4790,42 @@ def fetch_plate_reader_data_block_plate_map_size(request):
     return HttpResponse(json.dumps(data),
                         content_type="application/json")
 
+# sck - assay plate map - Get raw value and time for display in existing plate map with file block attached.
+def fetch_information_for_value_set_of_plate_map_for_data_block(request):
+    """
+    Assay Plate Map Update or View with Data File Block - Get raw value and time for display in existing plate map with file block attached.
+    """
+
+    this_data_file_block = request.POST.get('pk_data_block', '0')
+    this_platemap = request.POST.get('pk_platemap', '0')
+    # print(this_data_file_block)
+    # print(this_platemap)
+    if not this_data_file_block:
+        return HttpResponseServerError()
+    elif not this_data_file_block.isnumeric():
+        return HttpResponseServerError()
+
+    this_queryset = AssayPlateReaderMapItemValue.objects.filter(
+        assayplatereadermapdatafileblock_id=this_data_file_block
+    ).filter(
+        assayplatereadermap_id=this_platemap
+    ).order_by('plate_index', )
+
+    data = {}
+    data_to_return = []
+
+    for each in this_queryset:
+        # print(each)
+        data_fields = {
+            'time': each.time,
+            'raw_value': each.raw_value,
+        }
+        # make sure to order by the plate_index
+        data_to_return.append(data_fields)
+        data.update({'block_data': data_to_return, })
+    # print(data)
+    return HttpResponse(json.dumps(data),
+                        content_type="application/json")
 
 # TODO TODO TODO
 switch = {
@@ -4797,8 +4906,8 @@ switch = {
     'fetch_plate_reader_data_block_plate_map_size': {
         'call': fetch_plate_reader_data_block_plate_map_size
     },
-    'fetch_information_for_plate_map_matrix_item_setup': {
-        'call': fetch_information_for_plate_map_matrix_item_setup
+    'fetch_information_for_value_set_of_plate_map_for_data_block': {
+        'call': fetch_information_for_value_set_of_plate_map_for_data_block
     },
 }
 
