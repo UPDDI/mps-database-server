@@ -104,44 +104,6 @@
         </div>
     </div>
 
-    <div hidden id="pbpk_section">
-
-    <div class="form-group">
-        <div class="col-sm-2"></div>
-        <div class="radio col-sm-10">
-            <label for="pbpk_steady_state">
-                <input type="radio" id="id_pbpk_steady_state_radio" name="pbpk_trigger_radio" value="pbpk_steady_state_radio" checked>
-                {{ form.pbpk_steady_state.label_tag }}
-            </label>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <div class="col-sm-2"></div>
-        <div class="radio col-sm-10">
-            <label for="pbpk_bolus">
-                <input type="radio" id="id_pbpk_bolus_radio" name="pbpk_trigger_radio" value="pbpk_bolus_radio">
-                {{ form.pbpk_bolus.label_tag }}
-            </label>
-        </div>
-    </div>
-
-    {% include 'generic_field.html' with field=form.number_of_relevant_cells %}
-
-    <div hidden id="total_device_volume_container">
-        {% include 'generic_field.html' with field=form.total_device_volume %}
-    </div>
-    <div hidden id="flow_rate_container">
-        {% include 'generic_field.html' with field=form.flow_rate %}
-    </div>
-
-    <div style="display: none;">
-        {% include 'generic_field.html' with field=form.pbpk_steady_state %}
-        {% include 'generic_field.html' with field=form.pbpk_bolus %}
-    </div>
-
-    </div>
-
     {# Proposed: Excluded for convenience #}
 {#    {% include 'generic_field.html' with field=form.study_types label="Study Types*" %}#}
 
@@ -270,6 +232,45 @@
         </div>
     </div>
     {% endcomment %}
+
+    <div hidden id="pbpk_section">
+        <legend>PK Parameters</legend>
+
+        <div class="form-group">
+            <div class="col-sm-2"></div>
+            <div class="radio col-sm-10">
+                <label for="pbpk_steady_state">
+                    <input type="radio" id="id_pbpk_steady_state_radio" name="pbpk_trigger_radio" value="pbpk_steady_state_radio" checked>
+                    {{ form.pbpk_steady_state.label_tag }}
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-2"></div>
+            <div class="radio col-sm-10">
+                <label for="pbpk_bolus">
+                    <input type="radio" id="id_pbpk_bolus_radio" name="pbpk_trigger_radio" value="pbpk_bolus_radio">
+                    {{ form.pbpk_bolus.label_tag }}
+                </label>
+            </div>
+        </div>
+
+        {% include 'generic_field.html' with field=form.number_of_relevant_cells %}
+
+        <div hidden id="total_device_volume_container">
+            {% include 'generic_field.html' with field=form.total_device_volume %}
+        </div>
+        <div hidden id="flow_rate_container">
+            {% include 'generic_field.html' with field=form.flow_rate %}
+        </div>
+
+        <div style="display: none;">
+            {% include 'generic_field.html' with field=form.pbpk_steady_state %}
+            {% include 'generic_field.html' with field=form.pbpk_bolus %}
+        </div>
+
+    </div>
 
     {{ study_assay_formset.management_form }}
     <legend>Assays</legend>

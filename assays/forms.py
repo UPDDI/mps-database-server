@@ -450,6 +450,10 @@ class AssayStudyForm(SignOffMixin, BootstrapForm):
         super(AssayStudyForm, self).__init__(*args, **kwargs)
         self.fields['group'].queryset = filter_groups(self.user)
 
+        # Crudely force required class
+        for current_field in ['total_device_volume', 'flow_rate', 'number_of_relevant_cells']:
+            self.fields[current_field].widget.attrs['class'] += ' required'
+
     class Meta(object):
         model = AssayStudy
         widgets = {
@@ -466,6 +470,13 @@ class AssayStudyForm(SignOffMixin, BootstrapForm):
 
         if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], ['pbpk_steady_state'], data['pbpk_bolus']]):
             raise forms.ValidationError('Please select at least one study type')
+
+        if data.get('pbpk_steady_state', '') and (not data.get('number_of_relevant_cells', '') or not data.get('flow_rate', '')):
+            raise forms.ValidationError('Continuous Infusion PBPK Requires Number of Cells Per MPS Model and Flow Rate')
+
+        if data.get('pbpk_bolus', '') and (not data.get('number_of_relevant_cells', '') or not data.get('total_device_volume', '')):
+            raise forms.ValidationError('Bolus PBPK Requires Number of Cells Per MPS Model and Total Device Volume')
+
 
 
 class AssayStudyFormAdmin(BootstrapForm):
@@ -500,12 +511,22 @@ class AssayStudyFormAdmin(BootstrapForm):
         self.fields['access_groups'].queryset = groups_without_repeat
         self.fields['collaborator_groups'].queryset = groups_without_repeat
 
+        # Crudely force required class
+        for current_field in ['total_device_volume', 'flow_rate', 'number_of_relevant_cells']:
+            self.fields[current_field].widget.attrs['class'] += ' required'
+
     def clean(self):
         # clean the form data, before validation
         data = super(AssayStudyFormAdmin, self).clean()
 
         if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], ['pbpk_steady_state'], data['pbpk_bolus']]):
             raise forms.ValidationError('Please select at least one study type')
+
+        if data.get('pbpk_steady_state', '') and (not data.get('number_of_relevant_cells', '') or not data.get('flow_rate', '')):
+            raise forms.ValidationError('Continuous Infusion PBPK Requires Number of Cells Per MPS Model and Flow Rate')
+
+        if data.get('pbpk_bolus', '') and (not data.get('number_of_relevant_cells', '') or not data.get('total_device_volume', '')):
+            raise forms.ValidationError('Bolus PBPK Requires Number of Cells Per MPS Model and Total Device Volume')
 
 
 class AssayStudySupportingDataForm(BootstrapForm):
@@ -1880,6 +1901,10 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         # Bad
         # self.fields['number_of_items'].widget.attrs['style'] = 'margin-top:10px;'
 
+        # Crudely force required class
+        for current_field in ['total_device_volume', 'flow_rate', 'number_of_relevant_cells']:
+            self.fields[current_field].widget.attrs['class'] += ' required'
+
     class Meta(object):
         model = AssayStudy
         widgets = {
@@ -1896,6 +1921,12 @@ class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
         if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], ['pbpk_steady_state'], data['pbpk_bolus']]):
             raise forms.ValidationError('Please select at least one study type')
+
+        if data.get('pbpk_steady_state', '') and (not data.get('number_of_relevant_cells', '') or not data.get('flow_rate', '')):
+            raise forms.ValidationError('Continuous Infusion PBPK Requires Number of Cells Per MPS Model and Flow Rate')
+
+        if data.get('pbpk_bolus', '') and (not data.get('number_of_relevant_cells', '') or not data.get('total_device_volume', '')):
+            raise forms.ValidationError('Bolus PBPK Requires Number of Cells Per MPS Model and Total Device Volume')
 
         # SLOPPY NOT DRY
         new_setup_data = {}

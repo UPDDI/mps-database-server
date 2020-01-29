@@ -1891,12 +1891,14 @@ class AssayStudy(FlaggableModel):
     pbpk_steady_state = models.BooleanField(
         default=False,
         # verbose_name='PBPK Steady State'
-        verbose_name='Constant Infusion'
+        # verbose_name='Constant Infusion'
+        verbose_name='Continuous Infusion'
     )
     pbpk_bolus = models.BooleanField(
         default=False,
         # verbose_name='PBPK Bolus'
-        verbose_name='Single Bolus'
+        # verbose_name='Single Bolus'
+        verbose_name='Bolus'
     )
 
     # Estimate of PBPK relevant cells
@@ -1904,7 +1906,7 @@ class AssayStudy(FlaggableModel):
     number_of_relevant_cells = models.IntegerField(
         null=True,
         blank=True,
-        verbose_name='Number of Relevant Cells'
+        verbose_name='Number of PK Relevant Cells per MPS Model'
     )
     # Relevant PBPK volume
     total_device_volume = models.FloatField(
