@@ -1571,7 +1571,9 @@ def validate_data_file(request):
     include_all = request.POST.get('include_all', '')
     truncate_negative = request.POST.get('truncate_negative', '')
     dynamic_quality = json.loads(request.POST.get('dynamic_quality', '{}'))
-    number_for_interval = request.POST.get('number_for_interval', ''),
+    number_for_interval = request.POST.get('number_for_interval', '')
+
+    start_at_zero = request.POST.get('start_at_zero', '')
 
     this_study = AssayStudy.objects.get(pk=int(study))
 
