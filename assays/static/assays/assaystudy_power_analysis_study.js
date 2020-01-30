@@ -321,6 +321,10 @@ $(document).ready(function () {
 
     data_group_info_table_display = $('#data_group_info_table_display');
 
+    $("#toggle-intro-text").click(function() {
+        $("#intro-text").toggle();
+    })
+
     $(document).on('mouseover', '.data-power-analysis-group-info', function() {
         var current_position = $(this).offset();
 
@@ -423,6 +427,14 @@ $(document).ready(function () {
         $(one_sample_multi_graph).empty();
         $('#time-points-table_wrapper').hide();
         $('#error-container').hide();
+        $('#summary-time').html('&nbsp;');
+        $('#summary-sample-number').html('&nbsp;');
+        $('#summary-mean').html('&nbsp;');
+        $('#summary-std').html('&nbsp;');
+        $('#one-sample-diff').val('');
+        $('#one-sample-percent').val('');
+        $('#one-sample-size').val('');
+        $('#one-sample-power').val('0.8');
         avg_val_graph_check();
     }
 
@@ -566,7 +578,7 @@ $(document).ready(function () {
             remove_col(one_sample_data, 1);
             remove_col(one_sample_data, 1);
             for (var x = 0; x < one_sample_data.length; x++) {
-                if (one_sample_data[x][0] === Math.floor(one_sample_time_point * 1440)) {
+                if (one_sample_data[x][0] === Math.floor(one_sample_time_point * 1440) || one_sample_data[x][0] === one_sample_time_point * 1440) {
                     the_goods.push(one_sample_data[x][1]);
                 }
             }
@@ -578,8 +590,16 @@ $(document).ready(function () {
                 mean = the_goods.reduce((a,b) => a+b)/(the_goods.length);
                 std = Math.sqrt(the_goods.map(x => Math.pow(x-mean,2)).reduce((a,b) => a+b)/(the_goods.length - 1));
                 $('#summary-sample-number').text(the_goods.length);
-                $('#summary-mean').text(mean.toExponential(3));
-                $('#summary-std').text(std.toExponential(3));
+                if (Math.abs(mean) > 1000000 || Math.abs(mean) < 0.01) {
+                    $('#summary-mean').text(mean.toExponential(3));
+                } else {
+                    $('#summary-mean').text(mean.toFixed(3));
+                }
+                if (Math.abs(std) > 1000000 || Math.abs(std) < 0.01) {
+                    $('#summary-std').text(std.toExponential(3));
+                } else {
+                    $('#summary-std').text(std.toFixed(3));
+                }
                 if (std == 0 || isNaN(std)) {
                     empty_graph_containers();
                     $('#error-text').text("Cannot Perform Power Analysis With a Standard Deviation of 0 or NaN.");
@@ -1204,8 +1224,13 @@ $(document).ready(function () {
     $('#one-sample-percent').blur(function() {
         var mean = Number($('#summary-mean').text());
         var perc = Number($('#one-sample-percent').val());
+        var diff = mean * (perc * .01)
         if ($.isNumeric(perc) && perc !== 0) {
-            $('#one-sample-diff').val((mean * (perc * .01)).toExponential());
+            if (Math.abs(diff) > 1000000 || Math.abs(diff) < 0.01) {
+                $('#one-sample-diff').val(diff.toExponential());
+            } else {
+                $('#one-sample-diff').val(diff.toFixed(3));
+            }
         } else {
             $('#one-sample-percent').val('');
             $('#one-sample-diff').val('');
@@ -1406,9 +1431,13 @@ $(document).ready(function () {
                             $('#error-text').text("Difference is Null. Try Removing a Value and Running Analysis Again.");
                             $('#error-container').show();
                         } else {
-                            data.power_analysis_data.Difference = data.power_analysis_data.Difference.toExponential(3);
+                            if (Math.abs(data.power_analysis_data.Difference) > 1000000 || Math.abs(data.power_analysis_data.Difference) < 0.01) {
+                                data.power_analysis_data.Difference = data.power_analysis_data.Difference.toExponential(3);
+                            } else {
+                                data.power_analysis_data.Difference = data.power_analysis_data.Difference.toFixed(3);
+                            }
                         }
-                        $(one_sample_multi_graph).html('<div class="well text-center"><h4>Input<br>Sample Size: '+os_sample_size+'<br>Power: '+os_power+'<br>Output</h4><br><br><br><br><h3>Difference (from mean)</h3><br><h4>'+data.power_analysis_data.Difference+'</h4><br><h3>% Change (from mean)</h3><br><h4>'+(data.power_analysis_data.Difference / Number($('#summary-mean').text()) * 100).toExponential(3)+'</h4><br><br><br></div>');
+                        $(one_sample_multi_graph).html('<div class="well text-center"><br><br><br><h3>Difference (from mean)</h3><br><h4>'+data.power_analysis_data.Difference+'</h4><br><h3>% Change (from mean)</h3><br><h4>'+(data.power_analysis_data.Difference / Number($('#summary-mean').text()) * 100).toFixed(3)+'</h4><br><br><br></div>');
                     }
                     else if ("Sample Size" in data.power_analysis_data) {
                         if (data.power_analysis_data["Sample Size"] == null) {

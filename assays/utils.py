@@ -2941,7 +2941,7 @@ def one_sample_power_analysis(one_sample_data,
             sd = np.std(sample_data, ddof=1)
             upper_limit = pa1_predicted_delta_given_sample_size_and_power(2, power, sig_level, sd) // 0.001 / 1000
             if difference > upper_limit:
-                return {'error': 'The upper limit for \"Difference\" is: {} ({:e})'.format(upper_limit, upper_limit)}
+                return {'error': 'The Upper Limit for \"Difference\" (at a Sample Size of 2) is: {}'.format(upper_limit)}
 
         # Power analysis results will be returned by user's input
         power_analysis_result = one_sample_power_analysis_calculation(sample_data, sig_level, difference, sample_size, power)
