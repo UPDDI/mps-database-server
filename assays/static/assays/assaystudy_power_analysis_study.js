@@ -427,14 +427,6 @@ $(document).ready(function () {
         $(one_sample_multi_graph).empty();
         $('#time-points-table_wrapper').hide();
         $('#error-container').hide();
-        $('#summary-time').html('&nbsp;');
-        $('#summary-sample-number').html('&nbsp;');
-        $('#summary-mean').html('&nbsp;');
-        $('#summary-std').html('&nbsp;');
-        $('#one-sample-diff').val('');
-        $('#one-sample-percent').val('');
-        $('#one-sample-size').val('');
-        $('#one-sample-power').val('0.8');
         avg_val_graph_check();
     }
 
@@ -547,6 +539,17 @@ $(document).ready(function () {
                 $('#power-analysis-button').attr('disabled', true);
             }
         }
+
+        // Clear One Sample Input Fields
+        $('#summary-time').html('&nbsp;');
+        $('#summary-sample-number').html('&nbsp;');
+        $('#summary-mean').html('&nbsp;');
+        $('#summary-std').html('&nbsp;');
+        $('#one-sample-diff').val('');
+        $('#one-sample-percent').val('');
+        $('#one-sample-size').val('');
+        $('#one-sample-power').val('0.8');
+
         empty_graph_containers();
     });
 
@@ -621,6 +624,8 @@ $(document).ready(function () {
                 }
             });
             $('#power-analysis-button').attr('disabled', true);
+
+            // Clear One Sample Input Fields
             $('#summary-time').html('&nbsp;');
             $('#summary-sample-number').html('&nbsp;');
             $('#summary-mean').html('&nbsp;');
