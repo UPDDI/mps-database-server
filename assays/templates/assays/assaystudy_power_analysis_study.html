@@ -77,16 +77,18 @@
         <hr>
         <br>
         <div class="row">
-            <div class="col-xs-6 no-padding text-center well">
+            <div class="col-xs-12 col-lg-6 text-center well">
                 <h3>Please Select Either One Sample or Two Sample Power Analysis</h3>
-                <br>
-                <input type="radio" id="one-sample" class="big-checkbox" name="sample-num" value="one-sample">
-                <br>
-                <label for="one-sample">One Sample </label>
-                <br><br>
-                <input type="radio" id="two-sample" class="big-checkbox" name="sample-num" value="two-sample" checked>
-                <br>
-                <label for="two-sample">Two Sample </label>
+                <div class="row">
+                    <div class="col-lg-offset-3 col-xs-12 col-lg-3">
+                        <input type="radio" id="one-sample" class="big-checkbox" name="sample-num" value="one-sample" style="display: inline-block;">
+                        <label for="one-sample" style="display: inline-block;">&nbsp;&nbsp;&nbsp;One Sample </label>
+                    </div>
+                    <div class="col-xs-12 col-lg-3">
+                        <input type="radio" id="two-sample" class="big-checkbox" name="sample-num" value="two-sample" style="display: inline-block;" checked>
+                        <label for="two-sample" style="display: inline-block;">&nbsp;&nbsp;&nbsp;Two Sample </label>
+                    </div>
+                </div>
             </div>
         </div>
         <br>

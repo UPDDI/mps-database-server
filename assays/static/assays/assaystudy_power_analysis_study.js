@@ -1532,6 +1532,11 @@ $(document).ready(function () {
 
                     one_sample_chart_data = google.visualization.arrayToDataTable(one_sample_chart_data);
                     one_sample_graph = new google.visualization.LineChart(one_sample_multi_graph);
+                    if (os_diff == os_power) {
+                        one_sample_multi_graph_options.hAxis.logScale = true;
+                    } else {
+                        one_sample_multi_graph_options.hAxis.logScale = false;
+                    }
                     one_sample_graph.draw(one_sample_chart_data, one_sample_multi_graph_options);
                 }
             })
