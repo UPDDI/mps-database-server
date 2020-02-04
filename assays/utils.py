@@ -2902,7 +2902,7 @@ def one_sample_power_analysis(one_sample_data,
 
     # Select time point
     # Row of the user's selected time point - PASSED after selection in the the power curves table
-    time = int(one_sample_tp*1440)
+    time = one_sample_tp*1440
 
     # Query sample data series for selected compound and time point
     sample_data = compound_data[compound_data['Time'] == time]['Value']

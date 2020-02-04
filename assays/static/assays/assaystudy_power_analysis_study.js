@@ -581,7 +581,7 @@ $(document).ready(function () {
             remove_col(one_sample_data, 1);
             remove_col(one_sample_data, 1);
             for (var x = 0; x < one_sample_data.length; x++) {
-                if (one_sample_data[x][0] === Math.floor(one_sample_time_point * 1440) || one_sample_data[x][0] === one_sample_time_point * 1440) {
+                if (one_sample_data[x][0] === one_sample_time_point * 1440) {
                     the_goods.push(one_sample_data[x][1]);
                 }
             }
@@ -1419,6 +1419,7 @@ $(document).ready(function () {
             .done(function(data) {
                 // Stop spinner
                 window.spinner.stop();
+                
                 if ("error" in data.power_analysis_data) {
                     empty_graph_containers();
                     $('#error-text').text(data.power_analysis_data.error);
