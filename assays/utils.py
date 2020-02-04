@@ -2905,8 +2905,9 @@ def one_sample_power_analysis(one_sample_data,
     time = one_sample_tp*1440
 
     # Query sample data series for selected compound and time point
-    sample_data = compound_data[compound_data['Time'] == time]['Value']
+    # sample_data = compound_data[compound_data['Time'] == time]['Value']
     # sample_data = compound_data[compound_data['Time'] == time_unique_group.iloc[time_index, 0]]['Value']
+    sample_data = compound_data[abs(compound_data['Time'] - time) <= 0.0000000001]['Value']
     sample_mean = np.mean(sample_data)
 
     # Sample population size4_Or_More
