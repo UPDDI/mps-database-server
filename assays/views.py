@@ -132,7 +132,8 @@ from mps.mixins import (
     FormHandlerMixin,
     FormHandlerMixin,
     ListHandlerMixin,
-    CreatorAndNotInUseMixin
+    CreatorAndNotInUseMixin,
+    HistoryMixin
 )
 
 from mps.base.models import save_forms_with_tracking
@@ -842,7 +843,7 @@ class AssayStudyData(StudyViewerMixin, DetailView):
 
 # TODO TODO TODO FIX
 # TODO TODO TODO
-class AssayStudySignOff(UpdateView):
+class AssayStudySignOff(HistoryMixin, UpdateView):
     """Perform Sign Offs as a group adming or stake holder admin"""
     model = AssayStudy
     template_name = 'assays/assaystudy_sign_off.html'
@@ -1121,7 +1122,7 @@ class AssayStudySignOff(UpdateView):
             ))
 
 
-class AssayStudyDataUpload(ObjectGroupRequiredMixin, UpdateView):
+class AssayStudyDataUpload(HistoryMixin, ObjectGroupRequiredMixin, UpdateView):
     """Upload an Excel Sheet for storing multiple sets of Readout data at one"""
     model = AssayStudy
     template_name = 'assays/assaystudy_upload.html'
@@ -1554,7 +1555,7 @@ class AssayMatrixAdd(StudyGroupMixin, CreateView):
 
 
 # TODO NOT THE RIGHT PERMISSION MIXIN
-class AssayMatrixUpdate(StudyGroupMixin, UpdateView):
+class AssayMatrixUpdate(HistoryMixin, StudyGroupMixin, UpdateView):
     model = AssayMatrix
     template_name = 'assays/assaymatrix_add.html'
     form_class = AssayMatrixForm
@@ -1806,7 +1807,7 @@ class AssayMatrixDelete(StudyDeletionMixin, DeleteView):
 
 
 # TODO PROBABLY WILL REMOVE EVENTUALLY
-class AssayMatrixItemUpdate(StudyGroupMixin, UpdateView):
+class AssayMatrixItemUpdate(HistoryMixin, StudyGroupMixin, UpdateView):
     model = AssayMatrixItem
     template_name = 'assays/assaymatrixitem_add.html'
     form_class = AssayMatrixItemFullForm
@@ -2940,7 +2941,7 @@ class AssayStudyIndexNew(StudyViewerMixin, DetailView):
         return context
 
 
-class AssayMatrixNew(StudyGroupMixin, UpdateView):
+class AssayMatrixNew(HistoryMixin, StudyGroupMixin, UpdateView):
     """Show all chip and plate models associated with the given study"""
     model = AssayMatrix
     template_name = 'assays/assaymatrix_update.html'

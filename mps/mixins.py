@@ -27,6 +27,13 @@ import urllib
 
 from reversion.views import RevisionMixin
 
+from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
+
+from django.contrib.admin.utils import (
+    construct_change_message
+)
+
+from django.contrib.contenttypes.models import ContentType
 
 # Unsemantic! Breaks PEP! BAD!
 def PermissionDenied(request, message, log_in_link=True):
@@ -461,8 +468,25 @@ class SuperuserRequiredMixin(object):
         return super(SuperuserRequiredMixin, self).dispatch(*args, **kwargs)
 
 
-# ReversionMixin helps here... but would be nice to have applied to all Create and Update Views
-class FormHandlerMixin(RevisionMixin):
+class HistoryMixin(object):
+    def get_context_data(self, **kwargs):
+        context = super(HistoryMixin, self).get_context_data(**kwargs)
+
+        object_id = self.kwargs.get('pk', 0)
+
+        if object_id:
+            context.update({
+                'history': LogEntry.objects.filter(
+                    object_id=object_id,
+                    content_type_id=ContentType.objects.get_for_model(self.model, for_concrete_model=False).pk,
+                ).prefetch_related(
+                    'user'
+                )
+            })
+
+        return context
+
+class FormHandlerMixin(HistoryMixin):
     """Mixin for handling forms, whether they have formsets and/or are popups"""
     formsets = ()
     is_update = False
@@ -479,6 +503,37 @@ class FormHandlerMixin(RevisionMixin):
         # Mark as is_update if UpdateView is one of the bases
         if UpdateView in self.__class__.__bases__:
             self.is_update = True
+
+    # Kind of odd that these shadow the keyword object?
+    def log_addition(self, request, object, message):
+        """
+        Log that an object has been successfully added.
+
+        The default implementation creates an admin LogEntry object.
+        """
+        return LogEntry.objects.log_action(
+            user_id=request.user.pk,
+            content_type_id=ContentType.objects.get_for_model(object, for_concrete_model=False).pk,
+            object_id=object.pk,
+            object_repr=str(object),
+            action_flag=ADDITION,
+            change_message=message,
+        )
+
+    def log_change(self, request, object, message):
+        """
+        Log that an object has been successfully changed.
+
+        The default implementation creates an admin LogEntry object.
+        """
+        return LogEntry.objects.log_action(
+            user_id=request.user.pk,
+            content_type_id=ContentType.objects.get_for_model(object, for_concrete_model=False).pk,
+            object_id=object.pk,
+            object_repr=str(object),
+            action_flag=CHANGE,
+            change_message=message,
+        )
 
     def get_form_kwargs(self):
         kwargs = super(FormHandlerMixin, self).get_form_kwargs()
@@ -574,6 +629,14 @@ class FormHandlerMixin(RevisionMixin):
                 all_formsets_valid = False
 
         if form.is_valid() and all_formsets_valid:
+            # NEEDS TESTING: SLOPPY SOLUTION TO GETTING new_objects ATTRIBUTE
+            for formset in all_formsets:
+                formset.save(commit=False)
+
+            # The tricky think about this is that it makes changing stuff for matrices quite unpleasant...
+            # Then again, do we need to robustly track the precise changes?
+            change_message = construct_change_message(form, all_formsets, not self.is_update)
+
             # May or may not do anything
             self.pre_save_processing(form)
 
@@ -581,6 +644,11 @@ class FormHandlerMixin(RevisionMixin):
 
             # May or may not do anything
             self.extra_form_processing()
+
+            if not self.is_update:
+                self.log_addition(self.request, self.object, change_message)
+            else:
+                self.log_change(self.request, self.object, change_message)
 
             if is_popup:
                 if self.object.id:
