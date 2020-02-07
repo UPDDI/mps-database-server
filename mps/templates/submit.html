@@ -2,6 +2,42 @@
 {# Parameters passed via with: group -- group needed for Sign Off, creator -- user needed for Sign Off #}
 {% load custom_filters static compress %}
 
+{% compress js %}
+<script src="{% static "js/history.js" %}"></script>
+{% endcompress %}
+
+{# A little sloppy, need to differentiate object and form.instance #}
+{% if object or form.instance and form.instance.id %}
+{% if object %}
+<div hidden id="history_dialog" title="History for {{ object }}">
+{% elif form.instance and form.instance.id %}
+<div hidden id="history_dialog" title="History for {{ form.instance }}">
+{% endif %}
+    <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+        <thead>
+            <tr>
+                <th>Modifier</th>
+                <th>Date</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for entry in history %}
+            <tr>
+                <td>{{ entry.user.first_name }} {{ entry.user.last_name }}</td>
+                <td>{{ entry.action_time }}</td>
+                {% if entry.action_flag == 1 %}
+                <td>Added</td>
+                {% elif entry.action_flag == 2 %}
+                <td>{{ entry.get_change_message }}</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
 <nav id="floating-submit-row" class="footer navbar-fixed-bottom hidden-print floating-submit-row">
     <div class="container large-padding-top">
         {# TODO REFACTOR #}
@@ -23,6 +59,10 @@
 
         <button id="submit" type="submit" class="btn btn-primary">Submit</button>
         {# <a class="btn btn-warning" role="button" onclick="window.location.reload(false);">Clear all Changes</a> #}
+
+        {% if history.count %}
+            <a id="open_history_dialog" role="button" class="btn btn-info pull-right" href="javascript:;">History</a>
+        {% endif %}
 
         {% if update and object.get_delete_url %}
             <a role="button" class="btn btn-danger pull-right" href="{{ object.get_delete_url }}">Delete</a>
