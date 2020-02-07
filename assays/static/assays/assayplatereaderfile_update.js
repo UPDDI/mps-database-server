@@ -19,6 +19,8 @@ $(document).ready(function () {
 
     let global_file_set_delimiter = "";
     let global_file_set_plate_size = 0;
+    let global_file_set_number_lines = 0;
+    let global_file_set_number_columns = 0;
     let global_file_set_number_blocks = 0;
     let global_file_set_number_blank_columns = 0;
 
@@ -34,7 +36,6 @@ $(document).ready(function () {
     let global_file_extra_formset_number = $('#id_assayplatereadermapdatafileblock_set-TOTAL_FORMS').val();
     
     let global_file_qc_messages = [];
-
 
     // on load, change the appearance of the overwrite sample time unit in each formset,
     // if there is a platemap else, hide the NONE (need each since calling ajax, if use for loop, problems)
@@ -63,6 +64,8 @@ $(document).ready(function () {
     // deal with the extra formset - find which it is when there is more than the extra
     if (global_file_formset_count > 1) {
         showOverwriteSampleTimeInfo();
+        showPlateSizeForFile();
+        showQCForFile();
         global_file_plate_form_plate_size = $('#id_upload_plate_size').val();
         // when do form manual validation (clean) on existing, if there is a clean error
         // the extra formset kicks into being a valid formset and it will ADDed table during save
@@ -104,22 +107,74 @@ $(document).ready(function () {
        $('#id_formset_' + global_file_extra_formset_number).addClass('hidden');
     }
 
+    function adjustEndingLineOrColumn(this_element, line_or_delimited) {
+        let this_form_row = this_element.closest(".form2-row");
+        // console.log(this_form_row)
+        let formset_id = this_form_row[0].id;
+        // console.log(formset_id)
+        let block_number = formset_id.substring(11,);
+        let fidx = block_number - 1;
+        // console.log(fidx)
+
+        // when edit the start line or the start column, auto change the end line and/or end column based on plate size
+        // global_file_set_number_columns
+        // global_file_set_number_lines
+        if (line_or_delimited == "delimited") {
+            let dstart = $('#id_assayplatereadermapdatafileblock_set-' + fidx + '-delimited_start').val();
+            let dend = '#id_assayplatereadermapdatafileblock_set-' + fidx + '-delimited_end';
+            $(dend).val(parseInt(dstart) + parseInt(global_file_set_number_columns) - 1);
+        } else {
+            let lstart = $('#id_assayplatereadermapdatafileblock_set-' + fidx + '-line_start').val();
+            let lend = '#id_assayplatereadermapdatafileblock_set-' + fidx + '-line_end';
+            $(lend).val(parseInt(lstart) + parseInt(global_file_set_number_lines) - 1);
+        }
+    }
+
     function showOverwriteSampleTimeInfo() {
         $('#overwrite_sample_time_row').removeClass('hidden');
     }
 
-    // apply styles to formsets
-    // tried other ways of doing this, including css and form widget, but this worked the best
+    function showPlateSizeForFile() {
+        $('#plate_size_in_well').removeClass('hidden');
+    }
+
+    function showQCForFile() {
+        $('#go_qc_section').removeClass('hidden');
+    }
+
+    function showVerboseCustomizationSection() {
+        // make sure the size of the list is such that on an auto method is > 9000
+        // console.log(global_file_file_format_select)
+        if (global_file_file_format_select > 9000) {
+            $('#auto_detect_customization_section').removeClass('hidden');
+        // } else if (global_file_file_format_select == 0) {
+        //     //don't do anything
+        } else {
+            $('#auto_detect_customization_section').addClass('hidden');
+            // call the script immediately since not using full auto - changed this
+            // reviewPlateReaderFile();
+        }
+    }
+
+    // apply styles/formatting to formsets - JSCSS
+    // tried other ways of doing this, including css and form widget, but this worked the best/easiest
     // these fields should not be edited by the user
     let index_css = 0;
     while (index_css < global_file_formset_count) {
         // console.log(index_css)
         let element_id1 = 'id_assayplatereadermapdatafileblock_set-' + index_css + '-data_block';
         document.getElementById(element_id1).style.borderStyle = 'none';
+        document.getElementById(element_id1).readOnly = true;
         let element_id2 = 'id_assayplatereadermapdatafileblock_set-' + index_css + '-form_selected_plate_map_time_unit';
         document.getElementById(element_id2).style.borderStyle = 'none';
-        document.getElementById(element_id1).readOnly = true;
         document.getElementById(element_id2).readOnly = true;
+        document.getElementById(element_id2).style.backgroundColor = 'transparent';
+        let element_id3 = 'id_assayplatereadermapdatafileblock_set-' + index_css + '-line_end';
+        document.getElementById(element_id3).style.borderStyle = 'none';
+        document.getElementById(element_id3).readOnly = true;
+        let element_id4 = 'id_assayplatereadermapdatafileblock_set-' + index_css + '-delimited_end';
+        document.getElementById(element_id4).style.borderStyle = 'none';
+        document.getElementById(element_id4).readOnly = true;
         index_css = index_css + 1;
     }
     // apply style, tried other ways, this worked best
@@ -147,7 +202,7 @@ $(document).ready(function () {
         , "This can be set by the user or auto detected."
         , "If a value is provided, this sample time will be used for this whole data block (sample times in the selected assay plate map will be overwritten with this value)."
         , "The number of blocks of data in the file."
-        , "Selecting a specific format will ONLY work the follow follows that format - exactly."
+        , "Selecting a specific format will yield the best results IF the file follows that format - exactly."
         , "Set the number of blank columns to the left of the data block."
         ,
     ,];
@@ -164,35 +219,68 @@ $(document).ready(function () {
         $("#auto_detect_help_section").toggle();
     });
 
+    // this button is currently hidden, if needed, add it back
+    // but on 20200207, put QC on the changing of the start line and start column number and QC was already on the plate map selection
     $("#runQualityControl").click(function() {
         // Scroll through the blocks and send inform for each block to QC
         global_file_qc_messages = [];
-        alert('in development - not working yet. When working, will show a list of the problems detected. \n');
-        // loop through the above named list of error messages
+        idx = 0;
+        // console.log("global_file_plate_form_number_blocks ",global_file_plate_form_number_blocks)
+        while (idx < global_file_plate_form_number_blocks) {
+            let this_plate_map       = $('#id_assayplatereadermapdatafileblock_set-' + idx + '-assayplatereadermap').val();
+            let this_data_block      = $('#id_assayplatereadermapdatafileblock_set-' + idx + '-data_block').val();
+            let this_block_metadata  = $('#id_assayplatereadermapdatafileblock_set-' + idx + '-data_block_metadata').val();
+            let this_line_start      = $('#id_assayplatereadermapdatafileblock_set-' + idx + '-line_start').val();
+            let this_line_end        = $('#id_assayplatereadermapdatafileblock_set-' + idx + '-line_end').val();
+            let this_delimited_start = $('#id_assayplatereadermapdatafileblock_set-' + idx + '-delimited_start').val();
+            let this_delimited_end   = $('#id_assayplatereadermapdatafileblock_set-' + idx + '-delimited_end').val();
+            doQualityCheck(this_plate_map, this_data_block, global_file_plate_form_plate_size, this_line_start, this_line_end, this_delimited_start, this_delimited_end);
+            $.each(global_file_qc_messages, function (qc_index, qc_item) {
+                alert(qc_item + ' \n');
+            });
+            idx = idx + 1;
+        }
+    });
+
+    $(".start-delimited-number").change(function() {
+        adjustEndingLineOrColumn($(this), 'delimited');
+    });
+    $(".start-line-number").change(function() {
+        adjustEndingLineOrColumn($(this), 'line');
     });
 
     // where user changes anything about a block
     // save the block number as 1 (instead of 0) so changes can be made on save to values in platemap
     // do not know which is the selected block, so find it by class change
     $(".form2-row").change(function() {
-        // console.log($(this).context.id)
+        console.log($(this))
+        console.log($(this).context)
+        console.log($(this).context.id)
         let formset_id = $(this).context.id;
+
         let block_number = formset_id.substring(11, );
+        let fidx = block_number-1;
+        // console.log(fidx)
+
         // form_changed_something_in_block - not really using this to change what is removed/added during submit..may add later??
-        let block_number_id = "#id_assayplatereadermapdatafileblock_set-" + String(block_number-1) + "-form_changed_something_in_block";
+        let block_number_id = "#id_assayplatereadermapdatafileblock_set-" + fidx + "-form_changed_something_in_block";
         // console.log("changed in block: ",block_number_id)
         // 1 for something changed in the block, 0 for nothing changed in the block
         $(block_number_id).val(1);
+
     });    
 
     // select dropdown for the file format to work with
     $("#id_se_file_format_select").change(function() {
-        // console.log($(this))
         global_file_file_format_select = $(this).val();
-        if (global_file_file_format_select > 0) {
-            showOverwriteSampleTimeInfo()
-        }
-        let myt = $(this).text();
+        showVerboseCustomizationSection();
+
+
+        // if (global_file_file_format_select > 0) {
+        //     showOverwriteSampleTimeInfo()
+        // }
+
+        // let myt = $(this).text();
         // console.log("picked file format ",myt)
         // HARDCODED PLATE SIZE OPTION
         //     (0,    'Select a File Format'),
@@ -244,17 +332,6 @@ $(document).ready(function () {
         //     $("#id_se_form_plate_size").selectize()[0].selectize.setValue(global_file_plate_form_plate_size);
         // }
         // $("#id_upload_plate_size").val(global_file_plate_form_plate_size);
-
-        // make sure the size of the list is such that on an auto method is > 9000
-        if (global_file_file_format_select > 9000) {
-            $('.auto-detect-section').removeClass('hidden');
-        } else if (global_file_file_format_select == 0) {
-            //don't do anything
-        } else {
-            $('.auto-detect-section').addClass('hidden');
-            // call the script immediately since not using full auto
-            reviewPlateReaderFile();
-        }
     });
 
     // when user selects a plate map for a block of data
@@ -348,14 +425,16 @@ $(document).ready(function () {
                 // $(this_unit_id).text(global_file_selected_plate_map_time_unit);
                 $(this_unit_id).val(global_file_selected_plate_map_time_unit);
 
+                let this_plate_map  = $('#id_assayplatereadermapdatafileblock_set-' + global_file_plate_map_changed_formset_index + '-assayplatereadermap').val();
                 let this_data_block = $('#id_assayplatereadermapdatafileblock_set-' + global_file_plate_map_changed_formset_index + '-data_block').val();
                 let this_line_start = $('#id_assayplatereadermapdatafileblock_set-' + global_file_plate_map_changed_formset_index + '-line_start').val();
                 let this_line_end = $('#id_assayplatereadermapdatafileblock_set-' + global_file_plate_map_changed_formset_index + '-line_end').val();
                 let this_delimited_start = $('#id_assayplatereadermapdatafileblock_set-' + global_file_plate_map_changed_formset_index + '-delimited_start').val();
                 let this_delimited_end = $('#id_assayplatereadermapdatafileblock_set-' + global_file_plate_map_changed_formset_index + '-delimited_end').val();
 
+                // this is run when plate map is selected - we will reuse the list, but empty it first
                 global_file_qc_messages = [];
-                doQualityCheck(this_data_block, global_file_plate_form_plate_size, this_line_start, this_line_end, this_delimited_start, this_delimited_end);
+                doQualityCheck(this_plate_map, this_data_block, global_file_plate_form_plate_size, this_line_start, this_line_end, this_delimited_start, this_delimited_end);
                 $.each(global_file_qc_messages, function (qc_index, qc_item) {
                     alert(qc_item + ' \n');
                 });
@@ -385,16 +464,16 @@ $(document).ready(function () {
         }
     };
 
-    function doQualityCheck(this_data_block, this_plate_map_size, this_line_start, this_line_end, this_delimited_start, this_delimited_end) {
-        // will come here for each block, run qc and fill a message list with errors
+    function doQualityCheck(the_plate_map, this_data_block, this_plate_map_size, this_line_start, this_line_end, this_delimited_start, this_delimited_end) {
+        // will come here for each block when plate map is selected, run qc and fill a message list with errors
         // QC is here - check the plate size and the size of the selected block
 
-        // console.log(this_data_block)
-        // console.log(this_plate_map_size)
-        // console.log(this_line_start)
-        // console.log(this_line_end)
-        // console.log(this_delimited_start)
-        // console.log(this_delimited_end)
+        console.log(this_data_block)
+        console.log(this_plate_map_size)
+        console.log(this_line_start)
+        console.log(this_line_end)
+        console.log(this_delimited_start)
+        console.log(this_delimited_end)
 
         this_data_block = parseInt(this_data_block);
         this_plate_map_size = parseInt(this_plate_map_size);
@@ -421,6 +500,9 @@ $(document).ready(function () {
     }
 
     $("#reviewDataButton").click(function() {
+        showOverwriteSampleTimeInfo();
+        showPlateSizeForFile();
+        showQCForFile();
         reviewPlateReaderFile();
     });
 
@@ -483,6 +565,8 @@ $(document).ready(function () {
             form_number_blank_columns: global_file_plate_form_number_blank_columns,
             set_delimiter: global_file_set_delimiter,
             set_plate_size: global_file_set_plate_size,
+            set_plate_lines: global_file_set_number_lines,
+            set_plate_columns: global_file_set_number_columns,
             set_number_blocks: global_file_set_number_blocks,
             set_number_blank_columns: global_file_set_number_blank_columns,
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
@@ -533,6 +617,13 @@ $(document).ready(function () {
             global_file_plate_form_plate_size = file_block_info[0]['plate_size'];
             $("#id_se_form_plate_size").selectize()[0].selectize.setValue(global_file_plate_form_plate_size);
             $("#id_upload_plate_size").val(global_file_plate_form_plate_size);
+
+            global_file_set_number_lines = file_block_info[0]['plate_lines'];
+            global_file_set_number_columns = file_block_info[0]['plate_columns'];
+            // console.log(global_file_set_number_lines)
+            // console.log(global_file_set_number_columns)
+            $("#plate_number_columns").text(global_file_set_number_columns);
+            $("#plate_number_lines").text(global_file_set_number_lines);
         }
         // do not need else because if the plate size is given and set, it is used
 

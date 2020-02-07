@@ -262,10 +262,25 @@ $(document).ready(function () {
     // END SECTION TO SET GLOBAL VARIABLES plus some
 
     // START - SECTION FOR CHANGES ON PAGE that have to keep track of to change on page display
+    // change to show by default by forcing the click button load (incase change mind later)
+    setTimeout(function() {
+        $("#checkboxButton").trigger('click');
+    },10);
+
     // toggle to hide/show the customized show in assay plate map fancy check boxes (what will and won't show in plate)
     $("#checkboxButton").click(function () {
         $("#platemap_checkbox_section").toggle();
     });
+
+    $("#uncheckAllFancyChecksButton").click(function () {
+        // run through and uncheck all fancy checkboxes
+        setFancyCheckBoxesLoopOverFancyCheckboxClass(global_plate_whole_plate_index_list, 'clear');
+    });
+    $("#checkAllFancyChecksButton").click(function () {
+        // run through and uncheck all fancy checkboxes
+        setFancyCheckBoxesLoopOverFancyCheckboxClass(global_plate_whole_plate_index_list, 'show');
+    });
+
     // class show/hide and also what is checked/unchecked based on radio button of starting option
     $("input[type='radio'][name='start_map']").click(function () {
         global_plate_start_map = $(this).val();
@@ -931,10 +946,12 @@ $(document).ready(function () {
             // when increment, the first will be treated as a copy
             let increment_number = 0;
             let formset_number = 0;
+            let my_delta  = 0;
 
             let idx = 0;
             global_plate_mems_plate_index.forEach(function () {
-                formset_number = global_plate_mems_plate_index[idx]
+
+                formset_number = global_plate_mems_plate_index[idx];
                 
                 // for each in the stored plate index
                 // note that, mems plate index is a working subset in this case
@@ -1017,15 +1034,25 @@ $(document).ready(function () {
                     }
                 } else {
                     // should be increment only and not the first one in the series
+
+                    if (global_plate_increment_operation === 'divide' || global_plate_increment_operation === 'multiply') {
+                        my_delta = Math.pow(parseFloat(this_increment_value), parseFloat(increment_number));
+                    } else if (global_plate_increment_operation === 'subtract' || global_plate_increment_operation === 'add') {
+                        my_delta = parseFloat(this_increment_value) * parseFloat(increment_number);
+                    } else {
+                        my_delta = 1;
+                    }
+
                     if (global_plate_well_use === 'sample') {
+
                         if (global_plate_increment_operation === 'divide') {
-                            incremented_default_time_value = this_default_time_value / (parseFloat(increment_number) * this_increment_value);
+                            incremented_default_time_value = this_default_time_value / my_delta;
                         } else if (global_plate_increment_operation === 'multiply') {
-                            incremented_default_time_value = this_default_time_value * (parseFloat(increment_number) * this_increment_value);
+                            incremented_default_time_value = this_default_time_value * my_delta;
                         } else if (global_plate_increment_operation === 'subtract') {
-                            incremented_default_time_value = this_default_time_value - (parseFloat(increment_number) * this_increment_value);
+                            incremented_default_time_value = this_default_time_value - my_delta;
                         } else if (global_plate_increment_operation === 'add') {
-                            incremented_default_time_value = this_default_time_value + (parseFloat(increment_number) * this_increment_value);
+                            incremented_default_time_value = this_default_time_value + my_delta;
                         } else {
                             incremented_default_time_value = 999;
                         }
@@ -1034,20 +1061,20 @@ $(document).ready(function () {
                             c_default_time = generalFormatNumber(incremented_default_time_value);
                             c_time = c_default_time;
                         } else {
-                            c_default_time = d_time;
+                            c_default_time = d_time
                             c_time = c_time_value;
                         }
                         c_standard_value = d_standard_value;
 
                     } else if (global_plate_well_use === 'standard') {
                         if (global_plate_increment_operation === 'divide') {
-                            incremented_standard_value = this_standard_value / (parseFloat(increment_number) * this_increment_value);
+                            incremented_standard_value = this_standard_value / my_delta;
                         } else if (global_plate_increment_operation === 'multiply') {
-                            incremented_standard_value = this_standard_value * (parseFloat(increment_number) * this_increment_value);
+                            incremented_standard_value = this_standard_value * my_delta;
                         } else if (global_plate_increment_operation === 'subtract') {
-                            incremented_standard_value = this_standard_value - (parseFloat(increment_number) * this_increment_value);
+                            incremented_standard_value = this_standard_value - my_delta;
                         } else if (global_plate_increment_operation === 'add') {
-                            incremented_standard_value = this_standard_value + (parseFloat(increment_number) * this_increment_value);
+                            incremented_standard_value = this_standard_value + my_delta;
                         } else {
                             incremented_standard_value = 999;
                         }
@@ -1283,13 +1310,13 @@ $(document).ready(function () {
     // remember - copy is the copy vrs increment and copys is the copy section of assay plate map
     function changePageSectionShownWhenChangeRadioWellUse() {
         // called when the well use is changed
-        $("input[name=change_method][value=copy]").prop("checked", true);
-        global_plate_change_method = 'copy';
-        if (global_plate_change_method === 'increment') {
-            $('.increment-section').removeClass('hidden');
-        } else {
-            $('.increment-section').addClass('hidden');
-        }
+        // $("input[name=change_method][value=copy]").prop("checked", true);
+        // global_plate_change_method = 'copy';
+        // if (global_plate_change_method === 'increment') {
+        //     $('.increment-section').removeClass('hidden');
+        // } else {
+        //     $('.increment-section').addClass('hidden');
+        // }
         // hide all, then unhide what want to show
         $('.sample-section').addClass('hidden');
         $('.standard-section').addClass('hidden');
@@ -1301,10 +1328,14 @@ $(document).ready(function () {
         if (global_plate_well_use === 'sample') {
             $('.sample-section').removeClass('hidden');
             $('.drag-option-section').removeClass('hidden');
+            $("input[name=change_method][value=copy]").prop("checked", true);
+            global_plate_change_method = 'copy';
         } else if (global_plate_well_use === 'standard') {
             $('.standard-section').removeClass('hidden');
             $('.drag-option-section').removeClass('hidden');
             $('#show_standard_value').prop('checked', true);
+            $("input[name=change_method][value=increment]").prop("checked", true);
+            global_plate_change_method = 'increment';
         } else if (global_plate_well_use === 'copys') {
             $('.copys-section').removeClass('hidden');
             // open for loading plate well setup into memory
@@ -1316,23 +1347,28 @@ $(document).ready(function () {
         } else if (global_plate_well_use === 'empty') {
             $('.empty-section').removeClass('hidden');
         }
+        if (global_plate_change_method === 'increment') {
+            $('.increment-section').removeClass('hidden');
+        } else {
+            $('.increment-section').addClass('hidden');
+        }
     }
 
     // this uses the fancy check boxes to set what fields of the formset are visible on the assay plate map
     // when first draws plate, uses defaults, 
     // for subsequent draws, finds what is checked and redisplays them
-    function setFancyCheckBoxesLoopOverFancyCheckboxClass(plate_index_list, build_or_change) {
-        // console.log("in setFancyCheckBoxes ", build_or_change)
+    function setFancyCheckBoxesLoopOverFancyCheckboxClass(plate_index_list, build_or_change_or_clear_or_show) {
+        // console.log("in setFancyCheckBoxes ", build_or_change_or_clear_or_show)
         let x_show_fancy_list = [];
         let x_show_cell_list = [];
 
         let call_hide_by_welluse = true;
 
-        // console.log(build_or_change);
+        // console.log(build_or_change_or_clear_or_show);
         // console.log(global_plate_start_map);
         
         // on page load, set to defaults to show in the plate based  on well use selected
-        if (build_or_change === "build" && global_plate_start_map === "a_plate") {
+        if (build_or_change_or_clear_or_show === "build" && global_plate_start_map === "a_plate") {
             call_hide_by_welluse = false;
             x_show_fancy_list = [
                 '#show_well_use',
@@ -1340,7 +1376,7 @@ $(document).ready(function () {
             x_show_cell_list = [
                 '.plate-cells-well-use',
             ];
-        } else if (build_or_change === "build") {
+        } else if (build_or_change_or_clear_or_show === "build") {
             // Build was from assay plate map or study matrix and they could have changed well use, get the defaults
             // leave it as true - call_hide_by_welluse = true;
             if (global_plate_number_file_block_sets < 1) {
@@ -1378,6 +1414,10 @@ $(document).ready(function () {
                     '.plate-cells-block-raw-value',
                 ];
             }
+        } else if (build_or_change_or_clear_or_show === "show" || build_or_change_or_clear_or_show === "clear") {
+            // clicked the button to clear all out of the plate
+                x_show_fancy_list = global_plate_show_hide_fancy_checkbox_selector;
+                x_show_cell_list = global_plate_show_hide_fancy_checkbox_class;
         } else {
             // this is a change plate call
             // leave it as true - call_hide_by_welluse = true;
@@ -1420,14 +1460,19 @@ $(document).ready(function () {
         // use the arrays from above to show/hide and check/uncheck
         let checkidx = 0;
         x_show_fancy_list.forEach(function () {
-            $(x_show_fancy_list[checkidx]).prop('checked', true);
-            $(x_show_cell_list[checkidx]).removeClass('hidden');
+            if (build_or_change_or_clear_or_show != 'clear') {
+                $(x_show_fancy_list[checkidx]).prop('checked', true);
+                $(x_show_cell_list[checkidx]).removeClass('hidden');
+            } else {
+                $(x_show_fancy_list[checkidx]).prop('checked', false);
+                $(x_show_cell_list[checkidx]).addClass('hidden');
+            }
             checkidx = checkidx + 1;
         });
 
         // call the secondary show/hide based on well use, if needed
         if (call_hide_by_welluse === true) {
-            setWhatHiddenInEachWellOfPlateLoopsOverPlate(plate_index_list, build_or_change);
+            setWhatHiddenInEachWellOfPlateLoopsOverPlate(plate_index_list, build_or_change_or_clear_or_show);
         }
     }
 
@@ -1504,7 +1549,7 @@ $(document).ready(function () {
 
     // called from change checkboxes and from setFancyCheckBoxesLoopOverFancyCheckboxClass
     // to override check boxes and hide information that is not relevant for well use
-    function setWhatHiddenInEachWellOfPlateLoopsOverPlate(plate_index_list, build_or_change) {
+    function setWhatHiddenInEachWellOfPlateLoopsOverPlate(plate_index_list, build_or_change_or_clear_or_show) {
         // setWhatHiddenInEachWellOfPlateLoopsOverPlate(plate_index_list, 'changed_check_box') ('sfc_apply') ('sfc_build_plate') ('sfc_drag')
         // console.log("in setWhatHidden ", build_or_change)
         // console.log(plate_index_list)
@@ -1669,7 +1714,11 @@ $(document).ready(function () {
         local_plate_data_packed[0].forEach(function (col) {
             let th = document.createElement("th");
             // th.appendChild(document.createTextNode(col + top_label_button));
-            top_label_button = ' <a id="col' + header_col_index + '" column-or-row="column" column-index="' + header_col_index + '" row-index="' + 770 + '" class="btn btn-sm btn-primary apply-button">Apply to Column</a>'
+            if (global_plate_number_file_block_sets > 0) {
+                top_label_button = '';
+            } else {
+                top_label_button = ' <a id="col' + header_col_index + '" column-or-row="column" column-index="' + header_col_index + '" row-index="' + 770 + '" class="btn btn-sm btn-primary apply-button">Apply to Column</a>'
+            }
             $(th).html(col + top_label_button);
             headRow.appendChild(th);
             header_col_index = header_col_index + 1;
@@ -1705,8 +1754,11 @@ $(document).ready(function () {
         local_plate_data_packed[1].forEach(function (row) {
             let trbodyrow = document.createElement("tr");
             let tdbodyrow = document.createElement("th");
-
-            side_label_button = ' <a id="row' + ridx + '" column-or-row="row" column-index="' + 772 + '" row-index="' + ridx + '" class="btn btn-sm btn-primary apply-button">Apply to Row</a>'
+            if (global_plate_number_file_block_sets > 0) {
+                side_label_button = '';
+            } else {
+                side_label_button = ' <a id="row' + ridx + '" column-or-row="row" column-index="' + 772 + '" row-index="' + ridx + '" class="btn btn-sm btn-primary apply-button">Apply to Row</a>'
+            }
             // tdbodyrow.appendChild(document.createTextNode(local_plate_data_packed[1][ridx]));
             $(tdbodyrow).html(local_plate_data_packed[1][ridx] + side_label_button);
             trbodyrow.appendChild(tdbodyrow);

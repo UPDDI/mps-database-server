@@ -36,7 +36,11 @@
                 <h1 class="text-center">
                     <em><b>
                     {% if update %}
-                        Update
+                        {% if form.form_number_file_block_combos.value > 0 %}
+                            Calibrate/Process/Export Data Using
+                        {% else %}
+                            Update
+                        {% endif %}
                     {% else %}
                         {% if review %}
                             Review
@@ -124,7 +128,7 @@
                                     </div>
                                     {# this is id_device and it is used in drawing the plate map for all drawing options #}
                                     <div class="col-md-9">
-                                        <div class="plate-map-page-field-contents required">
+                                        <div class="plate-map-page-field-contents-medium required">
                                             {{ form.device }}
                                         </div>
                                     </div>
@@ -148,7 +152,7 @@
                                         </div>
                                     </div>
                                     <div class="col-md-9">
-                                        <div class="plate-map-page-field-contents required">
+                                        <div class="plate-map-page-field-contents-medium required">
                                             {{ assay_map_additional_info.se_platemap }}
                                         </div>
                                     </div>
@@ -165,7 +169,7 @@
                                         </div>
                                     </div>
                                     <div class="col-md-9">
-                                        <div class="plate-map-page-field-contents required">
+                                        <div class="plate-map-page-field-contents-medium required">
                                             {{ assay_map_additional_info.se_matrix }}
                                         </div>
                                     </div>
@@ -201,21 +205,24 @@
                         {# so, there may be a number in the index, but no raw values showing in the plate map #}
                         <div class="container">
                             <div class="select-value-set">
-                                <div class="row">
-                                    <div class="col-md-3">
-                                        <div class="plate-map-page-field-labels-small">
-                                            <div><p id="number_file_block_tooltip"></p>
-                                                <label for="number_file_block_tooltip"># File/Blocks &nbsp;</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-9">
-                                        <div class="plate-map-page-field-contents">
-                                            {{ form.form_number_file_block_combos.value }}
-                                        </div>
-                                    </div>
+
+{#                                Now that this is in the plate map list, really do not need to show it here. Keep incase change mind#}
+{#                                <div class="row">#}
+{#                                    <div class="col-md-3">#}
+{#                                        <div class="plate-map-page-field-labels-small">#}
+{#                                            <div><p id="number_file_block_tooltip"></p>#}
+{#                                                <label for="number_file_block_tooltip"># File/Blocks &nbsp;</label>#}
+{#                                            </div>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                    <div class="col-md-9">#}
+{#                                        <div class="plate-map-page-field-contents-medium">#}
+{#                                            {{ form.form_number_file_block_combos.value }}#}
+{#                                        </div>#}
+{#                                    </div>#}
 {#                                    <div class="col-md-2"></div>#}
-                                </div>
+{#                                </div>#}
+
                                 <div class="row">
                                     <div class="col-md-3">
                                         <div class="plate-map-page-field-labels-small">
@@ -225,7 +232,7 @@
                                         </div>
                                     </div>
                                     <div class="col-md-9">
-                                        <div class="plate-map-page-field-contents required">
+                                        <div class="plate-map-page-field-contents-medium required">
                                             {{ form.se_block_select_string }}
                                             <div class="hidden">{{ form.ns_block_select_pk }}</div>
                                         </div>
@@ -248,7 +255,7 @@
                             </div>
                         </div>
                         <div class="col-md-9">
-                            <div class="plate-map-page-field-contents required">
+                            <div class="plate-map-page-field-contents-medium required">
                                 {{ form.name }}
                             </div>
                         </div>
@@ -264,7 +271,7 @@
                             </div>
                         </div>
                         <div class="col-md-9">
-                            <div class="plate-map-page-field-contents">
+                            <div class="plate-map-page-field-contents-medium">
                                 {{ form.description }}
                             </div>
                         </div>
@@ -280,7 +287,7 @@
                             </div>
                         </div>
                         <div class="col-md-9">
-                            <div class="plate-map-page-field-contents">
+                            <div class="plate-map-page-field-contents-medium">
                                 {{ form.cell_count }}
                             </div>
                         </div>
@@ -296,7 +303,7 @@
                             </div>
                         </div>
                         <div class="col-md-9">
-                            <div class="plate-map-page-field-contents">
+                            <div class="plate-map-page-field-contents-medium">
                                 {{ form.volume_unit }}
                             </div>
                         </div>
@@ -312,7 +319,7 @@
                             </div>
                         </div>
                         <div class="col-md-9">
-                            <div class="plate-map-page-field-contents required">
+                            <div class="plate-map-page-field-contents-medium required">
                                 {{ form.time_unit }}
                             </div>
                         </div>
@@ -328,7 +335,7 @@
                             </div>
                         </div>
                         <div class="col-md-9">
-                            <div class="plate-map-page-field-contents required">
+                            <div class="plate-map-page-field-contents-medium required">
                                 {{ form.study_assay }}
                             </div>
                         </div>
@@ -346,7 +353,7 @@
                             </div>
                         </div>
                         <div class="col-md-9">
-                            <div class="plate-map-page-field-contents">
+                            <div class="plate-map-page-field-contents-medium">
                                 {{ form.standard_unit }}
                             </div>
                         </div>
@@ -379,7 +386,7 @@
 
                                 {# Lines for the drop down version#}
         {#                        <div class="col-md-2">#}
-        {#                            <div class="plate-map-page-field-contents">#}
+        {#                            <div class="plate-map-page-field-contents-medium">#}
         {#                                {{ assay_map_additional_info.se_well_use }}#}
         {#                            </div>#}
         {#                        </div>#}
@@ -451,7 +458,7 @@
 
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-2 plate-map-page-field-contents">
+                                    <div class="col-md-2 plate-map-page-field-contents-medium">
                                         {{ assay_map_additional_info.se_matrix_item }}
                                     </div>
                                     <div class="col-md-1">
@@ -461,7 +468,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-md-2 plate-map-page-field-contents">
+                                    <div class="col-md-2 plate-map-page-field-contents-medium">
                                         {{ assay_map_additional_info.se_location }}
                                     </div>
                                     <div class="col-md-1">
@@ -473,7 +480,7 @@
 
 
     {#                            add back and build functionality to change sample time after file block add if requested by users#}
-                                    <div class="col-md-2 plate-map-page-field-contents">
+                                    <div class="col-md-2 plate-map-page-field-contents-medium">
                                         {% if form.form_number_file_block_combos.value < 1 %}
                                             {{ assay_map_additional_info.form_number_default_time }}
                                         {% else %}
@@ -489,7 +496,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-md-2 plate-map-page-field-contents">
+                                    <div class="col-md-2 plate-map-page-field-contents-medium">
     {#                                    <p>Edit not currently allowed.</p>#}
     {#                                    {{ assay_map_additional_info.form_number_time }}#}
                                     </div>
@@ -528,7 +535,7 @@
                                 <div class="row">
                                     <div class="container">
                                         <div class="row">
-                                            <div class="col-md-2 plate-map-page-field-contents">
+                                            <div class="col-md-2 plate-map-page-field-contents-medium">
                                                 {{ assay_map_additional_info.form_number_dilution_factor }}
                                             </div>
                                             <div class="col-md-1">
@@ -537,7 +544,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-2 plate-map-page-field-contents">
+                                            <div class="col-md-2 plate-map-page-field-contents-medium">
                                                 {{ assay_map_additional_info.form_number_collection_volume }}
                                             </div>
                                             <div class="col-md-1">
@@ -546,7 +553,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-2 plate-map-page-field-contents">
+                                            <div class="col-md-2 plate-map-page-field-contents-medium">
                                                  {{ assay_map_additional_info.form_number_collection_time }}
                                             </div>
                                             <div class="col-md-1">
@@ -589,7 +596,7 @@
                                 <div class="row">
                                     <div class="container">
                                         <div class="row">
-                                            <div class="col-md-3 plate-map-page-field-contents">
+                                            <div class="col-md-3 plate-map-page-field-contents-medium">
                                                 {{ assay_map_additional_info.form_number_standard_value }}
                                             </div>
                                         </div>
@@ -765,10 +772,10 @@
             <div>
                 <div class="container">
                     <div class="row">
-                        <div class="col-md-3">
-                        </div>
+{#                        <div class="col-md-3">#}
+{#                        </div>#}
                         <div class="col-md-6">
-                            <button type="button" class="btn btn-primary" id="checkboxButton">Show/Hide Customized Assay Plate Map Display Options</button>
+                            <button type="button" class="btn btn-primary" id="checkboxButton">Show/Hide Display Options</button>
                         </div>
                         <div class="col-md-6">
                         </div>
@@ -906,6 +913,14 @@
                                                         </label>
                                                     </div>
                                                 </div>
+
+
+{#                                                stick in a click button to uncheck all as per Berts request#}
+                                                <div >
+                                                    <button type="button" class="btn btn-primary" id="uncheckAllFancyChecksButton">Clear All</button>
+                                                    <button type="button" class="btn btn-primary" id="checkAllFancyChecksButton">Show All</button>
+                                                </div>
+
                                             </td>
                                             <td>
                                                 <div class="fancy-checkbox table-filter padded-bottom" align="left">
@@ -1124,6 +1139,37 @@
                     </div>
                 </div>
             {% endif %}
+
+{#        THE PROCESSING DATA SECTION #}
+            <div>
+                <div>
+                    <label>Process the Data for the File Block</label>
+                    <p>NONE OF THIS WORKS YET...JUST PROPOSING WHERE TO PUT IT</p>
+                </div>
+                <p>Pick Data Block with Standards (show if no standards on plate) with option Do Not Calibrate</p>
+                <p>show graph of standard points and samples fitted to a default curve</p>
+                <p>show list of curve options and other options (min, max)</p>
+                <p>would it be worth it, instead of showing values in purple, show as heat map?</p>
+            </div>
+
+{#        THE EXPORT DATA SECTION #}
+            <div>
+                <div>
+                    <br>
+                    <label>Exporting Data to MIF-C</label>
+                    <p>Data for each block can be exported to a MIF-C file, then uploaded into the study following
+                    the same protocol used for data prepared outside of this plate reader tool.
+                    If desired, caution flags can be added and data points marked for exclusion in the MIF-C file
+                    prior to upload.</p>
+                </div>
+
+                <div >
+                    <p></p>
+                    <button type="button" class="btn btn-primary" id="exportToMIFCButton">Export to MIF-C</button>
+                </div>
+
+            </div>
+
 
             {# these are the ones that show to user  #}
             <div>

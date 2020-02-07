@@ -3045,6 +3045,8 @@ def review_plate_reader_data_file_format(my_file_object, set_dict):
     form_number_blank_columns = int(set_dict.get('form_number_blank_columns'))
     set_delimiter = set_dict.get('set_delimiter')
     set_plate_size = set_dict.get('set_plate_size')
+    set_plate_lines = set_dict.get('set_plate_lines')
+    set_plate_columns = set_dict.get('set_plate_columns')
     set_number_blocks = set_dict.get('set_number_blocks')
     set_number_blank_columns = set_dict.get('set_number_blocks')
 
@@ -3506,6 +3508,8 @@ def review_plate_reader_data_file_format(my_file_object, set_dict):
 
             block_dict.update({'block_delimiter': block_delimiter})
             block_dict.update({'plate_size': plate_size})
+            block_dict.update({'plate_lines': plate_rows})
+            block_dict.update({'plate_columns': plate_columns})
             block_dict.update({'calculated_number_of_blocks': calculated_number_of_blocks})
             # block_dict.update({'calculated_number_of_blank_columns': calculated_number_of_blank_columns})
 

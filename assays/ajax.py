@@ -4667,6 +4667,8 @@ def fetch_review_plate_reader_data_file(request):
     form_number_blank_columns = request.POST.get('form_number_blank_columns', '0')
     set_delimiter = request.POST.get('set_delimiter', '0')
     set_plate_size = request.POST.get('set_plate_size', '0')
+    set_plate_lines = request.POST.get('set_plate_lines', '0')
+    set_plate_columns = request.POST.get('set_plate_columns', '0')
     set_number_blocks = request.POST.get('set_number_blocks', '0')
     set_number_blank_columns = request.POST.get('set_number_blocks', '0')
 
@@ -4681,6 +4683,8 @@ def fetch_review_plate_reader_data_file(request):
 
     set_dict.update({'set_delimiter': set_delimiter})
     set_dict.update({'set_plate_size': set_plate_size})
+    set_dict.update({'set_plate_lines': set_plate_lines})
+    set_dict.update({'set_plate_columns': set_plate_columns})
     set_dict.update({'set_number_blocks': set_number_blocks})
     set_dict.update({'set_number_blank_columns': set_number_blank_columns})
 
@@ -4717,6 +4721,9 @@ def fetch_review_plate_reader_data_file(request):
 
             'block_delimiter': each.get('block_delimiter'),
             'plate_size': each.get('plate_size'),
+            'plate_lines': each.get('plate_lines'),
+            'plate_columns': each.get('plate_columns'),
+
             'calculated_number_of_blocks': each.get('calculated_number_of_blocks'),
             # 'calculated_number_of_blank_columns': each.get('calculated_number_of_blank_columns'),
         }

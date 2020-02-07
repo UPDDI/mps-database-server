@@ -5,7 +5,7 @@
     <script src="{% static "assays/assayplatereaderfile_update.js" %}"></script>
 {% endblock %}
 
-{% block extrahead %}
+{% block extra_head %}
     {# this cannot be in the load_js because that block gets compressed (Luke's shell scripts) #}
     {# CDN nedd to be ouside of compressor #}
     {# Needed for toggling of on/off switches #}
@@ -74,14 +74,14 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="plate-map-page-field-contents">
+                        <div class="col-md-8">
+                            <div class="plate-map-page-field-contents-medium">
                                 <a target="_blank" href="/media/{{ form.plate_reader_file.value }}">
                                 <b>{{ form.plate_reader_file.value }}</b>
                                 </a>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-1">
                         </div>
                     </div>
 
@@ -95,55 +95,15 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="plate-map-page-field-contents">
+                        <div class="col-md-8">
+                            <div class="plate-map-page-field-contents-medium">
                                 {{ form.description }}
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-1">
                         </div>
                     </div>
 
-                    {% if not review %}
-                        {% if no_saved_blocks  %}
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <div class="plate-map-page-field-labels-small">
-                                        <div>
-                                            <div><p id="file_file_format_select_tooltip"></p>
-                                                <label for="file_file_format_select_tooltip">File Format &nbsp;</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="required plate-map-page-field-contents">
-                                        {{ form.se_file_format_select }}
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                </div>
-                            </div>
-
-                            <div id="overwrite_sample_time_row" class="row hidden">
-                                <div class="col-md-3">
-                                    <div class="plate-map-page-field-labels-small">
-                                        <div>
-                                            <div><p id="file_overwrite_sample_time_tooltip"></p>
-                                                <label for="file_overwrite_sample_time_tooltip">What is Overwrite Sample Time &nbsp;</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 plate-map-page-field-contents">
-                                    <p>If needed, enter an overwrite sample time FOR EACH BLOCK.</p>
-                                </div>
-                                <div class="col-md-3">
-                                </div>
-                            </div>
-
-                        {% endif %}
-                    {% endif %}
                 </div>
             </div>
             <br>
@@ -153,54 +113,79 @@
             <div>
                 {% if update %}
                     {% if no_saved_blocks  %}
-                        <div class="auto-detect-section hidden">
+                        <div class="auto-detect-section">
                             <div class="container">
-
                                 {# this section is button to control showing the rest #}
                                 <div class="row">
                                     <div class="col-md-3">
                                     </div>
-                                    <div class="col-md-5">
-                                        <button type="button" class="btn btn-primary" id="reviewButtonHelp">Show/Hide Auto Detect - Rules and Options </button>
+                                    <div class="col-md-8">
+                                        <button type="button" class="btn btn-primary" id="reviewButtonHelp">OPTIONAL - Select Specific File Format and/or Use Advanced Customization </button>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-1">
                                     </div>
                                 </div>
-                                {# what gets toggled with button above - so auto section looks "simple" unless clicked #}
+
                                 <div id="auto_detect_help_section" class="toggle-display-none" >
+
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="plate-map-page-field-labels-small">
+                                                <div>
+                                                    <div><p id="file_file_format_select_tooltip"></p>
+                                                        <label for="file_file_format_select_tooltip">Select One &nbsp;</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="plate-map-page-field-contents-medium">
+                                                {{ form.se_file_format_select }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-1">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {# what gets toggled with button above - so auto section looks "simple" unless clicked #}
+                                <div id="auto_detect_customization_section" class="hidden" >
                                     <div class="row">
                                         <div class="col-md-1">
                                         </div>
                                         <div class="col-md-11">
                                             <div>
                                                 <br>
-                                                <legend>Rules for Using the Auto Detect of File Blocks</legend>
-                                                    <li>Files must be comma delimited (CSV), tab delimited (TSV), or space delimited text files. </li>
-                                                    <li>Data must be in blocks in the same dimensions as the plate size.</li>
-                                                    <li>One plate size per file.</li>
-                                                    <li>Must set the number columns to ignore, unless first plate block has a 1, 2, 3 header.</li>
-                                                    <li>Best results can be achieved by setting the plate size and the number of columns to ignore.</li>
-                                                    <li>Blocks must be vertical (above/below), not horizontal (side-by-side). </li>
-                                                    <li>Spreadsheet files can be saved as CSV or TSV for upload (the blank line under each block must be labeled <i>~blank</i>) and/or have column headers (1, 2, 3, etc.) </li>
-                                                    <li>Do not use a CSV file if field contents contain commas (use TSV).</li>
-                                                    <li>Data blocks must be separated by a blank line, best results if the line is labeled <i>~blank</i> in the first column.</li>
-                                                    <li>More than one blank line can be between data blocks, but the block is considered to end one line above the first blank line. </li>
-                                                    <li>The auto detected locations can be edited prior to submission/upload.</li>
-                                                    <li>The number of data blocks is used to check the auto detect and a message will be shown if there is a discrepancy.</li>
+                                                <legend>No Format Selected - Assumptions</legend>
+                                                <p></p>
+                                                    <li>Files are comma delimited (CSV), tab delimited (TSV), or space delimited text files. </li>
+                                                    <li>CSV files do not contain commas in their data fields (use TSV).</li>
+                                                    <li>There is only one plate size per file.</li>
+                                                    <li>Data blocks are in the same dimensions as the plate size.</li>
+                                                    <li>Data blocks are stacked vertically (above/below), not horizontal (side-by-side). </li>
+                                                    <li>Data blocks are separated by a blank line (best results are obtained when the blank line is tagged <i>~blank</i> in the first column.</li>
+                                                    <li>A data block is considered to end one line above the tagged blank line (or the first blank line if there is more than one). </li>
+                                                <br>
+                                                <legend>Customize by Setting Format Information</legend>
+                                                <p>If computer returned incorrect results on first run, turn ON the set to and enter the correct format information, the redetect the blocks. Currently only works for vertically stacked data blocks (not side-by0side). </p>
+                                                    <li>Set the plate size for better performance.</li>
+                                                    <li>Set the number columns to ignore (for best results, label the data block headers with 1, 2, 3, etc.)</li>
+                                                    <li>Set the file delimiter.</li>
+                                                    <li>As a last resort, set the number of data blocks (will likely require manual editing of the block information).</li>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="row">
-                                        <div class="col-md-1">
-                                        </div>
-                                        <div class="col-md-11">
-                                            <div>
-                                                <h3><i>Optional - Try setting # Columns to ignore and/or Delimiter to improve results.</i></h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <hr>
+{#                                    <div class="row">#}
+{#                                        <div class="col-md-1">#}
+{#                                        </div>#}
+{#                                        <div class="col-md-11">#}
+{#                                            <div>#}
+{#                                                <h3><i>Pre-set (or Iteratively Update) Format Information </i></h3>#}
+{#                                            </div>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                    <hr>#}
                                     {# set to sections so user can tune the auto select #}
                                     <div class="row">
                                         <div class="col-md-3">
@@ -220,12 +205,12 @@
                                                 </label>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="plate-map-page-field-contents">
+                                        <div class="col-md-3">
+                                            <div class="plate-map-page-field-contents-medium">
                                                 {{form.se_form_plate_size}}
                                             </div>
                                         </div>
-                                        <div class="col-md-1">
+                                        <div class="col-md-4">
                                         </div>
                                     </div>
 
@@ -247,12 +232,12 @@
                                                 </label>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="plate-map-page-field-contents">
+                                        <div class="col-md-3">
+                                            <div class="plate-map-page-field-contents-medium">
                                                 {{form.form_number_blank_columns}}
                                             </div>
                                         </div>
-                                        <div class="col-md-1">
+                                        <div class="col-md-4">
                                         </div>
                                     </div>
 
@@ -274,25 +259,27 @@
                                                 </label>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="plate-map-page-field-contents">
+                                        <div class="col-md-3">
+                                            <div class="plate-map-page-field-contents-medium">
                                                 {{form.file_delimiter}}
                                             </div>
                                         </div>
-                                        <div class="col-md-1">
+                                        <div class="col-md-4">
                                         </div>
                                     </div>
-                                    <hr>
 
-                                    <div class="row">
-                                        <div class="col-md-1">
-                                        </div>
-                                        <div class="col-md-11">
-                                            <div>
-                                                <h3><i>Optional - If setting above did not work, set to get the correct # file blocks.</i></h3>
-                                            </div>
-                                        </div>
-                                    </div>
+
+{#                                    <hr>#}
+
+{#                                    <div class="row">#}
+{#                                        <div class="col-md-1">#}
+{#                                        </div>#}
+{#                                        <div class="col-md-11">#}
+{#                                            <div>#}
+{#                                                <h3><i>Optional - If setting above did not work, set to get the correct # file blocks.</i></h3>#}
+{#                                            </div>#}
+{#                                        </div>#}
+{#                                    </div>#}
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="plate-map-page-field-labels-small">
@@ -311,12 +298,12 @@
                                                 </label>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="plate-map-page-field-contents">
+                                        <div class="col-md-3">
+                                            <div class="plate-map-page-field-contents-medium">
                                                 {{form.form_number_blocks}}
                                             </div>
                                         </div>
-                                        <div class="col-md-1">
+                                        <div class="col-md-4">
                                         </div>
                                     </div>
                                 </div>
@@ -328,7 +315,7 @@
                                         <div class="col-md-3">
                                         </div>
                                         <div class="col-md-5">
-                                            <button type="button" class="btn btn-primary" id="reviewDataButton">Click to Run Auto Detect to Find File Blocks</button>
+                                            <button type="button" class="plate-file-must-click-button btn" id="reviewDataButton">REQUIRED - Click to Detect/Redetect Data Blocks in File</button>
                                         </div>
                                         <div class="col-md-4">
                                         </div>
@@ -348,9 +335,9 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <h3><em>This block information has already been <b>submitted</b>. </em></h3>
-                                <h4>The plate size and number of blocks cannot be edited after submission.</h4>
-                                <h4>The information in each block section (including adding an assay plate map) may be edited manually. </h4>
-                                <h4>To make changes to plate size or number of blocks, delete this file and add it again.</h4>
+                                <h4>The plate size and number of blocks CANNOT be edited after SUBMIT.</h4>
+                                <h4>The information in each block section (including adding an assay plate map) CAN be edited manually after SUBMIT. </h4>
+                                <h4>Note: If changes to plate size or the number of blocks are needed, delete this file, then readd it.</h4>
                             </div>
                         </div>
                     <br>
@@ -359,9 +346,31 @@
             {% endif %}
 
             {# main continued #}
+            {% if update %}
+{#                {% if no_saved_blocks  %}#}
+
+                    <div id="overwrite_sample_time_row" class="row hidden">
+                        <div class="col-md-3">
+                            <div class="plate-map-page-field-labels-small">
+                                <div>
+                                    <div><p id="file_overwrite_sample_time_tooltip"></p>
+                                        <label for="file_overwrite_sample_time_tooltip">What is Overwrite Sample Time &nbsp;</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8 plate-map-page-field-contents-medium">
+                            <p>AFTER detecting the file blocks, enter an overwrite sample time FOR EACH BLOCK where needed.</p>
+                        </div>
+                        <div class="col-md-1">
+                        </div>
+                    </div>
+{#                {% endif %}#}
+            {% endif %}
+
             {# display the auto detected (or set) plate size so user will see it would selecting plate maps #}
             {% if update %}
-                <div class="plate-file-block-well">
+                <div id="plate_size_in_well" class="plate-file-block-well hidden">
                     <div class="container">
 
                         <div class="row">
@@ -373,11 +382,32 @@
                                 </div>
                             </div>
                             <div class="col-md-1">
-                                <div class="plate-map-page-field-contents ">
+                                <div class="plate-map-page-field-contents-medium">
                                     {{ form.upload_plate_size }}
                                 </div>
                             </div>
-                            <div class="col-md-8"></div>
+
+                            <div class="col-md-1">
+                                <div class="plate-map-page-field-labels-large">
+                                    <label><em>Lines</em></label>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="plate-map-page-field-contents-large">
+                                    <p id="plate_number_columns">0</p>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="plate-map-page-field-labels-large">
+                                    <label><em>Columns</em></label>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="plate-map-page-field-contents-large">
+                                    <p id="plate_number_lines">0</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4"></div>
                        </div>
 
                     </div>
@@ -449,7 +479,7 @@
                                             </div>
                                         </div>
                                         <div class="col-md-6">
-                                            <div id="id_platemap_{{ forloop.counter }}" class="required get-plate-map-changed plate-map-page-field-contents">
+                                            <div id="id_platemap_{{ forloop.counter }}" class="required get-plate-map-changed plate-map-page-field-contents-medium">
                                                 {{ form2.assayplatereadermap }}
                                             </div>
                                         </div>
@@ -465,7 +495,7 @@
                                             </div>
                                         </div>
                                         <div class="col-md-6">
-                                            <div class="plate-map-page-field-contents">
+                                            <div class="plate-map-page-field-contents-medium">
                                                 {{ form2.data_block_metadata }}
                                             </div>
                                         </div>
@@ -480,18 +510,19 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
-                                            <div class="plate-map-page-field-contents ">
+                                        <div class="col-md-1">
+                                            <div class="plate-map-page-field-contents-medium plate-file-block-well">
                                                 {{ form2.over_write_sample_time }}
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="plate-map-page-field-contents ">
+                                        <div class="col-md-3">
+                                            <div class="plate-map-page-field-contents-medium">
                                                 <div>
                                                     {{ form2.form_selected_plate_map_time_unit }}
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="col-md-5"></div>
                                     </div>
                                     <br>
 
@@ -499,64 +530,66 @@
                                         <div class="col-md-3">
                                             <div class="plate-map-page-field-labels-medium">
                                                 <div>
-                                                    <label>Start Line Number for this Block* </label>
+                                                    <label>Start Line Number* </label>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
-                                            <div class="required">
+                                        <div class="col-md-1">
+                                            <div class="required start-line-number">
                                                 {{ form2.line_start }}
                                             </div>
                                         </div>
-                                        <div class="col-md-6"></div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-3">
+{#                                        <div class="col-md-6"></div>#}
+{#                                    </div>#}
+{##}
+{#                                    <div class="row">#}
+                                        <div class="col-md-2">
                                             <div class="plate-map-page-field-labels-medium">
                                                 <div>
-                                                    <label>End Line Number for this Block* </label>
+                                                    <label>End Line Number </label>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
-                                            <div class="required">
+                                        <div class="col-md-1">
+                                            <div class="plate-map-page-field-contents-medium">
                                                 {{ form2.line_end }}
                                             </div>
                                         </div>
-                                        <div class="col-md-6"></div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="plate-map-page-field-labels-medium">
-                                                <div>
-                                                    <label>First Column of this Block* </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="required">
-                                                {{ form2.delimited_start }}
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6"></div>
+                                        <div class="col-md-5"></div>
                                     </div>
 
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="plate-map-page-field-labels-medium">
                                                 <div>
-                                                    <label>Last Column of this Block* </label>
+                                                    <label>Start Column Number* </label>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
-                                            <div class="required">
+                                        <div class="col-md-1">
+                                            <div class="required start-delimited-number">
+                                                {{ form2.delimited_start }}
+                                            </div>
+                                        </div>
+{#                                        <div class="col-md-6"></div>#}
+{#                                    </div>#}
+{##}
+{#                                    <div class="row">#}
+                                        <div class="col-md-2">
+                                            <div class="plate-map-page-field-labels-medium">
+                                                <div>
+                                                    <label>End Column Number </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-1">
+                                            <div class="plate-map-page-field-contents-medium">
                                                 {{ form2.delimited_end }}
                                             </div>
                                         </div>
-                                        <div class="col-md-6"></div>
+                                        <div class="col-md-5"></div>
                                     </div>
+
                                 </div>
 
                             <br>
@@ -568,43 +601,46 @@
                 {% endfor %}
             </div>
 
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="plate-map-page-field-labels-medium">
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="plate-map-page-field-contents ">
-                            <div>
-                                <button type="button" class="btn btn-primary" id="runQualityControl">Optional (Highly Recommended) - Pre-Submission QC </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                    </div>
-                </div>
-            </div>
+{# This is not embedded in the change of the start line number or column number so hiding it#}
+{#            {% if update %}#}
+{#                <div id="go_qc_section" class="hidden">#}
+{#                    <div class="container">#}
+{#                        <div class="row">#}
+{#                            <div class="col-md-3">#}
+{#                                <div class="plate-map-page-field-labels-medium">#}
+{#                                </div>#}
+{#                            </div>#}
+{#                            <div class="col-md-6">#}
+{#                                <div class="plate-map-page-field-contents-medium ">#}
+{#                                    <div>#}
+{#                                        <button type="button" class="btn btn-primary" id="runQualityControl">OPTIONAL (Highly Recommended) - Pre-Submission QC </button>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                            <div class="col-md-3">#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            {% endif %}#}
 
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-12">
-                        <h3><em>Important Information</em></h3>
-                        <p>The file block information may be saved with or without an assay plate map
-                            (so that file upload can be performed prior to assay plate map creation).
-                        </p>
-                        <p>An assay plate map must be selected and submitted for data from the data block to be processed.
-                        </p>
-                        <p>Each time the Submit Button is clicked, data from this file added during prior Submits
-                            are removed (for all blocks) and re-added.
-                            Thus, any downstream processing and/or annotation within the plate reader processing tool will be lost
-                            (e.g., calibration, annotation).
-                            HOWEVER, data for a block that has already been submitted to the main study
-                            (an option provided at the end of the assay plate reader data processing workflow) will remain intact.
-                        </p>
-                    </div>
-                </div>
-            </div>
+{#            <div class="container">#}
+{#                <div class="row">#}
+{#                    <div class="col-md-12">#}
+{#                        <h3><em>Important Information</em></h3>#}
+{#                        <p>The file block information may be saved with or without an assay plate map#}
+{#                            (so that file upload can be performed prior to assay plate map creation, if desired).#}
+{#                        </p>#}
+{#                        <p>An assay plate map must be selected and submitted for data from the data block to be processed.#}
+{#                        </p>#}
+{#                        <p>Each time the Submit Button is clicked, add data from this file added during prior Submits#}
+{#                            are removed (for all blocks) and re-added.#}
+{#                            HOWEVER, data for a block that has already been submitted to the main study#}
+{#                            (an option provided at the end of the assay plate reader data processing workflow) will remain intact.#}
+{#                        </p>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
 
             {# error handling #}
             <div>
