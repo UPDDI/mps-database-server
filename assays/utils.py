@@ -3549,6 +3549,9 @@ def add_update_plate_reader_data_map_item_values_from_file(
     #     'line_end': 21, 'delimited_start': 3, 'delimited_end': 15, 'over_write_sample_time': None}, {
     #   ] >
 
+    true_to_continue = False
+    # print("just set true to continue ", true_to_continue)
+
     pk_this_file = pk_for_file.id
     file_delimiter = pk_for_file.file_delimiter
     upload_plate_size = pk_for_file.upload_plate_size
@@ -3575,7 +3578,8 @@ def add_update_plate_reader_data_map_item_values_from_file(
         i_ds = d_start - 1
         i_de = d_end - 1
 
-        if o_time == None:
+        # if o_time == None:
+        if o_time is None:
             true_to_overwrite_sample_time = False
         else:
             true_to_overwrite_sample_time = True
@@ -3589,7 +3593,7 @@ def add_update_plate_reader_data_map_item_values_from_file(
         except:
             pass
 
-        if platemap_id == None:
+        if platemap_id is None:
             # there was not a plate map assigned to the current block of data in the loop
             # print("no platemap for this block ", pk_this_block, "  label ", block_label)
             pass
@@ -3649,7 +3653,7 @@ def add_update_plate_reader_data_map_item_values_from_file(
                 err_msg = "There is a very bad error - the number of cells in the block do not match the number of rows in the values set. Sandra should be notified. The user will not see there raw data in the plate map when they expect to."
                 print(err_msg)
 
-            if true_to_continue == True:
+            if true_to_continue:
                 pidx = 0
                 for item in this_set_value_items:
                     # will be sorted by plate index and should go from 0 to size of plate minus 1
@@ -3680,12 +3684,13 @@ def add_update_plate_reader_data_map_item_values_from_file(
                         list_of_instances.append(instance)
                         true_to_continue = True
                     else:
-                        # true_to_continue = False
+                        true_to_continue = False
                         err_msg = "There is a very bad error - the plate index of the data coming in did not match the value set. Sandra should be notified. The user will not see there raw data in the plate map when they expect to."
                         print(err_msg)
 
                     pidx = pidx + 1
 
+    # print("should be here: ", true_to_continue)
     if true_to_continue:
         # https://www.webforefront.com/django/multiplemodelrecords.html
         # https://www.caktusgroup.com/blog/2011/09/20/bulk-inserts-django/
