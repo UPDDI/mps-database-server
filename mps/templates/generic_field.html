@@ -12,6 +12,9 @@
 {% endif %}
     <label for="{{ field.id_for_label }}" class="col-sm-2 control-label">
         {{ field.label_tag }}
+        {% if field.help_text %}
+        <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="{{ field.help_text }}"></span>
+        {% endif %}
     </label>
     <div class="col-sm-10">
         {{ field }}

@@ -517,7 +517,7 @@ class AssayPlateSetup(FlaggableRestrictedModel):
     # The assay layout is approximately equivalent to a chip's Organ Model
     assay_layout = models.ForeignKey('assays.AssayLayout', verbose_name='Assay Layout', on_delete=models.CASCADE)
 
-    setup_date = models.DateField(help_text='YYYY-MM-DD')
+    setup_date = models.DateField(help_text='Format: YYYY-MM-DD')
 
     # Plate identifier
     assay_plate_id = models.CharField(max_length=512, verbose_name='Plate ID/ Barcode')
@@ -656,7 +656,7 @@ class AssayPlateReadout(FlaggableRestrictedModel):
 
     # Assay start time is now in AssayPlateSetup
 
-    readout_start_time = models.DateField(verbose_name='Readout Date', help_text="YYYY-MM-DD")
+    readout_start_time = models.DateField(verbose_name='Readout Date', help_text="Format: YYYY-MM-DD")
 
     notebook = models.CharField(max_length=256, blank=True, default='')
     notebook_page = models.IntegerField(blank=True, null=True)
@@ -1770,7 +1770,7 @@ class AssayStudy(FlaggableModel):
     # full_name = models.CharField(max_length=1200, verbose_name='Full Study Name')
 
     start_date = models.DateField(
-        help_text='YYYY-MM-DD',
+        help_text='This date specifies when treatment of devices began.\nFormat: YYYY-MM-DD',
         verbose_name='Start Date'
     )
     description = models.CharField(
