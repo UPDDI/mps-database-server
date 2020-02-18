@@ -101,7 +101,8 @@ from assays.utils import (
     AssayFileProcessor,
     get_user_accessible_studies,
     add_update_plate_reader_data_map_item_values_from_file,
-    modify_templates
+    # modify_templates,
+    DEFAULT_CSV_HEADER
 )
 
 from django.forms.models import inlineformset_factory
@@ -143,7 +144,7 @@ from mps.settings import DEFAULT_FROM_EMAIL
 import ujson as json
 import os
 
-from mps.settings import MEDIA_ROOT
+from mps.settings import MEDIA_ROOT, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX
 
 from django.template.loader import render_to_string, TemplateDoesNotExist
 
@@ -160,6 +161,8 @@ import xlsxwriter
 from assays.utils import DEFAULT_CSV_HEADER
 from mps.settings import TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX
 from django.db import connection
+import xlsxwriter
+import io
 
 # TODO Refactor imports
 # TODO REFACTOR CERTAIN WHITTLING TO BE IN FORM AS OPPOSED TO VIEW
@@ -1142,7 +1145,7 @@ class AssayStudyDataUpload(HistoryMixin, ObjectGroupRequiredMixin, UpdateView):
         context = super(AssayStudyDataUpload, self).get_context_data(**kwargs)
 
         # TODO TODO TODO
-        context['version'] = len(os.listdir(MEDIA_ROOT + '/excel_templates/'))
+        # context['version'] = len(os.listdir(MEDIA_ROOT + '/excel_templates/'))
 
         context['data_file_uploads'] = get_data_file_uploads(study=self.object)
 
@@ -3115,21 +3118,21 @@ class AssayTargetMixin(FormHandlerMixin):
     model = AssayTarget
     form_class = AssayTargetForm
 
-    templates_need_to_be_modified = False
+    # templates_need_to_be_modified = False
 
-    def pre_save_processing(self, form):
-        """For dealing with new targets/changing names"""
-        # Modify templates immediately if new
-        if not self.object or not self.object.id:
-            self.templates_need_to_be_modified = True
-        elif self.object.name != form.cleaned_data.get('name', ''):
-            self.templates_need_to_be_modified = True
-        elif self.object.short_name != form.cleaned_data.get('short_name', ''):
-            self.templates_need_to_be_modified = True
+    # def pre_save_processing(self, form):
+    #     """For dealing with new targets/changing names"""
+    #     # Modify templates immediately if new
+    #     if not self.object or not self.object.id:
+    #         self.templates_need_to_be_modified = True
+    #     elif self.object.name != form.cleaned_data.get('name', ''):
+    #         self.templates_need_to_be_modified = True
+    #     elif self.object.short_name != form.cleaned_data.get('short_name', ''):
+    #         self.templates_need_to_be_modified = True
 
-    def extra_form_processing(self):
-        if self.templates_need_to_be_modified:
-            modify_templates()
+    # def extra_form_processing(self):
+    #     if self.templates_need_to_be_modified:
+    #         modify_templates()
 
 class AssayTargetAdd(OneGroupRequiredMixin, AssayTargetMixin, CreateView):
     pass
@@ -3173,19 +3176,19 @@ class AssayMethodMixin(FormHandlerMixin):
     model = AssayMethod
     form_class = AssayMethodForm
 
-    templates_need_to_be_modified = False
+    # templates_need_to_be_modified = False
 
-    def pre_save_processing(self, form):
-        """For dealing with new targets/changing names"""
-        # Modify templates immediately if new
-        if not self.object or not self.object.id:
-            self.templates_need_to_be_modified = True
-        elif self.object.name != form.cleaned_data.get('name', ''):
-            self.templates_need_to_be_modified = True
+    # def pre_save_processing(self, form):
+    #     """For dealing with new targets/changing names"""
+    #     # Modify templates immediately if new
+    #     if not self.object or not self.object.id:
+    #         self.templates_need_to_be_modified = True
+    #     elif self.object.name != form.cleaned_data.get('name', ''):
+    #         self.templates_need_to_be_modified = True
 
-    def extra_form_processing(self):
-        if self.templates_need_to_be_modified:
-            modify_templates()
+    # def extra_form_processing(self):
+    #     if self.templates_need_to_be_modified:
+    #         modify_templates()
 
 
 class AssayMethodAdd(OneGroupRequiredMixin, AssayMethodMixin, CreateView):
@@ -3251,19 +3254,21 @@ class PhysicalUnitsMixin(FormHandlerMixin):
     model = PhysicalUnits
     form_class = PhysicalUnitsForm
 
-    templates_need_to_be_modified = False
+    # templates_need_to_be_modified = False
 
-    def pre_save_processing(self, form):
-        """For dealing with new targets/changing names"""
-        # Modify templates immediately if new
-        if not self.object or not self.object.id:
-            self.templates_need_to_be_modified = True
-        elif self.object.name != form.cleaned_data.get('name', ''):
-            self.templates_need_to_be_modified = True
+    # def pre_save_processing(self, form):
+    #     """For dealing with new targets/changing names"""
+    #     # Modify templates immediately if new
+    #     if not self.object or not self.object.id:
+    #         self.templates_need_to_be_modified = True
+    #     # NOTE THIS DOES NOT USE NAME
+    #     # elif self.object.name != form.cleaned_data.get('name', ''):
+    #     elif self.object.unit != form.cleaned_data.get('unit', ''):
+    #         self.templates_need_to_be_modified = True
 
-    def extra_form_processing(self):
-        if self.templates_need_to_be_modified:
-            modify_templates()
+    # def extra_form_processing(self):
+    #     if self.templates_need_to_be_modified:
+    #         modify_templates()
 
 
 class PhysicalUnitsAdd(OneGroupRequiredMixin, PhysicalUnitsMixin, CreateView):
@@ -3315,19 +3320,19 @@ class AssaySampleLocationMixin(FormHandlerMixin):
     model = AssaySampleLocation
     form_class = AssaySampleLocationForm
 
-    templates_need_to_be_modified = False
+    # templates_need_to_be_modified = False
 
-    def pre_save_processing(self, form):
-        """For dealing with new targets/changing names"""
-        # Modify templates immediately if new
-        if not self.object or not self.object.id:
-            self.templates_need_to_be_modified = True
-        elif self.object.name != form.cleaned_data.get('name', ''):
-            self.templates_need_to_be_modified = True
+    # def pre_save_processing(self, form):
+    #     """For dealing with new targets/changing names"""
+    #     # Modify templates immediately if new
+    #     if not self.object or not self.object.id:
+    #         self.templates_need_to_be_modified = True
+    #     elif self.object.name != form.cleaned_data.get('name', ''):
+    #         self.templates_need_to_be_modified = True
 
-    def extra_form_processing(self):
-        if self.templates_need_to_be_modified:
-            modify_templates()
+    # def extra_form_processing(self):
+    #     if self.templates_need_to_be_modified:
+    #         modify_templates()
 
 
 class AssaySampleLocationAdd(OneGroupRequiredMixin, AssaySampleLocationMixin, CreateView):
@@ -4263,3 +4268,168 @@ class AssayPlateReaderMapDataFileUpdate(StudyGroupMixin, UpdateView):
 
 # END Plate reader file list, add, update, view and delete section
 #####
+
+
+def get_current_upload_template(request):
+    # The workbook is just in memory
+    current_output = io.BytesIO()
+    current_template = xlsxwriter.Workbook(current_output)
+
+    current_sheet = current_template.add_worksheet('Sheet 1')
+
+    # Set up formats
+    chip_red = current_template.add_format()
+    chip_red.set_bg_color('#ff6f69')
+    chip_green = current_template.add_format()
+    chip_green.set_bg_color('#96ceb4')
+
+    # Write the base files
+    # Some danger here, must change this and other template
+    initial = [
+        DEFAULT_CSV_HEADER,
+        [
+            # Chip ID
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            # Target
+            None,
+            None,
+            # Method
+            None,
+            # Sample
+            None,
+            None,
+            # Value Unit
+            None,
+            None,
+            None,
+            None,
+            None
+        ]
+    ]
+
+    # Set the initial values
+
+    initial_format = [
+        [chip_red] * 17,
+        [
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            chip_green,
+            None,
+            chip_green,
+            chip_green,
+            None,
+            chip_green,
+            None,
+            None,
+            None,
+            None
+        ]
+    ]
+
+    # Write out initial
+    for row_index, row in enumerate(initial):
+        for column_index, column in enumerate(row):
+            cell_format = initial_format[row_index][column_index]
+            current_sheet.write(row_index, column_index, column, cell_format)
+
+    # Set column widths
+    # Chip
+    current_sheet.set_column('A:A', 20)
+    current_sheet.set_column('B:B', 20)
+    current_sheet.set_column('C:C', 20)
+    current_sheet.set_column('D:D', 15)
+    current_sheet.set_column('E:E', 10)
+    current_sheet.set_column('F:F', 10)
+    current_sheet.set_column('G:G', 10)
+    current_sheet.set_column('H:H', 20)
+    current_sheet.set_column('I:I', 10)
+    current_sheet.set_column('J:J', 20)
+    current_sheet.set_column('K:K', 15)
+    current_sheet.set_column('L:L', 10)
+    current_sheet.set_column('M:M', 10)
+    current_sheet.set_column('N:N', 10)
+    current_sheet.set_column('O:O', 10)
+    current_sheet.set_column('P:P', 10)
+    current_sheet.set_column('Q:Q', 100)
+    # chip_sheet.set_column('I:I', 20)
+    # chip_sheet.set_column('J:J', 15)
+    # chip_sheet.set_column('K:K', 10)
+    # chip_sheet.set_column('L:L', 10)
+    # chip_sheet.set_column('M:M', 10)
+    # chip_sheet.set_column('N:N', 10)
+    # chip_sheet.set_column('O:O', 10)
+    # chip_sheet.set_column('P:P', 100)
+
+    current_sheet.set_column('BA:BD', 30)
+
+    # Get list of value units  (TODO CHANGE ORDER_BY)
+    value_units = PhysicalUnits.objects.all().order_by(
+        'base_unit__unit',
+        'scale_factor'
+    ).values_list('unit', flat=True)
+
+    # List of targets
+    targets = AssayTarget.objects.all().order_by(
+        'name'
+    ).values_list('name', flat=True)
+
+    # List of methods
+    methods = AssayMethod.objects.all().order_by(
+        'name'
+    ).values_list('name', flat=True)
+
+    # List of sample locations
+    sample_locations = AssaySampleLocation.objects.all().order_by(
+        'name'
+    ).values_list('name', flat=True)
+
+    for index, value in enumerate(sample_locations):
+        current_sheet.write(index, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX + 3, value)
+
+    for index, value in enumerate(methods):
+        current_sheet.write(index, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX + 2, value)
+
+    for index, value in enumerate(value_units):
+        current_sheet.write(index, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX + 1, value)
+
+    for index, value in enumerate(targets):
+        current_sheet.write(index, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX, value)
+
+    value_units_range = '=$BB$1:$BB$' + str(len(value_units))
+
+    targets_range = '=$BA$1:$BA$' + str(len(targets))
+    methods_range = '=$BC$1:$BC$' + str(len(methods))
+    sample_locations_range = '=$BD$1:$BD$' + str(len(sample_locations))
+
+
+    current_sheet.data_validation('H2', {'validate': 'list',
+                                        'source': targets_range})
+    current_sheet.data_validation('J2', {'validate': 'list',
+                                'source': methods_range})
+    current_sheet.data_validation('K2', {'validate': 'list',
+                                'source': sample_locations_range})
+    current_sheet.data_validation('M2', {'validate': 'list',
+                                'source': value_units_range})
+
+    current_template.close()
+
+    # Return
+    # Set response to binary
+    # For xlsx
+    response = HttpResponse(current_output.getvalue(), content_type='application/ms-excel')
+    # response['Content-Disposition'] = 'attachment;filename="UploadTemplate-' + str() + '.xlsx"'
+    response['Content-Disposition'] = 'attachment;filename="MPSUploadTemplate.xlsx"'
+
+    return response

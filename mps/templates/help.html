@@ -3165,7 +3165,8 @@
                                     <li><br>Notes
                                         <ul class="filled-circle">
                                             <li> The MPS-Db Center has prepared an Excel file (the SCD3 Workbook) that describes <b>Study</b> data and metadata stored in the MPS-Db </li>
-                                            <li> To download the latest version of the SCD3 Workbook, <a href="/media/excel_templates/SCD3Workbook.xlsx">click here</a></li>
+                                            {# <li> To download the latest version of the SCD3 Workbook, <a href="/media/excel_templates/SCD3Workbook.xlsx">click here</a></li> #}
+                                            <li> To download the latest version of the SCD3 Workbook, <a href="{% url 'assays-currentuploadtemplate' %}">click here</a></li>
                                             <li> We are here to help - send email to MPSHELP@pitt.edu with subject line "Help with the SCD3 Workbook" </li>
                                             <li> The optimal data contribution workflow
                                                 <ul class="open-circle">
@@ -4375,7 +4376,8 @@ Results: add a summary of the study results. </td>
                         <ul class="list-group">
                             <li class="list-group-item background3">
                                 <ul class="list-unstyled">
-                                    <li>To get an example template file, <a href="/media/excel_templates/chip_template-{{ version }}.xlsx">click here</a>
+                                    {# <li>To get an example template file, <a href="/media/excel_templates/chip_template-{{ version }}.xlsx">click here</a> #}
+                                    <li>To get an example template file, <a href="{% url 'assays-currentuploadtemplate' %}">click here</a>
                                         <ul class="filled-circle">
                                             <li>If uploading an Excel workbook, workbook can contain multiple tabs</li>
                                             <li>All files (or tabs) with correct headers (i.e. column names) will be evaluated for upload, others will be ignored</li>

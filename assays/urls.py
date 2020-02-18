@@ -79,6 +79,7 @@ from assays.views import (
     AssayPlateReaderMapDataFileView,
     AssayPlateReaderMapDataFileDelete,
     AssayStudyTemplate,
+    get_current_upload_template
 )
 import assays.ajax
 
@@ -229,6 +230,8 @@ urlpatterns = [
 
     # TCTC Summary test
     url(r'^tctc_summary/$', TCTCSummary.as_view(), name='tctc_summary'),
+    # Get the current upload template
+    url(r'^assays/current_upload_template/$', get_current_upload_template, name='assays-currentuploadtemplate'),
 
     # Ajax
     url(r'^assays_ajax/$', assays.ajax.ajax),
