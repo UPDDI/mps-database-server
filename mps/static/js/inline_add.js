@@ -1,9 +1,15 @@
 // THIS FILE NEEDS TO BE REFACTORED
+window.INLINES = {
+    default_rows: null
+};
+
 $(document).ready(function () {
     // Note that this requires certain class name, add name, inlines name
     // Note that the selector that selects TABLES (not divs) with the name inlines
     var inlines = $('.inlines');
     var default_rows = {};
+
+    window.INLINES.default_rows = default_rows;
 
     // For each inline
     inlines.each(function() {

@@ -51,6 +51,14 @@ $(document).ready(function () {
             else if (current_value) {
                 current_selectize.setValue(current_value);
             }
+
+            // Handling for adding to inlines
+            if ($(this).parent().parent().hasClass('inline')) {
+                var set_title = $(this).parent().parent().parent().parent().attr('id').split('-')[0];
+                window.INLINES.default_rows[set_title].find('select[data_app="' + current_app + '"][data_model="' + current_model + '"]').append(
+                    new Option(new_name, new_pk)
+                );
+            }
         });
     }
 
