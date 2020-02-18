@@ -2574,6 +2574,47 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
         ).order_by('name',)
         self.fields['se_platemap'].widget.attrs.update({'class': ' required'})
 
+    # processing the data fields added
+    se_form_calibration_curve = forms.ChoiceField(
+        choices=(('no_processing', 'No Processing'),
+                 ('best_fit', 'Best Fit'),
+                 ('linear', 'Linear w/fitted intercept'),
+                 ('linear0', 'Linear w/intercept = 0'),
+                 ('log', 'Logarithmic w/fitted intercept'),
+                 ('poly2', 'Polynomial (2) w/fitted intercept'),
+                 ('log4', 'Logistic (4 parameter)'),
+                 ('log5', 'Logistic (5 parameter)'),
+                 )
+    )
+    se_form_blank_handling = forms.ChoiceField(
+        choices=(('subtract', 'Subtract Average Standard Blanks from Standards and Average Sample Blanks from Samples'),
+                 ('ignore', 'Ignore the Blanks'))
+    )
+    se_form_well_volume = forms.ChoiceField(
+        choices=(('mL', 'mL'), ('uL', 'uL'))
+    )
+
+    form_min_standard = forms.DecimalField(
+        required=False,
+        initial=0,
+    )
+    form_min_standard.widget.attrs.update({'class': 'form-control'})
+
+    form_max_standard = forms.DecimalField(
+        required=False,
+        initial=1,
+    )
+    form_max_standard.widget.attrs.update({'class': 'form-control'})
+
+    form_molecular_weight = forms.DecimalField(
+        required=False,
+        initial=1,
+    )
+    form_molecular_weight.widget.attrs.update({'class': 'form-control'})
+
+
+
+    # before got to processing the data
     ns_matrix_item = forms.ModelChoiceField(
         queryset=AssayMatrixItem.objects.none(),
         required=False,
@@ -3000,7 +3041,11 @@ class AssayPlateReaderMapDataFileForm(BootstrapForm):
     )
     form_number_blank_columns = forms.IntegerField(
         required=False,
-        initial=1,
+        initial=0,
+    )
+    form_number_blank_rows = forms.IntegerField(
+        required=False,
+        initial=0,
     )
     form_filename_only = forms.CharField(
         required=False,
@@ -3014,10 +3059,14 @@ class AssayPlateReaderMapDataFileForm(BootstrapForm):
         required=False,
         initial=0,
         choices=(
-            (0, 'No format selected - make best guess at file format'),
-            (1, 'Softmax Pro 5.3 Molecular Devices M5 - Format requested by UPDDI Director of Operations'),
+            (0, 'COMPUTERS BEST GUESS'),
+            (1, 'Softmax Pro 5.3 Molecular Devices M5 (UPDDI DoO)'),
+            (10, 'Single data block with 1 column of row labels and 1 row of column headers'),
+
+            # (96, 'One 96 plate (8 lines by 12 columns) starting at line 1 column 1 (CSV) - requested by Larry V.'),
+            # (384, 'One 384 plate (16 lines by 24 columns) starting at line 1 column 1 (CSV) - requested by Larry V.'),
             # (2, 'Wallac EnVision Manager Version 1.12 (EnVision)'),
-            (9999, 'Customize by Presetting Format Information (for advanced users)'),
+            (9999, 'USER CUSTOMIZES by Setting Format Information'),
         )
     )
 
@@ -3046,12 +3095,12 @@ class AssayPlateReaderMapDataFileBlockForm(forms.ModelForm):
                                                    }),
             'line_start': forms.NumberInput(attrs={'class': 'form-control required'}),
             # 'line_end': forms.NumberInput(attrs={'class': 'form-control required'}),
-            'line_end': forms.NumberInput(attrs={'readonly': 'readonly',
-                                                 'style': 'background-color: transparent;',}),
+            # 'line_end': forms.NumberInput(attrs={'readonly': 'readonly',
+            #                                      'style': 'background-color: transparent;',}),
             'delimited_start': forms.NumberInput(attrs={'class': 'form-control required'}),
             # 'delimited_end': forms.NumberInput(attrs={'class': 'form-control required'}),
-            'delimited_end': forms.NumberInput(attrs={'readonly': 'readonly',
-                                                      'style': 'background-color: transparent;',}),
+            # 'delimited_end': forms.NumberInput(attrs={'readonly': 'readonly',
+            #                                           'style': 'background-color: transparent;',}),
             'over_write_sample_time': forms.NumberInput(attrs={'class': 'form-control'}),
             'form_selected_plate_map_time_unit': forms.NumberInput(attrs={'readonly': 'readonly',
                                                                           'style': 'background-color: transparent;',}),

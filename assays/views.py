@@ -4012,14 +4012,29 @@ class AssayPlateReaderMapDataFileIndex(StudyViewerMixin, DetailView):
         ).values('assayplatereadermapdatafile').annotate(
             blocks=Count('assayplatereadermapdatafile')
         )
+        # find plate maps selected per file id
+        file_map_count = AssayPlateReaderMapDataFileBlock.objects.filter(
+            study=self.object.id
+        ).filter(
+            assayplatereadermap__isnull=False
+        ).values('assayplatereadermapdatafile').annotate(
+            maps=Count('assayplatereadermapdatafile')
+        )
+
         # get data block count to a dictionary
         file_block_count_dict = {}
+        file_map_count_dict = {}
         for each in file_block_count.iterator():
             file_block_count_dict.update({each.get('assayplatereadermapdatafile'): each.get('blocks')})
+        for each in file_map_count.iterator():
+            file_map_count_dict.update({each.get('assayplatereadermapdatafile'): each.get('maps')})
+
         # put the count of the blocks into the queryset of files (this is very HANDY)
         for file in assayplatereadermapdatafiles:
             file.block_count = file_block_count_dict.get(int(file.id))
+            file.map_count = file_map_count_dict.get(int(file.id))
             # print(file.id, " ",file.description, " ", file.block_count)
+            # print(file.id, " ",file.description, " ", file.map_count)
         # get and put short file name into queryset
         for file in assayplatereadermapdatafiles:
             file.name_short = os.path.basename(str(file.plate_reader_file))

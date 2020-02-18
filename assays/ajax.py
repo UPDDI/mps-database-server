@@ -4659,36 +4659,38 @@ def fetch_review_plate_reader_data_file(request):
     """
 
     this_file_id = request.POST.get('this_file_id', '0')
-
     this_file_format_selected = request.POST.get('this_file_format_selected', '0')
     file_delimiter = request.POST.get('file_delimiter', '0')
     form_plate_size = request.POST.get('form_plate_size', '0')
     form_number_blocks = request.POST.get('form_number_blocks', '0')
     form_number_blank_columns = request.POST.get('form_number_blank_columns', '0')
+    form_number_blank_rows = request.POST.get('form_number_blank_rows', '0')
+
     set_delimiter = request.POST.get('set_delimiter', '0')
+    set_format = request.POST.get('set_format', '0')
     set_plate_size = request.POST.get('set_plate_size', '0')
-    set_plate_lines = request.POST.get('set_plate_lines', '0')
-    set_plate_columns = request.POST.get('set_plate_columns', '0')
+    number_plate_lines = request.POST.get('number_plate_lines', '0')
+    number_plate_columns = request.POST.get('number_plate_columns', '0')
     set_number_blocks = request.POST.get('set_number_blocks', '0')
-    set_number_blank_columns = request.POST.get('set_number_blocks', '0')
+    set_number_blank_columns = request.POST.get('set_number_blank_columns', '0')
+    set_number_blank_rows = request.POST.get('set_number_blank_rows', '0')
 
     if not this_file_id:
         return HttpResponseServerError()
 
     set_dict = {}
+    set_dict.update({'this_file_format_selected': this_file_format_selected})
     set_dict.update({'file_delimiter': file_delimiter})
     set_dict.update({'form_plate_size': form_plate_size})
     set_dict.update({'form_number_blocks': form_number_blocks})
     set_dict.update({'form_number_blank_columns': form_number_blank_columns})
-
+    set_dict.update({'form_number_blank_rows': form_number_blank_rows})
     set_dict.update({'set_delimiter': set_delimiter})
+    set_dict.update({'set_format': set_format})
     set_dict.update({'set_plate_size': set_plate_size})
-    set_dict.update({'set_plate_lines': set_plate_lines})
-    set_dict.update({'set_plate_columns': set_plate_columns})
     set_dict.update({'set_number_blocks': set_number_blocks})
     set_dict.update({'set_number_blank_columns': set_number_blank_columns})
-
-    set_dict.update({'this_file_format_selected': this_file_format_selected})
+    set_dict.update({'set_number_blank_rows': set_number_blank_rows})
 
     this_queryset = AssayPlateReaderMapDataFile.objects.get(
         id=this_file_id
@@ -4723,9 +4725,9 @@ def fetch_review_plate_reader_data_file(request):
             'plate_size': each.get('plate_size'),
             'plate_lines': each.get('plate_lines'),
             'plate_columns': each.get('plate_columns'),
-
+            'number_blank_columns': each.get('number_blank_columns'),
+            'number_blank_rows': each.get('number_blank_rows'),
             'calculated_number_of_blocks': each.get('calculated_number_of_blocks'),
-            # 'calculated_number_of_blank_columns': each.get('calculated_number_of_blank_columns'),
         }
         data_to_return.append(data_fields)
         idx = idx + 1
@@ -4807,6 +4809,7 @@ def fetch_information_for_value_set_of_plate_map_for_data_block(request):
 
     this_data_file_block = request.POST.get('pk_data_block', '0')
     this_platemap = request.POST.get('pk_platemap', '0')
+    the_num_colors = int(request.POST.get('num_colors', '0'))
     # print(this_data_file_block)
     # print(this_platemap)
     if not this_data_file_block:
@@ -4820,14 +4823,37 @@ def fetch_information_for_value_set_of_plate_map_for_data_block(request):
         assayplatereadermap_id=this_platemap
     ).order_by('plate_index', )
 
+    min_raw_value = this_queryset.aggregate(Min('raw_value')).get('raw_value__min')
+    max_raw_value = this_queryset.aggregate(Max('raw_value')).get('raw_value__max')
+    # print("min ", min_raw_value)
+    # print("max ", max_raw_value)
+    # print("color", the_num_colors)
+    interval = (max_raw_value - min_raw_value) / (the_num_colors)
+    # print("interval ", interval)
+
+    bin_upper_limit_list = [0] * the_num_colors
+
+    idx = 0
+    while idx < the_num_colors:
+        bin_upper_limit_list[idx] = min_raw_value + interval*idx
+        # print(bin_upper_limit_list[idx])
+        idx = idx + 1
+
     data = {}
     data_to_return = []
 
     for each in this_queryset:
         # print(each)
+        # print("each.raw_value ", each.raw_value)
+        if each.raw_value is None:
+            bin_index = 0
+        else:
+            bin_index = sub_to_fetch_information_for_value_set_of_plate_map_for_data_block(bin_upper_limit_list, each.raw_value)
+        # print("bin_index ", bin_index)
         data_fields = {
             'time': each.time,
             'raw_value': each.raw_value,
+            'bin_index': bin_index,
         }
         # make sure to order by the plate_index
         data_to_return.append(data_fields)
@@ -4835,6 +4861,27 @@ def fetch_information_for_value_set_of_plate_map_for_data_block(request):
     # print(data)
     return HttpResponse(json.dumps(data),
                         content_type="application/json")
+
+def sub_to_fetch_information_for_value_set_of_plate_map_for_data_block(bin_upper_limit_list, raw_value):
+    bin_index = 0
+    idx = 0
+    num_loops = len(bin_upper_limit_list)
+    # print("num_loops ", num_loops)
+    while idx < num_loops:
+        # print("idx ", idx)
+        # print("raw ", raw_value)
+        # print("bin ", bin_upper_limit_list[idx])
+        if raw_value <= bin_upper_limit_list[idx]:
+            # print("less")
+            # first time is it greater than or equal upper limit, record and return then break
+            bin_index = idx
+            break
+        else:
+            # print("else")
+            bin_index = idx
+
+        idx = idx + 1
+    return bin_index
 
 # TODO TODO TODO
 switch = {

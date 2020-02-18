@@ -57,7 +57,7 @@
                 <table id="assayplatereadermaps" class="display table table-striped table-hover" cellspacing="0" width="100%">
                 <thead>
                     <tr>
-                        <th>View or Edit</th>
+                        <th>View, Edit Map, Calibrate</th>
                         <th>Assay Plate Map Name</th>
                         <th>Plate Size</th>
                         <th>Standard Unit</th>
@@ -76,7 +76,11 @@
                         <td class="no-wrap">
                                 <a class="btn btn-primary" href="{% url 'assayplatereadermap-view' plate.id  %}">View </a>
                                 {% if not object.signed_off_by %}
-                                    <a class="btn btn-primary" href="{% url 'assayplatereadermap-update' plate.id  %}">Edit </a>
+                                    {% if plate.block_count > 0 %}
+                                        <a class="btn btn-primary" href="{% url 'assayplatereadermap-update' plate.id  %}">Calibrate</a>
+                                    {% else %}
+                                        <a class="btn btn-primary" href="{% url 'assayplatereadermap-update' plate.id  %}">Edit Map</a>
+                                    {% endif %}
                                 {% endif %}
                         </td>
                         <td>{{ plate.name }}</td>
