@@ -43,7 +43,7 @@ from assays.models import (
     AssayPlateReaderMapDataFileBlock,
     #AssayPlateReaderMapDataFileLine,
     AssayCategory,
-    AssayPlateReaderMapDataProcessing,
+    # AssayPlateReaderMapDataProcessing,
     assay_plate_reader_time_unit_choices,
     assay_plate_reader_well_use_choices,
     assay_plate_reader_map_info_plate_size_choices,
@@ -2588,6 +2588,8 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
     )
     se_form_blank_handling = forms.ChoiceField(
         choices=(('subtract', 'Subtract Average Standard Blanks from Standards and Average Sample Blanks from Samples'),
+                 ('subtractstandard', 'Subtract Average Standard Blanks from Standards (ignore sample blanks)'),
+                 ('subtractsample', 'Subtract Average Sample Blanks from Samples (ignore standard blanks)'),
                  ('ignore', 'Ignore the Blanks'))
     )
     se_form_well_volume = forms.ChoiceField(
@@ -3093,12 +3095,13 @@ class AssayPlateReaderMapDataFileBlockForm(forms.ModelForm):
                                                    # 'style': 'border-color: transparent;',
                                                    'style': 'background-color: transparent;',
                                                    }),
-            'line_start': forms.NumberInput(attrs={'class': 'form-control required'}),
+            'line_start': forms.NumberInput(attrs={'class': 'form-control '}),
+            'line_end': forms.NumberInput(attrs={'class': 'form-control'}),
             # 'line_end': forms.NumberInput(attrs={'class': 'form-control required'}),
             # 'line_end': forms.NumberInput(attrs={'readonly': 'readonly',
             #                                      'style': 'background-color: transparent;',}),
-            'delimited_start': forms.NumberInput(attrs={'class': 'form-control required'}),
-            # 'delimited_end': forms.NumberInput(attrs={'class': 'form-control required'}),
+            'delimited_start': forms.NumberInput(attrs={'class': 'form-control '}),
+            'delimited_end': forms.NumberInput(attrs={'class': 'form-control'}),
             # 'delimited_end': forms.NumberInput(attrs={'readonly': 'readonly',
             #                                           'style': 'background-color: transparent;',}),
             'over_write_sample_time': forms.NumberInput(attrs={'class': 'form-control'}),

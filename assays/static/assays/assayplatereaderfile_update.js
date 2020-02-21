@@ -1,6 +1,10 @@
 $(document).ready(function () {
     // START SECTION TO SET GLOBAL MOST VARIABLES
     // set global variables
+    let global_counter_to_check_loopA = 0;
+    let global_counter_to_check_loopB = 0;
+
+
     let global_file_plate_this_file_id = 0;
     
     let global_file_setting_box_delimiter = "";
@@ -15,6 +19,7 @@ $(document).ready(function () {
     let global_file_iblock_line_end = [];
     let global_file_iblock_data_block_metadata = [];
     let global_file_iblock_data_block = [];
+    let global_file_iblock_file_list = [[]];
 
     let global_file_set_delimiter = false;
     let global_file_set_plate_size = false;
@@ -76,7 +81,24 @@ $(document).ready(function () {
         showOverwriteSampleTimeInfo();
         showPlateSizeForFile();
         showQCForFile();
+        // plate size is stored in the file model, so,
+        // just get the lines columns the HARDCODED way...
         global_file_setting_box_form_plate_size = $('#id_upload_plate_size').val();
+        if (global_file_setting_box_form_plate_size == 24) {
+            global_file_selected_a_plate_map_with_number_lines_by_plate_size = 4;
+            global_file_selected_a_plate_map_with_number_columns_by_plate_size = 6;
+        } else if (global_file_setting_box_form_plate_size == 96) {
+            global_file_selected_a_plate_map_with_number_lines_by_plate_size = 8;
+            global_file_selected_a_plate_map_with_number_columns_by_plate_size = 12;
+        } else {
+             // form_plate_size = 384
+            global_file_selected_a_plate_map_with_number_lines_by_plate_size = 16;
+            global_file_selected_a_plate_map_with_number_columns_by_plate_size = 24;
+        }
+
+        $("#plate_number_columns").text(global_file_selected_a_plate_map_with_number_columns_by_plate_size);
+        $("#plate_number_lines").text(global_file_selected_a_plate_map_with_number_lines_by_plate_size);
+
         // when do form manual validation (clean) on existing, if there is a clean error
         // the extra formset kicks into being a valid formset and it will ADDed table during save
         // I tested a few methods for dealing with this
@@ -111,13 +133,16 @@ $(document).ready(function () {
         // send the list of platemap pks to the function
         // sending the list since ajax call and we need to control the order
         findSizeAndTimeUnitOfPlateSelectedInDropDown(global_file_formset_platemap_value_list);
+
+        // load the file into the memory variable for use in displaying plate maps on reload of submitted
+        reviewPlateReaderFileOnLoad();
     } else {
         // this is the condition where there are no saved blocks yet
         // hide the extra formset - it will be cloned, so, do not selectize the platemap or cloning will NOT work
        $('#id_formset_' + global_file_extra_formset_number).addClass('hidden');
     }
 
-    function adjustEndingLineOrColumn(this_element, line_or_delimited) {
+    function adjustEndingLineOrColumnOrReloadingPage(adjust_or_reload, this_element, line_or_delimited) {
         let this_form_row = this_element.closest(".form2-row");
         // console.log(this_form_row)
         let formset_id = this_form_row[0].id;
@@ -126,15 +151,36 @@ $(document).ready(function () {
         let fidx = block_number - 1;
         // console.log(fidx)
 
-        // when edit the start line or the start column, auto change the end line and/or end column based on plate size
-        if (line_or_delimited == "delimited") {
-            let dstart = $('#id_assayplatereadermapdatafileblock_set-' + fidx + '-delimited_start').val();
-            let dend = '#id_assayplatereadermapdatafileblock_set-' + fidx + '-delimited_end';
-            $(dend).val(parseInt(dstart) + parseInt(global_file_selected_a_plate_map_with_number_columns_by_plate_size) - 1);
+        let dstart = $('#id_assayplatereadermapdatafileblock_set-' + fidx + '-delimited_start').val();
+        let lstart = $('#id_assayplatereadermapdatafileblock_set-' + fidx + '-line_start').val();
+
+        if (dstart < 1 || lstart < 1) {
+            let mymessage = "Please enter a integer > 0."
+             alert(mymessage + ' \n');
         } else {
-            let lstart = $('#id_assayplatereadermapdatafileblock_set-' + fidx + '-line_start').val();
-            let lend = '#id_assayplatereadermapdatafileblock_set-' + fidx + '-line_end';
-            $(lend).val(parseInt(lstart) + parseInt(global_file_selected_a_plate_map_with_number_lines_by_plate_size) - 1);
+
+            let dend = $('#id_assayplatereadermapdatafileblock_set-' + fidx + '-delimited_end').val();
+            let lend = $('#id_assayplatereadermapdatafileblock_set-' + fidx + '-line_end').val();
+
+            // when edit the start line or the start column, auto change the end line and/or end column based on plate size
+            if (line_or_delimited == "delimited") {
+                dend = '#id_assayplatereadermapdatafileblock_set-' + fidx + '-delimited_end';
+                $(dend).val(parseInt(dstart) + parseInt(global_file_selected_a_plate_map_with_number_columns_by_plate_size) - 1);
+                dend = $('#id_assayplatereadermapdatafileblock_set-' + fidx + '-delimited_end').val();
+            } else {
+                lend = '#id_assayplatereadermapdatafileblock_set-' + fidx + '-line_end';
+                $(lend).val(parseInt(lstart) + parseInt(global_file_selected_a_plate_map_with_number_lines_by_plate_size) - 1);
+                lend = $('#id_assayplatereadermapdatafileblock_set-' + fidx + '-line_end').val();
+            }
+
+            makeOrRemakePlateMapTable(
+                "update",
+                block_number,
+                lstart - 1,
+                lend - 1,
+                dstart - 1,
+                dend - 1);
+
         }
     }
 
@@ -161,7 +207,7 @@ $(document).ready(function () {
     //     } else {
     //         $('#auto_detect_settings_section').addClass('hidden');
     //         // call the script immediately since not using full auto - changed this
-    //         // reviewPlateReaderFile();
+    //         // reviewPlateReaderFileOnClick();
     //     }
     // }
 
@@ -233,6 +279,7 @@ $(document).ready(function () {
                 $("#set_number_blank_rows").closest('div').addClass('off');
 
                 // force the settings ON if they are OFF
+                // JSCSS
                 let mystyle = $('#auto_detect_settings_section').css('display');
                 // console.log("mystyle: ", mystyle)
                 if (mystyle == "none") {
@@ -301,10 +348,12 @@ $(document).ready(function () {
         document.getElementById(element_id2).style.backgroundColor = 'transparent';
         let element_id3 = 'id_assayplatereadermapdatafileblock_set-' + index_css + '-line_end';
         document.getElementById(element_id3).style.borderStyle = 'none';
-        document.getElementById(element_id3).readOnly = true;
+        document.getElementById(element_id3).style.backgroundColor = 'lightgrey';
+        // document.getElementById(element_id3).readOnly = true;
         let element_id4 = 'id_assayplatereadermapdatafileblock_set-' + index_css + '-delimited_end';
         document.getElementById(element_id4).style.borderStyle = 'none';
-        document.getElementById(element_id4).readOnly = true;
+        document.getElementById(element_id4).style.backgroundColor = 'lightgrey';
+        // document.getElementById(element_id4).readOnly = true;
         index_css = index_css + 1;
     }
     // apply style, tried other ways, this worked best
@@ -383,11 +432,25 @@ $(document).ready(function () {
     });
 
     $(".start-delimited-number").change(function() {
-        adjustEndingLineOrColumn($(this), 'delimited');
+        adjustEndingLineOrColumnOrReloadingPage('change', $(this), 'delimited');
     });
     $(".start-line-number").change(function() {
-        adjustEndingLineOrColumn($(this), 'line');
+        adjustEndingLineOrColumnOrReloadingPage('change', $(this), 'line');
     });
+
+    $(".end-delimited-number").change(function() {
+        alert('You should not change this. You are likely going to get errors unless you change the start. \n');
+    });
+    $(".end-line-number").change(function() {
+        alert('You should not change this. You are likely going to get errors unless you change the start. \n');
+    });
+
+    // $(".start-delimited-number").mouseout(function() {
+    //     adjustEndingLineOrColumnOrReloadingPage('change', $(this), 'delimited');
+    // });
+    // $(".start-line-number").mouseout(function() {
+    //     adjustEndingLineOrColumnOrReloadingPage('change', $(this), 'line');
+    // });
 
     // where user changes anything about a block
     // save the block number as 1 (instead of 0) so changes can be made on save to values in platemap
@@ -586,10 +649,10 @@ $(document).ready(function () {
         showOverwriteSampleTimeInfo();
         showPlateSizeForFile();
         showQCForFile();
-        reviewPlateReaderFile();
+        reviewPlateReaderFileOnClick();
     });
 
-    function reviewPlateReaderFile() {
+    function reviewPlateReaderFileOnClick() {
         // this is the function to read the file and determine the blocks
         // console.log("the selected file format ", global_file_file_format_select)
 
@@ -673,7 +736,7 @@ $(document).ready(function () {
         // console.log(global_file_set_number_blank_rows)
 
         var data = {
-            call: 'fetch_review_plate_reader_data_file',
+            call: 'fetch_review_plate_reader_data_file_with_block_info',
             this_file_id: global_file_plate_this_file_id,
             this_file_format_selected: global_file_file_format_select,
             file_delimiter: global_file_setting_box_delimiter,
@@ -724,6 +787,8 @@ $(document).ready(function () {
 
     let processDataFromBlockDetect = function (json, exist) {
         let file_block_info = json.file_block_info;
+        global_file_iblock_file_list = json.file_list;
+
         // console.log(file_block_info)
         // note this method if needed $("#id_device").selectize()[0].selectize.setValue(pm_device);
         let add_blocks = 0;
@@ -757,7 +822,9 @@ $(document).ready(function () {
             $("#id_file_delimiter").selectize()[0].selectize.setValue(global_file_setting_box_delimiter);
         }
         // do not need else because if the delimiter is given and set, it is used
+        // console.log("calculated_number_of_blocks: ",calculated_number_of_blocks)
         // console.log("global_file_set_number_blocks2: ",global_file_set_number_blocks)
+
         if (global_file_set_number_blocks == false) {
             global_file_setting_box_form_number_blocks = calculated_number_of_blocks;
             $("#id_form_number_blocks").val(global_file_setting_box_form_number_blocks);
@@ -884,21 +951,41 @@ $(document).ready(function () {
             let dstart = '#id_assayplatereadermapdatafileblock_set-' + idx + '-delimited_start';
             let dend = '#id_assayplatereadermapdatafileblock_set-' + idx + '-delimited_end';
             // What comes back from the ajax call?
-            $(dblock).val(global_file_iblock_data_block[idx]);
-            $(dblockmetadata).val(global_file_iblock_data_block_metadata[idx]);
+            let this_dblock = global_file_iblock_data_block[idx];
+            let this_dblockmetadata = global_file_iblock_data_block_metadata[idx];
+            let this_lstart = global_file_iblock_line_start[idx]+1;
+            let this_lend = global_file_iblock_line_end[idx]+1;
+            let this_dstart = global_file_iblock_delimited_start[idx]+1;
+            let this_dend = global_file_iblock_delimited_end[idx]+1;
+
+            $(dblock).val(this_dblock);
+            $(dblockmetadata).val(this_dblockmetadata);
             // The INDEXES of the top and bottom lines, and the first and last column for each block
             // add 1 to get the line or column number
-            $(lstart).val(global_file_iblock_line_start[idx]+1);
-            $(lend).val(global_file_iblock_line_end[idx]+1);
-            $(dstart).val(global_file_iblock_delimited_start[idx]+1);
-            $(dend).val(global_file_iblock_delimited_end[idx]+1);
+            $(lstart).val(this_lstart);
+            $(lend).val(this_lend);
+            $(dstart).val(this_dstart);
+            $(dend).val(this_dend);
 
             global_file_formset_count = $('#id_assayplatereadermapdatafileblock_set-TOTAL_FORMS').val();
             // console.log('global_file_formset_count post clone ', global_file_formset_count)
+
+            // global_counter_to_check_loopB = global_counter_to_check_loopB + 1;
+            // console.log("global_counter_to_check_loopB ",global_counter_to_check_loopB)
+
+            makeOrRemakePlateMapTable(
+                "create",
+                this_dblock,
+                this_lstart - 1,
+                this_lend - 1,
+                this_dstart - 1,
+                this_dend - 1);
+
             idx = idx + 1;
         }
 
         // Now that formsets are in use, show as form control (never turn the selectize back on, argh)
+        // JSCSS
         global_file_formset_count = $('#id_assayplatereadermapdatafileblock_set-TOTAL_FORMS').val();
         let index_css = 0;
         while (index_css < global_file_formset_count) {
@@ -907,7 +994,197 @@ $(document).ready(function () {
         }
     };
 
+
+    function reviewPlateReaderFileOnLoad() {
+        // this is the function to read the file on load
+
+        // let this_file_id = parseInt(document.getElementById ("this_file_id").innerText.trim());
+        try { global_file_plate_this_file_id = parseInt(document.getElementById ("this_file_id").innerText.trim());
+        }
+        catch(err) { global_file_plate_this_file_id = $("#this_file_id").val();
+        }
+        global_file_setting_box_delimiter = $("#id_readonly_file_delimiter").text().trim();
+
+        // console.log("setting data")
+        // console.log("this_file_id: ",global_file_plate_this_file_id)
+        // console.log("file_delimiter: ",global_file_setting_box_delimiter)
+        var data = {
+            call: 'fetch_review_plate_reader_data_file_only',
+            this_file_id: global_file_plate_this_file_id,
+            file_delimiter: global_file_setting_box_delimiter,
+            csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
+        };
+
+        // Show spinner
+        window.spinner.spin(
+            document.getElementById("spinner")
+        );
+
+        $.ajax({
+            url: "/assays_ajax/",
+            type: "POST",
+            dataType: "json",
+            data: data,
+            success: function (json) {
+                window.spinner.stop();
+                if (json.errors) {
+                    // Display errors
+                    alert(json.errors);
+                }
+                else {
+                    let exist = true;
+                    processDataLoadFileListOnLoad(json, exist);
+                    // alert('' +
+                    //      '\n\nPlease note that changes will not be made until you press the "Submit" button at the bottom of the page.');
+                }
+            },
+            error: function (xhr, errmsg, err) {
+                // Stop spinner
+                window.spinner.stop();
+                alert('Notify the developer that the error FILE_LOAD_AJAX_DATA_ERROR. \n');
+                console.log(xhr.status + ": " + xhr.responseText);
+            }
+        });
+    }
+
+    let processDataLoadFileListOnLoad = function (json, exist) {
+        global_file_iblock_file_list = json.file_list;
+        // console.log(global_file_iblock_file_list)
+
+        // do it here or will get race errors
+        for (var fidx = 1, fidxds = global_file_formset_count; fidx < fidxds; fidx++) {
+            block_number = fidx;
+            let formset_fields = fidx-1;
+            let dstart = $('#id_assayplatereadermapdatafileblock_set-' + formset_fields + '-delimited_start').val();
+            let lstart = $('#id_assayplatereadermapdatafileblock_set-' + formset_fields + '-line_start').val();
+            let dend = $('#id_assayplatereadermapdatafileblock_set-' + formset_fields + '-delimited_end').val();
+            let lend = $('#id_assayplatereadermapdatafileblock_set-' + formset_fields + '-line_end').val();
+
+            // console.log("block_number ", block_number)
+            // console.log(dstart)
+
+
+            makeOrRemakePlateMapTable(
+                "update",
+                block_number,
+                lstart - 1,
+                lend - 1,
+                dstart - 1,
+                dend - 1);
+        }
+    };
+
     // More Functions
+    // make a table for each block and update when requested
+    function makeOrRemakePlateMapTable(
+        create_or_update,
+        this_dblock,
+        i_lstart,
+        i_lend,
+        i_dstart,
+        i_dend)
+        {
+
+        // console.log("this_dblock ", this_dblock)
+        // console.log("i_lstart ",i_lstart)
+        // console.log("i_lend ",i_lend)
+        // console.log("i_dstart ",i_dstart)
+        // console.log("i_dend ",i_dend)
+
+        // console.log(global_file_iblock_file_list[4])
+        // console.log(global_file_iblock_file_list[4].line_list)
+
+        let table_column_number = i_dend-i_dstart+1;
+        let column_width = parseInt(100/global_file_selected_a_plate_map_with_number_columns_by_plate_size).toString() + "%";
+        // console.log("column_width ", column_width)
+        let this_table_name = '#plate_table_' + this_dblock;
+
+        try {
+            var elem = document.querySelector(this_table_name);
+            elem.parentNode.removeChild(elem);
+            // $(this_table_name).empty();
+        } catch (err) {}
+
+
+        let this_table = document.createElement("table");
+        $(this_table).attr('id', 'plate_table_' + this_dblock);
+        $(this_table).addClass('plate-map-file-table');
+
+        // for each row
+        let tbody = document.createElement("tbody");
+        // $(tbody).addClass('plate-map-file-table');
+        let ret_block_raw_value = "0";
+
+        // console.log("how many formsets ",$('#id_assayplatereadermapdatafileblock_set-TOTAL_FORMS').val())
+        let continue_if_true = 'true';
+        try {
+            let my_line_list = global_file_iblock_file_list[0].line_list;
+        } catch (err) {
+            continue_if_true = 'false';
+            alert('Notify the developer that the error FILE_LOAD_AJAX_DATA_ERROR_EMPTY_LIST. \n');
+        }
+
+        if (continue_if_true == 'true') {
+            for (var ridx = i_lstart, rls = i_lend; ridx <= rls; ridx++) {
+                // console.log("ridx: ", ridx)
+                // console.log("global_file_iblock_file_list[ridx]")
+                // console.log(global_file_iblock_file_list[ridx])
+
+                let my_line_list = [];
+                try {
+                    my_line_list = global_file_iblock_file_list[ridx].line_list;
+
+
+                } catch (err) {
+                    continue_if_true = 'false';
+                    alert('The requested block is out of bounds of the file. Try setting the plate size. If that does not work, set the bounds manually for block ' + this_dblock + ' or try another file format. \n');
+                    break;
+                }
+
+                if (continue_if_true == "true") {
+                    let trbodyrow = document.createElement("tr");
+                    // while in a row, go through each column
+                    for (var cidx = i_dstart, cls = i_dend; cidx <= cls; cidx++) {
+                        // console.log("cidx: ", cidx)
+                        // make parts of the table body
+                        let td = document.createElement("td");
+                        $(td).addClass('plate-map-file-table-cell');
+                        if (table_column_number > 13) {
+                            $(td).addClass('plate-map-file-font-percent-small');
+                        } else if (table_column_number > 7) {
+                            $(td).addClass('plate-map-file-font-percent-medium');
+                        } else {
+                            $(td).addClass('plate-map-file-font-percent-large');
+                        }
+
+                        $(td).attr('width', column_width);
+                        ret_block_raw_value = "-";
+                        // console.log("my_line_list[cidx].trim().length--",my_line_list[cidx].trim().length, "--")
+                        try {
+                            if (my_line_list[cidx].trim().length > 0) {
+                                ret_block_raw_value = my_line_list[cidx];
+                            } else {
+                                ret_block_raw_value = "-";
+                            }
+                        } catch (err) {
+                        }
+
+                        td.appendChild(document.createTextNode(ret_block_raw_value));
+                        trbodyrow.appendChild(td);
+                    }
+                    tbody.appendChild(trbodyrow);
+                    this_table.appendChild(tbody);
+                }
+            }
+
+            let this_dom_el = '#id_formset_' + this_dblock;
+            var elem = document.querySelector(this_dom_el);
+            var one_div = elem.querySelector('.place-table-in-this-div');
+
+            one_div.appendChild(this_table);
+        }
+    }
+
     // https:// simpleit.rocks/python/django/dynamic-add-form-with-add-button-in-django-modelformset-template/
     // https://medium.com/all-about-django/adding-forms-dynamically-to-a-django-formset-375f1090c2b0
     // function updateElementIndex(el, prefix, ndx) {
@@ -970,6 +1247,19 @@ $(document).ready(function () {
         $(newElement).attr({'id': id,})
         // console.log('newElement3')
         // console.log(newElement)
+
+        // the formset was being copied WITH the table, so, had to remove before add new later
+        let this_dom_el = '#' + id;
+        var elem = document.querySelector(this_dom_el);
+        var one_div = elem.querySelector('.place-table-in-this-div');
+        // console.log(one_div)
+
+        var children = one_div.children;
+        for (var i = 0; i < children.length; i++) {
+            var tableChild = children[i];
+            // console.log(tableChild)
+            tableChild.parentNode.removeChild(tableChild);
+        }
 
         return false;
     }

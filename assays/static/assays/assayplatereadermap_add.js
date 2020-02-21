@@ -1,274 +1,6 @@
 $(document).ready(function () {
     // Load core chart package
       google.charts.load('current', {'packages':['corechart']});
-      // google.charts.setOnLoadCallback(drawChart1);
-      google.charts.setOnLoadCallback(drawChart2);
-      // google.charts.setOnLoadCallback(drawChart3);
-
-      // function drawChart1() {
-      //   var data = google.visualization.arrayToDataTable([
-      //     ['Standard Concentration [pg/mL]', 'Standard Response'],
-      //     [0.0,  0.0],
-      //     [0.1,  0.2],
-      //     [0.2,  0.4],
-      //     [0.3,  0.6],
-      //     [0.4,  0.8],
-      //     [0.5,  1.0],
-      //     [0.6,  1.2],
-      //     [0.7,  1.4],
-      //     [0.8,  1.6],
-      //     [0.9,  1.8],
-      //   ]);
-      //
-      //   var options = {
-      //     // title: 'Standard Curve',
-      //     curveType: 'function',
-      //     legend: { position: 'bottom' },
-      //     vAxis: { title: "Plate Reader Response" },
-      //     hAxis: { title: "Standard Concentration [pg/mL]" }
-      //   };
-      //
-      //   var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
-      //
-      //   chart.draw(data, options);
-      // }
-
-      function drawChart2() {
-        var data = google.visualization.arrayToDataTable([
-          ['Standard Concentration [pg/mL]', 'Fitted Curve', 'Standard Response', 'Sample Response'],
-          [0.0,  0.0,null,null],
-          [0.1,  0.2,null,null],
-          [0.2,  0.4,null,null],
-          [0.3,  0.6,null,null],
-          [0.4,  0.8,null,null],
-          [0.5,  1.0,null,null],
-          [0.6,  1.2,null,null],
-          [0.7,  1.4,null,null],
-          [0.8,  1.6,null,null],
-          [0.9,  1.8,null,null],
-
-          [0.0,null,0.01,null],
-          [0.1,null,0.192,null],
-          [0.2,null,0.394,null],
-          [0.3,null,0.61,null],
-          [0.4,null,0.83,null],
-          [0.5,null,1.02,null],
-          [0.6,null,1.22,null],
-          [0.7,null,1.394,null],
-          [0.8,null, 1.576,null],
-          [0.9,null,1.788,null],
-
-              [0.0,null,null,0.0],
-              [0.1,null,null,0.18],
-              [0.2,null,null,0.39],
-              [0.3,null,null,0.62],
-              [0.4,null,null, 0.81],
-              [0.5,null,null,1.03],
-              [0.6,null,null, 1.22],
-              [0.7,null,null,1.37],
-              [0.8,null,null,1.62],
-              [0.9,null,null,1.80],
-              [0.0,null,null,0.02],
-              [0.1,null,null,0.183],
-              [0.2,null,null,0.389],
-              [0.3,null,null,0.632],
-              [0.4,null,null,0.821],
-              [0.5,null,null,1.063],
-              [0.6,null,null,1.223],
-              [0.7,null,null,1.367],
-              [0.8,null,null,1.612],
-              [0.9,null,null,1.820],
-              [0.01,null,null,0.02],
-              [0.12,null,null,0.183],
-              [0.182,null,null,0.389],
-              [0.34,null,null,0.632],
-              [0.34,null,null,0.821],
-              [0.45,null,null,1.063],
-              [0.596,null,null,1.223],
-              [0.71,null,null,1.367],
-              [0.81,null,null,1.612],
-              [0.91,null,null,1.820]
-
-        ]);
-
-          var view = new google.visualization.DataView(data);
-          // view.setColumns([0, 1, 2, 3 {
-          //   // label: 'y = 2x + 0',
-          //   type: 'number',
-          //   // calc: function (dt, row) {
-          //   //   return dt.getValue(row, 0)
-          //   // }
-          // }]);
-
-          var options = {
-                  seriesType: 'scatter',
-                  series: {
-                      0: {
-                      type: 'line'
-                  }
-              },
-              legend: { position: 'bottom' },
-              vAxis: { title: "Plate Reader Response" },
-              hAxis: { title: "Standard Concentration [pg/mL]" }
-          };
-
-          var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
-          chart.draw(view, options);
-      }
-
-
-
-
-      // function drawChart2() {
-      //       var data2 = new google.visualization.DataTable();
-      //     data2.addColumn('number', 'x');
-      //     data2.addColumn('number', 'Samples');
-      //     data2.addColumn('number', 'Standards');
-      //     data2.addRows([
-      //         [0.0,  0.0,],
-      //         [0.1,  0.18,],
-      //         [0.2,  0.39,],
-      //         [0.3,  0.62,],
-      //         [0.4,  0.81,],
-      //         [0.5,  1.03,],
-      //         [0.6,  1.22,],
-      //         [0.7,  1.37,],
-      //         [0.8,  1.62,],
-      //         [0.9,  1.80,],
-      //         [0.0,  0.02,],
-      //         [0.1,  0.183,],
-      //         [0.2,  0.389,],
-      //         [0.3,  0.632,],
-      //         [0.4,  0.821,],
-      //         [0.5,  1.063,],
-      //         [0.6,  1.223,],
-      //         [0.7,  1.367,],
-      //         [0.8,  1.612,],
-      //         [0.9,  1.820,],
-      //         [0.01,  0.02,],
-      //         [0.12,  0.183,],
-      //         [0.182,  0.389,],
-      //         [0.34,  0.632,],
-      //         [0.34,  0.821,],
-      //         [0.45,  1.063,],
-      //         [0.596,  1.223,],
-      //         [0.71,  1.367,],
-      //         [0.81,  1.612,],
-      //         [0.91,  1.820,]
-      //         ,[0.0, , 0.0],
-      //         [0.1, , 0.18],
-      //         [0.2, , 0.39],
-      //         [0.3, , 0.62],
-      //         [0.4, , 0.81],
-      //         [0.5, , 1.03],
-      //         [0.6, , 1.22],
-      //         [0.7, , 1.37],
-      //         [0.8, , 1.62],
-      //         [0.9, , 1.80]
-      //     ]
-      //     ,);
-      //
-      //     var view = new google.visualization.DataView(data2);
-      //     view.setColumns([0, 1, 2, {
-      //       label: 'y = 2x + 0',
-      //       type: 'number',
-      //       calc: function (dt, row) {
-      //         return dt.getValue(row, 0)
-      //       }
-      //     }]);
-      //
-      //     var options = {
-      //             seriesType: 'scatter',
-      //             series: {
-      //                 1: {
-      //                 type: 'line'
-      //             }
-      //         },
-      //         legend: { position: 'bottom' },
-      //         vAxis: { title: "Plate Reader Response" },
-      //         hAxis: { title: "Standard Concentration [pg/mL]" }
-      //     };
-      //
-      //     var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
-      //     chart.draw(view, options);
-      // }
-
-      // function drawChart3() {
-      //       var data = new google.visualization.DataTable();
-      //     data2.addColumn('number', 'x');
-      //     data2.addColumn('number', 'Samples');
-      //     // data2.addColumn('number', 'Standards');
-      //     data2.addRows([
-      //         [0.0,  0.0],
-      //         [0.1,  0.18],
-      //         [0.2,  0.39],
-      //         [0.3,  0.62],
-      //         [0.4,  0.81],
-      //         [0.5,  1.03],
-      //         [0.6,  1.22],
-      //         [0.7,  1.37],
-      //         [0.8,  1.62],
-      //         [0.9,  1.80],
-      //         [0.0,  0.02],
-      //         [0.1,  0.183],
-      //         [0.2,  0.389],
-      //         [0.3,  0.632],
-      //         [0.4,  0.821],
-      //         [0.5,  1.063],
-      //         [0.6,  1.223],
-      //         [0.7,  1.367],
-      //         [0.8,  1.612],
-      //         [0.9,  1.820],
-      //         [0.01,  0.02],
-      //         [0.12,  0.183],
-      //         [0.182,  0.389],
-      //         [0.34,  0.632],
-      //         [0.34,  0.821],
-      //         [0.45,  1.063],
-      //         [0.596,  1.223],
-      //         [0.71,  1.367],
-      //         [0.81,  1.612],
-      //         [0.91,  1.820]
-      //     ]
-      //     // , data2.addRows([
-      //     //     [0.0,  0.0],
-      //     //     [0.1,  0.18],
-      //     //     [0.2,  0.39],
-      //     //     [0.3,  0.62],
-      //     //     [0.4,  0.81],
-      //     //     [0.5,  1.03],
-      //     //     [0.6,  1.22],
-      //     //     [0.7,  1.37],
-      //     //     [0.8,  1.62],
-      //     //     [0.9,  1.80]
-      //     // ]
-      //     ,);
-      //
-      //     var view = new google.visualization.DataView(data2);
-      //     view.setColumns([0, 1, {
-      //       label: 'y = 2x + 0',
-      //       type: 'number',
-      //       calc: function (dt, row) {
-      //         return dt.getValue(row, 0)
-      //       }
-      //     }]);
-      //
-      //     var options = {
-      //             seriesType: 'scatter',
-      //             series: {
-      //                 1: {
-      //                 type: 'line'
-      //             }
-      //         },
-      //         legend: { position: 'bottom' },
-      //         vAxis: { title: "Plate Reader Response" },
-      //         hAxis: { title: "Standard Concentration [pg/mL]" }
-      //     };
-      //
-      //     var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
-      //     chart.draw(view, options);
-      // }
-
 
     //color ramp options for heatmap
     global_color_ramp_light_to_medium_purple = [
@@ -604,6 +336,275 @@ $(document).ready(function () {
             findValueSetInsteadOfValueFormsetPackPlateLabelsBuildPlate_ajax("update_or_view_first_load");
         }
     }
+
+     if (global_plate_number_file_block_sets > 0) {
+          // google.charts.setOnLoadCallback(drawChart1);
+          google.charts.setOnLoadCallback(drawChart2);
+          // google.charts.setOnLoadCallback(drawChart3);
+
+          // function drawChart1() {
+          //   var data = google.visualization.arrayToDataTable([
+          //     ['Standard Concentration [pg/mL]', 'Standard Response'],
+          //     [0.0,  0.0],
+          //     [0.1,  0.2],
+          //     [0.2,  0.4],
+          //     [0.3,  0.6],
+          //     [0.4,  0.8],
+          //     [0.5,  1.0],
+          //     [0.6,  1.2],
+          //     [0.7,  1.4],
+          //     [0.8,  1.6],
+          //     [0.9,  1.8],
+          //   ]);
+          //
+          //   var options = {
+          //     // title: 'Standard Curve',
+          //     curveType: 'function',
+          //     legend: { position: 'bottom' },
+          //     vAxis: { title: "Plate Reader Response" },
+          //     hAxis: { title: "Standard Concentration [pg/mL]" }
+          //   };
+          //
+          //   var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+          //
+          //   chart.draw(data, options);
+          // }
+
+          function drawChart2() {
+              var data = google.visualization.arrayToDataTable([
+                  ['Standard Concentration [pg/mL]', 'Fitted Curve', 'Standard Response', 'Sample Response'],
+                  [0.0, 0.0, null, null],
+                  [0.1, 0.2, null, null],
+                  [0.2, 0.4, null, null],
+                  [0.3, 0.6, null, null],
+                  [0.4, 0.8, null, null],
+                  [0.5, 1.0, null, null],
+                  [0.6, 1.2, null, null],
+                  [0.7, 1.4, null, null],
+                  [0.8, 1.6, null, null],
+                  [0.9, 1.8, null, null],
+
+                  [0.0, null, 0.01, null],
+                  [0.1, null, 0.192, null],
+                  [0.2, null, 0.394, null],
+                  [0.3, null, 0.61, null],
+                  [0.4, null, 0.83, null],
+                  [0.5, null, 1.02, null],
+                  [0.6, null, 1.22, null],
+                  [0.7, null, 1.394, null],
+                  [0.8, null, 1.576, null],
+                  [0.9, null, 1.788, null],
+
+                  [0.0, null, null, 0.0],
+                  [0.1, null, null, 0.18],
+                  [0.2, null, null, 0.39],
+                  [0.3, null, null, 0.62],
+                  [0.4, null, null, 0.81],
+                  [0.5, null, null, 1.03],
+                  [0.6, null, null, 1.22],
+                  [0.7, null, null, 1.37],
+                  [0.8, null, null, 1.62],
+                  [0.9, null, null, 1.80],
+                  [0.0, null, null, 0.02],
+                  [0.1, null, null, 0.183],
+                  [0.2, null, null, 0.389],
+                  [0.3, null, null, 0.632],
+                  [0.4, null, null, 0.821],
+                  [0.5, null, null, 1.063],
+                  [0.6, null, null, 1.223],
+                  [0.7, null, null, 1.367],
+                  [0.8, null, null, 1.612],
+                  [0.9, null, null, 1.820],
+                  [0.01, null, null, 0.02],
+                  [0.12, null, null, 0.183],
+                  [0.182, null, null, 0.389],
+                  [0.34, null, null, 0.632],
+                  [0.34, null, null, 0.821],
+                  [0.45, null, null, 1.063],
+                  [0.596, null, null, 1.223],
+                  [0.71, null, null, 1.367],
+                  [0.81, null, null, 1.612],
+                  [0.91, null, null, 1.820]
+
+              ]);
+
+              var view = new google.visualization.DataView(data);
+              // view.setColumns([0, 1, 2, 3 {
+              //   // label: 'y = 2x + 0',
+              //   type: 'number',
+              //   // calc: function (dt, row) {
+              //   //   return dt.getValue(row, 0)
+              //   // }
+              // }]);
+
+              var options = {
+                  seriesType: 'scatter',
+                  series: {
+                      0: {
+                          type: 'line'
+                      }
+                  },
+                  legend: {position: 'bottom'},
+                  vAxis: {title: "Plate Reader Response"},
+                  hAxis: {title: "Standard Concentration [pg/mL]"}
+              };
+
+              var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+              chart.draw(view, options);
+          }
+
+
+          // function drawChart2() {
+          //       var data2 = new google.visualization.DataTable();
+          //     data2.addColumn('number', 'x');
+          //     data2.addColumn('number', 'Samples');
+          //     data2.addColumn('number', 'Standards');
+          //     data2.addRows([
+          //         [0.0,  0.0,],
+          //         [0.1,  0.18,],
+          //         [0.2,  0.39,],
+          //         [0.3,  0.62,],
+          //         [0.4,  0.81,],
+          //         [0.5,  1.03,],
+          //         [0.6,  1.22,],
+          //         [0.7,  1.37,],
+          //         [0.8,  1.62,],
+          //         [0.9,  1.80,],
+          //         [0.0,  0.02,],
+          //         [0.1,  0.183,],
+          //         [0.2,  0.389,],
+          //         [0.3,  0.632,],
+          //         [0.4,  0.821,],
+          //         [0.5,  1.063,],
+          //         [0.6,  1.223,],
+          //         [0.7,  1.367,],
+          //         [0.8,  1.612,],
+          //         [0.9,  1.820,],
+          //         [0.01,  0.02,],
+          //         [0.12,  0.183,],
+          //         [0.182,  0.389,],
+          //         [0.34,  0.632,],
+          //         [0.34,  0.821,],
+          //         [0.45,  1.063,],
+          //         [0.596,  1.223,],
+          //         [0.71,  1.367,],
+          //         [0.81,  1.612,],
+          //         [0.91,  1.820,]
+          //         ,[0.0, , 0.0],
+          //         [0.1, , 0.18],
+          //         [0.2, , 0.39],
+          //         [0.3, , 0.62],
+          //         [0.4, , 0.81],
+          //         [0.5, , 1.03],
+          //         [0.6, , 1.22],
+          //         [0.7, , 1.37],
+          //         [0.8, , 1.62],
+          //         [0.9, , 1.80]
+          //     ]
+          //     ,);
+          //
+          //     var view = new google.visualization.DataView(data2);
+          //     view.setColumns([0, 1, 2, {
+          //       label: 'y = 2x + 0',
+          //       type: 'number',
+          //       calc: function (dt, row) {
+          //         return dt.getValue(row, 0)
+          //       }
+          //     }]);
+          //
+          //     var options = {
+          //             seriesType: 'scatter',
+          //             series: {
+          //                 1: {
+          //                 type: 'line'
+          //             }
+          //         },
+          //         legend: { position: 'bottom' },
+          //         vAxis: { title: "Plate Reader Response" },
+          //         hAxis: { title: "Standard Concentration [pg/mL]" }
+          //     };
+          //
+          //     var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+          //     chart.draw(view, options);
+          // }
+
+          // function drawChart3() {
+          //       var data = new google.visualization.DataTable();
+          //     data2.addColumn('number', 'x');
+          //     data2.addColumn('number', 'Samples');
+          //     // data2.addColumn('number', 'Standards');
+          //     data2.addRows([
+          //         [0.0,  0.0],
+          //         [0.1,  0.18],
+          //         [0.2,  0.39],
+          //         [0.3,  0.62],
+          //         [0.4,  0.81],
+          //         [0.5,  1.03],
+          //         [0.6,  1.22],
+          //         [0.7,  1.37],
+          //         [0.8,  1.62],
+          //         [0.9,  1.80],
+          //         [0.0,  0.02],
+          //         [0.1,  0.183],
+          //         [0.2,  0.389],
+          //         [0.3,  0.632],
+          //         [0.4,  0.821],
+          //         [0.5,  1.063],
+          //         [0.6,  1.223],
+          //         [0.7,  1.367],
+          //         [0.8,  1.612],
+          //         [0.9,  1.820],
+          //         [0.01,  0.02],
+          //         [0.12,  0.183],
+          //         [0.182,  0.389],
+          //         [0.34,  0.632],
+          //         [0.34,  0.821],
+          //         [0.45,  1.063],
+          //         [0.596,  1.223],
+          //         [0.71,  1.367],
+          //         [0.81,  1.612],
+          //         [0.91,  1.820]
+          //     ]
+          //     // , data2.addRows([
+          //     //     [0.0,  0.0],
+          //     //     [0.1,  0.18],
+          //     //     [0.2,  0.39],
+          //     //     [0.3,  0.62],
+          //     //     [0.4,  0.81],
+          //     //     [0.5,  1.03],
+          //     //     [0.6,  1.22],
+          //     //     [0.7,  1.37],
+          //     //     [0.8,  1.62],
+          //     //     [0.9,  1.80]
+          //     // ]
+          //     ,);
+          //
+          //     var view = new google.visualization.DataView(data2);
+          //     view.setColumns([0, 1, {
+          //       label: 'y = 2x + 0',
+          //       type: 'number',
+          //       calc: function (dt, row) {
+          //         return dt.getValue(row, 0)
+          //       }
+          //     }]);
+          //
+          //     var options = {
+          //             seriesType: 'scatter',
+          //             series: {
+          //                 1: {
+          //                 type: 'line'
+          //             }
+          //         },
+          //         legend: { position: 'bottom' },
+          //         vAxis: { title: "Plate Reader Response" },
+          //         hAxis: { title: "Standard Concentration [pg/mL]" }
+          //     };
+          //
+          //     var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+          //     chart.draw(view, options);
+          // }
+     }
+
     // END SECTION TO SET GLOBAL VARIABLES plus some
 
     // START - SECTION FOR CHANGES ON PAGE that have to keep track of to change on page display
@@ -1406,8 +1407,8 @@ $(document).ready(function () {
                             c_default_time = generalFormatNumber(incremented_default_time_value);
                             c_time = c_default_time;
                         } else {
-                            c_default_time = d_time
-                            c_time = c_time_value;
+                            c_default_time = d_time;
+                            c_time = c_default_time;
                         }
                         c_standard_value = d_standard_value;
 
@@ -1743,18 +1744,18 @@ $(document).ready(function () {
             } else {
                 // note that this is the value item time, not the default time
                 x_show_fancy_list = [
-                    '#show_matrix_item',
-                    '#show_time',
-                    '#show_location',
-                    '#show_standard_value',
+                    // '#show_matrix_item',
+                    // '#show_time',
+                    // '#show_location',
+                    // '#show_standard_value',
                     '#show_well_use',
                     '#show_block_raw_value',
                 ];
                 x_show_cell_list = [
-                    '.plate-cells-matrix-item',
-                    '.plate-cells-time',
-                    '.plate-cells-location',
-                    '.plate-cells-standard-value',
+                    // '.plate-cells-matrix-item',
+                    // '.plate-cells-time',
+                    // '.plate-cells-location',
+                    // '.plate-cells-standard-value',
                     '.plate-cells-well-use',
                     '.plate-cells-block-raw-value',
                 ];

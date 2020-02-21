@@ -70,7 +70,8 @@ from .utils import (
     one_sample_power_analysis,
     create_power_analysis_group_table,
     review_plate_reader_data_file_format,
-    get_the_plate_layout_info_for_assay_plate_map
+    get_the_plate_layout_info_for_assay_plate_map,
+    review_plate_reader_data_file_return_file_list
 )
 
 import csv
@@ -4516,8 +4517,8 @@ def fetch_assay_study_matrix_for_platemap(request):
         'matrix',
     ).order_by('matrix__name', 'row_index', 'column_index', 'name', )
 
-    max_row_index = 0;
-    max_column_index = 0;
+    max_row_index = 0
+    max_column_index = 0
 
     for each in this_queryset:
         if each.row_index > max_row_index:
@@ -4652,12 +4653,58 @@ def fetch_assay_study_platemap_for_platemap(request):
                         content_type="application/json")
 
 
+# sck - Assay Plate Reader Upload Data File (for the LOAD already saved file form)
+def fetch_review_plate_reader_data_file_only(request):
+    this_file_id = request.POST.get('this_file_id', '0')
+    file_delimiter = request.POST.get('file_delimiter', '0')
+
+    # print(this_file_id )
+    # print(file_delimiter)
+
+    if not this_file_id:
+        return HttpResponseServerError()
+
+    this_queryset = AssayPlateReaderMapDataFile.objects.get(
+        id=this_file_id
+    )
+
+    # using .read() used bytes, so changed to open()
+    # my_file_object = this_queryset.plate_reader_file.read().decode('utf-8')
+    # my_file_object = this_queryset.plate_reader_file.read()
+    my_file_object = this_queryset.plate_reader_file.open()
+
+    # this function is in utils.py
+    file_info = review_plate_reader_data_file_return_file_list(my_file_object, file_delimiter)
+
+    # print("file info")
+    # print(file_info)
+
+    data = {}
+    data_file_list_to_return = []
+    idx = 0
+    # file_info is a list with a dictionary FOR EACH line in the file - start at 0
+    for each in file_info[0]:
+        # print(each)
+        data_file_list = {
+            'line': idx,
+            'line_list': each,
+        }
+        # print(idx)
+        # print(data_file_list)
+        data_file_list_to_return.append(data_file_list)
+        idx = idx + 1
+
+    # print(data_file_list_to_return)
+
+    data.update({'file_list': data_file_list_to_return, })
+    return HttpResponse(json.dumps(data), content_type="application/json")
+
+
 # sck - Assay Plate Reader Upload Data File (for the UPDATE file form)
-def fetch_review_plate_reader_data_file(request):
+def fetch_review_plate_reader_data_file_with_block_info(request):
     """
     Assay PLATE READER FILE UPDATE pull information when viewing or updating and existing plate map FILE (calls utility).
     """
-
     this_file_id = request.POST.get('this_file_id', '0')
     this_file_format_selected = request.POST.get('this_file_format_selected', '0')
     file_delimiter = request.POST.get('file_delimiter', '0')
@@ -4709,7 +4756,7 @@ def fetch_review_plate_reader_data_file(request):
     data_to_return = []
     idx = 1
     # file_info is a list with a dictionary FOR EACH BLOCK (with the fields)
-    for each in file_info:
+    for each in file_info[0]:
         # print(each)
         data_fields = {
             'data_block': idx,
@@ -4732,7 +4779,22 @@ def fetch_review_plate_reader_data_file(request):
         data_to_return.append(data_fields)
         idx = idx + 1
 
-    data.update({'file_block_info': data_to_return, })
+    data_file_list_to_return = []
+    idx = 0
+    # file_info is a list with a dictionary FOR EACH line in the file - start at 0
+    for each in file_info[1]:
+        # print(each)
+        data_file_list = {
+            'line': idx,
+            'line_list': each,
+        }
+        data_file_list_to_return.append(data_file_list)
+        idx = idx + 1
+
+    # print(data_file_list_to_return)
+
+    data.update({'file_block_info': data_to_return,
+                 'file_list': data_file_list_to_return, })
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
@@ -4956,8 +5018,11 @@ switch = {
     'fetch_information_for_plate_map_layout': {
         'call': fetch_information_for_plate_map_layout
     },
-    'fetch_review_plate_reader_data_file': {
-        'call': fetch_review_plate_reader_data_file
+    'fetch_review_plate_reader_data_file_only': {
+        'call': fetch_review_plate_reader_data_file_only
+    },
+    'fetch_review_plate_reader_data_file_with_block_info': {
+        'call': fetch_review_plate_reader_data_file_with_block_info
     },
     'fetch_plate_reader_data_block_plate_map_size': {
         'call': fetch_plate_reader_data_block_plate_map_size

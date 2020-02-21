@@ -3041,6 +3041,20 @@ def sub_function_inside_utils_plate_reader_map_file_by_line_del(my_file_object, 
     return lines_delimiter_list, length_delimiter_list
 
 
+# sck - assay plate reader analysis of data when defining data blocks (loading the file form)
+def review_plate_reader_data_file_return_file_list(my_file_object, file_delimiter):
+    """
+    Assay PLATE READER FILE UPDATE pull information when viewing or updating and existing plate map FILE (utility).
+    """
+    # there is rampant plate size and shape HARDCODing in this function!!
+    # todo-sck go back and steamline sizes when have a chance
+
+    returned_from_file_by_line = sub_function_inside_utils_plate_reader_map_file_by_line_del(
+        my_file_object, file_delimiter)
+    file_list = returned_from_file_by_line
+    return file_list
+
+
 # sck - assay plate reader analysis of data when defining data blocks (for the UPDATE file form)
 def review_plate_reader_data_file_format(my_file_object, set_dict):
     """
@@ -3156,20 +3170,49 @@ def review_plate_reader_data_file_format(my_file_object, set_dict):
     # NEW FORMATS - edit here if new options need to be added where the plate size can be extracted directly from the file
     # assumes only ONE plate size in a file!
     if set_format == 'true' and file_format_selected == 1:
+        t2 = 0
+        s2 = 0
         # 1 is currently the SoftMax pro formats that Mike C gave to SCK
         # possible locations of the plate size using file format 1 are two places, see if can find
+        # do try except because, if null, will error when try to get integer
         #  row 1 (starting at 0) and column 19 (starting at 0)
-        t2 = int(file_list[1][19])
+        string_at_t2 = file_list[1][19].strip()
+        string_at_s2 = file_list[1][18].strip()
+
+        # print(string_at_t2)
+        # print(string_at_s2)
+
+        if len(string_at_t2) > 0:
+            try:
+                t2 = int(string_at_t2)
+            except:
+                t2 = 0
+
         #  row 2 (starting at 0) and column 18 (starting at 0)
-        s2 = int(file_list[1][18])
-        if t2 in assay_plate_reader_map_info_plate_size_choices_list:
-            form_plate_size = t2
-        if s2 in assay_plate_reader_map_info_plate_size_choices_list:
-            form_plate_size = s2
-    elif set_plate_size == 'true':
-        # user set the plate size
-        form_plate_size = form_plate_size
-    else:
+        if len(string_at_s2) > 0:
+            try:
+                s2 = int(string_at_s2)
+            except:
+                s2 = 0
+
+        if t2 == 0 and s2 == 0:
+            # error in the file format!
+            # set plate size to false so it can be detected as best as possible
+            set_plate_size = 'false'
+        else:
+            if t2 in assay_plate_reader_map_info_plate_size_choices_list:
+                form_plate_size = t2
+            elif s2 in assay_plate_reader_map_info_plate_size_choices_list:
+                form_plate_size = s2
+            set_plate_size = 'true'
+
+        # print(t2)
+        # print(s2)
+
+    # print(set_plate_size)
+    # print(form_plate_size)
+
+    if set_plate_size != 'true':
         # use other provided info to guess the plate size
         # the last resort is the one that assumes vertical stacking
         form_plate_size = sub_function_inside_utils_plate_reader_map_file_guess_plate_size(
@@ -3275,7 +3318,7 @@ def review_plate_reader_data_file_format(my_file_object, set_dict):
 
     # print('file_list_of_dicts')
     # print(file_list_of_dicts)
-    return file_list_of_dicts
+    return [file_list_of_dicts, file_list]
 
 def sub_function_inside_utils_plate_reader_map_file_find_potential_indexes(file_list, file_length_list, mean_len):
     rows_with_1_2_3 = []
@@ -3296,7 +3339,8 @@ def sub_function_inside_utils_plate_reader_map_file_find_potential_indexes(file_
                     rows_with_blank_or_end.append(irow)
             if (this[icol].strip() == '3'):
                 if this[icol-1].strip() == '2' and this[icol-2].strip() == '1':
-                    rows_with_1_2_3.append(irow)
+                    # need the +1 because it is the row below the 123 that we want
+                    rows_with_1_2_3.append(irow+1)
                     cols_with_1_of_1_2_3.append(icol-2)
 
             icol = icol + 1
@@ -3445,8 +3489,8 @@ def sub_function_inside_utils_plate_reader_map_file_best_guess_block_detect(
         set_number_blank_rows == 'true' and \
         form_number_blank_rows != 444:
 
-        start_block_line_indexes = form_number_blank_rows
-        start_block_delimiter_indexes = form_number_blank_columns
+        start_block_line_indexes = [form_number_blank_rows]
+        start_block_delimiter_indexes = [form_number_blank_columns]
         data_block_metadata = [None] * (len(start_block_line_indexes) * len(start_block_delimiter_indexes))
 
     elif set_number_blank_columns == 'true' and \
@@ -3593,10 +3637,10 @@ def add_update_plate_reader_data_map_item_values_from_file(
         pk_this_block = each_block.get('id')
         platemap_id = each_block.get('assayplatereadermap_id')
         datafile_id = each_block.get('assayplatereadermapdatafile_id')
-        processing_id = each_block.get('assayplatereadermapdataprocessing_id')
+        # processing_id = each_block.get('assayplatereadermapdataprocessing_id')
         block_label = each_block.get('data_block')
         block_metadata = each_block.get('data_block_metadata')
-        processing_id = each_block.get('assayplatereadermapdataprocessing_id')
+        data_processing_parsable = each_block.get('data_processing_parsable')
         l_start = each_block.get('line_start')
         l_end = each_block.get('line_end')
         d_start = each_block.get('delimited_start')

@@ -352,6 +352,7 @@
                                         </div>
                                         <div class="col-md-2">
                                             <div class="plate-map-page-field-contents-medium">
+                                                {# watch the conditions so it ONLY shows here OR in the other location it is present on this page  #}
                                                 {{form.file_delimiter}}
                                             </div>
                                         </div>
@@ -433,7 +434,7 @@
                             <div class="col-md-12">
                                 <h3><em>This block information has already been <b>submitted</b>. </em></h3>
                                 <h4>The plate size and number of blocks CANNOT be edited after SUBMIT.</h4>
-                                <h4>The information in each block section (including adding an assay plate map) CAN be edited manually after SUBMIT. </h4>
+                                <h4>The information in each block section (including adding/changing an assay plate map) CAN be manually edited (below). </h4>
                                 <h4>Note: If changes to plate size or the number of blocks are needed, delete this file, then readd it.</h4>
                             </div>
                         </div>
@@ -505,6 +506,15 @@
                                 </div>
                             </div>
                             <div class="col-md-4"></div>
+                                {# need this for loading previously sumbitted plate map (in javascript)  #}
+                                {# watch the conditions so it ONLY shows here OR in the other location it is present on this page  #}
+                                 {% if update %}
+                                    {% if not no_saved_blocks  %}
+                                        <div id="id_readonly_file_delimiter" class="hidden">
+                                            {{form.file_delimiter.value}}
+                                        </div>
+                                    {% endif %}
+                                 {% endif %}
                        </div>
 
                     </div>
@@ -532,173 +542,166 @@
 
                             {# style each form2 in a well #}
                             <div class="plate-file-block-well">
+
                                 <div class="container">
-                                    {# since not using the inline form2, must have this so id will be saved in form valid of previously saved - HANDY #}
-                                    <div class="hidden">
+                                    <div>
+                                        {# since not using the inline form2, must have this so id will be saved in form valid of previously saved - HANDY #}
+                                        <div class="hidden">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    {{ form2.id }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {# Will use formset save to know if need to add and/or correct saved data #}
+                                        <div class="hidden">
+                                            <div class="row">
+                                                <div class="col-md-12">
+    {#                                                changed in block (0 or 1) #}
+                                                    {{ form2.form_changed_something_in_block }}
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div class="row">
-                                            <div class="col-md-12">
-                                                {{ form2.id }}
+                                            <div class="col-md-6">
+                                                <div class="plate-map-page-field-labels-large">
+                                                    <div>
+                                                        <label><h3><em>Data Block {{ form2.data_block }}</em></h3></label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                {# this is how to show the box to let the user check to delete - HANDY #}
+                                                {# need this in javascript #}
+                                                <div class="hidden">
+                                                    {{ form2.DELETE }}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    {# Will use formset save to know if need to add and/or correct saved data #}
-                                    <div class="hidden">
+
                                         <div class="row">
-                                            <div class="col-md-12">
-{#                                                changed in block (0 or 1) #}
-                                                {{ form2.form_changed_something_in_block }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="plate-map-page-field-labels-large">
-                                                <div>
-                                                    <label><h3><em>Data Block {{ form2.data_block }}</em></h3></label>
+                                            <div class="col-md-3">
+                                                <div class="plate-map-page-field-labels-large">
+                                                    <div>
+                                                        <label>Assay Plate Map to Use for Block*</label>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            {# this is how to show the box to let the user check to delete - HANDY #}
-                                            {# need this in javascript #}
-                                            <div class="hidden">
-                                                {{ form2.DELETE }}
+                                            <div class="col-md-6">
+                                                <div id="id_platemap_{{ forloop.counter }}" class="required get-plate-map-changed plate-map-page-field-contents-medium">
+                                                    {{ form2.assayplatereadermap }}
+                                                </div>
                                             </div>
+                                            <div class="col-md-3"></div>
                                         </div>
-                                    </div>
 
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="plate-map-page-field-labels-large">
-                                                <div>
-                                                    <label>Assay Plate Map to Use for Block*</label>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="plate-map-page-field-labels-large">
+                                                    <div>
+                                                        <label>Data Block Metadata</label>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div id="id_platemap_{{ forloop.counter }}" class="required get-plate-map-changed plate-map-page-field-contents-medium">
-                                                {{ form2.assayplatereadermap }}
+                                            <div class="col-md-6">
+                                                <div class="plate-map-page-field-contents-medium">
+                                                    {{ form2.data_block_metadata }}
+                                                </div>
                                             </div>
+                                            <div class="col-md-3"></div>
                                         </div>
-                                        <div class="col-md-3"></div>
-                                    </div>
 
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="plate-map-page-field-labels-large">
-                                                <div>
-                                                    <label>Data Block Metadata</label>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="plate-map-page-field-labels-large">
+                                                    <div>
+                                                        <label>Overwrite Sample Time</label>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="plate-map-page-field-contents-medium">
-                                                {{ form2.data_block_metadata }}
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3"></div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="plate-map-page-field-labels-large">
-                                                <div>
-                                                    <label>Overwrite Sample Time</label>
+                                            <div class="col-md-1">
+                                                <div class="plate-map-page-field-contents-medium plate-file-block-well">
+                                                    {{ form2.over_write_sample_time }}
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="col-md-1">
-                                            <div class="plate-map-page-field-contents-medium plate-file-block-well">
-                                                {{ form2.over_write_sample_time }}
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="plate-map-page-field-contents-medium">
-                                                <div>
-                                                    {{ form2.form_selected_plate_map_time_unit }}
+                                            <div class="col-md-3">
+                                                <div class="plate-map-page-field-contents-medium">
+                                                    <div>
+                                                        {{ form2.form_selected_plate_map_time_unit }}
+                                                    </div>
                                                 </div>
                                             </div>
+                                            <div class="col-md-5"></div>
                                         </div>
-                                        <div class="col-md-5"></div>
                                     </div>
                                     <br>
 
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="plate-map-page-field-labels-medium">
-                                                <div>
-                                                    <label>Start Line Number* </label>
+                                    <div>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="plate-map-page-field-labels-medium">
+                                                    <div>
+                                                        <label>Line Range* </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-1">
+                                                <div class="start-line-number plate-map-page-field-contents-medium">
+                                                    {{ form2.line_start }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-1">
+                                                <div class="end-line-number plate-map-page-field-contents-medium">
+                                                    {{ form2.line_end }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="plate-map-page-field-labels-medium">
+                                                    <div>
+                                                        <label>Columns Range* </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-1">
+                                                <div class="start-delimited-number plate-map-page-field-contents-medium">
+                                                    {{ form2.delimited_start }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-1">
+                                                <div class="end-delimited-number plate-map-page-field-contents-medium">
+                                                    {{ form2.delimited_end }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="plate-map-page-field-contents-medium">
+                                                {# this button doesn't do anything except force the user to move OUT of the range boxes so change event will happen#}
+                                                    <button type="button" class="btn btn-primary">Apply Change</button>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-1">
-                                            <div class="required start-line-number">
-                                                {{ form2.line_start }}
-                                            </div>
-                                        </div>
-{#                                        <div class="col-md-6"></div>#}
-{#                                    </div>#}
-{##}
-{#                                    <div class="row">#}
-                                        <div class="col-md-2">
-                                            <div class="plate-map-page-field-labels-medium">
-                                                <div>
-                                                    <label>End Line Number </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-1">
-                                            <div class="plate-map-page-field-contents-medium">
-                                                {{ form2.line_end }}
-                                            </div>
-                                        </div>
-                                        <div class="col-md-5"></div>
                                     </div>
 
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="plate-map-page-field-labels-medium">
-                                                <div>
-                                                    <label>Start Column Number* </label>
+                                    <div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="place-table-in-this-div">
+                                                    <table class="plate-map-file-table" id="plate_table_{{ forloop.counter }}">
+        {#                                                              note that the table is made in javascript#}
+                                                    </table>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-1">
-                                            <div class="required start-delimited-number">
-                                                {{ form2.delimited_start }}
-                                            </div>
-                                        </div>
-{#                                        <div class="col-md-6"></div>#}
-{#                                    </div>#}
-{##}
-{#                                    <div class="row">#}
-                                        <div class="col-md-2">
-                                            <div class="plate-map-page-field-labels-medium">
-                                                <div>
-                                                    <label>End Column Number </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-1">
-                                            <div class="plate-map-page-field-contents-medium">
-                                                {{ form2.delimited_end }}
-                                            </div>
-                                        </div>
-                                        <div class="col-md-5"></div>
                                     </div>
-
                                 </div>
 
-                            <br>
                             </div>
-
                         <br>
                         </div>
                     </div>
                 {% endfor %}
             </div>
 
-{# This is not embedded in the change of the start line number or column number so hiding it#}
+{# This is now embedded in the change of the start line number or column number so hiding it#}
 {#            {% if update %}#}
 {#                <div id="go_qc_section" class="hidden">#}
 {#                    <div class="container">#}

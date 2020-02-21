@@ -1324,7 +1324,7 @@ admin.site.register(AssayPlateReaderMapDataFile, AssayPlateReaderMapDataFileAdmi
 
 class AssayPlateReaderMapDataFileBlockAdmin(ImportExportModelAdmin):
     model = AssayPlateReaderMapDataFileBlock
-    list_display = ('assayplatereadermap', 'assayplatereadermapdatafile', 'data_block', 'assayplatereadermapdataprocessing')
+    list_display = ('assayplatereadermap', 'assayplatereadermapdatafile', 'data_block', 'data_processing_parsable')
     search_fields = ('data_block',)
 
 admin.site.register(AssayPlateReaderMapDataFileBlock, AssayPlateReaderMapDataFileBlockAdmin)
