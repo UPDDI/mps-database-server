@@ -469,7 +469,8 @@
                                         <div class="col-md-1">
                                             <div>
                                                 {#  <label class="sample-section hidden"><input type="radio" name="sample_change" value="matrix_item"> Apply </label>#}
-                                                <input id="checkbox_matrix_item" class="big-checkbox plate-map-check-box" type="checkbox" name="change_matrix_item" value="matrix_item" checked />
+{#                                                <input id="checkbox_matrix_item" class="big-checkbox plate-map-check-box" type="checkbox" name="change_matrix_item" value="matrix_item" checked />#}
+                                                <input id="checkbox_matrix_item" class="big-checkbox plate-map-check-box" type="checkbox" name="change_matrix_item" value="matrix_item" >
                                             </div>
                                         </div>
 
@@ -479,7 +480,7 @@
                                         <div class="col-md-1">
                                             <div>
                                                 {#  <label class="sample-section hidden"><input type="radio" name="sample_change" value="location"> Apply </label>#}
-                                                <input id="checkbox_location" class="big-checkbox plate-map-check-box" type="checkbox" name="change_location" value="location" checked />
+                                                <input id="checkbox_location" class="big-checkbox plate-map-check-box" type="checkbox" name="change_location" value="location" >
                                             </div>
                                         </div>
 
@@ -496,7 +497,7 @@
                                             <div>
                                                 {#  <label class="sample-section hidden"><input type="radio" name="sample_change" value="default_time"> Apply </label> #}
                                             {% if form.form_number_file_block_combos.value < 1 %}
-                                                <input id="checkbox_default_time" class="big-checkbox plate-map-check-box" type="checkbox" name="change_default_time" value="default_time" checked />
+                                                <input id="checkbox_default_time" class="big-checkbox plate-map-check-box" type="checkbox" name="change_default_time" value="default_time" >
                                             {% endif %}
                                             </div>
                                         </div>

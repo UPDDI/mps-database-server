@@ -667,7 +667,7 @@ $(document).ready(function () {
     $("#checkbox_matrix_item").change(function () {
         if($(this).prop("checked") == true) {
             x_show_fancy_list = ['#show_matrix_item', ];
-            x_show_cell_list = ['.plate-cells-matrix_item', ];
+            x_show_cell_list = ['.plate-cells-matrix-item', ];
             setFancyCheckBoxesCheckedUncheckedUsingArrays('change', x_show_fancy_list, x_show_cell_list);
             setWhatHiddenInEachWellOfPlateLoopsOverPlate(global_plate_whole_plate_index_list, 'change');
         }
@@ -683,7 +683,7 @@ $(document).ready(function () {
     $("#checkbox_default_time").change(function () {
         if($(this).prop("checked") == true) {
             x_show_fancy_list = ['#show_default_time', ];
-            x_show_cell_list = ['.plate-cells-default_time', ];
+            x_show_cell_list = ['.plate-cells-default-time', ];
             setFancyCheckBoxesCheckedUncheckedUsingArrays('change', x_show_fancy_list, x_show_cell_list);
             setWhatHiddenInEachWellOfPlateLoopsOverPlate(global_plate_whole_plate_index_list, 'change');
         }
@@ -691,7 +691,7 @@ $(document).ready(function () {
     $("#checkbox_dilution_factor").change(function () {
         if($(this).prop("checked") == true) {
             x_show_fancy_list = ['#show_dilution_factor', ];
-            x_show_cell_list = ['.plate-cells-dilution_factor', ];
+            x_show_cell_list = ['.plate-cells-dilution-factor', ];
             setFancyCheckBoxesCheckedUncheckedUsingArrays('change', x_show_fancy_list, x_show_cell_list);
             setWhatHiddenInEachWellOfPlateLoopsOverPlate(global_plate_whole_plate_index_list, 'change');
         }
