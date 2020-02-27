@@ -691,59 +691,63 @@
                                 <div class="row">
                             {# <legend>Options for Drag/Apply in Assay Assay Plate Map</legend>#}
                                 <div class="col-md-4">
-                                    <div class=row">
+                                    <div class="row">
                                         <label>Assay Plate Map Drag and Apply Action</label>
                                     </div>
-                                    <div class=row">
+                                    <div class="row">
                                         <input type="radio" name="change_method" value="copy" checked> Copy Value
                                     </div>
-                                    <div class=row">
+                                    <div class="row">
                                         <input type="radio" name="change_method" value="increment"> Increment (Time or Standard Value only)
                                     </div>
                                 </div>
                                 <div class="increment-section hidden">
+
                                     <div class="col-md-2">
-                                        <div class=row">
+                                        <div class="row">
                                             <label>Increment Operation</label>
                                         </div>
-                                        <div class=row">
+                                        <div class="row">
                                             {{ assay_map_additional_info.se_increment_operation }}
                                         </div>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <div class=row">
+{#                                    </div>#}
+{#                                    <div class="col-md-2">#}
+                                        <div class="row">
                                             <label>Increment By</label>
                                         </div>
-                                        <div class=row">
+                                        <div class="row">
                                             {{ assay_map_additional_info.form_number_increment_value }}
                                         </div>
                                     </div>
+
+                                    <div class="col-md-2"></div>
+
                                     <div class="col-md-3">
-                                        <div class=row">
+                                        <div class="row">
                                             <label>Increment Direction</label>
                                         </div>
-                                        <div class=row">
+                                        <div class="row">
                                             <label><input type="radio" name="increment_direction" value="left-left" checked> Left to Right, Left to Right</label>
                                         </div>
-                                        <div class=row">
+                                        <div class="row">
                                             <label><input type="radio" name="increment_direction" value="right-right"> Right to Left, Right to Left</label>
                                         </div>
-                                        <div class=row">
+                                        <div class="row">
                                             <label><input type="radio" name="increment_direction" value="top-top"> Top to Bottom, Top to Bottom</label>
                                         </div>
-                                        <div class=row">
+                                        <div class="row">
                                             <label><input type="radio" name="increment_direction" value="bottom-bottom"> Bottom to Top, Bottom to Top</label>
                                         </div>
-                                        <div class=row">
+                                        <div class="row">
                                             <label><input type="radio" name="increment_direction" value="left-down"> Left to Right and Down</label>
                                         </div>
-                                        <div class=row">
+                                        <div class="row">
                                             <label><input type="radio" name="increment_direction" value="right-up"> Right to Left and Up</label>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-1">
-                                    <div class=row">
+                                    <div class="row">
                                     </div>
                                 </div>
                             </div>

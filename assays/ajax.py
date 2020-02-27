@@ -4548,7 +4548,7 @@ def fetch_assay_study_matrix_for_platemap(request):
     # if not found, use the largest plate (last one in sorted list)
     my_size = plate_sizes[-1]
     # HARDCODED - set the default...
-    my_column_size = 24;
+    my_column_size = 24
     for this_size in plate_sizes:
         row_size = assay_plate_reader_map_info_shape_row_dict.get(this_size)
         col_size = assay_plate_reader_map_info_shape_col_dict.get(this_size)

@@ -194,6 +194,7 @@ $(document).ready(function () {
     let global_plate_add_or_edit_etc = "add";
 
     // only want to populate the matrix item setup once
+    // will do it in the same ajax call when the plate labels are determined, but not if the plate size is changed
     let yes_if_matrix_item_setup_already_run = 'no';
 
     // these hold the lists of well setup information when the copys/paste feature is used
@@ -336,8 +337,10 @@ $(document).ready(function () {
             findValueSetInsteadOfValueFormsetPackPlateLabelsBuildPlate_ajax("update_or_view_first_load");
         }
     }
+    // END SECTION TO SET GLOBAL VARIABLES plus some
 
-     if (global_plate_number_file_block_sets > 0) {
+    // START - the calibrate google charts section
+    if (global_plate_number_file_block_sets > 0) {
           // google.charts.setOnLoadCallback(drawChart1);
           google.charts.setOnLoadCallback(drawChart2);
           // google.charts.setOnLoadCallback(drawChart3);
@@ -603,9 +606,8 @@ $(document).ready(function () {
           //     var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
           //     chart.draw(view, options);
           // }
-     }
-
-    // END SECTION TO SET GLOBAL VARIABLES plus some
+    }
+    // END - the calibrate google charts section
 
     // START - SECTION FOR CHANGES ON PAGE that have to keep track of to change on page display
     // change to show by default by forcing the click button load (incase change mind later)
@@ -659,6 +661,57 @@ $(document).ready(function () {
 
     $("#id_se_increment_operation").change(function () {
         global_plate_increment_operation = $(this).val();
+    });
+
+    // if the user checked to change a sample box that was currently hidden, show it
+    $("#checkbox_matrix_item").change(function () {
+        if($(this).prop("checked") == true) {
+            x_show_fancy_list = ['#show_matrix_item', ];
+            x_show_cell_list = ['.plate-cells-matrix_item', ];
+            setFancyCheckBoxesCheckedUncheckedUsingArrays('change', x_show_fancy_list, x_show_cell_list);
+            setWhatHiddenInEachWellOfPlateLoopsOverPlate(global_plate_whole_plate_index_list, 'change');
+        }
+    });
+    $("#checkbox_location").change(function () {
+        if($(this).prop("checked") == true) {
+            x_show_fancy_list = ['#show_location', ];
+            x_show_cell_list = ['.plate-cells-location', ];
+            setFancyCheckBoxesCheckedUncheckedUsingArrays('change', x_show_fancy_list, x_show_cell_list);
+            setWhatHiddenInEachWellOfPlateLoopsOverPlate(global_plate_whole_plate_index_list, 'change');
+        }
+    });
+    $("#checkbox_default_time").change(function () {
+        if($(this).prop("checked") == true) {
+            x_show_fancy_list = ['#show_default_time', ];
+            x_show_cell_list = ['.plate-cells-default_time', ];
+            setFancyCheckBoxesCheckedUncheckedUsingArrays('change', x_show_fancy_list, x_show_cell_list);
+            setWhatHiddenInEachWellOfPlateLoopsOverPlate(global_plate_whole_plate_index_list, 'change');
+        }
+    });
+    $("#checkbox_dilution_factor").change(function () {
+        if($(this).prop("checked") == true) {
+            x_show_fancy_list = ['#show_dilution_factor', ];
+            x_show_cell_list = ['.plate-cells-dilution_factor', ];
+            setFancyCheckBoxesCheckedUncheckedUsingArrays('change', x_show_fancy_list, x_show_cell_list);
+            setWhatHiddenInEachWellOfPlateLoopsOverPlate(global_plate_whole_plate_index_list, 'change');
+        }
+    });
+    $("#checkbox_collection_volume").change(function () {
+        if($(this).prop("checked") == true) {
+            x_show_fancy_list = ['#show_collection_volume', ];
+            x_show_cell_list = ['.plate-cells-collection-volume', ];
+            setFancyCheckBoxesCheckedUncheckedUsingArrays('change', x_show_fancy_list, x_show_cell_list);
+            setWhatHiddenInEachWellOfPlateLoopsOverPlate(global_plate_whole_plate_index_list, 'change');
+        }
+
+    });
+    $("#checkbox_collection_time").change(function () {
+        if($(this).prop("checked") == true) {
+            x_show_fancy_list = ['#show_collection_time', ];
+            x_show_cell_list = ['.plate-cells-collection-time', ];
+            setFancyCheckBoxesCheckedUncheckedUsingArrays('change', x_show_fancy_list, x_show_cell_list);
+            setWhatHiddenInEachWellOfPlateLoopsOverPlate(global_plate_whole_plate_index_list, 'change');
+        }
     });
 
     // controlling more of what shows and does not show on page (options to change) based on selected to apply
@@ -1218,9 +1271,21 @@ $(document).ready(function () {
                 global_plate_mems_standard_value.push(global_plate_copys_standard_value[copys_list_index]);
                 global_plate_mems_default_time.push(global_plate_copys_default_time[copys_list_index]);
 
-                global_plate_mems_compound.push(global_plate_copys_compound[copys_list_index]);
-                global_plate_mems_cell.push(global_plate_copys_cell[copys_list_index]);
-                global_plate_mems_setting.push(global_plate_copys_setting[copys_list_index]);
+                // whats this matrix item
+                let c_matrix_item = global_plate_copys_matrix_item[copys_list_index];
+                if (c_matrix_item != "undefined") {
+                    let my_matrix_item_setup_index = global_plate_isetup_matrix_item_id.indexOf(parseInt(c_matrix_item));
+                    let c_compound = global_plate_isetup_compound[my_matrix_item_setup_index];
+                    let c_cell = global_plate_isetup_cell[my_matrix_item_setup_index];
+                    let c_setting = global_plate_isetup_setting[my_matrix_item_setup_index];
+                    global_plate_mems_compound.push(c_compound);
+                    global_plate_mems_cell.push(c_cell);
+                    global_plate_mems_setting.push(c_setting);
+                } else {
+                    global_plate_mems_compound.push(global_plate_copys_compound[copys_list_index]);
+                    global_plate_mems_cell.push(global_plate_copys_cell[copys_list_index]);
+                    global_plate_mems_setting.push(global_plate_copys_setting[copys_list_index]);
+                }
 
                 global_plate_mems_time.push(global_plate_copys_default_time[copys_list_index]);
                 // pastes is not allowed after file block is added so this can stay null
@@ -1704,14 +1769,13 @@ $(document).ready(function () {
     // when first draws plate, uses defaults, 
     // for subsequent draws, finds what is checked and redisplays them
     function setFancyCheckBoxesLoopOverFancyCheckboxClass(plate_index_list, build_or_change_or_clear_or_show) {
-        // console.log("in setFancyCheckBoxes ", build_or_change_or_clear_or_show)
+        //console.log("in setFancyCheckBoxes ", build_or_change_or_clear_or_show)
+        //console.log("global_plate_start_map ", global_plate_start_map);
+
         let x_show_fancy_list = [];
         let x_show_cell_list = [];
 
         let call_hide_by_welluse = true;
-
-        // console.log(build_or_change_or_clear_or_show);
-        // console.log(global_plate_start_map);
         
         // on page load, set to defaults to show in the plate based  on well use selected
         if (build_or_change_or_clear_or_show === "build" && global_plate_start_map === "a_plate") {
@@ -1775,34 +1839,47 @@ $(document).ready(function () {
                     x_show_cell_list.push(global_plate_show_hide_fancy_checkbox_class[all_idx]);
                 }
                 all_idx = all_idx + 1;
+                //console.log(x_show_fancy_list)
             });
 
             // use the arrays from above to show/hide and check/uncheck
             let checkidx = 0;
             x_show_fancy_list.forEach(function () {
+                //console.log($(x_show_fancy_list[checkidx]))
                 $(x_show_fancy_list[checkidx]).prop('checked', true);
                 $(x_show_cell_list[checkidx]).removeClass('hidden');
                 checkidx = checkidx + 1;
             });
 
             // just in case the main ones were not on, add them on to
-            // yes, some of these may have already been checked and this is duplicatin the above
-            x_show_fancy_list = [
-                '#show_matrix_item',
-                '#show_default_time',
-                '#show_location',
-                '#show_standard_value',
-                '#show_well_use',
-            ];
-            x_show_cell_list = [
-                '.plate-cells-matrix-item',
-                '.plate-cells-default-time',
-                '.plate-cells-location',
-                '.plate-cells-standard-value',
-                '.plate-cells-well-use',
-            ];
+            // yes, some of these may have already been checked and this is duplication the above
+            // 20200226 Richard did not like these being turned back on, so leave them off
+            // x_show_fancy_list = [
+            //     '#show_matrix_item',
+            //     '#show_default_time',
+            //     '#show_location',
+            //     '#show_standard_value',
+            //     '#show_well_use',
+            // ];
+            // x_show_cell_list = [
+            //     '.plate-cells-matrix-item',
+            //     '.plate-cells-default-time',
+            //     '.plate-cells-location',
+            //     '.plate-cells-standard-value',
+            //     '.plate-cells-well-use',
+            // ];
+
         }
 
+        setFancyCheckBoxesCheckedUncheckedUsingArrays(build_or_change_or_clear_or_show, x_show_fancy_list, x_show_cell_list);
+
+        // call the secondary show/hide based on well use, if needed
+        if (call_hide_by_welluse === true) {
+            setWhatHiddenInEachWellOfPlateLoopsOverPlate(plate_index_list, build_or_change_or_clear_or_show);
+        }
+    }
+
+    function setFancyCheckBoxesCheckedUncheckedUsingArrays(build_or_change_or_clear_or_show, x_show_fancy_list, x_show_cell_list) {
         // use the arrays from above to show/hide and check/uncheck
         let checkidx = 0;
         x_show_fancy_list.forEach(function () {
@@ -1815,11 +1892,6 @@ $(document).ready(function () {
             }
             checkidx = checkidx + 1;
         });
-
-        // call the secondary show/hide based on well use, if needed
-        if (call_hide_by_welluse === true) {
-            setWhatHiddenInEachWellOfPlateLoopsOverPlate(plate_index_list, build_or_change_or_clear_or_show);
-        }
     }
 
     function findValueSetInsteadOfValueFormsetPackPlateLabelsBuildPlate_ajax(called_from) {
@@ -1951,6 +2023,8 @@ $(document).ready(function () {
     // this is called when page is loaded and when START is changed (plate size, matrix, platemap)
     function packPlateLabelsAndBuildOrChangePlate_ajax() {        
         // console.log("plate size before call ajax: ",global_plate_size)
+        // console.log("yes_if_matrix_item_setup_already_run: ",yes_if_matrix_item_setup_already_run)
+        //
         let data = {
             call: 'fetch_information_for_plate_map_layout',
             study: global_plate_study_id,
@@ -2032,8 +2106,8 @@ $(document).ready(function () {
 
             yes_if_matrix_item_setup_already_run = 'yes';
 
-            // console.log("matrix_item_id returned: ", global_plate_isetup_matrix_item_id)
-            // console.log("compound returned: ", global_plate_isetup_compound)
+            //console.log("matrix_item_id returned: ", global_plate_isetup_matrix_item_id)
+            //console.log("compound returned: ", global_plate_isetup_compound)
         }
 
         // NOTE that this arrangement will be first is when 0 for both row and column
@@ -2062,15 +2136,29 @@ $(document).ready(function () {
         headRow.appendChild(th);
         let header_col_index = 0;
         //local_plate_data_packed = [col_labels, row_labels, row_contents];
-        local_plate_data_packed[0].forEach(function (col) {
+        local_plate_data_packed[0].forEach(function (colnumber) {
+
             let th = document.createElement("th");
-            // th.appendChild(document.createTextNode(col + top_label_button));
+            // th.appendChild(document.createTextNode(colnumber + top_label_button));
             if (global_plate_number_file_block_sets > 0) {
+                //top_label_button = colnumber;
                 top_label_button = '';
             } else {
-                top_label_button = ' <a id="col' + header_col_index + '" column-or-row="column" column-index="' + header_col_index + '" row-index="' + 770 + '" class="btn btn-sm btn-primary apply-button">Apply to Column</a>'
+                top_label_button = ' <a id="col' + header_col_index + '" column-or-row="column" column-index="'
+                    + header_col_index + '" row-index="' + 770
+                    //+ '" class="btn btn-sm btn-primary apply-button">Apply to Column</a>'
+                    + '" class="btn btn-sm btn-primary apply-button">'
+                    + 'Apply '
+                    // + colnumber
+                    + '<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>'
+
+                    // trying to add a tooltip....
+                    // + ' &nbsp;'
+                    // + '<span data-toggle="tooltip" data-title="Apply to Column" class="glyphicon glyphicon-arrow-down" aria-hidden="true" data-placement="bottom" data-original-title="" title=""></span>'
+
+                    + ' </a>'
             }
-            $(th).html(col + top_label_button);
+            $(th).html(colnumber + top_label_button);
             headRow.appendChild(th);
             header_col_index = header_col_index + 1;
         });
@@ -2105,14 +2193,25 @@ $(document).ready(function () {
         local_plate_data_packed[1].forEach(function (row) {
             let trbodyrow = document.createElement("tr");
             let tdbodyrow = document.createElement("th");
+            let rowletter = local_plate_data_packed[1][ridx];
             if (global_plate_number_file_block_sets > 0) {
+                //side_label_button = rowletter;
                 side_label_button = '';
             } else {
-                side_label_button = ' <a id="row' + ridx + '" column-or-row="row" column-index="' + 772 + '" row-index="' + ridx + '" class="btn btn-sm btn-primary apply-button">Apply to Row</a>'
+                side_label_button = ' <a id="row' + ridx + '" column-or-row="row" column-index="' + 772
+                    + '" row-index="' + ridx
+                    //+ '" class="btn btn-sm btn-primary apply-button">Apply to Row</a>'
+                    + '" class="btn btn-sm btn-primary apply-button">'
+                    + 'Apply '
+                    // + rowletter
+                    + '<span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>'
+                    + ' </a>'
             }
-            // tdbodyrow.appendChild(document.createTextNode(local_plate_data_packed[1][ridx]));
-            $(tdbodyrow).html(local_plate_data_packed[1][ridx] + side_label_button);
+            // this is older -> tdbodyrow.appendChild(document.createTextNode(local_plate_data_packed[1][ridx]));
+            $(tdbodyrow).html(rowletter + side_label_button);
             trbodyrow.appendChild(tdbodyrow);
+
+
             let cidx = 0;
             // build content row (same row as the row_labels (A=A, B=B, etc.)
             // while in a row, go through each column
@@ -2594,9 +2693,9 @@ $(document).ready(function () {
             formatted_number = this_number.toFixed(4);
         } else if (this_number <= 0.1) {
             formatted_number = this_number.toFixed(3);
-        } else if (this_number <= 1) {
+        } else if (this_number < 30) {
             formatted_number = this_number.toFixed(2);
-        } else if (this_number <= 10) {
+        } else if (this_number < 100) {
             formatted_number = this_number.toFixed(1);
         } else {
             formatted_number = this_number.toFixed(0);

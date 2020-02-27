@@ -2548,7 +2548,7 @@ class AbstractClassAssayStudyAssay(AssayStudyAssay):
         proxy = True
 
     def __str__(self):
-        return 'TARGET: {0}  METHOD: {1}  ({2})'.format(self.target, self.method, self.unit)
+        return 'TARGET: {0}  METHOD: {1}  UNIT: {2}'.format(self.target, self.method, self.unit)
 
 
 # Get info to populate pick lists; no qc needed on this form, just to use on webpage to allow user selections

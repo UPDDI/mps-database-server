@@ -3517,20 +3517,37 @@ class AssayPlateReaderMapIndex(StudyViewerMixin, DetailView):
         ).exclude(
             assayplatereadermap__exact=None
         ).order_by('assayplatereadermap', 'assayplatereadermapdatafile')
+        #  this will show <AssayPlateReaderMapDataFileBlock: 3>, for each file block with a plate map
+        # print("file_file")
         # print(file_file)
 
         file_count_dict = {}
+        counter = 1
         # get the first file so do not need to include in loop
+        # set the variables for the first in the file block list
+        # slice to get the 0ith in the queryset
         for each in file_file[:1]:
-            previous_map = each.assayplatereadermap.id
+            previous_map =  each.assayplatereadermap.id
             previous_file = each.assayplatereadermapdatafile.id
             me_map = each.assayplatereadermap.id
-            me_file = each.assayplatereadermapdatafile.id
+            # print("each ", each)
+            # print("previous_map ", previous_map)
+            # print("previous_file ", previous_file)
+            # each
+            # 1
+            # previous_map
+            # 89
+            # previous_file
+            # 151
+            # the one found in the 0ith place of the queryset will always count, so add it!
+            file_count_dict.update({me_map: 1})
+            counter = counter + 1
 
-
+        # the one found in the 0ith place of the queryset will always count, so start at 1
         files_this_map = 1
-        # counter = 1
-        # iterate without first
+        counter = 1
+        # iterate through the queryset from the second to the end
+        # note: first (0ith) is excluded
         for each in file_file[1:]:
             # print("C ", counter)
             me_map = each.assayplatereadermap.id
@@ -3542,22 +3559,22 @@ class AssayPlateReaderMapIndex(StudyViewerMixin, DetailView):
             # print("me_file ", me_file)
 
             if previous_map == me_map and previous_file != me_file:
-                # same map, different file
+                # same map, different file, add a file
                 files_this_map = files_this_map + 1
                 # print("files same map ", files_this_map)
             elif previous_map != me_map:
-                # different map - do not care if same or different file
+                # different map - do not care if same or different file - start the count over
                 files_this_map = 1
                 # print("files reset ", files_this_map)
             else:
                 # both same, nothing to do
                 pass
 
-            # remember, since a dict, will just keep replacing the count for each add plate map
+            # remember, since a dict, will just keep replacing the count for each plate map
             file_count_dict.update({me_map: files_this_map})
             previous_map = me_map
             previous_file = me_file
-            # counter = counter + 1
+            counter = counter + 1
 
         # print("dict: ", file_count_dict)
 

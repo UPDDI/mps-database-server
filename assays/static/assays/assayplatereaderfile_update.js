@@ -81,23 +81,7 @@ $(document).ready(function () {
         showOverwriteSampleTimeInfo();
         showPlateSizeForFile();
         showQCForFile();
-        // plate size is stored in the file model, so,
-        // just get the lines columns the HARDCODED way...
-        global_file_setting_box_form_plate_size = $('#id_upload_plate_size').val();
-        if (global_file_setting_box_form_plate_size == 24) {
-            global_file_selected_a_plate_map_with_number_lines_by_plate_size = 4;
-            global_file_selected_a_plate_map_with_number_columns_by_plate_size = 6;
-        } else if (global_file_setting_box_form_plate_size == 96) {
-            global_file_selected_a_plate_map_with_number_lines_by_plate_size = 8;
-            global_file_selected_a_plate_map_with_number_columns_by_plate_size = 12;
-        } else {
-             // form_plate_size = 384
-            global_file_selected_a_plate_map_with_number_lines_by_plate_size = 16;
-            global_file_selected_a_plate_map_with_number_columns_by_plate_size = 24;
-        }
-
-        $("#plate_number_columns").text(global_file_selected_a_plate_map_with_number_columns_by_plate_size);
-        $("#plate_number_lines").text(global_file_selected_a_plate_map_with_number_lines_by_plate_size);
+        setPlateSizeParameters();
 
         // when do form manual validation (clean) on existing, if there is a clean error
         // the extra formset kicks into being a valid formset and it will ADDed table during save
@@ -140,6 +124,26 @@ $(document).ready(function () {
         // this is the condition where there are no saved blocks yet
         // hide the extra formset - it will be cloned, so, do not selectize the platemap or cloning will NOT work
        $('#id_formset_' + global_file_extra_formset_number).addClass('hidden');
+    }
+
+    function setPlateSizeParameters() {
+        // plate size is stored in the file model, so,
+        // just get the lines columns the HARDCODED way...
+        global_file_setting_box_form_plate_size = $('#id_upload_plate_size').val();
+        if (global_file_setting_box_form_plate_size == 24) {
+            global_file_selected_a_plate_map_with_number_lines_by_plate_size = 4;
+            global_file_selected_a_plate_map_with_number_columns_by_plate_size = 6;
+        } else if (global_file_setting_box_form_plate_size == 96) {
+            global_file_selected_a_plate_map_with_number_lines_by_plate_size = 8;
+            global_file_selected_a_plate_map_with_number_columns_by_plate_size = 12;
+        } else {
+            // form_plate_size = 384
+            global_file_selected_a_plate_map_with_number_lines_by_plate_size = 16;
+            global_file_selected_a_plate_map_with_number_columns_by_plate_size = 24;
+        }
+
+        $("#plate_number_columns").text(global_file_selected_a_plate_map_with_number_columns_by_plate_size);
+        $("#plate_number_lines").text(global_file_selected_a_plate_map_with_number_lines_by_plate_size);
     }
 
     function adjustEndingLineOrColumnOrReloadingPage(adjust_or_reload, this_element, line_or_delimited) {
@@ -291,31 +295,37 @@ $(document).ready(function () {
         }
         // load all the set buttons for true/false
         if ($("#set_format").closest('div').hasClass('off')) {
+            // console.log('1')
             global_file_set_format = false;
         } else {
             global_file_set_format = true;
         }
         if ($("#set_delimiter").closest('div').hasClass('off')) {
+            // console.log('2')
             global_file_set_delimiter = false;
         } else {
             global_file_set_delimiter = true;
         }
         if ($("#set_plate_size").closest('div').hasClass('off')) {
+            // console.log('3')
             global_file_set_plate_size = false;
         } else {
             global_file_set_plate_size = true;
         }
         if ($("#set_number_blocks").closest('div').hasClass('off')) {
+            // console.log('4')
             global_file_set_number_blocks = false;
         } else {
             global_file_set_number_blocks = true;
         }
         if ($("#set_number_blank_columns").closest('div').hasClass('off')) {
+            // console.log('5')
             global_file_set_number_blank_columns = false;
         } else {
             global_file_set_number_blank_columns = true;
         }
         if ($("#set_number_blank_rows").closest('div').hasClass('off')) {
+            // console.log('6')
             global_file_set_number_blank_rows = false;
         } else {
             global_file_set_number_blank_rows = true;
@@ -479,6 +489,39 @@ $(document).ready(function () {
         // showVerboseSettingsSection();
         setTheSetFieldsBasedOnSelectedFileFormat();
     });
+
+    $("#set_plate_size").closest('div').change(function() {
+
+        if ($("#id_se_file_format_select").val() == 1) {
+            if ($("#set_format").closest('div').hasClass('off')) {
+                //skip
+            } else {
+                if ($("set_plate_size").closest('div').hasClass('off')) {
+                    //skip
+                } else {
+                    // both on, tried to use both on but did not evaluate
+                    alert('This cannot be set if the Use File Specific Info is set and the Softmax Pro is selected as the File Format. \n');
+                    $("#set_plate_size").closest('div').addClass('off');
+                }
+            }
+
+        }
+    });
+
+    $("#set_format").closest('div').change(function() {
+        // console.log("bo1 ",$("#set_format").closest('div').hasClass('on'))
+        // console.log("bo2 ",$("#set_plate_size").closest('div').hasClass('on'))
+        // console.log("val ",$("#id_se_file_format_select").val())
+
+        if ($("#id_se_file_format_select").val() == 1) {
+            $("#set_plate_size").closest('div').addClass('off');
+        }
+    });
+
+    //not sure need this...check after find root of other problem
+    // $("#id_se_form_plate_size").change(function() {
+    //     setPlateSizeParameters;
+    // });
 
     // when user selects a plate map for a block of data
     // find which block of data was changed  - by class change
@@ -1049,7 +1092,7 @@ $(document).ready(function () {
 
     let processDataLoadFileListOnLoad = function (json, exist) {
         global_file_iblock_file_list = json.file_list;
-        // console.log(global_file_iblock_file_list)
+        //console.log(global_file_iblock_file_list)
 
         // do it here or will get race errors
         for (var fidx = 1, fidxds = global_file_formset_count; fidx < fidxds; fidx++) {
@@ -1062,7 +1105,6 @@ $(document).ready(function () {
 
             // console.log("block_number ", block_number)
             // console.log(dstart)
-
 
             makeOrRemakePlateMapTable(
                 "update",
@@ -1084,13 +1126,17 @@ $(document).ready(function () {
         i_dstart,
         i_dend)
         {
+        setPlateSizeParameters();
 
         // console.log("this_dblock ", this_dblock)
         // console.log("i_lstart ",i_lstart)
         // console.log("i_lend ",i_lend)
         // console.log("i_dstart ",i_dstart)
         // console.log("i_dend ",i_dend)
-
+        //
+        // console.log("create_or_update ", create_or_update)
+        // console.log(global_file_setting_box_form_plate_size)
+        //
         // console.log(global_file_iblock_file_list[4])
         // console.log(global_file_iblock_file_list[4].line_list)
 
@@ -1159,7 +1205,7 @@ $(document).ready(function () {
 
                         $(td).attr('width', column_width);
                         ret_block_raw_value = "-";
-                        // console.log("my_line_list[cidx].trim().length--",my_line_list[cidx].trim().length, "--")
+                        //console.log("my_line_list[cidx].trim().length--",my_line_list[cidx].trim().length, "--")
                         try {
                             if (my_line_list[cidx].trim().length > 0) {
                                 ret_block_raw_value = my_line_list[cidx];
@@ -1297,3 +1343,4 @@ $(document).ready(function () {
     // END SECTION OF SPECIALS FOR EXTENDING FEATURES
 
 });
+
