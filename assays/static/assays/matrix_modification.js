@@ -328,6 +328,9 @@ $(document).ready(function () {
     var study_setup_head = study_setup_table.find('thead').find('tr');
     var study_setup_body = study_setup_table.find('tbody');
 
+    // PREVIEW
+    var study_setup_table_preview = $('#study_setup_table_preview');
+
     // MISNOMER, NOW MORE OF AN ADD BUTTON
     function create_edit_button(prefix, row_index, column_index, hidden) {
         // Sloppy
@@ -622,9 +625,11 @@ $(document).ready(function () {
     $('#show_details').change(show_hide_full_details);
     show_hide_full_details();
 
-    function set_new_protocol() {
-        // Set organ_model_id
-        current_setup_data[current_setup_index]['organ_model_id'] = organ_model.val();
+    function set_new_protocol(is_new) {
+        if (is_new) {
+            // Set organ_model_id
+            current_setup_data[current_setup_index]['organ_model_id'] = organ_model.val();
+        }
 
         if (protocol.val() && protocol.val() != current_protocol || protocol.val() && !Object.keys(current_setup).length) {
             // Start SPINNING
@@ -650,20 +655,40 @@ $(document).ready(function () {
 
                     // current_setup_data[current_setup_index] = $.extend(true, {}, json);
 
-                    // MAKE SURE ALL PREFIXES ARE PRESENT
-                    $.each(prefixes, function(index, prefix) {
-                        if (json[prefix]) {
-                            // Slow, but rare operation
-                            current_setup_data[current_setup_index][prefix] = JSON.parse(JSON.stringify(json[prefix]));
-                        }
-                    });
+                    if (is_new) {
+                        // MAKE SURE ALL PREFIXES ARE PRESENT
+                        $.each(prefixes, function(index, prefix) {
+                            if (json[prefix]) {
+                                // Slow, but rare operation
+                                current_setup_data[current_setup_index][prefix] = JSON.parse(JSON.stringify(json[prefix]));
+                            }
+                        });
 
-                    // FORCE INITIAL TO BE CONTROL
-                    // current_setup_data[current_setup_index]['test_type'] = 'control';
+                        // FORCE INITIAL TO BE CONTROL
+                        // current_setup_data[current_setup_index]['test_type'] = 'control';
 
-                    console.log(current_setup_data);
+                        // console.log(current_setup_data);
 
-                    rebuild_table();
+                        rebuild_table();
+                    }
+                    // Contrived make preview
+                    else {
+                        study_setup_table_preview.empty();
+                        var new_row = $('<tr>');
+
+                        $.each(json, function(prefix, content_set) {
+                            for (var i=0; i < content_set.length; i++) {
+                                var html_contents = get_content_display(prefix, 0, i, content_set[i]);
+
+                                new_row.append(
+                                    $('<td>')
+                                        .html(html_contents)
+                                );
+                            }
+                        });
+
+                        study_setup_table_preview.append(new_row);
+                    }
                 },
                 error: function (xhr, errmsg, err) {
                     // Stop spinner
@@ -674,8 +699,13 @@ $(document).ready(function () {
             });
         }
         else if (!protocol.val()) {
-            reset_current_setup();
-            rebuild_table();
+            if (is_new) {
+                reset_current_setup();
+                rebuild_table();
+            }
+            else {
+                study_setup_table_preview.empty();
+            }
         }
     }
 
@@ -738,7 +768,7 @@ $(document).ready(function () {
             text: 'Apply',
             click: function() {
                 // Get the version data and apply to row
-                set_new_protocol();
+                set_new_protocol(true);
 
                 $(this).dialog("close");
             }
@@ -766,6 +796,10 @@ $(document).ready(function () {
             // Asynchronous
             window.get_protocols(organ_model.val());
         }).trigger('change');
+
+        protocol.change(function() {
+            set_new_protocol(false);
+        });
     }
 
     // MATRIX HANDLING
@@ -935,8 +969,6 @@ $(document).ready(function () {
             var row_id = 'row_' + row_index;
             var current_row = $('<tr>')
                 .attr('id', row_id);
-
-            var all_matching_for_row_value = $('.' + item_prefix).has('input[name$="-row_index"][value="' + row_index + '"]');
 
             for (var column_index=starting_index_for_matrix; column_index < number_of_columns; column_index++) {
                 var item_id = item_prefix + '_' + row_index + '_' + column_index;
@@ -1124,11 +1156,6 @@ $(document).ready(function () {
 
     device_selector.change(check_matrix_device);
     check_matrix_device();
-
-    // TODO TODO TODO RESTORE LATER
-    // if (device_selector.val()) {
-    //     device_selector.trigger('change');
-    // }
 
     number_of_rows_selector.change(function() {
         get_matrix_dimensions();
