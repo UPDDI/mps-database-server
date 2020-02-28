@@ -204,7 +204,7 @@ $(document).ready(function () {
 
                     modify_setup_data(current_prefix, current_data, current_row_index, current_column_index);
 
-                    var html_contents = get_content_display(current_prefix, current_row_index, current_column_index, current_data);
+                    var html_contents = get_content_display(current_prefix, current_row_index, current_column_index, current_data, true);
 
                     $('a[data-edit-button="true"][data-row="' + current_row_index +'"][data-column="' + current_column_index +'"][data-prefix="' + current_prefix + '"]').parent().html(html_contents);
 
@@ -273,17 +273,28 @@ $(document).ready(function () {
     }
 
     // TODO NEEDS MAJOR REVISION
-    function get_content_display(prefix, row_index, column_index, content) {
+    function get_content_display(prefix, row_index, column_index, content, editable) {
         var html_contents = [];
 
         var new_display = empty_html[prefix].clone();
 
+        // KILL EDIT FOR PREVIEW
+        if (!editable)
+        {
+            new_display.find('.subform-delete').remove();
+            new_display.find('.subform-edit').remove();
+        }
+
         // Delete button
-        new_display.find('.subform-delete').attr('data-prefix', prefix).attr('data-row', row_index).attr('data-column', column_index);
+        if (editable) {
+            new_display.find('.subform-delete').attr('data-prefix', prefix).attr('data-row', row_index).attr('data-column', column_index);
+        }
 
         if (content && Object.keys(content).length) {
-            // Hide 'edit' button
-            html_contents.push(create_edit_button(prefix, row_index, column_index, true));
+            if (editable) {
+                // Hide 'edit' button
+                html_contents.push(create_edit_button(prefix, row_index, column_index, true));
+            }
 
             $.each(content, function(key, value) {
                 // html_contents.push(key + ': ' + value);
@@ -481,7 +492,7 @@ $(document).ready(function () {
                 }
 
                 for (var i=0; i < number_of_columns[prefix]; i++) {
-                    var html_contents = get_content_display(prefix, row_index, i, content_set[i]);
+                    var html_contents = get_content_display(prefix, row_index, i, content_set[i], true);
 
                     new_row.append(
                         $('<td>')
@@ -678,7 +689,7 @@ $(document).ready(function () {
 
                         $.each(json, function(prefix, content_set) {
                             for (var i=0; i < content_set.length; i++) {
-                                var html_contents = get_content_display(prefix, 0, i, content_set[i]);
+                                var html_contents = get_content_display(prefix, 0, i, content_set[i], false);
 
                                 new_row.append(
                                     $('<td>')
