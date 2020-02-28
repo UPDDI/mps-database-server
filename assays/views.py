@@ -1353,7 +1353,7 @@ class AssayMatrixAdd(StudyGroupMixin, CreateView):
 # TODO NOT THE RIGHT PERMISSION MIXIN
 class AssayMatrixUpdate(HistoryMixin, StudyGroupMixin, UpdateView):
     model = AssayMatrix
-    template_name = 'assays/assaymatrix_add.html'
+    template_name = 'assays/matrix_modification.html'
     form_class = AssayMatrixForm
 
     # A little extreme, but should work

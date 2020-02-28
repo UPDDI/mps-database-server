@@ -694,6 +694,28 @@ class SetupFormsMixin(BootstrapForm):
 
 # TODO ADD STUDY
 class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
+    test_type = forms.ChoiceField(
+        initial='control',
+        choices=TEST_TYPE_CHOICES,
+        required=False
+    )
+    # CONTRIVANCE
+    organ_model_full = forms.ModelChoiceField(
+        queryset=OrganModel.objects.all().order_by('name'),
+        required=False,
+        label='Matrix Item MPS Model'
+    )
+    organ_model = forms.ModelChoiceField(
+        queryset=OrganModel.objects.all().order_by('name'),
+        required=False,
+        label='Matrix Item MPS Model'
+    )
+    organ_model_protocol = forms.ModelChoiceField(
+        queryset=OrganModelProtocol.objects.all().order_by('version'),
+        required=False,
+        label='Matrix Item MPS Model Version'
+    )
+
     class Meta(object):
         model = AssayMatrix
         exclude = ('study',) + tracking
@@ -749,6 +771,9 @@ class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
         self.fields['matrix_item_full_organ_model'].widget.attrs['class'] = 'no-selectize'
         self.fields['matrix_item_full_organ_model_protocol'].widget.attrs['class'] = 'no-selectize'
 
+        self.fields['test_type'].widget.attrs['class'] = 'no-selectize required form-control'
+        self.fields['organ_model_full'].widget.attrs['class'] = 'no-selectize'
+
         # No selectize on action either (hides things, looks odd)
         # CONTRIVED
         # self.fields['action'].widget.attrs['class'] += ' no-selectize'
@@ -767,7 +792,10 @@ class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
             self.fields[current_field].widget.attrs['class'] += ' required'
 
     ### ADDITIONAL MATRIX FIELDS (unsaved)
-    number_of_items = forms.IntegerField(required=False)
+    number_of_items = forms.IntegerField(
+        required=False,
+        label='Number of Items'
+    )
 
     ### ITEM FIELD HELPERS
     # action = forms.ChoiceField(choices=(
@@ -2357,7 +2385,8 @@ class AssayMatrixFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
     # ADD test_types
     test_type = forms.ChoiceField(
         initial='control',
-        choices=TEST_TYPE_CHOICES
+        choices=TEST_TYPE_CHOICES,
+        required=False
     )
 
     class Meta(object):

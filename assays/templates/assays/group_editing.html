@@ -1,4 +1,39 @@
+{# Needs to be refactored #}
+{# Hidden for Cells, Compounds, and Settings #}
+<div hidden>
+    {# {{ form.setup_data }} #}
+    {{ form.number_of_items }}
+    {{ form.test_type }}
+    {{ form.organ_model_full }}
+</div>
+
+<div hidden id="version_dialog" title="Choose a MPS Model Version">
+    {% include 'generic_field.html' with field=form.organ_model %}
+
+    {# Use the show/hide from organ_model_filtering #}
+    <div id="protocol_div">
+    {% include 'generic_field.html' with field=form.organ_model_protocol %}
+    </div>
+</div>
+
+<div style="display: none;">
+    <table>
+    <tr id="empty_matrix_item_html">
+    <td data-prefix="{{ item_formset.prefix }}" class="matrix_item-td">
+        <span class="label label-primary">
+            <a class="btn btn-xs form-delete">
+                <span class="glyphicon glyphicon-remove text-danger"></span>
+            </a>
+        </span>
+    </td>
+    </tr>
+    </table>
+</div>
+
+
+{# NOTE: REVISED SUBSTANTIALLY #}
 {# Only in Matrix interface #}
+{% comment %}
 <div style="display: none;">
     <table>
     <tr id="empty_matrix_item_html">
@@ -32,13 +67,6 @@
             </div>
             <div>
                 <span class="matrix_item-setup_date matrix_item-setup_set_section"></span>
-                {% comment %}
-                {% if not detail %}
-                <a class="pull-right btn btn-xs form-delete">
-                    <span class="glyphicon glyphicon-remove text-danger"></span>
-                </a>
-                {% endif %}
-                {% endcomment %}
     {#                <a class="pull-right btn btn-xs form-view">#}
     {#                    <span class="glyphicon glyphicon-eye-open"></span>#}
     {#                </a>#}
@@ -71,6 +99,7 @@
     </tr>
     </table>
 </div>
+{% endcomment %}
 
 {# Matrix Item #}
 <div hidden id="matrix_item_dialog" title="Edit a Matrix Item">
@@ -479,12 +508,5 @@
 <div id="empty_error_html">
     <div class="alert alert-danger force-off-black-text matrix_item-error-message-box">
     </div>
-</div>
-
-{# Hidden for Cells, Compounds, and Settings #}
-<div hidden>
-    {# {{ form.setup_data }} #}
-    {{ form.number_of_items }}
-    {{ form.test_type }}
 </div>
 </div>
