@@ -2,14 +2,16 @@ $(document).ready(function () {
     var setup_data_selector = $('#id_setup_data');
 
     // FULL DATA
-    var current_setup_data = [];
+    var full_setup_data = {
+        current_setup_data: [],
+        matrix_item_data: []
+    };
+    // SERIES DATA
+    var current_setup_data = full_setup_data.current_setup_data;
 
     // FOR ADD INTERFACE ONLY
     // ERRORS
     var setup_table_errors_selector = $('#setup_table_errors').find('.errorlist');
-
-    // More selectors
-    var study_setup_table_section = $('#study_setup_table_section');
 
     var table_errors = {}
 
@@ -1124,6 +1126,7 @@ $(document).ready(function () {
 
     function matrix_add_content_to_selected() {
         // TODO
+        selection_dialog.dialog('open');
 
         // Remove ui-selected class manually
         $(item_display_class).removeClass('ui-selected');
@@ -1219,4 +1222,39 @@ $(document).ready(function () {
     });
 
     get_matrix_dimensions();
+
+    // NEW THINGS FROM NOW ON
+    // Selection dialog
+    var selection_dialog = $('#selection_dialog');
+    selection_dialog.dialog({
+        width: 900,
+        height: 500,
+        open: function() {
+            $.ui.dialog.prototype.options.open();
+            // BAD
+            setTimeout(function() {
+                // Blur all
+                $('.ui-dialog').find('input, select, button').blur();
+            }, 150);
+
+            // Discern what will be applied to
+            // TODO TODO
+        },
+        buttons: [
+        {
+            text: 'Apply',
+            click: function() {
+                // Apply TODO XXX
+
+                $(this).dialog("close");
+            }
+        },
+        {
+            text: 'Cancel',
+            click: function() {
+               $(this).dialog("close");
+            }
+        }]
+    });
+    selection_dialog.removeProp('hidden');
 });
