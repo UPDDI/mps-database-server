@@ -989,12 +989,16 @@ $(document).ready(function () {
                 if (column_index === -1) {
                     if (row_index === -1) {
                         new_cell = $('<td>')
+                            .css('width', '1px')
+                            .css('white-space', 'no-wrap')
                     }
                     else {
                         new_cell = $('<td>')
                             .addClass('text-center')
                             // Note: CRUDE
                             .css('vertical-align', 'middle')
+                            .css('width', '1px')
+                            .css('white-space', 'no-wrap')
                             .append(
                                 $('<a>')
                                     .html(to_letters(row_index + 1))
