@@ -60,12 +60,12 @@
         <button id="submit" type="submit" class="btn btn-primary">Submit</button>
         {# <a class="btn btn-warning" role="button" onclick="window.location.reload(false);">Clear all Changes</a> #}
 
-        {% if history.count %}
-            <a id="open_history_dialog" role="button" class="btn btn-info pull-right" href="javascript:;">History</a>
-        {% endif %}
-
         {% if update and object.get_delete_url %}
             <a role="button" class="btn btn-danger pull-right" href="{{ object.get_delete_url }}">Delete</a>
+        {% endif %}
+
+        {% if history.count %}
+            <a id="open_history_dialog" role="button" class="btn btn-info pull-right"  style="margin-right: 15px;" href="javascript:;">History</a>
         {% endif %}
 
         {% if flag %}

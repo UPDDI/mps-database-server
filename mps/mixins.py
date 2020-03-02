@@ -488,24 +488,6 @@ class HistoryMixin(object):
 
         return context
 
-class FormHandlerMixin(HistoryMixin):
-    """Mixin for handling forms, whether they have formsets and/or are popups"""
-    formsets = ()
-    is_update = False
-
-    # Default to generic_form template
-    template_name = 'generic_form.html'
-
-    def __init__(self, *args, **kwargs):
-        super(FormHandlerMixin, self).__init__(*args, **kwargs)
-
-        # Initialize dictionary of all forms
-        self.all_forms = {}
-
-        # Mark as is_update if UpdateView is one of the bases
-        if UpdateView in self.__class__.__bases__:
-            self.is_update = True
-
     # Kind of odd that these shadow the keyword object?
     def log_addition(self, request, object, message):
         """
@@ -536,6 +518,28 @@ class FormHandlerMixin(HistoryMixin):
             action_flag=CHANGE,
             change_message=message,
         )
+
+    def construct_change_message(self, form, formsets, add=False):
+        return construct_change_message(form, formsets, add)
+
+
+class FormHandlerMixin(HistoryMixin):
+    """Mixin for handling forms, whether they have formsets and/or are popups"""
+    formsets = ()
+    is_update = False
+
+    # Default to generic_form template
+    template_name = 'generic_form.html'
+
+    def __init__(self, *args, **kwargs):
+        super(FormHandlerMixin, self).__init__(*args, **kwargs)
+
+        # Initialize dictionary of all forms
+        self.all_forms = {}
+
+        # Mark as is_update if UpdateView is one of the bases
+        if UpdateView in self.__class__.__bases__:
+            self.is_update = True
 
     def get_form_kwargs(self):
         kwargs = super(FormHandlerMixin, self).get_form_kwargs()
@@ -631,13 +635,14 @@ class FormHandlerMixin(HistoryMixin):
                 all_formsets_valid = False
 
         if form.is_valid() and all_formsets_valid:
+            form.save(commit=False)
             # NEEDS TESTING: SLOPPY SOLUTION TO GETTING new_objects ATTRIBUTE
             for formset in all_formsets:
                 formset.save(commit=False)
 
             # The tricky think about this is that it makes changing stuff for matrices quite unpleasant...
             # Then again, do we need to robustly track the precise changes?
-            change_message = construct_change_message(form, all_formsets, not self.is_update)
+            change_message = self.construct_change_message(form, all_formsets, not self.is_update)
 
             # May or may not do anything
             self.pre_save_processing(form)
@@ -645,7 +650,7 @@ class FormHandlerMixin(HistoryMixin):
             save_forms_with_tracking(self, form, formset=all_formsets, update=self.is_update)
 
             # May or may not do anything
-            self.extra_form_processing()
+            self.extra_form_processing(form)
 
             if not self.is_update:
                 self.log_addition(self.request, self.object, change_message)
