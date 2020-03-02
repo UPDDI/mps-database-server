@@ -909,6 +909,10 @@ class AssayStudySignOff(HistoryMixin, UpdateView):
         return context
 
     def form_valid(self, form):
+        # Sloppy addition of logging
+        change_message = 'Modified Sign Off/Approval'
+        self.log_change(self.request, self.object, change_message)
+
         stakeholder_formset = AssayStudyStakeholderFormSetFactory(
             self.request.POST,
             instance=form.instance,
@@ -1195,6 +1199,10 @@ class AssayStudyDataUpload(HistoryMixin, ObjectGroupRequiredMixin, UpdateView):
                     formset=[supporting_data_formset],
                     update=True
                 )
+
+                # Sloppy addition of logging
+                change_message = 'Modified Upload'
+                self.log_change(self.request, self.object, change_message)
 
                 # Contrived method for marking data
                 for key, value in list(form.data.items()):
@@ -1727,6 +1735,11 @@ class AssayMatrixUpdate(HistoryMixin, StudyGroupMixin, UpdateView):
 
         if form.is_valid() and formsets_are_valid:
             save_forms_with_tracking(self, form, formset=formsets, update=True)
+
+            # Sloppy addition of logging
+            change_message = 'Modified'
+            self.log_change(self.request, self.object, change_message)
+
             return redirect(self.object.get_post_submission_url())
         else:
             return self.render_to_response(self.get_context_data(form=form))
@@ -1892,6 +1905,10 @@ class AssayMatrixItemUpdate(HistoryMixin, StudyGroupMixin, UpdateView):
 
         if form.is_valid() and all_formsets_valid:
             save_forms_with_tracking(self, form, update=True, formset=all_formsets)
+
+            # Sloppy addition of logging
+            change_message = self.construct_change_message(form, [], False)
+            self.log_change(self.request, self.object, change_message)
 
             try:
                 data_point_ids_to_update_raw = json.loads(form.data.get('dynamic_exclusion', '{}'))
@@ -2195,9 +2212,7 @@ class AssayStudySetMixin(FormHandlerMixin):
 
         return context
 
-    def extra_form_processing(self):
-        # Update the base model to be self-referential if it is missing
-        form = self.all_forms.get('form')
+    def extra_form_processing(self, form):
         # Save the many-to-many fields
         form.save_m2m()
 
@@ -3102,6 +3117,11 @@ class AssayMatrixNew(HistoryMixin, StudyGroupMixin, UpdateView):
 
         if form.is_valid() and formsets_are_valid:
             save_forms_with_tracking(self, form, formset=formsets, update=True)
+
+            # Sloppy addition of logging
+            change_message = 'Modified'
+            self.log_change(self.request, self.object, change_message)
+
             return redirect(self.object.get_post_submission_url())
         else:
             return self.render_to_response(self.get_context_data(form=form))

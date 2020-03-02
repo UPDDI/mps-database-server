@@ -116,9 +116,8 @@ class OrganModelMixin(FormHandlerMixin):
 
         return context
 
-    def extra_form_processing(self):
+    def extra_form_processing(self, form):
         # Update the base model to be self-referential if it is missing
-        form = self.all_forms.get('form')
         protocol_formset = self.all_forms.get('protocol_formset')
 
         if not form.instance.base_model_id:

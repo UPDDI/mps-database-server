@@ -321,6 +321,10 @@ class StudyDeletionMixin(object):
     @method_decorator(login_required)
     @method_decorator(user_passes_test(user_is_active))
     def dispatch(self, *args, **kwargs):
+        # Superusers always have access
+        if self.request.user.is_authenticated and self.request.user.is_superuser:
+            return super(StudyDeletionMixin, self).dispatch(*args, **kwargs)
+
         self.object = self.get_object()
 
         group = getattr(self.object, 'group', None)
@@ -486,6 +490,41 @@ class HistoryMixin(object):
 
         return context
 
+    # Kind of odd that these shadow the keyword object?
+    def log_addition(self, request, object, message):
+        """
+        Log that an object has been successfully added.
+
+        The default implementation creates an admin LogEntry object.
+        """
+        return LogEntry.objects.log_action(
+            user_id=request.user.pk,
+            content_type_id=ContentType.objects.get_for_model(object, for_concrete_model=False).pk,
+            object_id=object.pk,
+            object_repr=str(object),
+            action_flag=ADDITION,
+            change_message=message,
+        )
+
+    def log_change(self, request, object, message):
+        """
+        Log that an object has been successfully changed.
+
+        The default implementation creates an admin LogEntry object.
+        """
+        return LogEntry.objects.log_action(
+            user_id=request.user.pk,
+            content_type_id=ContentType.objects.get_for_model(object, for_concrete_model=False).pk,
+            object_id=object.pk,
+            object_repr=str(object),
+            action_flag=CHANGE,
+            change_message=message,
+        )
+
+    def construct_change_message(self, form, formsets, add=False):
+        return construct_change_message(form, formsets, add)
+
+
 class FormHandlerMixin(HistoryMixin):
     """Mixin for handling forms, whether they have formsets and/or are popups"""
     formsets = ()
@@ -629,13 +668,14 @@ class FormHandlerMixin(HistoryMixin):
                 all_formsets_valid = False
 
         if form.is_valid() and all_formsets_valid:
+            form.save(commit=False)
             # NEEDS TESTING: SLOPPY SOLUTION TO GETTING new_objects ATTRIBUTE
             for formset in all_formsets:
                 formset.save(commit=False)
 
             # The tricky think about this is that it makes changing stuff for matrices quite unpleasant...
             # Then again, do we need to robustly track the precise changes?
-            change_message = construct_change_message(form, all_formsets, not self.is_update)
+            change_message = self.construct_change_message(form, all_formsets, not self.is_update)
 
             # May or may not do anything
             self.pre_save_processing(form)
@@ -643,7 +683,7 @@ class FormHandlerMixin(HistoryMixin):
             save_forms_with_tracking(self, form, formset=all_formsets, update=self.is_update)
 
             # May or may not do anything
-            self.extra_form_processing()
+            self.extra_form_processing(form)
 
             if not self.is_update:
                 self.log_addition(self.request, self.object, change_message)

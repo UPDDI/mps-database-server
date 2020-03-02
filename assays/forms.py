@@ -2421,6 +2421,8 @@ class AssayTargetForm(BootstrapForm):
             self.fields['category'].initial = (
                 self.initial_categories
             )
+        else:
+            self.initial_categories = AssayCategory.objects.none()
 
         # Sort the methods
         # Would it be better to have this applied to all method queries?
@@ -2433,11 +2435,11 @@ class AssayTargetForm(BootstrapForm):
             for current_category in self.cleaned_data.get('category', None):
                 current_category.targets.add(self.instance)
 
-            # Do not permit removals for the moment
+            # Permit removals for the moment
             # Crude removal
-            # for initial_category in self.initial_categories:
-            #     if initial_category not in self.cleaned_data.get('category', None):
-            #         initial_category.targets.remove(self.instance)
+            for initial_category in self.initial_categories:
+                if initial_category not in self.cleaned_data.get('category', None):
+                    initial_category.targets.remove(self.instance)
 
         return new_target
 
@@ -2469,6 +2471,8 @@ class AssayMethodForm(BootstrapForm):
             self.fields['target'].initial = (
                 self.initial_targets
             )
+        else:
+            self.initial_targets = AssayTarget.objects.none()
 
     def save(self, commit=True):
         new_method = super(AssayMethodForm, self).save(commit)
@@ -2476,11 +2480,11 @@ class AssayMethodForm(BootstrapForm):
         for current_target in self.cleaned_data.get('target', None):
             current_target.methods.add(self.instance)
 
-        # Do not permit removals for the moment
+        # Permit removals for the moment
         # Crude removal
-        # for initial_target in self.initial_targets:
-        #     if initial_target not in self.cleaned_data.get('target', None):
-        #         initial_target.methods.remove(self.instance)
+        for initial_target in self.initial_targets:
+            if initial_target not in self.cleaned_data.get('target', None):
+                initial_target.methods.remove(self.instance)
 
         return new_method
 

@@ -735,7 +735,7 @@ $(document).ready(function () {
                             last_row,
                             column,
                             first_column,
-                            last_column,
+                            last_column
                         );
                     }
                     new_form.find('input[name$="' + field_name + '"]').val(current_value);
@@ -784,7 +784,7 @@ $(document).ready(function () {
                         last_row,
                         column,
                         first_column,
-                        last_column,
+                        last_column
                     );
                 }
 
