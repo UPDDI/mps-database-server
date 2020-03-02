@@ -4,7 +4,7 @@ $(document).ready(function () {
     // FULL DATA
     var full_setup_data = {
         current_setup_data: [],
-        matrix_item_data: []
+        matrix_item_data: {}
     };
     // SERIES DATA
     var current_setup_data = full_setup_data.current_setup_data;
@@ -13,7 +13,7 @@ $(document).ready(function () {
     // ERRORS
     var setup_table_errors_selector = $('#setup_table_errors').find('.errorlist');
 
-    var table_errors = {}
+    var table_errors = {};
 
     setup_table_errors_selector.find('li').each(function() {
         var current_text = $(this).text();
@@ -21,9 +21,6 @@ $(document).ready(function () {
         var error_message = current_text.split('-').slice(1).join('-');
         table_errors[split_info] = error_message;
     });
-
-    // FOR EDITING INTERFACE ONLY
-    var form_slated_for_deletion = [];
 
     // ODD, NOT GOOD
     var organ_model = $('#id_organ_model');
@@ -59,7 +56,7 @@ $(document).ready(function () {
     // CRUDE
     // MAKE SURE ALL PREFIXES ARE PRESENT
     $.each(prefixes, function(index, prefix) {
-        if(!current_setup[prefix]) {
+        if (!current_setup[prefix]) {
           current_setup[prefix] = [];
         }
     });
@@ -833,6 +830,13 @@ $(document).ready(function () {
 
     var item_display_class = '.matrix_item-td';
 
+    var current_selection = null;
+
+    var selection_dialog_selected_items = $('#selection_dialog_selected_items');
+    var group_selector = $('#id_group_selector');
+    var selection_dialog_naming_section = $('#selection_dialog_naming_section');
+    var chip_naming = $('#id_chip_naming');
+
     // Allows the matrix_table to have the draggable JQuery UI element
     matrix_table_selector.selectable({
         // SUBJECT TO CHANGE: WARNING!
@@ -967,7 +971,6 @@ $(document).ready(function () {
     function un_highlight_column() {
         $('td[data-column-index="' + $(this).attr('data-column-to-apply') + '"]').removeClass('ui-selecting');
     }
-
 
     // Makes the initial matrix
     // TODO PURGE CELLS WHEN SHRINKING
@@ -1128,6 +1131,10 @@ $(document).ready(function () {
         // TODO
         selection_dialog.dialog('open');
 
+        // Get the current selection
+        current_selection = $('.ui-selected');
+        console.log(current_selection);
+
         // Remove ui-selected class manually
         $(item_display_class).removeClass('ui-selected');
     }
@@ -1241,6 +1248,15 @@ $(document).ready(function () {
             // TODO TODO
         },
         buttons: [
+        {
+            text: 'Delete',
+            class: 'btn-danger',
+            click: function() {
+                // Apply TODO XXX
+
+                $(this).dialog("close");
+            }
+        },
         {
             text: 'Apply',
             click: function() {
