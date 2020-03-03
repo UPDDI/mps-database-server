@@ -114,6 +114,7 @@
                             </div>
 {#                            <div class="col-md-2"></div>#}
                         </div>
+
                     </div>
                 {% endif %}
 
@@ -163,6 +164,7 @@
 {#                                    <div class="col-md-2"></div>#}
                                 </div>
                             </div>
+
                             <div class="pick-a-matrix hidden">
                                 <div class="row">
                                     <div class="col-md-3">
@@ -238,6 +240,7 @@
                                     <div class="col-md-9">
                                         <div class="plate-map-page-field-contents-medium required">
                                             {{ form.se_block_select_string }}
+{#                                            yes, using this for now#}
                                             <div class="hidden">{{ form.ns_block_select_pk }}</div>
                                         </div>
                                     </div>
@@ -263,7 +266,6 @@
                                 {{ form.name }}
                             </div>
                         </div>
-{#                        <div class="col-md-2"></div>#}
                     </div>
 
                     <div class="row">
@@ -279,42 +281,10 @@
                                 {{ form.description }}
                             </div>
                         </div>
-{#                        <div class="col-md-2"></div>#}
                     </div>
 
                     <div class="row">
-                        <div class="col-md-3">
-                            <div class="plate-map-page-field-labels-small">
-                                <div><p id="plate_cell_count_tooltip"></p>
-                                    <label for="plate_cell_count_tooltip"># Cells &nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-9">
-                            <div class="plate-map-page-field-contents-medium">
-                                {{ form.cell_count }}
-                            </div>
-                        </div>
-{#                        <div class="col-md-2"></div>#}
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="plate-map-page-field-labels-small">
-                                <div><p id="collection_volume_unit_tooltip"></p>
-                                    <label for="collection_volume_unit_tooltip">Volume Unit &nbsp;</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-9">
-                            <div class="plate-map-page-field-contents-medium">
-                                {{ form.volume_unit }}
-                            </div>
-                        </div>
-{#                        <div class="col-md-2"></div>#}
-                    </div>
-
-                    <div class="row">
                         <div class="col-md-3">
                             <div class="plate-map-page-field-labels-small">
                                 <div><p id="sample_time_unit_tooltip"></p>
@@ -322,19 +292,98 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-9">
+                        <div class="col-md-2">
                             <div class="plate-map-page-field-contents-medium required">
                                 {{ form.time_unit }}
                             </div>
                         </div>
-{#                        <div class="col-md-2"></div>#}
+
+                        <div class="plate-to-enter-cell-count">
+                            <div class="col-md-2">
+                                <div class="plate-map-page-field-labels-small">
+                                    <div><p id="plate_cell_count_tooltip"></p>
+                                        <label for="plate_cell_count_tooltip"># Cells &nbsp;</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="plate-map-page-field-contents-medium">
+                                    {{ form.cell_count }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="plate-to-enter-volume-unit">
+                            <div class="col-md-2">
+                                <div class="plate-map-page-field-labels-small">
+                                    <div><p id="collection_volume_unit_tooltip"></p>
+                                        <label for="collection_volume_unit_tooltip">Volume Unit &nbsp;</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="plate-map-page-field-contents-medium">
+                                    {{ form.volume_unit }}
+                                </div>
+                            </div>
+                            <div class="col-md-1"></div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-3">
+                            <div class="plate-map-page-field-labels-small">
+                                <div><p id="standard_unit_tooltip"></p>
+                                    <label for="standard_unit_tooltip">Standard (or Raw Value) Unit* &nbsp;</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="plate-map-page-field-contents-medium">
+                                {{ form.standard_unit }}
+                            </div>
+                        </div>
+
+                        <div class="plate-to-enter-standard-molecular-weight">
+                            <div class="col-md-2">
+                                <div class="plate-map-page-field-labels-small">
+                                    <div><p id="plate_molecular_weight_tooltip"></p>
+                                        <label for="plate_molecular_weight_tooltip">Molecular Weight &nbsp;</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="plate-map-page-field-contents-medium">
+                                    {{ form.standard_molecular_weight }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="plate-to-enter-well-volume">
+                            <div class="col-md-2">
+                                <div class="plate-map-page-field-labels-small">
+                                    <div><p id="plate_volume_assay_plate_well_tooltip"></p>
+                                        <label for="plate_volume_assay_plate_well_tooltip">Well Volume &nbsp;</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="plate-map-page-field-contents-medium">
+                                    {{ form.well_volume }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-1"></div>
+
                     </div>
 
                     <div class="row">
                         <div class="col-md-3">
                             <div class="plate-map-page-field-labels-small">
                                 <div><p id="standard_tooltip"></p>
-                                    <label for="standard_tooltip">Target, Method, Unit* &nbsp;</label>
+                                    <label for="standard_tooltip">Reporting Unit --- Target, Method* &nbsp;</label>
                                 </div>
                             </div>
                         </div>
@@ -343,28 +392,38 @@
                                 {{ form.study_assay }}
                             </div>
                         </div>
-{#                        <div class="col-md-2"></div>#}
                     </div>
 
+                    {% if form.form_number_file_block_combos.value > 0 %}
 
-
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="plate-map-page-field-labels-small">
-                                <div><p id="standard_unit_tooltip"></p>
-                                    <label for="standard_unit_tooltip">Standard Unit &nbsp;</label>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="plate-map-page-field-labels-small">
+                                    <div><p id="plate_map_multiplier_for_processing"></p>
+                                        <label for="plate_map_multiplier_for_processing">Data Processing Multiplier &nbsp;</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="plate-map-page-field-contents-medium">
+                                    {{ assay_map_additional_info.form_data_processing_multiplier }}
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="plate-map-page-show-multiplier-details">
+                                    <div class="plate-map-page-field-contents-large">
+                                        <p id="calibration_multiplier_string">this is calculation is not working yet</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-9">
-                            <div class="plate-map-page-field-contents-medium">
-                                {{ form.standard_unit }}
-                            </div>
-                        </div>
-{#                        <div class="col-md-2"></div>#}
-                    </div>
+
+                    {% endif %}
+
                 </div>
+
             </div>
+
             <br>
 
             {# guts of edit #}
@@ -1156,52 +1215,64 @@
             </div>
 
 
-            {# THE PROCESSING DATA SECTION #}
+
+            {# START THE PROCESSING DATA SECTION #}
             <div>
                 <div class="container">
                     {% if form.form_number_file_block_combos.value > 0 %}
+                        {# pick the processing details #}
+
                         <div>
+                            <br>
                             <div class="row">
-                                <h2>Process the Data for the File Block</h2>
+                                <h2>Options for Calibrating/Processing the Data in the File Block</h2>
+                            </div>
+
+                            <div>
+                                <br>
+                                <div class="row">
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-primary" id="refreshCalculations">Refresh</button>
+                                    </div>
+                                    <div class="col-md-11">
+                                        <div class="plate-map-page-show-refresh-warning hidden">
+                                            <div class=" plate-map-special-well">
+                                                <p>Changes have been made. Refresh to update.</p>
+                                            </div>
+                                        </div>
+                                        <div class="plate-map-page-show-refresh-fine">
+                                            <div class="plate-map-special-well">
+                                                <p>Calculations are updated (NOT REALLY - because this feature doesn't work yet).</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="plate-map-page-field-labels-small">
-                                        <div><p id="plate_cell_count_tooltip2"></p>
-                                            <label for="plate_cell_count_tooltip2">Blank Handling &nbsp;</label>
+                                        <div><p id="plate_calibration_method_tooltip"></p>
+                                            <label for="plate_calibration_method_tooltip">Calibration Method* &nbsp;</label>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-9">
-                                    <div class="plate-map-page-field-contents-medium">
-                                        {{ assay_map_additional_info.se_form_blank_handling}}
-                                    </div>
-                                </div>
-        {#                        <div class="col-md-2"></div>#}
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <div class="plate-map-page-field-labels-small">
-                                        <div><p id="plate_cell_count_tooltip1"></p>
-                                            <label for="plate_cell_count_tooltip1">Calibration Method &nbsp;</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-9">
-                                    <div class="plate-map-page-field-contents-medium">
+                                    <div class="plate-map-page-field-contents-medium required">
                                         {{ assay_map_additional_info.se_form_calibration_curve}}
                                     </div>
                                 </div>
-        {#                        <div class="col-md-2"></div>#}
                             </div>
+                        </div>
 
+
+                        <div class="plate-calibration-yes hidden">
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="plate-map-page-field-labels-small">
-                                        <div><p id="plate_cell_count_tooltip3"></p>
-                                            <label for="plate_cell_count_tooltip3">Standard Bounds &nbsp;</label>
+                                        <div><p id="plate_standard_bounds_tooltip"></p>
+                                            <label for="plate_standard_bounds_tooltip">Standard Bounds &nbsp;</label>
                                         </div>
                                     </div>
                                 </div>
@@ -1228,25 +1299,216 @@
                                 <div class="col-md-3"></div>
                             </div>
 
+                            <br>
+                            <div class="plate_map_options_standards_blocks hidden">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="plate-map-page-field-labels-small">
+                                            <div><p id="plate_map_has_no_standards_tooltip"></p>
+                                                <label for="plate_map_has_no_standards_tooltip">No Standards On Plate &nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div class="plate-map-page-radio-contents">
+    {#                                        IMPORTANT - populating the pick list depends on this radio button being changed to pick a block!!!!#}
+                                            <label><input type="radio" name="standard_pick" value="no_calibration" checked> <b class="plate-map-radio-spacing">No Processing (send Raw Values)</b> </label>
+                                            <label><input type="radio" name="standard_pick" value="pick_block"> <b class="plate-map-radio-spacing">Pick a Block of Data With Standards </b></label>
+                                        </div>
+                                    </div>
+                                </div>
 
-
-{#                            <p>Pick Data Block with Standards (show if no standards on plate) with option Do Not Calibrate</p>#}
-{#                            <p>show graph of standard points and samples fitted to a default curve</p>#}
-{#                            <p>show list of curve options and other options (min, max)</p>#}
-
-                        </div>
-
-                        <div>
-{#                            <div id="curve_chart" style="width: 900px; height: 500px"></div>#}
-                        </div>
-                        <div>
-                            <div id="chart_div" style="width: 900px; height: 500px"></div>
-                        </div>
-
-                        <div>
-                            <div class="row">
-                                <button type="button" class="btn btn-primary" id="exportToMIFCButton">Upload Data To Study Summary</button>
+                                <div class="pick-standard-file-block hidden">
+                                    <div class="row pick-standard-file-block hidden">
+                                        <div class="col-md-3">
+                                            <div class="plate-map-page-field-labels-small">
+                                                <div><p id="plate_file_block_with_standards_to_borrow_tooltip"></p>
+                                                    <label for="plate_file_block_with_standards_to_borrow_tooltip">File/Block with Standards to Use &nbsp;</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <div class="plate-map-page-field-contents-medium">
+                                                {{ form.se_block_select_standard_string }}
+{#                                                got rid of this {{ form.ns_block_select_standard_string }}#}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="plate-map-page-field-labels-small">
+                                        <div><p id="plate_blank_handling_tooltip"></p>
+                                            <label for="plate_blank_handling_tooltip">Blank Handling &nbsp;</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="plate-map-page-field-contents-medium">
+                                        {{ assay_map_additional_info.se_form_blank_handling}}
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        {# standard curve and samples outside of range  #}
+                        <div class="plate-calibration-yes hidden">
+                            <br>
+                            <h2>Standard Curve</h2>
+                        </div>
+
+                        <div class="plate-calibration-guts-yes hidden">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div id="chart_div" style="height: 500px"></div>
+{#                                  <div id="chart_div" style="width: 900px; height: 500px"></div> #}
+                                </div>
+                                <div class="col-md-4">
+                                    <h3>Summary Statistics</h3>
+                                    <table class="table table-striped">
+{#                                      <tr>#}
+{#                                        <th>Parameter</th>#}
+{#                                        <th>Result</th>#}
+{#                                      </tr>#}
+                                        <tr>
+                                            <td>Method</td>
+                                            <td id="calibration-fit">Linear w/intercept = 0</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Equation</td>
+                                            <td id="calibration-equation">y = 2.5x + 0</td>
+                                        </tr>
+                                        <tr>
+                                            <td>R squared</td>
+                                            <td id="calibration-rsquared">0.95</td>
+                                        </tr>
+                                    </table>
+
+                                    <h3>Samples Out of Range</h3>
+                                    <table id="samples_out_of_range" class="display table table-striped table-hover">
+                                        <tr>
+                                            <th>Matrix Item</th>
+                                            <th>Sample Location</th>
+                                            <th>Sample Time</th>
+                                            <th>Well Label</th>
+                                        </tr>
+                                        <tr>
+                                            <td>N025</td>
+                                            <td>chamber</td>
+                                            <td>1</td>
+                                            <td>A1</td>
+                                        </tr>
+                                        <tr>
+                                            <td>N026</td>
+                                            <td>chamber</td>
+                                            <td>1</td>
+                                            <td>B1</td>
+                                        </tr>
+                                        <tr>
+                                            <td>N026</td>
+                                            <td>chamber</td>
+                                            <td>2</td>
+                                            <td>B2</td>
+                                        </tr>
+                                        <tr>
+                                            <td>N026</td>
+                                            <td>chamber</td>
+                                            <td>3</td>
+                                            <td>B3</td>
+                                        </tr>
+                                        <tr>
+                                            <td>N027</td>
+                                            <td>chamber</td>
+                                            <td>1</td>
+                                            <td>C1</td>
+                                        </tr>
+                                        <tr>
+                                            <td>N027</td>
+                                            <td>chamber</td>
+                                            <td>2</td>
+                                            <td>C2</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+
+                        {# Send to main study #}
+                        <div>
+                            <br>
+                            <h2>Sending Data to the Study Summary</h2>
+
+                                <div class="plate-calibration-yes hidden">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="plate-map-page-field-labels-small">
+                                                <div><p id="plate_mark_for_exclusion_tooltip"></p>
+                                                    <label for="plate_mark_for_exclusion_tooltip">Flag Out of Range Samples &nbsp;</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <div class="plate-map-page-radio-contents">
+                                                <label><input type="radio" name="exclusions" value="yes_flag" checked>  <b class="plate-map-radio-spacing">Yes, flag for exclusion by default</b> </label>
+                                                <label><input type="radio" name="exclusions" value="no_flag">  <b class="plate-map-radio-spacing">No, do not flag</b> </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="plate-map-page-field-labels-small">
+                                            <div><p id="plate_replicate_handling_tooltip"></p>
+                                                <label for="plate_replicate_handling_tooltip">Replicate Handling &nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div class="plate-map-page-radio-contents">
+                                            <label><input type="radio" name="replicates" value="average" checked>  <b class="plate-map-radio-spacing">Send the Average of the Replicates to the Study Summary</b> </label>
+                                            <label><input type="radio" name="replicates" value="each">  <b class="plate-map-radio-spacing">Send Each Replicate's Value to the Study Summary</b> </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+{#                            <input id="checkbox_flag_exclude" class="big-checkbox plate-file-button-spacer" type="checkbox" name="checkbox_flag_exclude" value="checkbox_flag_exclude" >#}
+{#                            <label for="checkbox_flag_exclude" class="plate-map-radio-spacing">Flag Out of Range Samples </label>#}
+{#                            <div><p id="plate_mark_for_exclusion_tooltip"></p>#}
+{#                                 <label for="plate_mark_for_exclusion_tooltip">&nbsp;</label>#}
+{#                            </div>#}
+{##}
+{#                            <br>#}
+{#                            <input id="checkbox_average_replicates" class="big-checkbox plate-file-button-spacer" type="checkbox" name="checkbox_average_replicates" value="checkbox_average_replicates" >#}
+{#                            <label for="checkbox_average_replicates" class="plate-map-radio-spacing">Average Replicate Samples</label>#}
+{#                            <br>#}
+
+
+{#                            <div class="row">#}
+{#                                <br><br>#}
+{#                                <div class="col-md-5">#}
+{#                                    <button type="button" class="btn btn-primary" id="drawMifcFileButton">Refresh Data Table</button>#}
+{#                                </div>#}
+{#                                <div class="col-md-7"></div>#}
+{#                            </div>#}
+
+{#                            <div class="plate-calibration-yes hidden">#}
+{#                                <div class="row">#}
+{#                                    <br><br>#}
+{#                                    <h3 ><e>Calibration parameters are not saved for reuse on this page.#}
+{#                                        The selected parameters are recorded in the data file that is generated when data are sent to the Study Summary.</e></h3>#}
+{#                                </div>#}
+{#                            </div>#}
+                            <br>
+
+                            <input id="checkbox_send_data" class="big-checkbox plate-file-button-spacer" type="checkbox" name="checkbox_send_data" value="checkbox_send_data" >
+                            <label for="checkbox_send_data" class="plate-map-radio-spacing">Send this Sample Data to Study Summary on Submit</label>
 
 {#                            <label>Exporting Data to MIF-C</label>#}
 {#                            <p>Data for each block can be exported to a MIF-C file, then uploaded into the study following#}
@@ -1260,6 +1522,11 @@
                     {% endif %}
                 </div>
             </div>
+
+            {# END THE PROCESSING DATA SECTION #}
+
+
+
 
             {# these are the ones that show to user  #}
             <div>

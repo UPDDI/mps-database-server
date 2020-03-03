@@ -3629,6 +3629,7 @@ class AssayPlateReaderMap(FlaggableModel):
         blank=True,
         choices=assay_plate_reader_volume_unit_choices
     )
+    well_volume = models.FloatField(null=True, blank=True)
     cell_count = models.FloatField(null=True, blank=True)
     study_assay = models.ForeignKey(
         'assays.AssayStudyAssay',
@@ -3642,6 +3643,7 @@ class AssayPlateReaderMap(FlaggableModel):
         blank=True,
         on_delete=models.CASCADE
     )
+    standard_molecular_weight = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         # return '{0}'.format(self.name)
@@ -3834,6 +3836,8 @@ class AssayPlateReaderMapDataFileBlock(models.Model):
     #     blank=True,
     #     on_delete=models.CASCADE)
 
+    # not sure going to use this...so far, not, putting it in the file to send to study instead
+    # may want to make a custom save that writes it here too...
     data_processing_parsable = models.CharField(
         max_length=2000,
         blank=True,
@@ -4022,47 +4026,51 @@ class AssayPlateReaderMapItemValue(models.Model):
         null=True,
         blank=True
     )
-    # adjusted input value (ie input_value - average of blanks)
-    adjusted_value = models.FloatField(
-        null=True,
-        blank=True
-    )
-    # calibrated value
-    fitted_value = models.FloatField(
-        null=True,
-        blank=True
-    )
     time = models.FloatField(
         default=0,
         null=True,
         blank=True
     )
-    caution_flag = models.CharField(
-        max_length=255,
-        default='',
-        null=True,
-        blank=True
-    )
-    excluded = models.BooleanField(
-        default=False,
-        null=True,
-        blank=True
-    )
-    replaced = models.BooleanField(
-        default=False
-    )
-    notes = models.CharField(
-        max_length=255,
-        default='',
-        null=True,
-        blank=True
-    )
-    replicate = models.CharField(
-        max_length=255,
-        default='',
-        null=True,
-        blank=True
-    )
+
+
+    # not using these right now - only sending calculated values to MIF-C
+    # # adjusted input value (ie input_value - average of blanks)
+    # adjusted_value = models.FloatField(
+    #     null=True,
+    #     blank=True
+    # )
+    # # calibrated value
+    # fitted_value = models.FloatField(
+    #     null=True,
+    #     blank=True
+    # )
+    #
+    # caution_flag = models.CharField(
+    #     max_length=255,
+    #     default='',
+    #     null=True,
+    #     blank=True
+    # )
+    # excluded = models.BooleanField(
+    #     default=False,
+    #     null=True,
+    #     blank=True
+    # )
+    # replaced = models.BooleanField(
+    #     default=False
+    # )
+    # notes = models.CharField(
+    #     max_length=255,
+    #     default='',
+    #     null=True,
+    #     blank=True
+    # )
+    # replicate = models.CharField(
+    #     max_length=255,
+    #     default='',
+    #     null=True,
+    #     blank=True
+    # )
 
     def __str__(self):
         return '{0}'.format(self.id)

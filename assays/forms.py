@@ -2558,7 +2558,8 @@ class AbstractClassAssayStudyAssay(AssayStudyAssay):
         proxy = True
 
     def __str__(self):
-        return 'TARGET: {0}  METHOD: {1}  UNIT: {2}'.format(self.target, self.method, self.unit)
+        # return 'TARGET: {0}  METHOD: {1}  UNIT: {2}'.format(self.target, self.method, self.unit)
+        return '{2}  --- TARGET: {0} by METHOD: {1}'.format(self.target, self.method, self.unit)
 
 
 # Get info to populate pick lists; no qc needed on this form, just to use on webpage to allow user selections
@@ -2583,10 +2584,11 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
             study_id=study_id
         ).order_by('name',)
         self.fields['se_platemap'].widget.attrs.update({'class': ' required'})
+        self.fields['se_form_calibration_curve'].widget.attrs.update({'class': ' required'})
 
     # processing the data fields added
     se_form_calibration_curve = forms.ChoiceField(
-        choices=(('no_processing', 'No Processing'),
+        choices=(('no_calibration', 'No Processing (send Raw Values)'),
                  ('best_fit', 'Best Fit'),
                  ('linear', 'Linear w/fitted intercept'),
                  ('linear0', 'Linear w/intercept = 0'),
@@ -2602,9 +2604,9 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
                  ('subtractsample', 'Subtract Average Sample Blanks from Samples (ignore standard blanks)'),
                  ('ignore', 'Ignore the Blanks'))
     )
-    se_form_well_volume = forms.ChoiceField(
-        choices=(('mL', 'mL'), ('uL', 'uL'))
-    )
+    # se_form_well_volume = forms.ChoiceField(
+    #     choices=(('mL', 'mL'), ('uL', 'uL'))
+    # )
 
     form_min_standard = forms.DecimalField(
         required=False,
@@ -2617,13 +2619,6 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
         initial=1,
     )
     form_max_standard.widget.attrs.update({'class': 'form-control'})
-
-    form_molecular_weight = forms.DecimalField(
-        required=False,
-        initial=1,
-    )
-    form_molecular_weight.widget.attrs.update({'class': 'form-control'})
-
 
 
     # before got to processing the data
@@ -2695,6 +2690,11 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
         initial=1,
     )
     form_number_increment_value.widget.attrs.update({'class': 'form-control'})
+    form_data_processing_multiplier = forms.DecimalField(
+        required=True,
+        initial=1,
+    )
+    form_data_processing_multiplier.widget.attrs.update({'class': 'form-control'})
 
 
 # Parent for plate reader map page
@@ -2713,6 +2713,8 @@ class AssayPlateReaderMapForm(BootstrapForm):
             'volume_unit',
             'standard_unit',
             'cell_count',
+            'standard_molecular_weight',
+            'well_volume'
         ]
         widgets = {
             'description': forms.Textarea(attrs={'cols': 50, 'rows': 3}),
@@ -2737,6 +2739,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
         self.fields['name'].widget.attrs['class'] += ' required'
         self.fields['device'].widget.attrs['class'] += ' required'
         self.fields['time_unit'].widget.attrs['class'] += ' required'
+        self.fields['standard_unit'].widget.attrs['class'] += ' required'
         self.fields['study_assay'].queryset = AbstractClassAssayStudyAssay.objects.filter(
             study_id=self.study
         ).prefetch_related(
@@ -2745,6 +2748,10 @@ class AssayPlateReaderMapForm(BootstrapForm):
             'unit',
         )
         self.fields['study_assay'].widget.attrs['class'] += ' required'
+        # the selectize was causing so many PROBLEMS with turning to required in JS, I turned it off this field!
+        # self.fields['volume_unit'].widget.attrs.update({'class': 'no-selectize'})
+        # self.fields['volume_unit'].widget.attrs['class'] += ' form-control'
+        self.fields['standard_molecular_weight'].widget.attrs['class'] += ' form-control'
 
         ######
         # START section to deal with raw data showing in the plate map after file assignment
@@ -2801,10 +2808,27 @@ class AssayPlateReaderMapForm(BootstrapForm):
         self.fields['ns_block_select_pk'].widget.attrs.update({'class': 'no-selectize'})
         self.fields['ns_block_select_pk'].choices = distinct_plate_map_with_block_pk
 
+        # self.fields['ns_block_select_standard_string'].required = False
+        # self.fields['ns_block_select_standard_string'].widget.attrs.update({'class': 'no-selectize'})
+        # self.fields['ns_block_select_standard_string'].widget.attrs['class'] += ' form-control'
+
+        # not using these right now - some function moved around
+        # self.fields['se_block_select_standard_pk'].required = False
+        self.fields['se_block_select_standard_string'].required = False
+        self.fields['se_block_select_standard_string'].widget.attrs['class'] += ' required'
+        # self.fields['se_block_select_standard_string'].choices = distinct_plate_map_with_select_standard_string
+        # self.fields['ns_block_select_standard_pk'].choices = distinct_plate_map_with_block_standard_pk
+
+    # these raw data
     form_number_file_block_combos = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
     se_block_select_string = forms.ChoiceField()
     ns_block_select_pk = forms.ChoiceField()
-    # END section to deal with raw data showing in the plate map after file assignment
+
+    # these for standard - they get filled, if needed, in an ajax call
+    # ns_block_select_standard_string = forms.ChoiceField()
+    se_block_select_standard_string = forms.ChoiceField()
+    # ns_block_select_standard_pk = forms.ChoiceField()
+    # END section to deal with raw data showing in the plate map after file assignment and deal with standard in a different file block
 
     # print("MAIN FORM")
 
@@ -3129,7 +3153,7 @@ class AssayPlateReaderMapDataFileBlockForm(forms.ModelForm):
         # this made the dropdown behave when copied with the formset!
         # SUPER IMPORTANT and HANDY when need to copy formsets with dropdowns - if have selectized, it is a big mess
         self.fields['assayplatereadermap'].widget.attrs.update({'class': ' no-selectize required'})
-
+        # self.fields['form_marked_to_make_mifc'].initial = True
 
     # move to the java script...it will be better for the user
     # def clean(self):
@@ -3163,6 +3187,7 @@ class AssayPlateReaderMapDataFileBlockForm(forms.ModelForm):
     form_selected_plate_map_time_unit = forms.CharField(
         required=False,
     )
+    # form_marked_to_make_mifc = forms.BooleanField()
 
 # formsets
 class AssayPlateReaderMapFileBlockFormSet(BaseInlineFormSetForcedUniqueness):

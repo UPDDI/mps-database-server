@@ -98,6 +98,7 @@ from scipy.stats import iqr
 from bs4 import BeautifulSoup
 import requests
 import re
+import os
 
 from django.utils import timezone
 
@@ -4945,6 +4946,80 @@ def sub_to_fetch_information_for_value_set_of_plate_map_for_data_block(bin_upper
         idx = idx + 1
     return bin_index
 
+# sck - assay plate map - Get raw value and time for display in existing plate map with file block attached.
+def fetch_information_for_study_platemap_standard_file_blocks(request):
+    """
+    Assay Plate Map Calibrate - Get list of file blocks in this study with at least one standard on plate.
+    """
+
+    this_study = request.POST.get('study', '0')
+    if not this_study:
+        return HttpResponseServerError()
+
+
+    as_value_formset_with_file_block_standard = AssayPlateReaderMapItemValue.objects.filter(
+        study_id=this_study
+    ).filter(
+        assayplatereadermapdatafileblock__isnull=False
+    ).filter(
+        well_use='standard'
+    ).order_by(
+        'assayplatereadermapdatafileblock__id', 'well_use'
+    )
+
+    distinct_plate_map_with_select_standard_string = []
+    distinct_plate_map_with_block_standard_pk = []
+    number_filed_combos_standard = len(as_value_formset_with_file_block_standard)
+    data = {}
+    data_to_return = []
+
+    prev_file = "none"
+    prev_data_block = 0
+
+    # print(as_value_formset_with_file_block_standard)
+
+    # want the first option to be no standards, pass data through
+    # ('no_processing', 'No Processing (send Raw Values)'
+    # distinct_plate_map_with_select_standard_string.append(('-1', 'No Processing (send Raw Values)'))
+    # distinct_plate_map_with_block_standard_pk.append(('-1', '-1'))
+
+    # queryset should have one record for each value SET that HAS a file-block and at least one standard associated to it
+    if number_filed_combos_standard > 0:
+        i = 0
+        for record in as_value_formset_with_file_block_standard:
+            short_file_name = os.path.basename(str(record.assayplatereadermapdatafile.plate_reader_file))
+            data_block_label = str(record.assayplatereadermapdatafileblock.data_block)
+            # print(short_file_name)
+            # print(data_block_label)
+
+            if prev_file == short_file_name and prev_data_block == data_block_label:
+                pass
+            else:
+                data_block_metadata = record.assayplatereadermapdatafileblock.data_block_metadata
+                data_file_block_id_str = str(record.assayplatereadermapdatafileblock.id)
+                # make a choice tuple list for showing selections and a choice tuple list of containing the file pk and block pk for javascript
+                pick_value = str(i)
+                pick_string = 'FILE: ' + short_file_name + ' BLOCK: ' + data_block_label + '  ' + data_block_metadata
+                # pick_string_pk = data_file_id_str + '-' + data_file_block_id_str
+                pick_string_block_pk = data_file_block_id_str
+                distinct_plate_map_with_select_standard_string.append((pick_value, pick_string))
+                distinct_plate_map_with_block_standard_pk.append((pick_value, pick_string_block_pk))
+                data_to_return.append({pick_value: pick_string})
+                data.update({'file_blocks_with_standards': data_to_return, })
+
+            prev_file = short_file_name
+            prev_data_block = data_block_label
+            i = i + 1
+
+    # print(distinct_plate_map_with_select_standard_string)
+    # print(distinct_plate_map_with_block_standard_pk)
+
+    data.update({'block_data': data_to_return, })
+    # print(data)
+    return HttpResponse(json.dumps(data),
+                        content_type="application/json")
+
+
 # TODO TODO TODO
 switch = {
     'fetch_center_id': {'call': fetch_center_id},
@@ -5029,6 +5104,9 @@ switch = {
     },
     'fetch_information_for_value_set_of_plate_map_for_data_block': {
         'call': fetch_information_for_value_set_of_plate_map_for_data_block
+    },
+    'fetch_information_for_study_platemap_standard_file_blocks': {
+        'call': fetch_information_for_study_platemap_standard_file_blocks
     },
 }
 

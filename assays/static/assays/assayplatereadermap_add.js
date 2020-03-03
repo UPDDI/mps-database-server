@@ -1,8 +1,8 @@
 $(document).ready(function () {
     // Load core chart package
-      google.charts.load('current', {'packages':['corechart']});
+    google.charts.load('current', {'packages':['corechart']});
 
-    //color ramp options for heatmap
+    //color ramp options for heatmap of raw data
     global_color_ramp_light_to_medium_purple = [
         '#F9F6FB',
         '#f2e6ff',
@@ -73,6 +73,7 @@ $(document).ready(function () {
         '#E65100',
     ];
 
+    // pick the color ramp to use for the raw data values in the plate map
     global_color_ramp_use_this_ramp = global_color_ramp_light_to_medium_purple;
 
     // START SECTION THAT SETS TOOLTIPS - and some variables
@@ -84,22 +85,37 @@ $(document).ready(function () {
         , '#platemap_select_tooltip'
         , '#sample_time_unit_tooltip'
         , '#collection_volume_unit_tooltip'
+
         , '#well_use_tooltip'
         , '#plate_cell_count_tooltip'
         , '#sample_time_tooltip'
         , '#sample_default_time_tooltip'
         , '#sample_location_tooltip'
+
         , '#sample_matrix_item_tooltip'
         , '#standard_tooltip'
         , '#standard_unit_tooltip'
         , '#standard_value_tooltip'
         , '#dilution_factor_tooltip'
+
         , '#file_block_tooltip'
         , '#number_file_block_tooltip'
         , '#map_name_tooltip'
         , '#collection_volume_tooltip'
         , '#collection_time_tooltip'
+
         , '#platemap_locked_tooltip'
+        , '#plate_blank_handling_tooltip'
+        , '#plate_calibration_method_tooltip'
+        , '#plate_replicate_handling_tooltip'
+        , '#plate_standard_bounds_tooltip'
+
+        , '#plate_molecular_weight_tooltip'
+        , '#plate_volume_assay_plate_well_tooltip'
+        , '#plate_file_block_with_standards_to_borrow_tooltip'
+        , '#plate_mark_for_exclusion_tooltip'
+        , '#plate_map_has_no_standards_tooltip'
+        , '#plate_map_multiplier_for_processing'
         ,];
     let global_plate_tooltip_text = [
           "Starting from an existing study matrix is helpful if the experiment was conducted in a plate based model and that same plate was used to perform a plate reader assay."
@@ -107,22 +123,37 @@ $(document).ready(function () {
         , "When starting from an existing assay plate map, if the assay plate map selected has been assigned to a file/block, values from uploaded files will not be obtained."
         , "This time unit applies to all sample times and sample collection times for the whole assay plate map."
         , "This unit applies to the sample collection volume. It is required when normalizing."
+
         , "For blank and empty wells, select the well use and drag on plate. For samples and standards, make requested selections then drag on plate. Use Copy to copy sections of the assay plate map to other wells in the plate."
         , "Count of cells that are relevant to the assay."
         , "Currently cannot be edited here. Was obtained during file upload."
         , "Check box to make change when drag/apply. Plate with mixed sample times must be added in the assay plate map. This sample time will be used if no over-writing sample time is provided during file upload."
         , "Check box to make change when drag/apply. Select the sample location in the model, if applicable, from which the effluent was collected. Use the backspace button to clear selection."
+
         , "Check box to make change when drag/apply. Select the name of the matrix item (chip or well in a plate) associated to the sample. Use the backspace button to clear selection."
-        , "Select the target/method/unit associated to this assay plate map. Use the backspace button to clear selection. "
-        , "If a standard is used in the assay plate map, the unit of the standard is required. "
+        , "Select the unit | target | method associated to this assay plate map. Use the backspace button to clear selection. "
+        , "If a standard is used in the assay plate map, enter the unit of the standard, else, enter the unit of the raw value. If this uint is different from the unit in the Target-Method-Unit, unit conversion will be performed. "
         , "The standard value should be in the unit given in the Standard Unit. "
         , "The dilution factor should be provided for each well in the assay plate map. "
+
         , "Changes made to the assay plate map (including sample location and standard concentration) will apply to all uses of the assay plate map."
         , "The number of data blocks this assay plate map has been assigned to."
         , "Date and time are the default. The map name may be updated by the data provider."
         , "Volume of sample efflux collected. Required for normalization."
         , "Time over which the sample efflux was collected. Required for normalization."
+
         , "The assay plate map information above can be edited, but not the well information. If there is an error in the well information, make a new assay plate map. Start with this assay plate map and make the correction. Then, go to the file and replace the assay plate map with the new one and submit. Then, delete this assay plate map."
+        , "Select how the blanks should be handled. Note that, to be considered a Standard Blank, the concentration of the standard in the plate map must be set to 0 (exactly)."
+        , "Select the calibration method to use."
+        , "When the same sample is added to multiple wells in an assay plate, each value can be added to the main database, or an average can be added. Select the option that is appropriate for this assay."
+        , "Change these bounds to limit the range of the standard concentrations used to generate the calibration curve."
+
+        , "The molecular weight of the standard is needed in cases were the standard unit is in moles and the unit in the target, method, unit is a mass unit."
+        , "If the standard concentration is given on a per well basis, and the unit in the target, method, unit is a mass or molar unit, the assay plate well volume must be added here."
+        , "In cases where no calibration is being performed or when standards to be used for calibration are in a different block of data, the appropriate selection should be made here. When standards are taken from another data block, the raw values are taken from selected data block. The units and other associated values must be specified in THIS plate map (at the top of the page). "
+        , "Points that are marked for exclusion are available for use in the study summary if the appropriate selections are made by the user, but they are hidden by default."
+        , "This plate map has not standards. To calibrate, a block of data with the standards must be selected."
+        , "If calibrating, this is the multiplier that will be applied to the calibrated values. If not calibrating, this is the multiplier that will be applied to the raw values."
         ,];
     // set the tooltips
     $.each(global_plate_tooltip_selector, function (index, show_box) {
@@ -337,283 +368,428 @@ $(document).ready(function () {
             findValueSetInsteadOfValueFormsetPackPlateLabelsBuildPlate_ajax("update_or_view_first_load");
         }
     }
+
+    // this will get populated when the plate gets loaded (ajax call)
+    let global_count_of_plate_well_standards = 0;
+
+    let global_floater_study_assay = "";
+    let global_floater_target = "";
+    let global_floater_method = "";
+    let global_floater_unit = "";
+    let global_floater_standard_unit = "";
+    let global_floater_volume_unit = "";
+    let global_floater_cell_count = "";
+
     // END SECTION TO SET GLOBAL VARIABLES plus some
 
-    // START - the calibrate google charts section
-    if (global_plate_number_file_block_sets > 0) {
-          // google.charts.setOnLoadCallback(drawChart1);
-          google.charts.setOnLoadCallback(drawChart2);
-          // google.charts.setOnLoadCallback(drawChart3);
 
-          // function drawChart1() {
-          //   var data = google.visualization.arrayToDataTable([
-          //     ['Standard Concentration [pg/mL]', 'Standard Response'],
-          //     [0.0,  0.0],
-          //     [0.1,  0.2],
-          //     [0.2,  0.4],
-          //     [0.3,  0.6],
-          //     [0.4,  0.8],
-          //     [0.5,  1.0],
-          //     [0.6,  1.2],
-          //     [0.7,  1.4],
-          //     [0.8,  1.6],
-          //     [0.9,  1.8],
-          //   ]);
-          //
-          //   var options = {
-          //     // title: 'Standard Curve',
-          //     curveType: 'function',
-          //     legend: { position: 'bottom' },
-          //     vAxis: { title: "Plate Reader Response" },
-          //     hAxis: { title: "Standard Concentration [pg/mL]" }
-          //   };
-          //
-          //   var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
-          //
-          //   chart.draw(data, options);
-          // }
+    // START - the CALIBRATION SECTION
 
-          function drawChart2() {
-              var data = google.visualization.arrayToDataTable([
-                  ['Standard Concentration [pg/mL]', 'Fitted Curve', 'Standard Response', 'Sample Response'],
-                  [0.0, 0.0, null, null],
-                  [0.1, 0.2, null, null],
-                  [0.2, 0.4, null, null],
-                  [0.3, 0.6, null, null],
-                  [0.4, 0.8, null, null],
-                  [0.5, 1.0, null, null],
-                  [0.6, 1.2, null, null],
-                  [0.7, 1.4, null, null],
-                  [0.8, 1.6, null, null],
-                  [0.9, 1.8, null, null],
+    // global variables for the calibration
+    let global_calibrate_file_blocks_with_standards_loaded = false;
+    let my_run_counter = 0;
+    let global_calibrate_borrowed_index_block = [];
+    let global_calibrate_borrowed_pk_block = [];
+    let global_calibrate_borrowed_metadata_block = [];
 
-                  [0.0, null, 0.01, null],
-                  [0.1, null, 0.192, null],
-                  [0.2, null, 0.394, null],
-                  [0.3, null, 0.61, null],
-                  [0.4, null, 0.83, null],
-                  [0.5, null, 1.02, null],
-                  [0.6, null, 1.22, null],
-                  [0.7, null, 1.394, null],
-                  [0.8, null, 1.576, null],
-                  [0.9, null, 1.788, null],
+    let global_calibrate_standards_block_pk = -1;
+    let global_calibrate_standards_plate_index_list = [];
+    let global_calibrate_standards_input_concentrations_list = [];
+    let global_calibrate_standards_raw_values_list = [];
+    let global_calibrate_standards_adjusted_values_list = [];
+    let global_calibrate_standards_0_concentration_average = 0;
+    let global_calibrate_blanks_average = 0;
 
-                  [0.0, null, null, 0.0],
-                  [0.1, null, null, 0.18],
-                  [0.2, null, null, 0.39],
-                  [0.3, null, null, 0.62],
-                  [0.4, null, null, 0.81],
-                  [0.5, null, null, 1.03],
-                  [0.6, null, null, 1.22],
-                  [0.7, null, null, 1.37],
-                  [0.8, null, null, 1.62],
-                  [0.9, null, null, 1.80],
-                  [0.0, null, null, 0.02],
-                  [0.1, null, null, 0.183],
-                  [0.2, null, null, 0.389],
-                  [0.3, null, null, 0.632],
-                  [0.4, null, null, 0.821],
-                  [0.5, null, null, 1.063],
-                  [0.6, null, null, 1.223],
-                  [0.7, null, null, 1.367],
-                  [0.8, null, null, 1.612],
-                  [0.9, null, null, 1.820],
-                  [0.01, null, null, 0.02],
-                  [0.12, null, null, 0.183],
-                  [0.182, null, null, 0.389],
-                  [0.34, null, null, 0.632],
-                  [0.34, null, null, 0.821],
-                  [0.45, null, null, 1.063],
-                  [0.596, null, null, 1.223],
-                  [0.71, null, null, 1.367],
-                  [0.81, null, null, 1.612],
-                  [0.91, null, null, 1.820]
+    try {
+        let element_id5 = 'id_form_data_processing_multiplier';
+        document.getElementById(element_id5).style.backgroundColor = 'Gainsboro';
+        // document.getElementById(element_id5).readOnly = true;
+    } catch (err) { // this is not on the page, skip it
+         }
 
-              ]);
+    // on CHANGE calibration on change events
 
-              var view = new google.visualization.DataView(data);
-              // view.setColumns([0, 1, 2, 3 {
-              //   // label: 'y = 2x + 0',
-              //   type: 'number',
-              //   // calc: function (dt, row) {
-              //   //   return dt.getValue(row, 0)
-              //   // }
-              // }]);
+    // changed the standard file block selection option
+    $("input[type='radio'][name='standard_pick']").click(function () {
+        // deal with populating and showing the file block standard picker
+        // changedRadioShowStandardsBlockSelectionCheckDropdown();
+        // function changedRadioShowStandardsBlockSelectionCheckDropdown() {
+            if (global_count_of_plate_well_standards == 0) {
+                let standardblock = $('input[name=standard_pick]:checked').val();
+                // if standard block is no calibration, do not show the box to pick a file block
+                if (standardblock === 'pick_block') {
+                    if (!global_calibrate_file_blocks_with_standards_loaded) {
+                        // on first time using this, have to load the drop down
+                        // did not want to do on page load because it took too long
+                        loadTheFileBlocksWithStandardsDropdown();
+                        global_calibrate_file_blocks_with_standards_loaded = true;
+                    }
+                    $('.pick-standard-file-block').removeClass('hidden');
+                } else {
+                    $('.pick-standard-file-block').addClass('hidden');
+                }
+            } else {
+                $('.pick-standard-file-block').addClass('hidden');
+            }
+        // }
+        makeTheCalibrationDecisions('change_standard_borrow_selection');
+    });
 
-              var options = {
-                  seriesType: 'scatter',
-                  series: {
-                      0: {
-                          type: 'line'
-                      }
-                  },
-                  legend: {position: 'bottom'},
-                  vAxis: {title: "Plate Reader Response"},
-                  hAxis: {title: "Standard Concentration [pg/mL]"}
-              };
+    // change the file block for the standards
+    $("#id_se_block_select_standard_string").change(function () {
+        let block_selected = "";
+        try {
+            block_selected = $("#id_se_block_select_standard_string").selectize()[0].selectize.items[0];
+        } catch (err) {
+            block_selected = $("#id_se_block_select_standard_string").val();
+        }
+        // console.log("block_selected ", block_selected)
+        let block_pk = global_calibrate_borrowed_metadata_block.indexOf(block_selected);
 
-              var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
-              chart.draw(view, options);
-          }
+        if (block_pk < 0) {
+            alert('This is not a valid selection. Select a file-block to borrow standards from a different plate.\n');
+        } else {
+            global_standards_block_pk = block_pk;
+            makeTheCalibrationDecisions('change_option_to borrow_standard');
+        }
+    });
 
+    $("#refreshCalculations").click(function () {
+        makeTheCalibrationDecisions('clicked_refresh_button');
+    });
 
-          // function drawChart2() {
-          //       var data2 = new google.visualization.DataTable();
-          //     data2.addColumn('number', 'x');
-          //     data2.addColumn('number', 'Samples');
-          //     data2.addColumn('number', 'Standards');
-          //     data2.addRows([
-          //         [0.0,  0.0,],
-          //         [0.1,  0.18,],
-          //         [0.2,  0.39,],
-          //         [0.3,  0.62,],
-          //         [0.4,  0.81,],
-          //         [0.5,  1.03,],
-          //         [0.6,  1.22,],
-          //         [0.7,  1.37,],
-          //         [0.8,  1.62,],
-          //         [0.9,  1.80,],
-          //         [0.0,  0.02,],
-          //         [0.1,  0.183,],
-          //         [0.2,  0.389,],
-          //         [0.3,  0.632,],
-          //         [0.4,  0.821,],
-          //         [0.5,  1.063,],
-          //         [0.6,  1.223,],
-          //         [0.7,  1.367,],
-          //         [0.8,  1.612,],
-          //         [0.9,  1.820,],
-          //         [0.01,  0.02,],
-          //         [0.12,  0.183,],
-          //         [0.182,  0.389,],
-          //         [0.34,  0.632,],
-          //         [0.34,  0.821,],
-          //         [0.45,  1.063,],
-          //         [0.596,  1.223,],
-          //         [0.71,  1.367,],
-          //         [0.81,  1.612,],
-          //         [0.91,  1.820,]
-          //         ,[0.0, , 0.0],
-          //         [0.1, , 0.18],
-          //         [0.2, , 0.39],
-          //         [0.3, , 0.62],
-          //         [0.4, , 0.81],
-          //         [0.5, , 1.03],
-          //         [0.6, , 1.22],
-          //         [0.7, , 1.37],
-          //         [0.8, , 1.62],
-          //         [0.9, , 1.80]
-          //     ]
-          //     ,);
-          //
-          //     var view = new google.visualization.DataView(data2);
-          //     view.setColumns([0, 1, 2, {
-          //       label: 'y = 2x + 0',
-          //       type: 'number',
-          //       calc: function (dt, row) {
-          //         return dt.getValue(row, 0)
-          //       }
-          //     }]);
-          //
-          //     var options = {
-          //             seriesType: 'scatter',
-          //             series: {
-          //                 1: {
-          //                 type: 'line'
-          //             }
-          //         },
-          //         legend: { position: 'bottom' },
-          //         vAxis: { title: "Plate Reader Response" },
-          //         hAxis: { title: "Standard Concentration [pg/mL]" }
-          //     };
-          //
-          //     var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
-          //     chart.draw(view, options);
-          // }
+    // change the calibration method
+    $("#id_se_form_calibration_curve").change(function () {
+        makeTheCalibrationDecisions('change_curve');
+    });
+    $("#id_form_min_standard").change(function () {
+        makeTheCalibrationDecisions('change_min');
+    });
+    $("#id_form_max_standard").change(function () {
+        makeTheCalibrationDecisions('change_max');
+    });
+    $("#id_se_form_blank_handling").change(function () {
+        makeTheCalibrationDecisions('change_blank_handling');
+    });
 
-          // function drawChart3() {
-          //       var data = new google.visualization.DataTable();
-          //     data2.addColumn('number', 'x');
-          //     data2.addColumn('number', 'Samples');
-          //     // data2.addColumn('number', 'Standards');
-          //     data2.addRows([
-          //         [0.0,  0.0],
-          //         [0.1,  0.18],
-          //         [0.2,  0.39],
-          //         [0.3,  0.62],
-          //         [0.4,  0.81],
-          //         [0.5,  1.03],
-          //         [0.6,  1.22],
-          //         [0.7,  1.37],
-          //         [0.8,  1.62],
-          //         [0.9,  1.80],
-          //         [0.0,  0.02],
-          //         [0.1,  0.183],
-          //         [0.2,  0.389],
-          //         [0.3,  0.632],
-          //         [0.4,  0.821],
-          //         [0.5,  1.063],
-          //         [0.6,  1.223],
-          //         [0.7,  1.367],
-          //         [0.8,  1.612],
-          //         [0.9,  1.820],
-          //         [0.01,  0.02],
-          //         [0.12,  0.183],
-          //         [0.182,  0.389],
-          //         [0.34,  0.632],
-          //         [0.34,  0.821],
-          //         [0.45,  1.063],
-          //         [0.596,  1.223],
-          //         [0.71,  1.367],
-          //         [0.81,  1.612],
-          //         [0.91,  1.820]
-          //     ]
-          //     // , data2.addRows([
-          //     //     [0.0,  0.0],
-          //     //     [0.1,  0.18],
-          //     //     [0.2,  0.39],
-          //     //     [0.3,  0.62],
-          //     //     [0.4,  0.81],
-          //     //     [0.5,  1.03],
-          //     //     [0.6,  1.22],
-          //     //     [0.7,  1.37],
-          //     //     [0.8,  1.62],
-          //     //     [0.9,  1.80]
-          //     // ]
-          //     ,);
-          //
-          //     var view = new google.visualization.DataView(data2);
-          //     view.setColumns([0, 1, {
-          //       label: 'y = 2x + 0',
-          //       type: 'number',
-          //       calc: function (dt, row) {
-          //         return dt.getValue(row, 0)
-          //       }
-          //     }]);
-          //
-          //     var options = {
-          //             seriesType: 'scatter',
-          //             series: {
-          //                 1: {
-          //                 type: 'line'
-          //             }
-          //         },
-          //         legend: { position: 'bottom' },
-          //         vAxis: { title: "Plate Reader Response" },
-          //         hAxis: { title: "Standard Concentration [pg/mL]" }
-          //     };
-          //
-          //     var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
-          //     chart.draw(view, options);
-          // }
+    // do this on the load of the page
+    theSuiteOfPreCalibrationChecks();
+
+    // the suite of pre calibration checks
+    function theSuiteOfPreCalibrationChecks() {
+        loadAndReloadTheAssayInfo();
+        changingOptionalToRequiredCalling();
+        if (global_plate_number_file_block_sets > 0) {
+            reviewInformationNeededForUnitConversionAndWarningIfMissing();
+        }
     }
+
+    // calibration FUNCTIONS
+    function makeTheCalibrationDecisions(called_from) {
+        // this function is called when something changed that could affect the calculations
+        // or the refresh button was clicked
+
+        // 'change_select_string' - changed the file block showing in the plate map
+        // 'change_standard_borrow_selection' - changed the file block to borrow standards from
+        // 'change_curve' - changed type of fitting curve
+        // 'change_option_to borrow_standard' - changed whether borrowing a standard or not
+        // 'change_multiplier_calibrate_page' - on a calibrate page and user changed anything that changed the multiplier
+        // 'change_min'
+        // 'change_max'
+        // 'change_blank_handling'
+        // 'clicked_refresh_button'
+
+        // called from options - in case auto refresh is requested
+        //       keep this for logic to control when the refresh is called
+        //       for not, just do the hide/show on page logic
+
+        // this is highest  -  even if they clicked refreshed, only need to do it if calibrating
+        // what calibration method is currently selected
+        let calmethod = "";
+        try {
+            calmethod = $("#id_se_form_calibration_curve").selectize()[0].selectize.items[0];
+        } catch (err) {
+            calmethod = $("#id_se_form_calibration_curve").val();
+        }
+
+        if (calmethod == 'no_calibration') {
+            // if things are open, close them
+            $('.plate-calibration-yes').addClass('hidden');
+            // override the multiplier and message
+            let mymessage = "No Processing was selected. Raw values and reporting units will be used (multiplier set to 1)."
+            $('#calibration_multiplier_string').text(mymessage);
+            $('#id_form_data_processing_multiplier').val(1);
+        } else {
+            //open the other calibration section
+            $('.plate-calibration-yes').removeClass('hidden');
+
+            if (global_count_of_plate_well_standards == 0) {
+                $('.plate_map_options_standards_blocks').removeClass('hidden');
+            }
+            // have to clear the override if it was done previously
+            reviewInformationNeededForUnitConversionAndWarningIfMissing();
+        }
+
+        console.log("where called from ", called_from)
+
+
+        if (called_from != 'clicked_refresh_button') {
+            // if did not click the refresh button,
+            $('.plate-map-page-show-refresh-warning').removeClass('hidden');
+            $('.plate-map-page-show-refresh-fine').addClass('hidden');
+        } else if ($('#id_form_data_processing_multiplier').val() == 0) {
+            // clicked the refresh button but multiplier is 0
+            alert("Check to make sure all the information that is needed for unit conversion has been provided.\n");
+            $('.plate-map-page-show-refresh-warning').removeClass('hidden');
+            $('.plate-map-page-show-refresh-fine').addClass('hidden');
+        } else {
+            // clicked from the refresh button
+
+            // do all the work
+            getPackStandardsFromFileBlock();
+            getAveargeOfStandardBlanks();
+            getAverageOfSampleBlanks();
+            getPackSamplesFromFileBlock();
+            packCalibrationData();
+            drawCalibrationCurve();
+            displayCalibrationParameters();
+
+
+            // let global_calibrate_standards_block_pk = -1;
+            // let global_calibrate_standards_plate_index_list = [];
+            // let global_calibrate_standards_input_concentrations_list = [];
+            // let global_calibrate_standards_raw_values_list = [];
+            // let global_calibrate_standards_adjusted_values_list = [];
+            // let global_calibrate_standards_0_concentration_average = 0;
+            // let global_calibrate_blanks_average = 0;
+
+            if (calmethod == 'no_calibration') {
+                // if things are open, close them
+                $('.plate-calibration-guts-yes').addClass('hidden');
+            } else {
+                //open the other calibration section
+                $('.plate-calibration-guts-yes').removeClass('hidden');
+            }
+
+            $('.plate-map-page-show-refresh-warning').addClass('hidden');
+            $('.plate-map-page-show-refresh-fine').removeClass('hidden');
+        }
+    }
+
+    function getPackStandardsFromFileBlock(){
+        //alert("This feature is in development.\n");
+
+
+
+
+        // could make this generic and pull the standard from the "current" this way too.
+        // think about it.....TODO
+        // console.log("this is the data block selected ", block_pk)
+        // need to get, from the file block with this pk
+        // well content = standards, associated concentration, associate raw value
+
+ //   class AssayPlateReaderMapItemValue
+ //    assayplatereadermapdatafileblock = models.ForeignKey(
+ //    assayplatereadermap = models.ForeignKey(
+ //    assayplatereadermapitem = models.ForeignKey(
+ //    plate_index = models.IntegerField(
+ //    well_use = models.CharField(
+ //    raw_value = models.FloatField(
+
+ // class AssayPlateReaderMapItem(models.Model):
+ //    plate_index = models.IntegerField(
+ //    well_use = models.CharField(
+ //    standard_value = models.FloatField(
+ //       name = models.CharField(  -- the well label!
+
+
+    }
+
+
+    function getAveargeOfStandardBlanks() {
+
+    }
+    function getAverageOfSampleBlanks(){
+
+    }
+    function getPackSamplesFromFileBlock(){
+
+    }
+    function displayCalibrationParameters(){
+
+    }
+
+
+    // Get what is needed for the calibration/processing
+    function packCalibrationData() {
+        let data = {
+            call: 'fetch_information_for_plate_map_calibration',
+            study: global_plate_study_id,
+
+            csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
+        };
+    }
+    // post processing from ajax call
+    let packCalibrationSection = function (json, exist) {
+    };
+
+    function drawCalibrationCurve(){
+
+        google.charts.setOnLoadCallback(drawStandardCurve01);
+
+        function drawStandardCurve01() {
+
+            var data = google.visualization.arrayToDataTable([
+                ['Standard Concentration [pg/mL]', 'Fitted Curve', 'Standard Response', 'Sample Response'],
+                [0.0, 0.0, null, null],
+                [0.1, 0.2, null, null],
+                [0.2, 0.4, null, null],
+                [0.3, 0.6, null, null],
+                [0.4, 0.8, null, null],
+                [0.5, 1.0, null, null],
+                [0.6, 1.2, null, null],
+                [0.7, 1.4, null, null],
+                [0.8, 1.6, null, null],
+                [0.9, 1.8, null, null],
+
+                [0.0, null, 0.01, .05],
+
+                [0.0, null, 0.01, null],
+                [0.1, null, 0.192, null],
+                [0.2, null, 0.394, null],
+                [0.3, null, 0.61, null],
+                [0.4, null, 0.83, null]
+            ]);
+
+            var view = new google.visualization.DataView(data);
+
+            // view.setColumns([0, 1, 2, 3 {
+            //   // label: 'y = 2x + 0',
+            //   type: 'number',
+            //   // calc: function (dt, row) {
+            //   //   return dt.getValue(row, 0)
+            //   // }
+            // }]);
+
+            var options = {
+                title: global_floater_method,
+                seriesType: 'scatter',
+                series: {
+                    0: {type: 'line'}
+                },
+                legend: {position: 'bottom'},
+                vAxis: {title: global_floater_target},
+                hAxis: {title: global_floater_standard_unit}
+            };
+
+            var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+            chart.draw(view, options);
+        }
+    }
+
+
+
+
+
+    function loadTheFileBlocksWithStandardsDropdown(){
+        //populate the dropdown with the file block options with file blocks in this study that have standards
+        let data = {
+            call: 'fetch_information_for_study_platemap_standard_file_blocks',
+            study: global_plate_study_id,
+            csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
+        };
+        window.spinner.spin(document.getElementById("spinner"));
+        $.ajax({
+            url: "/assays_ajax/",
+            type: "POST",
+            dataType: "json",
+            data: data,
+            success: function (json) {
+                window.spinner.stop();
+                if (json.errors) {
+                    // Display errors
+                    alert(json.errors);
+                }
+                else {
+                    let exist = true;
+                    processFindBlocksWithStandards(json, exist);
+                }
+            },
+            // error callback
+            error: function (xhr, errmsg, err) {
+                window.spinner.stop();
+                alert('An error has occurred (finding data blocks with standards), please try a different matrix, assay plate map, or start from an empty plate.');
+                console.log(xhr.status + ": " + xhr.responseText);
+            }
+        });
+    }
+    // post processing from ajax call
+    let processFindBlocksWithStandards = function (json, exist) {
+        let block_data = json.block_data;
+
+        // console.log("db ",block_data)
+
+        global_calibrate_borrowed_index_block = [];
+        global_calibrate_borrowed_pk_block = [];
+        global_calibrate_borrowed_metadata_block = [];
+
+        // index = 0;
+        // for (var key in block_data) {
+        //     console.log("key " + key + " has value " + block_data[key]);
+        //     index = index + 1;
+        // }
+
+        $.each(block_data, function (index, each) {
+            // console.log("key ",Object.keys(each)[0]);
+            // console.log("value ",Object.values(each)[0]);
+            global_calibrate_borrowed_index_block.push(index);
+            global_calibrate_borrowed_pk_block.push(Object.keys(each)[0]);
+            global_calibrate_borrowed_metadata_block.push(Object.values(each)[0]);
+        });
+
+        // https://github.com/selectize/selectize.js/blob/master/docs/api.md HANDY
+        var $this_block_select_standard_string = $(document.getElementById('id_se_block_select_standard_string'));
+        var this_block = $this_block_select_standard_string[0].selectize;
+        this_block.clearOptions()
+
+        for(i=0; i < global_calibrate_borrowed_metadata_block.length; i++){
+            this_block.addOption({value: global_calibrate_borrowed_metadata_block[i], text: global_calibrate_borrowed_metadata_block[i]});
+        }
+        //user will need to select on to make the borrow standards pull
+    };
+
     // END - the calibrate google charts section
 
+
     // START - SECTION FOR CHANGES ON PAGE that have to keep track of to change on page display
-    // change to show by default by forcing the click button load (incase change mind later)
-    setTimeout(function() {
-        $("#checkboxButton").trigger('click');
-    },10);
+
+    $("#id_cell_count").change(function () {
+        theSuiteOfPreCalibrationChecks();
+    });
+    $("#id_study_assay").change(function () {
+        theSuiteOfPreCalibrationChecks();
+    });
+    $("#id_volume_unit").change(function () {
+       theSuiteOfPreCalibrationChecks();
+    });
+    $("#id_standard_unit").change(function () {
+        theSuiteOfPreCalibrationChecks();
+    });
+    $("#id_well_volume").change(function () {
+       theSuiteOfPreCalibrationChecks();
+    });
+    $("#id_standard_molecular_weight").change(function () {
+       theSuiteOfPreCalibrationChecks();
+    });
+
+    //end section of change functions to warn the user about order of processing data
+
+    // change to show by default by forcing the click button on load for add page, but not calibrate page
+    if (global_plate_number_file_block_sets == 0) {
+        setTimeout(function () {
+            $("#checkboxButton").trigger('click');
+        }, 10);
+    }
 
     // toggle to hide/show the customized show in assay plate map fancy check boxes (what will and won't show in plate)
     $("#checkboxButton").click(function () {
@@ -732,6 +908,7 @@ $(document).ready(function () {
     // (not if selecting to start from a different assay plate map)
     $("#id_se_block_select_string").change(function () {
         findValueSetInsteadOfValueFormsetPackPlateLabelsBuildPlate_ajax("update_or_view_change_block")
+        makeTheCalibrationDecisions('change_select_string');
     });
 
     //change what is shown in the assay plate map if changed a fancy check box selection
@@ -762,7 +939,7 @@ $(document).ready(function () {
     //      } else {
     //          $('.plate-cells-matrix-item').addClass('hidden');
     //      }
-    //      setWhatHiddenInEachWellOfPlateLoopsOverPlate(plate_index_list, 'changed_check_box');
+    //      setWhatHiddenInEachWellOfPlateLoopsOverPlate(plate_index_list, 'change_check_box');
     //  });
 
     // START SECTION FOR CHANGING PLATEMAP FOR ADD PAGE BASED ON SELECTED "STARTING" PLACE (WITH FUNCTIONS)
@@ -801,7 +978,8 @@ $(document).ready(function () {
         let my_matrix_pk = $(this).val();
         startFromAnExistingMatrix_ajax(my_matrix_pk);
     });
-    // END - SECTION FOR CHANGING PLATEMAP FOR ADD PAGE BASED ON SELECTED "STARTING" PLACE  
+
+    // END - SECTION FOR CHANGING PLATEMAP FOR ADD PAGE BASED ON SELECTED "STARTING" PLACE
 
     // START - secondary changes to assay plate map (Apply and Drag)
     // these get a plate_index_list of wells to change and sends to do the changes
@@ -859,7 +1037,7 @@ $(document).ready(function () {
                 error: function (xhr, errmsg, err) {
                     window.spinner.stop();
                     // $("#test_me1").text("error happened");
-                    alert('An error has occurred, try a different matrix, assay plate map, or start from an empty plate.');
+                    alert('An error has occurred (starting from another plate map), try a different matrix, assay plate map, or start from an empty plate.');
                     console.log(xhr.status + ": " + xhr.responseText);
                 }
             });
@@ -957,7 +1135,7 @@ $(document).ready(function () {
                 error: function (xhr, errmsg, err) {
                     window.spinner.stop();
                     // $("#test_me1").text("error happened");
-                    alert('An error has occurred, please try a different matrix, assay plate map, or start from an empty plate.');
+                    alert('An error has occurred (starting from an existing matrix), please try a different matrix, assay plate map, or start from an empty plate.');
                     console.log(xhr.status + ": " + xhr.responseText);
                 }
             });
@@ -1928,20 +2106,26 @@ $(document).ready(function () {
             data: data,
             success: function (json) {
                 window.spinner.stop();
-                let exist = true;
-                processFindValueSet(json, exist);
-                if (called_from === 'update_or_view_first_load') {
-                    global_plate_add_or_edit_etc = 'update_or_view_first_load';
-                    packPlateLabelsAndBuildOrChangePlate_ajax()
-                } else {
-                    global_plate_add_or_edit_etc = 'update_or_view_change_block';
-                    packPlateLabelsAndBuildOrChangePlate_ajax()
+                if (json.errors) {
+                    // Display errors
+                    alert(json.errors);
+                }
+                else {
+                    let exist = true;
+                    processFindValueSet(json, exist);
+                    if (called_from === 'update_or_view_first_load') {
+                        global_plate_add_or_edit_etc = 'update_or_view_first_load';
+                        packPlateLabelsAndBuildOrChangePlate_ajax()
+                    } else {
+                        global_plate_add_or_edit_etc = 'update_or_view_change_block';
+                        packPlateLabelsAndBuildOrChangePlate_ajax()
+                    }
                 }
             },
             // error callback
             error: function (xhr, errmsg, err) {
                 window.spinner.stop();
-                alert('An error has occurred, please try a different matrix, assay plate map, or start from an empty plate.');
+                alert('An error has occurred (finding value set), please try a different matrix, assay plate map, or start from an empty plate.');
                 console.log(xhr.status + ": " + xhr.responseText);
             }
         });
@@ -1972,7 +2156,7 @@ $(document).ready(function () {
     // called from change checkboxes and from setFancyCheckBoxesLoopOverFancyCheckboxClass
     // to override check boxes and hide information that is not relevant for well use
     function setWhatHiddenInEachWellOfPlateLoopsOverPlate(plate_index_list, build_or_change_or_clear_or_show) {
-        // setWhatHiddenInEachWellOfPlateLoopsOverPlate(plate_index_list, 'changed_check_box') ('sfc_apply') ('sfc_build_plate') ('sfc_drag')
+        // setWhatHiddenInEachWellOfPlateLoopsOverPlate(plate_index_list, 'change_check_box') ('sfc_apply') ('sfc_build_plate') ('sfc_drag')
         // console.log("in setWhatHidden ", build_or_change)
         // console.log(plate_index_list)
 
@@ -2051,6 +2235,8 @@ $(document).ready(function () {
                     // need to build the plate
                     loadPlatemapIndexAndOtherInfoForPlateBuild();
                     buildPlate(local_plate_data_packed);
+                    // when doing the calibration, need to know if any wells are standards
+                    countWellsThatAreStandards();
                 }
             },
             // error callback
@@ -2148,7 +2334,7 @@ $(document).ready(function () {
                     + header_col_index + '" row-index="' + 770
                     //+ '" class="btn btn-sm btn-primary apply-button">Apply to Column</a>'
                     + '" class="btn btn-sm btn-primary apply-button">'
-                    + 'Apply '
+                    // + 'Apply '
                     // + colnumber
                     + '<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>'
 
@@ -2202,7 +2388,7 @@ $(document).ready(function () {
                     + '" row-index="' + ridx
                     //+ '" class="btn btn-sm btn-primary apply-button">Apply to Row</a>'
                     + '" class="btn btn-sm btn-primary apply-button">'
-                    + 'Apply '
+                    // + 'Apply '
                     // + rowletter
                     + '<span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>'
                     + ' </a>'
@@ -2655,6 +2841,132 @@ $(document).ready(function () {
         }
     }
 
+
+    function reviewInformationNeededForUnitConversionAndWarningIfMissing() {
+        let listOfIds = ['#id_study_assay', '#id_standard_unit', '#id_volume_unit'
+                        , '#id_cell_count', '#id_well_volume', '#id_standard_molecular_weight'];
+
+        let mycounter = 0;
+        listOfIds.forEach(function(item) {
+            let isRequired = $(item).hasClass('required');
+            let myValueLength = "";
+            if (isRequired) {
+                myValueLength = $(item).val().length;
+                if (myValueLength < 1) {
+                    mycounter = mycounter + 1;
+                }
+            }
+        });
+
+        dataProcessingFindTheMultiplier(mycounter);
+    }
+
+    // somewhat general function for unit conversion
+    function dataProcessingFindTheMultiplier(mycounter){
+        let incomingMultiplier = $("#id_form_data_processing_multiplier").val();
+        let returnedMultiplier = 0;
+        let mymessage = "";
+        // if mycounter > 0, the multiplier cannot be calculated
+        if (mycounter > 0) {
+            mymessage = "Some information that is required for unit conversion is missing.";
+            returnedMultiplier = 0;
+        } else {
+            // should be able to calculate the multiplier
+            //easy cases
+            if (global_floater_standard_unit == global_floater_unit) {
+                returnedMultiplier = 1.0;
+                mymessage = "No unit conversion is required.";
+            } else {
+                // need to build the guts of this conversion
+                // use the base unit and multiplier for part
+                //alert("conversion not built yet...using 1 for now\n")
+                // TODO-sck make the multiplier function
+
+                returnedMultiplier = 1.0;
+                mymessage = "THE UNIT CONVERSION FUNCTION IS NOT WORKING YET....USING A MULTIPLIER OF 1 FOR NOW.";
+            }
+        }
+        // console.log("mycounter ", mycounter)
+        // console.log("global_floater_standard_unit =", global_floater_standard_unit, "-")
+        // console.log("global_floater_unit =", global_floater_unit, "-")
+        // console.log("mymessage ", mymessage)
+        // console.log("returnedMultiplier ", returnedMultiplier)
+
+        $('#calibration_multiplier_string').text(mymessage);
+        $('#id_form_data_processing_multiplier').val(returnedMultiplier);
+
+        if (incomingMultiplier != returnedMultiplier && global_plate_number_file_block_sets > 0) {
+            makeTheCalibrationDecisions('change_multiplier_calibrate_page');
+        }
+    }
+    
+    function countWellsThatAreStandards(){
+        let mycount = 0;
+        global_plate_mems_well_use.forEach(function(item, index) {
+            if (item == 'standard') {
+                mycount = mycount + 1;
+            }
+        });
+        global_count_of_plate_well_standards = mycount;
+    }
+
+    function loadAndReloadTheAssayInfo() {
+        global_floater_study_assay = $('#id_study_assay').children("option:selected").text().trim();
+        global_floater_standard_unit = $('#id_standard_unit').children("option:selected").text().trim();
+        global_floater_volume_unit = $('#id_volume_unit').children("option:selected").text().trim();
+        global_floater_cell_count = $('#id_cell_count').val();
+        // watch these! be careful if change how Unit, Target, Method are, will need to UPDATE these WATCH!
+        // global_floater_target = global_floater_study_assay.substring(global_floater_study_assay.indexOf("TARGET") + 8, global_floater_study_assay.indexOf("METHOD")).trim();
+        // global_floater_method = global_floater_study_assay.substring(global_floater_study_assay.indexOf("METHOD") + 8, global_floater_study_assay.indexOf("UNIT")).trim();
+        // global_floater_unit   = global_floater_study_assay.substring(global_floater_study_assay.indexOf("UNIT") + 6, global_floater_study_assay.length).trim();
+        global_floater_target = global_floater_study_assay.substring(global_floater_study_assay.indexOf("TARGET") + 8, global_floater_study_assay.indexOf("METHOD")-3).trim() + ' (Detected)';
+        global_floater_method = global_floater_study_assay.substring(global_floater_study_assay.indexOf("METHOD") + 8, global_floater_study_assay.length).trim();
+        global_floater_unit   = global_floater_study_assay.substring(0, global_floater_study_assay.indexOf("TARGET")-5).trim();
+    }
+
+    function changingOptionalToRequiredCalling() {
+        if (global_floater_standard_unit.search('well') >= 0) {
+            $('#id_well_volume').addClass('required');
+        } else {
+            $('#id_well_volume').removeClass('required');
+        }
+
+        if (
+            ( (global_floater_standard_unit.search('mol') >= 0
+            || global_floater_standard_unit.search('M') >= 0
+            || global_floater_standard_unit.search('N') >= 0)
+            && global_floater_unit.search('g') >= 0)
+            ||
+            ( (global_floater_unit.search('mol') >= 0
+            || global_floater_unit.search('M') >= 0
+            || global_floater_unit.search('N') >= 0)
+            && global_floater_standard_unit.search('g') >= 0)
+            )
+
+        {
+            $('#id_standard_molecular_weight').addClass('required');
+        } else{
+            $('#id_standard_molecular_weight').removeClass('required');
+        }
+
+        if (global_floater_standard_unit.search('day') < 0
+            && global_floater_unit.search('day') >= 0)
+        {
+            $('#id_cell_count').addClass('required');
+        } else{
+            $('#id_cell_count').removeClass('required');
+        }
+
+        if ( (global_floater_standard_unit.search('day') < 0
+            && global_floater_unit.search('day') >= 0)
+            || global_floater_standard_unit.search('well') >= 0 )
+        {
+            $('#id_volume_unit').next().addClass('required');
+        } else{
+            $('#id_volume_unit').next().removeClass('required');
+        }
+    }
+
     function setHeatMapColorOfRawValue(formsetidx) {
         let this_color = global_color_ramp_use_this_ramp[global_plate_block_raw_value_imatches_bin_index[formsetidx]];
         // console.log(formsetidx)
@@ -2832,4 +3144,30 @@ $(document).ready(function () {
 //  my_block_raw_value_v = "id_assayplatereadermapitemvalue_set-" + cfs + "-raw_value";
 //  }
 
+// keep for reference
+// let standardblock = $('input[name=standard_pick]:checked').val();
 
+// https://stackoverflow.com/questions/195951/how-can-i-change-an-elements-class-with-javascript
+// document.getElementById("MyElement").className =
+// document.getElementById("MyElement").className.replace
+// ( /(?:^|\s)MyClass(?!\S)/g , '' )
+// /* Code wrapped for readability - above is all one statement */
+// //    https://stackoverflow.com/questions/39139490/how-do-i-add-a-class-to-a-selectize-option-dynamically
+
+
+// $("#id_ns_block_select_standard_string").find('option').remove();
+// for(i=0; i < global_calibrate_borrowed_metadata_block.length; i++){
+//     $("#id_ns_block_select_standard_string").append('<option value="'
+//         +global_calibrate_borrowed_metadata_block[i]+'">'
+//         +global_calibrate_borrowed_metadata_block[i]+'</option>');
+// }
+//
+// let block_pk = global_calibrate_borrowed_metadata_block.indexOf($("#id_ns_block_select_standard_string").val());
+// getTheStandardsFromThisFileBlock(block_pk);
+
+// https://www.caveofprogramming.com/guest-posts/introduction-to-jquery-populating-creating-dynamic-dropdowns.html
+// var CARS = new Array("Ford","Honda","Toyota","Suzuki");
+//     $("#dropdown").find('option').remove();
+//     for(i=0; i < CARS .length; i++){
+//         $("#dropdown").append('<option value="'+CARS [i]+'">'+CARS [i]+'</option>');
+//      }
