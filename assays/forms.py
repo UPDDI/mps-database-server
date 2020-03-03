@@ -149,6 +149,8 @@ class ModelFormSplitTime(BootstrapForm):
                         'style': 'width:75px;'
                     })
                 )
+                # Set default
+                self.fields['addition_time_' + time_unit].widget.attrs['data-default'] = 0
             if self.fields.get('duration', None):
                 self.fields['duration_' + time_unit] = forms.FloatField(
                     initial=0,
@@ -157,6 +159,8 @@ class ModelFormSplitTime(BootstrapForm):
                         'style': 'width:75px;'
                     })
                 )
+                # Set default
+                self.fields['duration_' + time_unit].widget.attrs['data-default'] = 0
 
         # Fill additional time
         if self.fields.get('addition_time', None):
@@ -2431,9 +2435,10 @@ class AssayTargetForm(BootstrapForm):
     def save(self, commit=True):
         new_target = super(AssayTargetForm, self).save(commit)
 
-        if commit and self.cleaned_data.get('category', None):
-            for current_category in self.cleaned_data.get('category', None):
-                current_category.targets.add(self.instance)
+        if commit:
+            if self.cleaned_data.get('category', None):
+                for current_category in self.cleaned_data.get('category', None):
+                    current_category.targets.add(self.instance)
 
             # Permit removals for the moment
             # Crude removal
@@ -2448,8 +2453,8 @@ class AssayMethodForm(BootstrapForm):
     # For adding to category m2m
     target = forms.ModelMultipleChoiceField(
         queryset=AssayTarget.objects.all().order_by('name'),
-        # Needs to be required, methods need a target to be used
-        # required=False
+        # No longer required to prevent circularity with Target
+        required=False
     )
 
     class Meta(object):
@@ -2477,14 +2482,15 @@ class AssayMethodForm(BootstrapForm):
     def save(self, commit=True):
         new_method = super(AssayMethodForm, self).save(commit)
 
-        for current_target in self.cleaned_data.get('target', None):
-            current_target.methods.add(self.instance)
+        if commit:
+            for current_target in self.cleaned_data.get('target', None):
+                current_target.methods.add(self.instance)
 
-        # Permit removals for the moment
-        # Crude removal
-        for initial_target in self.initial_targets:
-            if initial_target not in self.cleaned_data.get('target', None):
-                initial_target.methods.remove(self.instance)
+            # Permit removals for the moment
+            # Crude removal
+            for initial_target in self.initial_targets:
+                if initial_target not in self.cleaned_data.get('target', None):
+                    initial_target.methods.remove(self.instance)
 
         return new_method
 
