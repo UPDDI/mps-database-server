@@ -588,7 +588,7 @@ class FormHandlerMixin(HistoryMixin):
         """For if there needs to be extra processing before a save"""
         pass
 
-    def extra_form_processing(self):
+    def extra_form_processing(self, form):
         """For if there needs to be extra processing after a save"""
         pass
 
