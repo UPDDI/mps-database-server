@@ -668,21 +668,21 @@ class FormHandlerMixin(HistoryMixin):
                 all_formsets_valid = False
 
         if form.is_valid() and all_formsets_valid:
+            # FOR GETTING new_objects ATTRIBUTE
             form.save(commit=False)
-            # NEEDS TESTING: SLOPPY SOLUTION TO GETTING new_objects ATTRIBUTE
             for formset in all_formsets:
                 formset.save(commit=False)
 
-            # The tricky think about this is that it makes changing stuff for matrices quite unpleasant...
-            # Then again, do we need to robustly track the precise changes?
+            # The tricky thing about this is that it makes changing stuff for matrices quite unpleasant...
+            # Then again, do we need to robustly track the precise changes? Would be verbose
             change_message = self.construct_change_message(form, all_formsets, not self.is_update)
 
-            # May or may not do anything
+            # May or may not be implemented
             self.pre_save_processing(form)
 
             save_forms_with_tracking(self, form, formset=all_formsets, update=self.is_update)
 
-            # May or may not do anything
+            # May or may not be implemented
             self.extra_form_processing(form)
 
             if not self.is_update:

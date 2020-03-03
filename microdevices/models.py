@@ -8,6 +8,9 @@ from django.core.validators import MaxValueValidator
 
 import reversion
 
+# Avoid wildcards when possible
+from mps.utils import *
+
 
 @reversion.register(follow=['microdevice_set'])
 class MicrophysiologyCenter(LockableModel):
@@ -568,6 +571,22 @@ class OrganModelProtocolCell(models.Model):
         verbose_name='Addition Location'
     )
 
+    def get_addition_time_string(self):
+        split_times = get_split_times(self.addition_time)
+        return 'D{0:02} H{1:02} M{2:02}'.format(
+            split_times.get('day'),
+            split_times.get('hour'),
+            split_times.get('minute'),
+        )
+
+    # def get_duration_string(self):
+    #     split_times = get_split_times(self.duration)
+    #     return 'D{0:02} H{1:02} M{2:02}'.format(
+    #         split_times.get('day'),
+    #         split_times.get('hour'),
+    #         split_times.get('minute'),
+    #     )
+
 
 # JUST INCLUDE EVERYTHING FOR NOW
 class OrganModelProtocolSetting(models.Model):
@@ -618,6 +637,23 @@ class OrganModelProtocolSetting(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Addition Location'
     )
+
+    # NOT DRY
+    def get_addition_time_string(self):
+        split_times = get_split_times(self.addition_time)
+        return 'D{0:02} H{1:02} M{2:02}'.format(
+            split_times.get('day'),
+            split_times.get('hour'),
+            split_times.get('minute'),
+        )
+
+    def get_duration_string(self):
+        split_times = get_split_times(self.duration)
+        return 'D{0:02} H{1:02} M{2:02}'.format(
+            split_times.get('day'),
+            split_times.get('hour'),
+            split_times.get('minute'),
+        )
 
 
 # REMOVED FOR NOW

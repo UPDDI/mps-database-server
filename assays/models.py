@@ -18,12 +18,11 @@ from django.contrib.auth.models import Group, User
 from django.utils.safestring import mark_safe
 
 import urllib.request, urllib.parse, urllib.error
-import collections
 
 # TODO REORGANIZE
 import django.forms as forms
 
-
+# Avoid wildcards when possible
 from mps.utils import *
 
 import reversion
@@ -44,7 +43,7 @@ def attr_getter(item, attributes):
 
 def tuple_attrgetter(*items):
     """Custom attrgetter that ALWAYS returns a tuple"""
-    # NOTE WILL NEED TO CHANGE IF MOVED TO PYTHON 3
+    # NOTE CONSIDER REFACTORING
     if any(not (isinstance(item, str) or isinstance(item, str)) for item in items):
         raise TypeError('attribute name must be a string')
 
@@ -78,16 +77,6 @@ PHYSICAL_UNIT_TYPES = (
 types = (
     ('TOX', 'Toxicity'), ('DM', 'Disease'), ('EFF', 'Efficacy'), ('CC', 'Cell Characterization')
 )
-
-# This shouldn't be repeated like so
-# Converts: days -> minutes, hours -> minutes, minutes->minutes
-TIME_CONVERSIONS = [
-    ('day', 1440),
-    ('hour', 60),
-    ('minute', 1)
-]
-
-TIME_CONVERSIONS = collections.OrderedDict(TIME_CONVERSIONS)
 
 # SUBJECT TO CHANGE
 DEFAULT_SETUP_CRITERIA = (
@@ -128,26 +117,6 @@ DEFAULT_CELL_CRITERIA = (
     'passage',
     'addition_location_id'
 )
-
-# TODO EMPLOY THIS FUNCTION ELSEWHERE
-def get_split_times(time_in_minutes):
-    """Takes time_in_minutes and returns a dic with the time split into day, hour, minute"""
-    times = {
-        'day': 0,
-        'hour': 0,
-        'minute': 0
-    }
-    time_in_minutes_remaining = time_in_minutes
-    for time_unit, conversion in list(TIME_CONVERSIONS.items()):
-        initial_time_for_current_field = int(time_in_minutes_remaining / conversion)
-        if initial_time_for_current_field:
-            times[time_unit] = initial_time_for_current_field
-            time_in_minutes_remaining -= initial_time_for_current_field * conversion
-    # Add fractions of minutes if necessary
-    if time_in_minutes_remaining:
-        times['minute'] += time_in_minutes_remaining
-
-    return times
 
 
 # May be moved
