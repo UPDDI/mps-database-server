@@ -832,17 +832,12 @@ $(document).ready(function () {
 
     var current_selection = null;
 
-    var selection_dialog_selected_items = $('#selection_dialog_selected_items');
-    var group_selector = $('#id_group_selector');
-    var selection_dialog_naming_section = $('#selection_dialog_naming_section');
-    var chip_naming = $('#id_chip_naming');
-
     // Allows the matrix_table to have the draggable JQuery UI element
     matrix_table_selector.selectable({
         // SUBJECT TO CHANGE: WARNING!
-        filter: item_display_class,
+        filter: 'td' + item_display_class,
         distance: 1,
-        cancel: '.btn-xs',
+        // cancel: '.btn-xs',
         stop: matrix_add_content_to_selected
     });
 
@@ -957,19 +952,19 @@ $(document).ready(function () {
 
     // To highlight and un-highlight rows/columns
     function highlight_row() {
-        $('#row_' + $(this).attr('data-row-to-apply')).find('td').addClass('ui-selecting');
+        $('#row_' + $(this).attr('data-row-to-apply')).find('td').addClass('bg-warning');
     }
 
     function un_highlight_row() {
-        $('#row_' + $(this).attr('data-row-to-apply')).find('td').removeClass('ui-selecting');
+        $('#row_' + $(this).attr('data-row-to-apply')).find('td').removeClass('bg-warning');
     }
 
     function highlight_column() {
-        $('td[data-column-index="' + $(this).attr('data-column-to-apply') + '"]').addClass('ui-selecting');
+        $('td[data-column-index="' + $(this).attr('data-column-to-apply') + '"]').addClass('bg-warning');
     }
 
     function un_highlight_column() {
-        $('td[data-column-index="' + $(this).attr('data-column-to-apply') + '"]').removeClass('ui-selecting');
+        $('td[data-column-index="' + $(this).attr('data-column-to-apply') + '"]').removeClass('bg-warning');
     }
 
     // Makes the initial matrix
@@ -993,12 +988,12 @@ $(document).ready(function () {
                 // If this is an apply to row
                 if (column_index === -1) {
                     if (row_index === -1) {
-                        new_cell = $('<td>')
+                        new_cell = $('<th>')
                             .css('width', '1px')
                             .css('white-space', 'no-wrap')
                     }
                     else {
-                        new_cell = $('<td>')
+                        new_cell = $('<th>')
                             .addClass('text-center')
                             // Note: CRUDE
                             .css('vertical-align', 'middle')
@@ -1017,7 +1012,7 @@ $(document).ready(function () {
                 }
                 // If this is an apply to column
                 else if (row_index === -1) {
-                    new_cell = $('<td>')
+                    new_cell = $('<th>')
                         .addClass('text-center')
                         .attr('data-column-index', column_index)
                         .append(
@@ -1134,7 +1129,6 @@ $(document).ready(function () {
 
         // Get the current selection
         current_selection = $('.ui-selected');
-        console.log(current_selection);
 
         // Remove ui-selected class manually
         $(item_display_class).removeClass('ui-selected');
@@ -1232,6 +1226,12 @@ $(document).ready(function () {
     get_matrix_dimensions();
 
     // NEW THINGS FROM NOW ON
+
+    var selection_dialog_selected_items = $('#selection_dialog_selected_items');
+    var group_selector = $('#id_group_selector');
+    var selection_dialog_naming_section = $('.selection_dialog_naming_section');
+    var chip_naming = $('#id_chip_naming');
+
     // Selection dialog
     var selection_dialog = $('#selection_dialog');
     selection_dialog.dialog({
@@ -1251,6 +1251,18 @@ $(document).ready(function () {
             selection_dialog_selected_items.text(first_selection.attr('data-name') + ' -> ' + last_selection.attr('data-name'));
 
             // TODO TODO
+            group_selector.val('');
+            chip_naming.val('');
+
+            console.log(representation_selector.val());
+            console.log(selection_dialog_naming_section);
+
+            if (representation_selector.val() === 'chips') {
+                selection_dialog_naming_section.show();
+            }
+            else {
+                selection_dialog_naming_section.hide();
+            }
         },
         buttons: [
         {
