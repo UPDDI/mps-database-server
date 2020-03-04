@@ -1037,6 +1037,7 @@ $(document).ready(function () {
                         .attr('id', item_id)
                         .attr('data-row-index', row_index)
                         .attr('data-column-index', column_index)
+                        .attr('data-name', to_letters(row_index + 1) +(column_index + 1))
                     ;
                 }
 
@@ -1245,6 +1246,10 @@ $(document).ready(function () {
             }, 150);
 
             // Discern what will be applied to
+            var first_selection = $('.ui-selected').first();
+            var last_selection = $('.ui-selected').last();
+            selection_dialog_selected_items.text(first_selection.attr('data-name') + ' -> ' + last_selection.attr('data-name'));
+
             // TODO TODO
         },
         buttons: [
