@@ -868,6 +868,13 @@ $(document).ready(function () {
 
     var current_selection = null;
 
+    // To see if a selection is occurring
+    var user_is_selecting = false;
+
+    function start_selection() {
+        user_is_selecting = true;
+    }
+
     // Allows the matrix_table to have the draggable JQuery UI element
     matrix_table_selector.selectable({
         // SUBJECT TO CHANGE: WARNING!
@@ -875,6 +882,7 @@ $(document).ready(function () {
         distance: 1,
         // Stop selection when over a th
         cancel: 'th',
+        start: start_selection,
         stop: matrix_add_content_to_selected
     });
 
@@ -1185,6 +1193,9 @@ $(document).ready(function () {
     }
 
     function matrix_add_content_to_selected() {
+        // Indicate selection has concluded
+        user_is_selecting = false;
+
         // TODO
         selection_dialog.dialog('open');
 
@@ -1371,4 +1382,18 @@ $(document).ready(function () {
         }]
     });
     selection_dialog.removeProp('hidden');
+
+    var matrix_contents_hover = $('#matrix_contents_hover');
+
+    // Hover event for matrix contents
+    $(document).on('mouseover', '.matrix-item-hover', function() {
+        matrix_contents_hover.show();
+        var left = $(this).offset().left - 10;
+        var top = $(this).offset().top + 50;
+        matrix_contents_hover.offset({left: left, top: top});
+    });
+
+    $(document).on('mouseout', '.matrix-item-hover', function() {
+        matrix_contents_hover.hide();
+    });
 });
