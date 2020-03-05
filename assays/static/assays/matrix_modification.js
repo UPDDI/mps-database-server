@@ -1,3 +1,4 @@
+// TODO MAKE SURE TO DIFFERENTIATE SERIES AND GROUP
 $(document).ready(function () {
     var setup_data_selector = $('#id_setup_data');
 
@@ -566,6 +567,26 @@ $(document).ready(function () {
     // NOT ALLOWED IN EDIT?
     $(document).on('click', 'a[data-delete-row-button="true"]', function() {
         current_row_index = Math.floor($(this).attr('data-row'));
+
+        // Iterate over matrix_item and reset the current series
+        var all_keys = Object.keys(matrix_item_data);
+        $.each(all_keys, function(index, well_name) {
+            var contents = matrix_item_data[well_name];
+            // Delete if this is associated with the series to be removed
+            if (contents.series - 1 === current_row_index) {
+                delete matrix_item_data[well_name];
+
+                // Unset the label
+                unset_label($(item_display_class + '[data-name="' + well_name + '"]'));
+            }
+            // Decrement if this comes after the series to be removed
+            else if (contents.series - 1 > current_row_index) {
+                contents.series = contents.series - 1;
+
+                // Reset the label
+                set_label($(item_display_class + '[data-name="' + well_name + '"]'), contents.series);
+            }
+        });
 
         // JUST FLAT OUT DELETE THE ROW
         current_setup_data.splice(current_row_index, 1);
