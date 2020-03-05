@@ -520,6 +520,9 @@ $(document).ready(function () {
         }
 
         setup_data_selector.val(JSON.stringify(current_setup_data));
+
+        // Add group to selectors
+        group_selector.append(new Option('Series ' + (row_index + 1), row_index + 1));
     }
 
     $(document).on('change', '.test-type', function() {
@@ -745,9 +748,6 @@ $(document).ready(function () {
         if (current_setup_data.length) {
             $.each(current_setup_data, function(index, content) {
                 spawn_row(content, false);
-
-                // Add group
-                group_selector.append(new Option('Series ' + (index + 1), index + 1));
             });
         }
         else {
@@ -1266,7 +1266,7 @@ $(document).ready(function () {
     // NEW THINGS FROM NOW ON
 
     function delete_selected() {
-        $('.ui-selected').each(function() {
+        current_selection.each(function() {
             delete matrix_item_data[$(this).attr('data-name')];
 
             unset_label($(this));
@@ -1274,14 +1274,23 @@ $(document).ready(function () {
     }
 
     function apply_to_selected() {
-        $('.ui-selected').each(function() {
+        console.log(current_selection);
+        current_selection.each(function() {
+            // Make new object if necessary for current item
+            if (!matrix_item_data[$(this).attr('data-name')]) {
+                matrix_item_data[$(this).attr('data-name')] = {};
+            }
+
             matrix_item_data[$(this).attr('data-name')]['series'] = group_selector.val();
 
             // TODO: SET GROUP WITH RESPECT TO INCREMENT TODO
             matrix_item_data[$(this).attr('data-name')]['group'] = group_selector.val();
 
             set_label($(this), group_selector.val());
+            console.log($(this));
         });
+
+        console.log(matrix_item_data, group_selector.val());
     }
 
     // Selection dialog
@@ -1297,9 +1306,11 @@ $(document).ready(function () {
                 $('.ui-dialog').find('input, select, button').blur();
             }, 150);
 
+            current_selection = $('.ui-selected');
+
             // Discern what will be applied to
-            var first_selection = $('.ui-selected').first();
-            var last_selection = $('.ui-selected').last();
+            var first_selection = current_selection.first();
+            var last_selection = current_selection.last();
             selection_dialog_selected_items.text(first_selection.attr('data-name') + ' -> ' + last_selection.attr('data-name'));
 
             // Set group selector to nothing
