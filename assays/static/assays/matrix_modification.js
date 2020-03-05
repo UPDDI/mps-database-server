@@ -852,7 +852,8 @@ $(document).ready(function () {
         // SUBJECT TO CHANGE: WARNING!
         filter: 'td' + item_display_class,
         distance: 1,
-        // cancel: '.btn-xs',
+        // Stop selection when over a th
+        cancel: 'th',
         stop: matrix_add_content_to_selected
     });
 
@@ -867,39 +868,40 @@ $(document).ready(function () {
         return pow ? to_letters(pow) + out : out;
     }
 
-    function plate_style_name_creation(append_zero) {
-        var current_global_name = $('#id_matrix_item_name').val();
-        var current_number_of_rows = number_of_rows_selector.val();
-        var current_number_of_columns = number_of_columns_selector.val();
+    // Decided by an checkbox option?
+    // function plate_style_name_creation(append_zero) {
+    //     var current_global_name = $('#id_matrix_item_name').val();
+    //     var current_number_of_rows = number_of_rows_selector.val();
+    //     var current_number_of_columns = number_of_columns_selector.val();
 
-        var largest_row_name_length = Math.pow(current_number_of_columns, 1/10);
+    //     var largest_row_name_length = Math.pow(current_number_of_columns, 1/10);
 
-        for (var row_id=0; row_id < current_number_of_rows; row_id++) {
-            // Please note + 1
-            var row_name = to_letters(row_id + 1);
+    //     for (var row_id=0; row_id < current_number_of_rows; row_id++) {
+    //         // Please note + 1
+    //         var row_name = to_letters(row_id + 1);
 
-            for (var column_id=0; column_id < current_number_of_columns; column_id++) {
-                var current_item_id = item_prefix + '_' + row_id + '_' + column_id;
+    //         for (var column_id=0; column_id < current_number_of_columns; column_id++) {
+    //             var current_item_id = item_prefix + '_' + row_id + '_' + column_id;
 
-                var column_name = column_id + 1 + '';
-                if (append_zero) {
-                    while (column_name.length < largest_row_name_length) {
-                        column_name = '0' + column_name;
-                    }
-                }
+    //             var column_name = column_id + 1 + '';
+    //             if (append_zero) {
+    //                 while (column_name.length < largest_row_name_length) {
+    //                     column_name = '0' + column_name;
+    //                 }
+    //             }
 
-                var value = current_global_name + row_name + column_name;
+    //             var value = current_global_name + row_name + column_name;
 
-                // TODO TODO TODO PERFORM THE ACTUAL APPLICATION TO THE FORMS
-                // TODO TODO TODO PERFORM THE ACTUAL APPLICATION TO THE FORMS
-                // Set display
-                var item_display = $('#'+ current_item_id);
-                item_display.find('.matrix_item-name').html(value);
-                // Set form
-                $('#id_' + item_prefix + '-' + item_display.attr(item_form_index_attribute) + '-name').val(value);
-            }
-        }
-    }
+    //             // TODO TODO TODO PERFORM THE ACTUAL APPLICATION TO THE FORMS
+    //             // TODO TODO TODO PERFORM THE ACTUAL APPLICATION TO THE FORMS
+    //             // Set display
+    //             var item_display = $('#'+ current_item_id);
+    //             item_display.find('.matrix_item-name').html(value);
+    //             // Set form
+    //             $('#id_' + item_prefix + '-' + item_display.attr(item_form_index_attribute) + '-name').val(value);
+    //         }
+    //     }
+    // }
 
     // This function gets the initial dimensions of the matrix
     // Please see the corresponding AJAX call as necessary
@@ -1131,11 +1133,11 @@ $(document).ready(function () {
         matrix_table_selector.data('ui-selectable')._mouseStop(null);
     }
 
-    function apply_action_to_all() {
-        // $(item_display_class).addClass('ui-selected');
-        programmatic_select($(item_display_class));
-        matrix_add_content_to_selected();
-    }
+    // function apply_action_to_all() {
+    //     // $(item_display_class).addClass('ui-selected');
+    //     programmatic_select($(item_display_class));
+    //     matrix_add_content_to_selected();
+    // }
 
     function apply_action_to_row() {
         // Remove ui-selected class manually
@@ -1164,9 +1166,6 @@ $(document).ready(function () {
     function matrix_add_content_to_selected() {
         // TODO
         selection_dialog.dialog('open');
-
-        // Get the current selection
-        current_selection = $('.ui-selected');
 
         // Remove ui-selected class manually
         $(item_display_class).removeClass('ui-selected');
@@ -1274,7 +1273,6 @@ $(document).ready(function () {
     }
 
     function apply_to_selected() {
-        console.log(current_selection);
         current_selection.each(function() {
             // Make new object if necessary for current item
             if (!matrix_item_data[$(this).attr('data-name')]) {
@@ -1287,10 +1285,7 @@ $(document).ready(function () {
             matrix_item_data[$(this).attr('data-name')]['group'] = group_selector.val();
 
             set_label($(this), group_selector.val());
-            console.log($(this));
         });
-
-        console.log(matrix_item_data, group_selector.val());
     }
 
     // Selection dialog
