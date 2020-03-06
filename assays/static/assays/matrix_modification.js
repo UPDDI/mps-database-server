@@ -1387,10 +1387,12 @@ $(document).ready(function () {
 
     // Hover event for matrix contents
     $(document).on('mouseover', '.matrix-item-hover', function() {
-        matrix_contents_hover.show();
-        var left = $(this).offset().left - 10;
-        var top = $(this).offset().top + 50;
-        matrix_contents_hover.offset({left: left, top: top});
+        if (!user_is_selecting) {
+            matrix_contents_hover.show();
+            var left = $(this).offset().left - 10;
+            var top = $(this).offset().top + 50;
+            matrix_contents_hover.offset({left: left, top: top});
+        }
     });
 
     $(document).on('mouseout', '.matrix-item-hover', function() {
