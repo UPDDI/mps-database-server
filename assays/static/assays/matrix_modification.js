@@ -1329,19 +1329,21 @@ $(document).ready(function () {
     }
 
     function apply_to_selected() {
-        current_selection.each(function() {
-            // Make new object if necessary for current item
-            if (!matrix_item_data[$(this).attr('data-name')]) {
-                matrix_item_data[$(this).attr('data-name')] = {};
-            }
+        if (group_selector.val()) {
+            current_selection.each(function() {
+                // Make new object if necessary for current item
+                if (!matrix_item_data[$(this).attr('data-name')]) {
+                    matrix_item_data[$(this).attr('data-name')] = {};
+                }
 
-            matrix_item_data[$(this).attr('data-name')].series = group_selector.val();
+                matrix_item_data[$(this).attr('data-name')].series = group_selector.val();
 
-            // TODO: SET GROUP WITH RESPECT TO INCREMENT TODO
-            matrix_item_data[$(this).attr('data-name')].group = group_selector.val();
+                // TODO: SET GROUP WITH RESPECT TO INCREMENT TODO
+                matrix_item_data[$(this).attr('data-name')].group = group_selector.val();
 
-            set_label($(this), group_selector.val());
-        });
+                set_label($(this), group_selector.val());
+            });
+        }
     }
 
     // Selection dialog
