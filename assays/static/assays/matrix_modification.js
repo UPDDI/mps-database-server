@@ -1389,7 +1389,8 @@ $(document).ready(function () {
     $(document).on('mouseover', '.matrix-item-hover', function() {
         if (!user_is_selecting) {
             matrix_contents_hover.show();
-            var left = $(this).offset().left - 10;
+            // var left = $(this).offset().left - 10;
+            var left = 300;
             var top = $(this).offset().top + 50;
             matrix_contents_hover.offset({left: left, top: top});
         }
