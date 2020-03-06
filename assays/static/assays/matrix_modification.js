@@ -1100,8 +1100,8 @@ $(document).ready(function () {
                         // new_cell.find('.label')
                         //     .removeClass('label-warning')
                         //     .addClass('label-primary')
-                        //     .text(matrix_item_data[current_name]['group']);
-                        set_label(new_cell, matrix_item_data[current_name]['group']);
+                        //     .text(matrix_item_data[current_name].group);
+                        set_label(new_cell, matrix_item_data[current_name].group);
                     }
                 }
 
@@ -1311,10 +1311,10 @@ $(document).ready(function () {
                 matrix_item_data[$(this).attr('data-name')] = {};
             }
 
-            matrix_item_data[$(this).attr('data-name')]['series'] = group_selector.val();
+            matrix_item_data[$(this).attr('data-name')].series = group_selector.val();
 
             // TODO: SET GROUP WITH RESPECT TO INCREMENT TODO
-            matrix_item_data[$(this).attr('data-name')]['group'] = group_selector.val();
+            matrix_item_data[$(this).attr('data-name')].group = group_selector.val();
 
             set_label($(this), group_selector.val());
         });
@@ -1387,7 +1387,14 @@ $(document).ready(function () {
 
     // Hover event for matrix contents
     $(document).on('mouseover', '.matrix-item-hover', function() {
-        if (!user_is_selecting) {
+        var current_group = null;
+        var current_data = matrix_item_data[$(this).parent().attr('data-name')];
+
+        if (current_data && current_data.group) {
+            current_group = current_data.group;
+        }
+
+        if (!user_is_selecting && current_group) {
             matrix_contents_hover.show();
             // var left = $(this).offset().left - 10;
             var left = 300;
