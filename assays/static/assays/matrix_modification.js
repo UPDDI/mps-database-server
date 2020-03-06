@@ -124,12 +124,14 @@ $(document).ready(function () {
 
                 var this_popup = $(this);
 
+                // Apply current data to popup inputs
                 this_popup.find('input').each(function() {
                     if ($(this).attr('name')) {
                         $(this).val(current_data[$(this).attr('name').replace(current_prefix + '_', '')]);
                     }
                 });
 
+                // Apply current data to selects
                 this_popup.find('select').each(function() {
                     if ($(this).attr('name')) {
                         this.selectize.setValue(current_data[$(this).attr('name').replace(current_prefix + '_', '') + '_id']);
@@ -176,12 +178,14 @@ $(document).ready(function () {
                     // TODO TODO TODO
                     var current_data = {};
 
+                    // Apply the values from the inputs
                     $(this).find('input').each(function() {
                         if ($(this).attr('name')) {
                             current_data[$(this).attr('name').replace(current_prefix + '_', '')] = $(this).val();
                         }
                     });
 
+                    // Apply the values from the selects
                     $(this).find('select').each(function() {
                         if ($(this).attr('name')) {
                             current_data[$(this).attr('name').replace(current_prefix + '_', '') + '_id'] = $(this).val();
@@ -189,6 +193,7 @@ $(document).ready(function () {
                     });
 
                     // SLOPPY
+                    // DEAL WITH SPLIT TIMES
                     $.each(time_prefixes, function(index, current_time_prefix) {
                         if (current_data[current_time_prefix + '_minute'] !== undefined) {
                             current_data[current_time_prefix] = window.SPLIT_TIME.get_minutes(
@@ -208,10 +213,13 @@ $(document).ready(function () {
                         delete current_data['cell_sample'];
                     }
 
+                    // Modify the setup data
                     modify_setup_data(current_prefix, current_data, current_row_index, current_column_index);
 
+                    // Get the display for the current content
                     var html_contents = get_content_display(current_prefix, current_row_index, current_column_index, current_data, true);
 
+                    // Apply the content
                     $('a[data-edit-button="true"][data-row="' + current_row_index +'"][data-column="' + current_column_index +'"][data-prefix="' + current_prefix + '"]').parent().html(html_contents);
 
                     $(this).dialog('close');
@@ -227,6 +235,7 @@ $(document).ready(function () {
         current_dialog.removeProp('hidden');
     });
 
+    // Resets the data for the current_setup
     function reset_current_setup(reset_data) {
         current_setup = {};
 
@@ -282,6 +291,7 @@ $(document).ready(function () {
     function get_content_display(prefix, row_index, column_index, content, editable) {
         var html_contents = [];
 
+        // Clone the empty_html for a starting point
         var new_display = empty_html[prefix].clone();
 
         // KILL EDIT FOR PREVIEW
@@ -334,6 +344,8 @@ $(document).ready(function () {
         return html_contents;
     }
 
+    // To discern how many columns are needed for the table display
+    // Obviously, the largest number of columns found for any group
     var number_of_columns = {
         'cell': 0,
         'compound': 0,
@@ -375,10 +387,13 @@ $(document).ready(function () {
         return '<a data-clone-row-button="true" data-row="' + index + '" role="button" class="btn btn-info">Copy</a>';
     }
 
+    // Swaps out the data we are saving to the form
+    // TODO TODO TODO XXX REVISE TO USE ALL_DATA
     function replace_setup_data() {
         setup_data_selector.val(JSON.stringify(current_setup_data));
     }
 
+    // Modify the setup data for the given contents
     function modify_setup_data(prefix, content, setup_index, object_index) {
         if (object_index) {
             current_setup_data[setup_index][prefix][object_index] = $.extend(true, {}, content);
@@ -393,6 +408,7 @@ $(document).ready(function () {
     function spawn_column(prefix) {
         var column_index = number_of_columns[prefix];
         // UGLY
+        // Finds the correct place to put a new button
         study_setup_head.find('.' + prefix + '_start').last().after('<th class="new_column ' + prefix + '_start' + '">' + prefix[0].toUpperCase() + prefix.slice(1) + ' ' + (column_index + 1) + create_delete_button(prefix, column_index) +'</th>');
 
         // ADD TO EXISTING ROWS AS EMPTY
@@ -400,11 +416,13 @@ $(document).ready(function () {
             $(this).find('.' + prefix + '_start').last().after('<td class="' + prefix + '_start' + '">' + create_edit_button(prefix, row_index, column_index) + '</td>', false);
         });
 
+        // Increment columns for this prefix
         number_of_columns[prefix] += 1;
     }
 
     // JUST USES DEFAULT PROTOCOL FOR NOW
     function spawn_row(setup_to_use, add_new_row) {
+        // TODO: SHOULD REMOVE, WHOLE CONCEPT OF current_setup NEED TO BE REVISED
         if (!setup_to_use) {
             setup_to_use = current_setup;
         }
@@ -412,6 +430,8 @@ $(document).ready(function () {
         var new_row = $('<tr>');
 
         var row_index = study_setup_body.find('tr').length;
+
+        new_row.attr('data-series', row_index + 1);
 
         var buttons_to_add = '';
         buttons_to_add = create_clone_button(row_index) + create_delete_button('row', row_index);
@@ -527,6 +547,10 @@ $(document).ready(function () {
     }
 
     $(document).on('change', '.test-type', function() {
+        // CRUDE SOLUTION FOR IDIOSYNCRATIC BEHAVIOR: INVESTIGATE ASAP
+        $('option[value="' + this.value + '"]', this)
+            .attr('selected', true).siblings()
+            .removeAttr('selected')
         modify_setup_data('test_type', $(this).val(), $(this).attr('data-row'));
     });
 
@@ -570,21 +594,21 @@ $(document).ready(function () {
 
         // Iterate over matrix_item and reset the current series
         var all_keys = Object.keys(matrix_item_data);
-        $.each(all_keys, function(index, well_name) {
-            var contents = matrix_item_data[well_name];
+        $.each(all_keys, function(index, item_data_name) {
+            var contents = matrix_item_data[item_data_name];
             // Delete if this is associated with the series to be removed
             if (contents.series - 1 === current_row_index) {
-                delete matrix_item_data[well_name];
+                delete matrix_item_data[item_data_name];
 
                 // Unset the label
-                unset_label($(item_display_class + '[data-name="' + well_name + '"]'));
+                unset_label($(item_display_class + '[data-name="' + item_data_name + '"]'));
             }
             // Decrement if this comes after the series to be removed
             else if (contents.series - 1 > current_row_index) {
                 contents.series = contents.series - 1;
 
                 // Reset the label
-                set_label($(item_display_class + '[data-name="' + well_name + '"]'), contents.series);
+                set_label($(item_display_class + '[data-name="' + item_data_name + '"]'), contents.series);
             }
         });
 
@@ -1384,9 +1408,35 @@ $(document).ready(function () {
     selection_dialog.removeProp('hidden');
 
     var matrix_contents_hover = $('#matrix_contents_hover');
+    var matrix_contents_hover_row = $('#matrix_contents_hover_row');
+
+    // For the hover preview of the data
+    function generate_row_clone_html(current_series) {
+        // $('tr[data-series="' + current_data.series + '"]').html();
+
+        var full_row = $('tr[data-series="' + current_series + '"]').clone();
+
+        // Axe the first column
+        full_row.find('td').first().remove();
+
+        // Replace selects with their values
+        var current_selects = full_row.find('select');
+        current_selects.each(function() {
+            var current_text = $(this).find('option[value="' + $(this).val() + '"]').text();
+            var current_parent = $(this).parent();
+
+            current_parent.html(current_text);
+        });
+
+        // Kill buttons
+        full_row.find('.btn').remove();
+
+        return full_row.html();
+    }
 
     // Hover event for matrix contents
     $(document).on('mouseover', '.matrix-item-hover', function() {
+        // Current group of the item
         var current_group = null;
         var current_data = matrix_item_data[$(this).parent().attr('data-name')];
 
@@ -1400,6 +1450,10 @@ $(document).ready(function () {
             var left = 300;
             var top = $(this).offset().top + 50;
             matrix_contents_hover.offset({left: left, top: top});
+
+            matrix_contents_hover_row.html(
+                generate_row_clone_html(current_data.series)
+            );
         }
     });
 
