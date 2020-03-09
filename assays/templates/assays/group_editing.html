@@ -56,7 +56,7 @@
 <div style="display: none;">
     <table>
     <tr id="empty_matrix_item_html">
-    <td data-prefix="{{ item_formset.prefix }}" class="matrix_item-td">
+    <td data-prefix="{{ item_prefix }}" class="matrix_item-td">
         <div hidden class="matrix_item-name_section">
             <span class="label label-default matrix_item-name"></span>
         </div>
@@ -84,7 +84,7 @@
 <div style="display: none;">
     <table>
     <tr id="empty_matrix_item_html">
-    <td data-prefix="{{ item_formset.prefix }}" class="matrix_item-td">
+    <td data-prefix="{{ item_prefix }}" class="matrix_item-td">
         <div class="error-message-section error-display matrix_item-setup_set_section important-display">
         </div>
         <div align="center">
@@ -416,9 +416,9 @@
 <div hidden>
 <div id="empty_cell_html">
     {% if detail %}
-    <div data-prefix="{{ cell_formset.prefix }}" class="alert alert-success force-off-black-text cell-display no-margins">
+    <div data-prefix="{{ cell_prefix }}" class="alert alert-success force-off-black-text cell-display no-margins">
     {% else %}
-    <div data-prefix="{{ cell_formset.prefix }}" class="alert alert-success force-off-black-text cell-display">
+    <div data-prefix="{{ cell_prefix }}" class="alert alert-success force-off-black-text cell-display">
     {% endif %}
         <div class="error-message-section error-display important-display">
         </div>
@@ -458,9 +458,9 @@
 {# TODO #}
 <div id="empty_compound_html">
     {% if detail %}
-    <div data-prefix="{{ compound_formset.prefix }}" class="alert alert-info force-off-black-text compound-display no-margins">
+    <div data-prefix="{{ compound_prefix }}" class="alert alert-info force-off-black-text compound-display no-margins">
     {% else %}
-    <div data-prefix="{{ compound_formset.prefix }}" class="alert alert-info force-off-black-text compound-display">
+    <div data-prefix="{{ compound_prefix }}" class="alert alert-info force-off-black-text compound-display">
     {% endif %}
         <div class="error-message-section error-display important-display">
         </div>
@@ -509,9 +509,9 @@
 {# TODO TODO TODO #}
 <div id="empty_setting_html">
     {% if detail %}
-    <div data-prefix="{{ setting_formset.prefix }}" class="alert alert-warning force-off-black-text setting-display no-margins">
+    <div data-prefix="{{ setting_prefix }}" class="alert alert-warning force-off-black-text setting-display no-margins">
     {% else %}
-    <div data-prefix="{{ setting_formset.prefix }}" class="alert alert-warning force-off-black-text setting-display">
+    <div data-prefix="{{ setting_prefix }}" class="alert alert-warning force-off-black-text setting-display">
     {% endif %}
         <div class="error-message-section error-display important-display">
         </div>

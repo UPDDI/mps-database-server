@@ -1265,8 +1265,41 @@ def get_cell_samples_for_selection(user, setups=None):
     return combined_query
 
 
+class AssayMatrixMixin(StudyGroupMixin, FormHandlerMixin):
+    model = AssayMatrix
+    # TODO RENAME RENAME RENAME
+    template_name = 'assays/matrix_modification.html'
+    form_class = AssayMatrixForm
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayMatrixMixin, self).get_context_data(**kwargs)
+
+        context.update({
+            'item_prefix': 'matrix_item',
+            'cell_prefix': 'cell',
+            'setting_prefix': 'setting',
+            'compound_prefix': 'compound',
+            # Get all cell samples
+            'cellsamples': CellSample.objects.all().prefetch_related(
+                'cell_type__organ',
+                'supplier',
+                'cell_subtype__cell_type'
+            )
+        })
+
+        return context
+
+
+class AssayMatrixAdd(AssayMatrixMixin, CreateView):
+    pass
+
+
+class AssayMatrixUpdate(AssayMatrixMixin, UpdateView):
+    pass
+
+
 # TODO REFACTOR
-class AssayMatrixAdd(StudyGroupMixin, CreateView):
+class AssayMatrixAddOld(StudyGroupMixin, CreateView):
     """Add a matrix"""
     model = AssayMatrix
     template_name = 'assays/assaymatrix_add.html'
@@ -1351,7 +1384,7 @@ class AssayMatrixAdd(StudyGroupMixin, CreateView):
 
 
 # TODO NOT THE RIGHT PERMISSION MIXIN
-class AssayMatrixUpdate(HistoryMixin, StudyGroupMixin, UpdateView):
+class AssayMatrixUpdateOld(HistoryMixin, StudyGroupMixin, UpdateView):
     model = AssayMatrix
     template_name = 'assays/matrix_modification.html'
     form_class = AssayMatrixForm
