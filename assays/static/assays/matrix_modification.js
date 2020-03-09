@@ -1405,7 +1405,10 @@ $(document).ready(function () {
             selection_dialog_selected_items.text(first_selection.attr('data-name') + ' -> ' + last_selection.attr('data-name'));
 
             // Set series selector to nothing
-            series_selector.val('');
+            series_selector.val('').trigger('change');
+
+            // Disable the accept button until a series is selected
+            // $('#selection_dialog_accept').prop('disabled', 'disabled');
 
             // SHOULD THE USE CHIP NAMING BE UNCHECKED EVERY TIME?
             // Set the initial name to the first item or nothing
@@ -1437,6 +1440,7 @@ $(document).ready(function () {
         },
         {
             text: 'Apply',
+            id: 'selection_dialog_accept',
             click: function() {
                 // Apply TODO XXX
                 apply_to_selected();
@@ -1452,6 +1456,16 @@ $(document).ready(function () {
         }]
     });
     selection_dialog.removeProp('hidden');
+
+    // Disable and enable apply based on whether there is a series
+    series_selector.change(function() {
+        if ($(this).val()) {
+            $('#selection_dialog_accept').prop('disabled', false);
+        }
+        else {
+            $('#selection_dialog_accept').prop('disabled', true);
+        }
+    });
 
     // Container that shows up to reveal what a group contains
     var matrix_contents_hover = $('#matrix_contents_hover');
