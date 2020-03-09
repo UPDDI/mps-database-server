@@ -218,7 +218,7 @@
 
         {# Set of buttons for adding cells, compounds, settings etc. #}
         <div class="padded-bottom">
-        <a role="button" class="btn btn-success" id="add_group_button"><span class="glyphicon glyphicon-plus-sign"></span>Add Group</a>
+        <a role="button" class="btn btn-success" id="add_series_button"><span class="glyphicon glyphicon-plus-sign"></span>Add Series</a>
         </div>
 
         <div class="padded-bottom">
@@ -254,7 +254,9 @@
 
     {# TODO CHANGE #}
     <div hidden>
-        {{ form.setup_data }}
+        {# OLD #}
+        {# {{ form.setup_data }} #}
+        {{ form.series_data }}
     </div>
 
     </form>

@@ -13,14 +13,14 @@ from mps.base.models import (
     FlaggableRestrictedModel,
     FrontEndModel
 )
+
+from django.contrib.postgres.fields import JSONField
+
 from django.contrib.auth.models import Group, User
 
 from django.utils.safestring import mark_safe
 
 import urllib.request, urllib.parse, urllib.error
-
-# TODO REORGANIZE
-import django.forms as forms
 
 # Avoid wildcards when possible
 from mps.utils import *
@@ -1794,8 +1794,7 @@ class AssayStudy(FlaggableModel):
         null=True
     )
 
-    # TODO MAKE REQUIRED
-    # TODO DEAL WITH CONFLICTS
+    # DEPRECATED: TO BE REMOVED
     organ_model = models.ForeignKey(
         OrganModel,
         blank=True,
@@ -2051,6 +2050,9 @@ class AssayMatrix(FlaggableModel):
         default='',
         verbose_name='Notes'
     )
+
+    # NOTE THAT THIS FIELD TYPE IS PECULIAR TO POSTGRES
+    series_data = JSONField(default=dict)
 
     def __str__(self):
         return '{0}'.format(self.name)

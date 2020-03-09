@@ -15,7 +15,7 @@
     {% include 'generic_field.html' with field=form.organ_model_protocol %}
     </div>
 
-    <table class="table table-striped table-bordered table-nonfluid" id="study_setup_table_preview">
+    <table class="table table-striped table-bordered table-nonfluid" id="series_table_preview">
     </table>
 </div>
 
@@ -36,13 +36,15 @@
             <th>Choose a Series</th>
         </tr>
         <tr>
-            <td><select id="id_group_selector" class="form-control no-selectize"></select></td>
+            <td><select id="id_series_selector" class="form-control no-selectize"></select></td>
         </tr>
 
         <tr class="selection_dialog_naming_section">
+            <th>Name/Rename Chips?</th>
             <th>Initial Name</th>
         </tr>
         <tr class="selection_dialog_naming_section">
+            <td><input id="id_use_chip_naming" type="checkbox"></td>
             <td><input id="id_chip_naming" class="form-control"></td>
         </tr>
 
@@ -55,7 +57,9 @@
     <table>
     <tr id="empty_matrix_item_html">
     <td data-prefix="{{ item_formset.prefix }}" class="matrix_item-td">
-        <div hidden class="matrix_item-display matrix_item-name"></div>
+        <div hidden class="matrix_item-name_section">
+            <span class="label label-default matrix_item-name"></span>
+        </div>
         <span class="label label-warning matrix-item-hover">
             X
         </span>

@@ -1,15 +1,15 @@
 // TODO MAKE SURE TO DIFFERENTIATE SERIES AND GROUP
 $(document).ready(function () {
-    var setup_data_selector = $('#id_setup_data');
+    var series_data_selector = $('#id_series_data');
 
     // FULL DATA
-    var full_setup_data = {
-        current_setup_data: [],
+    var full_series_data = {
+        series_data: [],
         matrix_item_data: {}
     };
     // SERIES DATA
-    var current_setup_data = full_setup_data.current_setup_data;
-    var matrix_item_data = full_setup_data.matrix_item_data;
+    var series_data = full_series_data.series_data;
+    var matrix_item_data = full_series_data.matrix_item_data;
 
     // FOR ADD INTERFACE ONLY
     // ERRORS
@@ -83,8 +83,9 @@ $(document).ready(function () {
     empty_html[setting_prefix] = empty_setting_html;
 
     var selection_dialog_selected_items = $('#selection_dialog_selected_items');
-    var group_selector = $('#id_group_selector');
+    var series_selector = $('#id_series_selector');
     var selection_dialog_naming_section = $('.selection_dialog_naming_section');
+    var use_chip_naming = $('#id_use_chip_naming');
     var chip_naming = $('#id_chip_naming');
 
     // Default values
@@ -120,7 +121,7 @@ $(document).ready(function () {
                 }, 150);
 
                 // Populate the fields
-                var current_data = $.extend(true, {}, current_setup_data[current_row_index][current_prefix][current_column_index]);
+                var current_data = $.extend(true, {}, series_data[current_row_index][current_prefix][current_column_index]);
 
                 var this_popup = $(this);
 
@@ -214,7 +215,7 @@ $(document).ready(function () {
                     }
 
                     // Modify the setup data
-                    modify_setup_data(current_prefix, current_data, current_row_index, current_column_index);
+                    modify_series_data(current_prefix, current_data, current_row_index, current_column_index);
 
                     // Get the display for the current content
                     var html_contents = get_content_display(current_prefix, current_row_index, current_column_index, current_data, true);
@@ -247,7 +248,7 @@ $(document).ready(function () {
         });
 
         if (reset_data) {
-            current_setup_data = [];
+            series_data = [];
         }
     }
 
@@ -345,7 +346,7 @@ $(document).ready(function () {
     }
 
     // To discern how many columns are needed for the table display
-    // Obviously, the largest number of columns found for any group
+    // Obviously, the largest number of columns found for any series
     var number_of_columns = {
         'cell': 0,
         'compound': 0,
@@ -358,7 +359,7 @@ $(document).ready(function () {
     var study_setup_body = study_setup_table.find('tbody');
 
     // PREVIEW
-    var study_setup_table_preview = $('#study_setup_table_preview');
+    var series_table_preview = $('#series_table_preview');
 
     // MISNOMER, NOW MORE OF AN ADD BUTTON
     function create_edit_button(prefix, row_index, column_index, hidden) {
@@ -389,20 +390,20 @@ $(document).ready(function () {
 
     // Swaps out the data we are saving to the form
     // TODO TODO TODO XXX REVISE TO USE ALL_DATA
-    function replace_setup_data() {
-        setup_data_selector.val(JSON.stringify(current_setup_data));
+    function replace_series_data() {
+        series_data_selector.val(JSON.stringify(series_data));
     }
 
     // Modify the setup data for the given contents
-    function modify_setup_data(prefix, content, setup_index, object_index) {
+    function modify_series_data(prefix, content, setup_index, object_index) {
         if (object_index) {
-            current_setup_data[setup_index][prefix][object_index] = $.extend(true, {}, content);
+            series_data[setup_index][prefix][object_index] = $.extend(true, {}, content);
         }
         else {
-            current_setup_data[setup_index][prefix] = content;
+            series_data[setup_index][prefix] = content;
         }
 
-        setup_data_selector.val(JSON.stringify(current_setup_data));
+        series_data_selector.val(JSON.stringify(series_data));
     }
 
     function spawn_column(prefix) {
@@ -535,15 +536,15 @@ $(document).ready(function () {
         study_setup_body.append(new_row);
 
         if (add_new_row) {
-            current_setup_data.push(
+            series_data.push(
                 $.extend(true, {}, setup_to_use)
             );
         }
 
-        setup_data_selector.val(JSON.stringify(current_setup_data));
+        series_data_selector.val(JSON.stringify(series_data));
 
         // Add group to selectors
-        group_selector.append(new Option('Series ' + (row_index + 1), row_index + 1));
+        series_selector.append(new Option('Series ' + (row_index + 1), row_index + 1));
     }
 
     $(document).on('change', '.test-type', function() {
@@ -551,11 +552,11 @@ $(document).ready(function () {
         $('option[value="' + this.value + '"]', this)
             .attr('selected', true).siblings()
             .removeAttr('selected')
-        modify_setup_data('test_type', $(this).val(), $(this).attr('data-row'));
+        modify_series_data('test_type', $(this).val(), $(this).attr('data-row'));
     });
 
     $(document).on('change', '.organ-model', function() {
-        modify_setup_data('organ_model_id', $(this).val(), $(this).attr('data-row'));
+        modify_series_data('organ_model_id', $(this).val(), $(this).attr('data-row'));
     });
 
     $(document).on('click', 'a[data-edit-button="true"]', function() {
@@ -570,7 +571,7 @@ $(document).ready(function () {
         current_column_index = $(this).attr('data-column');
 
         // DELETE EVERY COLUMN FOR THIS PREFIX THEN REBUILD
-        $.each(current_setup_data, function(index, current_content) {
+        $.each(series_data, function(index, current_content) {
             current_content[current_prefix].splice(current_column_index, 1);
         });
 
@@ -582,7 +583,7 @@ $(document).ready(function () {
     // NOT ALLOWED IN EDIT?
     $(document).on('click', 'a[data-clone-row-button="true"]', function() {
         current_row_index = Math.floor($(this).attr('data-row'));
-        spawn_row(current_setup_data[current_row_index], true);
+        spawn_row(series_data[current_row_index], true);
 
         // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
         change_matrix_visibility();
@@ -613,7 +614,7 @@ $(document).ready(function () {
         });
 
         // JUST FLAT OUT DELETE THE ROW
-        current_setup_data.splice(current_row_index, 1);
+        series_data.splice(current_row_index, 1);
 
         rebuild_table();
     });
@@ -624,7 +625,7 @@ $(document).ready(function () {
         current_prefix = $(this).attr('data-prefix');
 
         // DELETE THE DATA HERE
-        current_setup_data[current_row_index][current_prefix][current_column_index] = {};
+        series_data[current_row_index][current_prefix][current_column_index] = {};
 
         rebuild_table();
     });
@@ -638,7 +639,7 @@ $(document).ready(function () {
         spawn_column($(this).attr('data-prefix'));
     });
 
-    $('#add_group_button').click(function() {
+    $('#add_series_button').click(function() {
         spawn_row(null, true);
         // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
         change_matrix_visibility();
@@ -692,7 +693,7 @@ $(document).ready(function () {
     function set_new_protocol(is_new) {
         if (is_new) {
             // Set organ_model_id
-            current_setup_data[current_setup_index]['organ_model_id'] = organ_model.val();
+            series_data[current_setup_index]['organ_model_id'] = organ_model.val();
         }
 
         // if (protocol.val() && protocol.val() != current_protocol || protocol.val() && !Object.keys(current_setup).length) {
@@ -718,27 +719,27 @@ $(document).ready(function () {
                     // Stop spinner
                     window.spinner.stop();
 
-                    // current_setup_data[current_setup_index] = $.extend(true, {}, json);
+                    // series_data[current_setup_index] = $.extend(true, {}, json);
 
                     if (is_new) {
                         // MAKE SURE ALL PREFIXES ARE PRESENT
                         $.each(prefixes, function(index, prefix) {
                             if (json[prefix]) {
                                 // Slow, but rare operation
-                                current_setup_data[current_setup_index][prefix] = JSON.parse(JSON.stringify(json[prefix]));
+                                series_data[current_setup_index][prefix] = JSON.parse(JSON.stringify(json[prefix]));
                             }
                         });
 
                         // FORCE INITIAL TO BE CONTROL
-                        // current_setup_data[current_setup_index]['test_type'] = 'control';
+                        // series_data[current_setup_index]['test_type'] = 'control';
 
-                        console.log(current_setup_data);
+                        console.log(series_data);
 
                         rebuild_table();
                     }
                     // Contrived make preview
                     else {
-                        study_setup_table_preview.empty();
+                        series_table_preview.empty();
                         var new_row = $('<tr>');
 
                         $.each(json, function(prefix, content_set) {
@@ -752,7 +753,7 @@ $(document).ready(function () {
                             }
                         });
 
-                        study_setup_table_preview.append(new_row);
+                        series_table_preview.append(new_row);
                     }
                 },
                 error: function (xhr, errmsg, err) {
@@ -769,7 +770,7 @@ $(document).ready(function () {
                 rebuild_table();
             }
             else {
-                study_setup_table_preview.empty();
+                series_table_preview.empty();
             }
         }
     }
@@ -785,13 +786,13 @@ $(document).ready(function () {
             'setting': 0,
         };
 
-        // Empty group selector
-        group_selector.empty();
+        // Empty series selector
+        series_selector.empty();
 
-        console.log(current_setup_data);
+        console.log(series_data);
 
-        if (current_setup_data.length) {
-            $.each(current_setup_data, function(index, content) {
+        if (series_data.length) {
+            $.each(series_data, function(index, content) {
                 spawn_row(content, false);
             });
         }
@@ -799,7 +800,7 @@ $(document).ready(function () {
             spawn_row(null, true);
         }
 
-        replace_setup_data();
+        replace_series_data();
 
         // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
         change_matrix_visibility();
@@ -854,7 +855,7 @@ $(document).ready(function () {
 
     $(document).on('click', '.query-versions', function() {
         current_setup_index = $(this).attr('data-row-index');
-        current_setup = current_setup_data[current_setup_index];
+        current_setup = series_data[current_setup_index];
         version_dialog.dialog('open');
     });
 
@@ -1037,19 +1038,22 @@ $(document).ready(function () {
         $('td[data-column-index="' + $(this).attr('data-column-to-apply') + '"]').removeClass('bg-warning');
     }
 
-    // Set label for selection
+    // Set label for selection (the label is just the current group)
     function set_label(current_label, group) {
-        current_label.find('.label')
+        current_label.find('.matrix-item-hover')
             .removeClass('label-warning')
             .addClass('label-primary')
             .text(group);
     }
 
     function unset_label(current_label) {
-        current_label.find('.label')
+        current_label.find('.matrix-item-hover')
             .removeClass('label-primary')
             .addClass('label-warning')
             .text('X');
+
+        // Removes the name of the chip as well
+        current_label.find('.matrix_item-name').text('');
     }
 
     // Makes the initial matrix
@@ -1121,7 +1125,7 @@ $(document).ready(function () {
                         .attr('data-name', current_name);
 
                     if (matrix_item_data[current_name]) {
-                        // new_cell.find('.label')
+                        // new_cell.find('.matrix-item-hover')
                         //     .removeClass('label-warning')
                         //     .addClass('label-primary')
                         //     .text(matrix_item_data[current_name].group);
@@ -1138,7 +1142,9 @@ $(document).ready(function () {
     };
 
     function chip_style_name_incrementer() {
-        var original_name = $('#id_matrix_item_name').val();
+        // var original_name = $('#id_matrix_item_name').val();
+
+        var original_name = $('#id_chip_naming').val();
         var split_name = original_name.split(/(\d+)/).filter(Boolean);
 
         var numeric_index = original_name.length - 1;
@@ -1160,9 +1166,7 @@ $(document).ready(function () {
         }
 
         // Iterate over all selected
-        $('.ui-selected').each(function(index) {
-            var current_item_id = this.id;
-
+        current_selection.each(function(index) {
             var incremented_value = index + initial_value;
             incremented_value += '';
 
@@ -1173,6 +1177,11 @@ $(document).ready(function () {
             var value = first_half + incremented_value + second_half;
 
             // SET DISPLAY AND VALUE HERE
+            // TODO
+            // The data for this item *should* exist unless something bad happened
+            matrix_item_data[$(this).attr('data-name')].name = value;
+            // Set the name label
+            $(this).find('.matrix_item-name').text(value);
         });
     }
 
@@ -1186,6 +1195,7 @@ $(document).ready(function () {
         matrix_table_selector.data('ui-selectable')._mouseStop(null);
     }
 
+    // We PROBABLY won't want to apply to everything
     // function apply_action_to_all() {
     //     // $(item_display_class).addClass('ui-selected');
     //     programmatic_select($(item_display_class));
@@ -1220,7 +1230,7 @@ $(document).ready(function () {
         // Indicate selection has concluded
         user_is_selecting = false;
 
-        // TODO
+        // TODO: OPEN THE DIALOG
         selection_dialog.dialog('open');
 
         // Remove ui-selected class manually
@@ -1246,18 +1256,26 @@ $(document).ready(function () {
 
             // SPECIAL OPERATION
             $('#id_matrix_item_device').parent().parent().show();
+
+            // SPECIAL OPERATION: SHOW NAMES
+            $('.matrix_item-name_section').show();
         }
         else if (current_representation === 'plate') {
             $('#matrix_device_and_model_section').show();
             // TODO FORCE SETUP DEVICE TO MATCH
             // SPECIAL OPERATION
             $('#id_matrix_item_device').parent().parent().hide();
+
+            // SPECIAL OPERATION: HIDE NAMES
+            $('.matrix_item-name_section').hide();
         }
     }
 
+    // Attach trigger and run initially
     representation_selector.change(check_representation);
     check_representation();
 
+    // Deal with device changing and change dimensions as necessary
     function check_matrix_device() {
         if (device_selector.val()) {
             get_matrix_dimensions();
@@ -1329,20 +1347,40 @@ $(document).ready(function () {
     }
 
     function apply_to_selected() {
-        if (group_selector.val()) {
+        if (series_selector.val()) {
+            var current_representation = representation_selector.val();
+
             current_selection.each(function() {
                 // Make new object if necessary for current item
                 if (!matrix_item_data[$(this).attr('data-name')]) {
                     matrix_item_data[$(this).attr('data-name')] = {};
                 }
 
-                matrix_item_data[$(this).attr('data-name')].series = group_selector.val();
+                var current_matrix_item_data = matrix_item_data[$(this).attr('data-name')];
+
+                current_matrix_item_data.series = series_selector.val();
 
                 // TODO: SET GROUP WITH RESPECT TO INCREMENT TODO
-                matrix_item_data[$(this).attr('data-name')].group = group_selector.val();
+                // TODO
+                current_matrix_item_data.group = series_selector.val();
 
-                set_label($(this), group_selector.val());
+                set_label($(this), series_selector.val());
+
+                // TODO: SET NAME
+                // Be careful setting to magic string
+                // Should the plate also fill the name label, even if it is not used?
+                if (current_representation !== 'chips') {
+                    // TODO PLATE NAMING
+                    // FOR THE MOMENT, JUST SETS TO THE DEFAULT NO APPENDED ZEROES
+                    current_matrix_item_data.name = $(this).attr('data-name');
+                }
             });
+
+            // If the representation is a chips, use the initial
+            if (current_representation === 'chips' && use_chip_naming.prop('checked')) {
+                // Sets the chip names
+                chip_style_name_incrementer();
+            }
         }
     }
 
@@ -1366,11 +1404,17 @@ $(document).ready(function () {
             var last_selection = current_selection.last();
             selection_dialog_selected_items.text(first_selection.attr('data-name') + ' -> ' + last_selection.attr('data-name'));
 
-            // Set group selector to nothing
-            group_selector.val('');
+            // Set series selector to nothing
+            series_selector.val('');
 
-            // Set the initial name to nothing
-            chip_naming.val('');
+            // SHOULD THE USE CHIP NAMING BE UNCHECKED EVERY TIME?
+            // Set the initial name to the first item or nothing
+            if (matrix_item_data[first_selection.attr('data-name')] && matrix_item_data[first_selection.attr('data-name')].name) {
+                chip_naming.val(matrix_item_data[first_selection.attr('data-name')].name);
+            }
+            else {
+                chip_naming.val('');
+            }
 
             // Only display initial name if this is for chips
             if (representation_selector.val() === 'chips') {
@@ -1409,13 +1453,13 @@ $(document).ready(function () {
     });
     selection_dialog.removeProp('hidden');
 
+    // Container that shows up to reveal what a group contains
     var matrix_contents_hover = $('#matrix_contents_hover');
+    // The row to add the group data to
     var matrix_contents_hover_row = $('#matrix_contents_hover_row');
 
     // For the hover preview of the data
     function generate_row_clone_html(current_series) {
-        // $('tr[data-series="' + current_data.series + '"]').html();
-
         var full_row = $('tr[data-series="' + current_series + '"]').clone();
 
         // Axe the first column
@@ -1430,13 +1474,15 @@ $(document).ready(function () {
             current_parent.html(current_text);
         });
 
-        // Kill buttons
+        // Kill buttons (this isn't for editing, just showing the data)
         full_row.find('.btn').remove();
 
         return full_row.html();
     }
 
     // Hover event for matrix contents
+    // TODO NEED TO DEAL WITH INCREMENTING COMPOUNDS
+    // ie. NEED TO DIFFERENTIATE GROUP AND SERIES
     $(document).on('mouseover', '.matrix-item-hover', function() {
         // Current group of the item
         var current_group = null;
@@ -1446,10 +1492,13 @@ $(document).ready(function () {
             current_group = current_data.group;
         }
 
+        // Only show if the user is not selecting
         if (!user_is_selecting && current_group) {
             matrix_contents_hover.show();
             // var left = $(this).offset().left - 10;
+            // Hard value for left (TODO: Probably better to set to left of the matrix?)
             var left = 300;
+            // Place slightly below current label
             var top = $(this).offset().top + 50;
             matrix_contents_hover.offset({left: left, top: top});
 
