@@ -3,10 +3,15 @@ $(document).ready(function () {
     var series_data_selector = $('#id_series_data');
 
     // FULL DATA
-    var full_series_data = {
-        series_data: [],
-        matrix_item_data: {}
-    };
+    var full_series_data = JSON.parse(series_data_selector.val());
+
+    if (series_data_selector.val() === '{}') {
+        full_series_data = {
+            series_data: [],
+            matrix_item_data: {}
+        };
+    }
+
     // SERIES DATA
     var series_data = full_series_data.series_data;
     var matrix_item_data = full_series_data.matrix_item_data;
@@ -391,7 +396,7 @@ $(document).ready(function () {
     // Swaps out the data we are saving to the form
     // TODO TODO TODO XXX REVISE TO USE ALL_DATA
     function replace_series_data() {
-        series_data_selector.val(JSON.stringify(series_data));
+        series_data_selector.val(JSON.stringify(full_series_data));
     }
 
     // Modify the setup data for the given contents
@@ -403,7 +408,7 @@ $(document).ready(function () {
             series_data[setup_index][prefix] = content;
         }
 
-        series_data_selector.val(JSON.stringify(series_data));
+        replace_series_data();
     }
 
     function spawn_column(prefix) {
@@ -541,7 +546,7 @@ $(document).ready(function () {
             );
         }
 
-        series_data_selector.val(JSON.stringify(series_data));
+        replace_series_data();
 
         // Add group to selectors
         series_selector.append(new Option('Series ' + (row_index + 1), row_index + 1));
@@ -1130,6 +1135,9 @@ $(document).ready(function () {
                         //     .addClass('label-primary')
                         //     .text(matrix_item_data[current_name].group);
                         set_label(new_cell, matrix_item_data[current_name].group);
+
+                        // Add the name
+                        new_cell.find('.matrix_item-name').text(matrix_item_data[current_name].name);
                     }
                 }
 
@@ -1268,6 +1276,9 @@ $(document).ready(function () {
 
             // SPECIAL OPERATION: HIDE NAMES
             $('.matrix_item-name_section').hide();
+
+            // UNCHECK USE CHIP NAMES
+            use_chip_naming.prop('checked', false);
         }
     }
 
@@ -1344,12 +1355,13 @@ $(document).ready(function () {
 
             unset_label($(this));
         });
+
+        replace_series_data();
     }
 
     function apply_to_selected() {
+        var current_representation = representation_selector.val();
         if (series_selector.val()) {
-            var current_representation = representation_selector.val();
-
             current_selection.each(function() {
                 // Make new object if necessary for current item
                 if (!matrix_item_data[$(this).attr('data-name')]) {
@@ -1375,13 +1387,15 @@ $(document).ready(function () {
                     current_matrix_item_data.name = $(this).attr('data-name');
                 }
             });
-
-            // If the representation is a chips, use the initial
-            if (current_representation === 'chips' && use_chip_naming.prop('checked')) {
-                // Sets the chip names
-                chip_style_name_incrementer();
-            }
         }
+
+        // If the representation is a chips, use the initial
+        if (current_representation === 'chips' && use_chip_naming.prop('checked')) {
+            // Sets the chip names
+            chip_style_name_incrementer();
+        }
+
+        replace_series_data();
     }
 
     // Selection dialog
@@ -1408,7 +1422,7 @@ $(document).ready(function () {
             series_selector.val('').trigger('change');
 
             // Disable the accept button until a series is selected
-            // $('#selection_dialog_accept').prop('disabled', 'disabled');
+            $('#selection_dialog_accept').prop('disabled', 'disabled');
 
             // SHOULD THE USE CHIP NAMING BE UNCHECKED EVERY TIME?
             // Set the initial name to the first item or nothing
@@ -1422,6 +1436,11 @@ $(document).ready(function () {
             // Only display initial name if this is for chips
             if (representation_selector.val() === 'chips') {
                 selection_dialog_naming_section.show();
+
+                // Allow just changing the name
+                if (use_chip_naming.prop('checked')) {
+                    $('#selection_dialog_accept').prop('disabled', false);
+                }
             }
             else {
                 selection_dialog_naming_section.hide();
@@ -1462,8 +1481,14 @@ $(document).ready(function () {
         if ($(this).val()) {
             $('#selection_dialog_accept').prop('disabled', false);
         }
-        else {
+        else if (representation_selector.val() !== 'chips' && !use_chip_naming.prop('checked')) {
             $('#selection_dialog_accept').prop('disabled', true);
+        }
+    });
+
+    use_chip_naming.change(function() {
+        if ($(this).prop('checked') && representation_selector.val() === 'chips') {
+            $('#selection_dialog_accept').prop('disabled', false);
         }
     });
 
