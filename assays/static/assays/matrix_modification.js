@@ -1183,9 +1183,13 @@ $(document).ready(function () {
             initial_value = 1;
         }
 
+        // Skipped keeps track of how many items were skipped (recalculates the name this way)
+        var skipped = 0;
+
         // Iterate over all selected
         current_selection.each(function(index) {
-            var incremented_value = index + initial_value;
+            // Note that this accounts for skips
+            var incremented_value = index + initial_value - skipped;
             incremented_value += '';
 
             while (first_half.length + second_half.length + incremented_value.length < original_name.length) {
@@ -1196,10 +1200,17 @@ $(document).ready(function () {
 
             // SET DISPLAY AND VALUE HERE
             // TODO
-            // The data for this item *should* exist unless something bad happened
-            matrix_item_data[$(this).attr('data-row-column')].name = value;
-            // Set the name label
-            $(this).find('.matrix_item-name').text(value);
+            // Conditional is to ignore empty items, every item needs a series before it is considered
+            if (matrix_item_data[$(this).attr('data-row-column')]) {
+                // Set the name
+                matrix_item_data[$(this).attr('data-row-column')].name = value;
+                // Set the name label
+                $(this).find('.matrix_item-name').text(value);
+            }
+            // Increment skipped if this items doesn't have a series
+            else {
+                skipped += 1;
+            }
         });
     }
 
