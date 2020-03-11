@@ -240,19 +240,19 @@
                 {% include 'generic_popup_link.html' with field=form.compound_concentration_unit %}
             </td>
         </tr>
-        {% comment %}
         <tr>
-            <th>Concentration Increment</th>
-            <th>Increment Operation</th>
+            <th>Use Concentration Series</th>
+            <th>Concentration Series</th>
+            <th>Series Operation</th>
         </tr>
         <tr>
+            <td class="text-center"><input id="id_use_compound_concentration_increment" name="use_compound_concentration_increment" class="big-checkbox" type="checkbox"></td>
             <td>{{ form.compound_concentration_increment }}</td>
             <td>{{ form.compound_concentration_increment_type }}</td>
         </tr>
         <tr>
-            <td colspan="2">{{ form.compound_concentration_increment_direction }}</td>
+            <td colspan="3">{{ form.compound_concentration_increment_direction }}</td>
         </tr>
-        {% endcomment %}
     </table>
     <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
         <tr>
@@ -475,6 +475,8 @@
             <span class="compound-compound"></span>
             <span class="compound-concentration"></span>
             <span class="compound-concentration_unit"></span>
+            {# PLEASE NOTE: NEW #}
+            <span class="compound-concentration_dilution"></span>
         </div>
         <div>
             <span class="compound-supplier_text"></span>

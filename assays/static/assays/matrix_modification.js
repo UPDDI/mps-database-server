@@ -87,6 +87,14 @@ $(document).ready(function () {
     empty_html[cell_prefix] = empty_cell_html;
     empty_html[setting_prefix] = empty_setting_html;
 
+    // Specific to compounds, this checkbox will indicate whether to use the increment
+    var use_compound_concentration_increment = $('#id_use_compound_concentration_increment');
+    var compound_compound_increment = $('#id_compound_compound_increment');
+    var compound_compound_increment_type = $('#id_compound_compound_increment_type');
+    var compound_concentration_increment_direction = $('#id_compound_concentration_increment_direction');
+
+
+
     var selection_dialog_selected_items = $('#selection_dialog_selected_items');
     var series_selector = $('#id_series_selector');
     var selection_dialog_naming_section = $('.selection_dialog_naming_section');
@@ -1478,6 +1486,36 @@ $(document).ready(function () {
     });
     selection_dialog.removeProp('hidden');
 
+    // Checking and unchecking will disable the increment and type
+    use_compound_concentration_increment.change(function() {
+        var is_checked = $(this).prop('checked');
+
+        // Enable/disable increment inputs as necessary
+        compound_compound_increment.prop('disabled', !is_checked);
+        compound_compound_increment_type.prop('disabled', !is_checked);
+        compound_concentration_increment_direction.prop('disabled', !is_checked);
+
+        // PLEASE NOTE: ALSO SET THE INCREMENT TO NOTHING IF NOT ACTIVE
+        if (!is_checked) {
+            compound_compound_increment.val('');
+        }
+    }).trigger('change');
+
+    // Check to see if chip naming style should be used
+    use_chip_naming.change(function() {
+        if ($(this).prop('checked') && representation_selector.val() === 'chips') {
+            // Allow apply
+            $('#selection_dialog_accept').prop('disabled', false);
+        }
+        // If this is for chips and there is no series and use_chip_naming is off
+        else if (representation_selector.val() === 'chips' && !series_selector.val()) {
+            // Disable apply
+            $('#selection_dialog_accept').prop('disabled', true);
+        }
+        // Enable/disable chip_naming
+        chip_naming.prop('disabled', !$(this).prop('checked'));
+    }).trigger('change');
+
     // Disable and enable apply based on whether there is a series
     series_selector.change(function() {
         if ($(this).val()) {
@@ -1485,12 +1523,6 @@ $(document).ready(function () {
         }
         else if (representation_selector.val() !== 'chips' && !use_chip_naming.prop('checked')) {
             $('#selection_dialog_accept').prop('disabled', true);
-        }
-    });
-
-    use_chip_naming.change(function() {
-        if ($(this).prop('checked') && representation_selector.val() === 'chips') {
-            $('#selection_dialog_accept').prop('disabled', false);
         }
     });
 
