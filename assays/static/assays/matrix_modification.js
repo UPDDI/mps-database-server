@@ -600,21 +600,21 @@ $(document).ready(function () {
 
         // Iterate over matrix_item and reset the current series
         var all_keys = Object.keys(matrix_item_data);
-        $.each(all_keys, function(index, item_data_name) {
-            var contents = matrix_item_data[item_data_name];
+        $.each(all_keys, function(index, item_row_column) {
+            var contents = matrix_item_data[item_row_column];
             // Delete if this is associated with the series to be removed
             if (contents.series - 1 === current_row_index) {
-                delete matrix_item_data[item_data_name];
+                delete matrix_item_data[item_row_column];
 
                 // Unset the label
-                unset_label($(item_display_class + '[data-name="' + item_data_name + '"]'));
+                unset_label($(item_display_class + '[data-row-column="' + item_row_column + '"]'));
             }
             // Decrement if this comes after the series to be removed
             else if (contents.series - 1 > current_row_index) {
                 contents.series = contents.series - 1;
 
                 // Reset the label
-                set_label($(item_display_class + '[data-name="' + item_data_name + '"]'), contents.series);
+                set_label($(item_display_class + '[data-row-column="' + item_row_column + '"]'), contents.series);
             }
         });
 
@@ -1122,22 +1122,24 @@ $(document).ready(function () {
                 // If this is for actual contents
                 else {
                     var current_name = to_letters(row_index + 1) +(column_index + 1);
+                    var row_column = row_index + '_' + column_index;
                     new_cell = empty_item_html
                         .clone()
                         .attr('id', item_id)
                         .attr('data-row-index', row_index)
                         .attr('data-column-index', column_index)
-                        .attr('data-name', current_name);
+                        .attr('data-row-column', row_column)
+                        .attr('data-well-name', current_name);
 
-                    if (matrix_item_data[current_name]) {
+                    if (matrix_item_data[row_column]) {
                         // new_cell.find('.matrix-item-hover')
                         //     .removeClass('label-warning')
                         //     .addClass('label-primary')
                         //     .text(matrix_item_data[current_name].group);
-                        set_label(new_cell, matrix_item_data[current_name].group);
+                        set_label(new_cell, matrix_item_data[row_column].group);
 
                         // Add the name
-                        new_cell.find('.matrix_item-name').text(matrix_item_data[current_name].name);
+                        new_cell.find('.matrix_item-name').text(matrix_item_data[row_column].name);
                     }
                 }
 
@@ -1187,7 +1189,7 @@ $(document).ready(function () {
             // SET DISPLAY AND VALUE HERE
             // TODO
             // The data for this item *should* exist unless something bad happened
-            matrix_item_data[$(this).attr('data-name')].name = value;
+            matrix_item_data[$(this).attr('data-row-column')].name = value;
             // Set the name label
             $(this).find('.matrix_item-name').text(value);
         });
@@ -1351,7 +1353,7 @@ $(document).ready(function () {
 
     function delete_selected() {
         current_selection.each(function() {
-            delete matrix_item_data[$(this).attr('data-name')];
+            delete matrix_item_data[$(this).attr('data-row-column')];
 
             unset_label($(this));
         });
@@ -1364,11 +1366,11 @@ $(document).ready(function () {
         if (series_selector.val()) {
             current_selection.each(function() {
                 // Make new object if necessary for current item
-                if (!matrix_item_data[$(this).attr('data-name')]) {
-                    matrix_item_data[$(this).attr('data-name')] = {};
+                if (!matrix_item_data[$(this).attr('data-row-column')]) {
+                    matrix_item_data[$(this).attr('data-row-column')] = {};
                 }
 
-                var current_matrix_item_data = matrix_item_data[$(this).attr('data-name')];
+                var current_matrix_item_data = matrix_item_data[$(this).attr('data-row-column')];
 
                 current_matrix_item_data.series = series_selector.val();
 
@@ -1384,7 +1386,7 @@ $(document).ready(function () {
                 if (current_representation !== 'chips') {
                     // TODO PLATE NAMING
                     // FOR THE MOMENT, JUST SETS TO THE DEFAULT NO APPENDED ZEROES
-                    current_matrix_item_data.name = $(this).attr('data-name');
+                    current_matrix_item_data.name = $(this).attr('data-well-name');
                 }
             });
         }
@@ -1416,7 +1418,7 @@ $(document).ready(function () {
             // Discern what will be applied to
             var first_selection = current_selection.first();
             var last_selection = current_selection.last();
-            selection_dialog_selected_items.text(first_selection.attr('data-name') + ' -> ' + last_selection.attr('data-name'));
+            selection_dialog_selected_items.text(first_selection.attr('data-well-name') + ' -> ' + last_selection.attr('data-well-name'));
 
             // Set series selector to nothing
             series_selector.val('').trigger('change');
@@ -1426,8 +1428,8 @@ $(document).ready(function () {
 
             // SHOULD THE USE CHIP NAMING BE UNCHECKED EVERY TIME?
             // Set the initial name to the first item or nothing
-            if (matrix_item_data[first_selection.attr('data-name')] && matrix_item_data[first_selection.attr('data-name')].name) {
-                chip_naming.val(matrix_item_data[first_selection.attr('data-name')].name);
+            if (matrix_item_data[first_selection.attr('data-row-column')] && matrix_item_data[first_selection.attr('data-row-column')].name) {
+                chip_naming.val(matrix_item_data[first_selection.attr('data-row-column')].name);
             }
             else {
                 chip_naming.val('');
@@ -1495,11 +1497,21 @@ $(document).ready(function () {
     // Container that shows up to reveal what a group contains
     var matrix_contents_hover = $('#matrix_contents_hover');
     // The row to add the group data to
-    var matrix_contents_hover_row = $('#matrix_contents_hover_row');
+    var matrix_contents_hover_body = $('#matrix_contents_hover_body');
 
     // For the hover preview of the data
-    function generate_row_clone_html(current_series) {
-        var full_row = $('tr[data-series="' + current_series + '"]').clone();
+    // TODO NEED current_group for dilution etc.
+    function generate_row_clone_html(current_well_name, current_series, current_group) {
+        // (This divs are contrivances)
+        var name_row = $('<div>').append(
+            $('<tr>').append(
+                $('<td>').text(current_well_name)
+            )
+        );
+
+        var full_row = $('<div>').append(
+            $('tr[data-series="' + current_series + '"]').clone()
+        );
 
         // Axe the first column
         full_row.find('td').first().remove();
@@ -1513,10 +1525,12 @@ $(document).ready(function () {
             current_parent.html(current_text);
         });
 
+        // TODO: NEED TO REVISE COMPOUND DISPLAYS FOR DILUTION
+
         // Kill buttons (this isn't for editing, just showing the data)
         full_row.find('.btn').remove();
 
-        return full_row.html();
+        return name_row.html() + full_row.html();
     }
 
     // Hover event for matrix contents
@@ -1525,14 +1539,17 @@ $(document).ready(function () {
     $(document).on('mouseover', '.matrix-item-hover', function() {
         // Current group of the item
         var current_group = null;
-        var current_data = matrix_item_data[$(this).parent().attr('data-name')];
+        var current_series = null;
+        var current_data = matrix_item_data[$(this).parent().attr('data-row-column')];
 
         if (current_data && current_data.group) {
             current_group = current_data.group;
+            current_series = current_data.series;
         }
 
         // Only show if the user is not selecting
-        if (!user_is_selecting && current_group) {
+        // Note that empty wells just show the name of the well
+        if (!user_is_selecting) {
             matrix_contents_hover.show();
             // var left = $(this).offset().left - 10;
             // Hard value for left (TODO: Probably better to set to left of the matrix?)
@@ -1541,8 +1558,9 @@ $(document).ready(function () {
             var top = $(this).offset().top + 50;
             matrix_contents_hover.offset({left: left, top: top});
 
-            matrix_contents_hover_row.html(
-                generate_row_clone_html(current_data.series)
+            matrix_contents_hover_body.empty();
+            matrix_contents_hover_body.html(
+                generate_row_clone_html($(this).parent().attr('data-well-name'), current_series, current_group)
             );
         }
     });
