@@ -740,6 +740,7 @@ def get_control_data(
 
 
 # TODO WE MAY WANT THE DEFINITION OF A TREATMENT GROUP TO CHANGE, WHO KNOWS
+# NOTE: The compound_post_filters are only present in charting because they are only needed when making compound legends
 def get_item_groups(study, criteria, matrix_items=None, compound_profile=False, matrix_item_compound_post_filters=None):
     treatment_groups = {}
     setup_to_treatment_group = {}

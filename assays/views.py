@@ -76,7 +76,9 @@ from assays.forms import (
     AssayStudySetReferenceFormSetFactory,
     AssayMatrixFormNew,
     AssayTargetForm,
+    AssayTargetRestrictedForm,
     AssayMethodForm,
+    AssayMethodRestrictedForm,
     AssayMeasurementTypeForm,
     AssaySettingForm,
     PhysicalUnitsForm,
@@ -3133,6 +3135,61 @@ class AssayStudyPowerAnalysisStudy(StudyViewerMixin, DetailView):
     template_name = 'assays/assaystudy_power_analysis_study.html'
 
 
+class CreatorAndNotInUseOrRestrictedMixin(object):
+    """This mixin redirects to a divergent edit page for restricted edits when possible"""
+
+    restricted_string_append = 'restricted/'
+
+    @method_decorator(login_required)
+    @method_decorator(user_passes_test(user_is_active))
+    def dispatch(self, *args, **kwargs):
+        # Superusers always have access
+        if self.request.user.is_authenticated and self.request.user.is_superuser:
+            return super(CreatorAndNotInUseOrRestrictedMixin, self).dispatch(*args, **kwargs)
+
+        # The user needs at least one group
+        # This should be handled after the redirect
+        # valid_groups = filter_groups(self.request.user)
+        # if not valid_groups:
+        #     return PermissionDenied(self.request, 'You must be a member of at least one group')
+
+        self.object = self.get_object()
+
+        use_restricted_mode = False
+
+        # Check if this is the creator
+        if self.request.user.id != self.object.created_by_id:
+            use_restricted_mode = True
+
+        # relations_to_check = {
+        #     "<class 'django.db.models.fields.reverse_related.ManyToOneRel'>": True,
+        #     "<class 'django.db.models.fields.reverse_related.ManyToOneRel'>": True,
+        # }
+
+        if not use_restricted_mode:
+            for current_field in self.object._meta.get_fields():
+                # TODO MODIFY TO CHECK M2M MANAGERS IN THE FUTURE
+                # TODO REVISE
+                # if str(type(current_field)) in relations_to_check:
+                if str(type(current_field)) == "<class 'django.db.models.fields.reverse_related.ManyToOneRel'>":
+                    manager = getattr(self.object, current_field.name + '_set', '')
+                    if manager:
+                        count = manager.count()
+                        if count > 0:
+                            use_restricted_mode = True
+                            break
+
+        # TODO TODO HOW DO WE DO THE REDIRECT?
+        if use_restricted_mode:
+            return redirect(
+                # Contrived, add restricted/ to perform the redirect
+                # REALLY: this should be a reverse
+                '{}{}'.format(self.request.path, self.restricted_string_append)
+            )
+
+        return super(CreatorAndNotInUseOrRestrictedMixin, self).dispatch(*args, **kwargs)
+
+
 # REVIEW PERMISSIONS
 class AssayTargetMixin(FormHandlerMixin):
     model = AssayTarget
@@ -3158,8 +3215,13 @@ class AssayTargetAdd(OneGroupRequiredMixin, AssayTargetMixin, CreateView):
     pass
 
 
-class AssayTargetUpdate(CreatorAndNotInUseMixin, AssayTargetMixin, UpdateView):
+class AssayTargetUpdate(CreatorAndNotInUseOrRestrictedMixin, AssayTargetMixin, UpdateView):
     pass
+
+
+class AssayTargetUpdateRestricted(OneGroupRequiredMixin, AssayTargetMixin, UpdateView):
+    # Use the restricted form instead
+    form_class = AssayTargetRestrictedForm
 
 
 class AssayTargetList(ListView):
@@ -3215,8 +3277,13 @@ class AssayMethodAdd(OneGroupRequiredMixin, AssayMethodMixin, CreateView):
     pass
 
 
-class AssayMethodUpdate(CreatorAndNotInUseMixin, AssayMethodMixin, UpdateView):
+class AssayMethodUpdate(CreatorAndNotInUseOrRestrictedMixin, AssayMethodMixin, UpdateView):
     pass
+
+
+class AssayMethodUpdateRestricted(OneGroupRequiredMixin, AssayMethodMixin, UpdateView):
+    # Use the restricted form instead
+    form_class = AssayMethodRestrictedForm
 
 
 class AssayMethodList(ListView):

@@ -2449,8 +2449,54 @@ class AssayTargetForm(BootstrapForm):
         return new_target
 
 
-class AssayMethodForm(BootstrapForm):
+class AssayTargetRestrictedForm(BootstrapForm):
     # For adding to category m2m
+    category = forms.ModelMultipleChoiceField(
+        queryset=AssayCategory.objects.all().order_by('name'),
+        # Should this be required?
+        required=False,
+        # empty_label='All'
+    )
+    # We don't actually want restricted users to meddle with the methods straight (they could remove methods)
+    method_proxy = forms.ModelMultipleChoiceField(
+        queryset=AssayMethod.objects.all().order_by('name'),
+        label='Methods'
+    )
+
+    class Meta(object):
+        model = AssayTarget
+        fields = ['category', 'method_proxy']
+
+    def __init__(self, *args, **kwargs):
+        super(AssayTargetRestrictedForm, self).__init__(*args, **kwargs)
+
+        # Get category if possible
+        # (It should always be possible, this form is for editing)
+        if self.instance and self.instance.id:
+            self.fields['category'].initial = (
+                AssayCategory.objects.filter(
+                    targets__id=self.instance.id
+                )
+            )
+            self.fields['method_proxy'].initial = (
+                self.instance.methods.all()
+            )
+    def save(self, commit=True):
+        new_target = super(AssayTargetRestrictedForm, self).save(commit)
+
+        if commit:
+            if self.cleaned_data.get('category', None):
+                for current_category in self.cleaned_data.get('category', None):
+                    current_category.targets.add(self.instance)
+            if self.cleaned_data.get('method_proxy', None):
+                for current_method in self.cleaned_data.get('method_proxy', None):
+                    self.instance.methods.add(current_method)
+
+        return new_target
+
+
+class AssayMethodForm(BootstrapForm):
+    # For adding to target m2m
     target = forms.ModelMultipleChoiceField(
         queryset=AssayTarget.objects.all().order_by('name'),
         # No longer required to prevent circularity with Target
@@ -2491,6 +2537,42 @@ class AssayMethodForm(BootstrapForm):
             for initial_target in self.initial_targets:
                 if initial_target not in self.cleaned_data.get('target', None):
                     initial_target.methods.remove(self.instance)
+
+        return new_method
+
+
+class AssayMethodRestrictedForm(BootstrapForm):
+    # For adding to target m2m
+    target = forms.ModelMultipleChoiceField(
+        queryset=AssayTarget.objects.all().order_by('name'),
+        # No longer required to prevent circularity with Target
+        required=False
+    )
+
+    class Meta(object):
+        model = AssayMethod
+        # Only include the target, we don't want anything else to change
+        fields = ['target']
+
+    def __init__(self, *args, **kwargs):
+        super(AssayMethodRestrictedForm, self).__init__(*args, **kwargs)
+
+        # Get target if possible
+        # (It should always be possible, this form is only for editing)
+        if self.instance and self.instance.id:
+            self.fields['target'].initial = (
+                AssayTarget.objects.filter(
+                    methods__id=self.instance.id
+                )
+            )
+
+    def save(self, commit=True):
+        new_method = super(AssayMethodRestrictedForm, self).save(commit)
+
+        if commit:
+            # In the restricted form, one is allowed to add targets ONLY
+            for current_target in self.cleaned_data.get('target', None):
+                current_target.methods.add(self.instance)
 
         return new_method
 

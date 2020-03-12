@@ -46,10 +46,12 @@ from assays.views import (
     AssayTargetList,
     AssayTargetDetail,
     AssayTargetUpdate,
+    AssayTargetUpdateRestricted,
     AssayMethodAdd,
     AssayMethodList,
     AssayMethodDetail,
     AssayMethodUpdate,
+    AssayMethodUpdateRestricted,
     PhysicalUnitsAdd,
     PhysicalUnitsList,
     PhysicalUnitsDetail,
@@ -187,12 +189,14 @@ urlpatterns = [
     url(r'^assays/target/$', AssayTargetList.as_view(), name='assays-assaytarget-list'),
     url(r'^assays/target/(?P<pk>[0-9]+)/$', AssayTargetDetail.as_view(), name='assays-assaytarget-detail'),
     url(r'^assays/target/(?P<pk>[0-9]+)/update/$', AssayTargetUpdate.as_view(), name='assays-assaytarget-update'),
+    url(r'^assays/target/(?P<pk>[0-9]+)/update/restricted/$', AssayTargetUpdateRestricted.as_view(), name='assays-assaytarget-restricted'),
     url(r'^assays/target/add/$', AssayTargetAdd.as_view(), name='assays-assaytarget-add'),
 
     # Methods
     url(r'^assays/method/$', AssayMethodList.as_view(), name='assays-assaymethod-list'),
     url(r'^assays/method/(?P<pk>[0-9]+)/$', AssayMethodDetail.as_view(), name='assays-assaymethod-detail'),
     url(r'^assays/method/(?P<pk>[0-9]+)/update/$', AssayMethodUpdate.as_view(), name='assays-assaymethod-update'),
+    url(r'^assays/method/(?P<pk>[0-9]+)/update/restricted/$', AssayMethodUpdateRestricted.as_view(), name='assays-assaymethod-restricted'),
     url(r'^assays/method/add/$', AssayMethodAdd.as_view(), name='assays-assaymethod-add'),
 
     # Setting
