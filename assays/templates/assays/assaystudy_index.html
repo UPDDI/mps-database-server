@@ -138,6 +138,7 @@
                 {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
                 <div>
                     <a href="assaymatrix/add" class="btn btn-success" role="button">Add Matrix</a>
+                    <a href="assaymatrix/add/prototype/" class="btn btn-danger" role="button">Add Matrix PROTOTYPE</a>
                 </div>
                 {% endif %}
             </h2>
@@ -149,6 +150,7 @@
             <thead>
                 <tr>
                     <th>View/Edit</th>
+                    <th>Edit PROTOTPYE</th>
                     <th>Name</th>
                     <th>Items</th>
                     <th>Creator</th>
@@ -168,6 +170,12 @@
                            href="{{ matrix.get_absolute_url }}">
                            {% endif %}
                             View/Edit
+                        </a>
+                    </td>
+                    <td>
+                        <a class="btn btn-danger"
+                           href="{{ matrix.get_absolute_url }}prototype/">
+                            PROTOTYPE
                         </a>
                     </td>
                     <td>{{ matrix.name }}</td>

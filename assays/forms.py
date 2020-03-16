@@ -924,13 +924,15 @@ class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
     # FORCE UNIQUENESS CHECK
     def clean(self):
-        super(AssayMatrixForm, self).clean()
+        data = super(AssayMatrixForm, self).clean()
 
         if AssayMatrix.objects.filter(
                 study_id=self.instance.study.id,
                 name=self.cleaned_data.get('name', '')
         ).exclude(pk=self.instance.pk).count():
             raise forms.ValidationError({'name': ['Matrix name must be unique within study.']})
+
+        return data
 
 
 class AssaySetupCompoundForm(ModelFormSplitTime):

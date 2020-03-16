@@ -1289,17 +1289,35 @@ class AssayMatrixMixin(StudyGroupMixin, FormHandlerMixin):
 
         return context
 
+    # Get the study and user (TODO REVISE)
+    def get_form(self, form_class=None):
+        form_class = self.get_form_class()
 
-class AssayMatrixAdd(AssayMatrixMixin, CreateView):
+        if self.object:
+            # Get the study
+            study = self.object.study
+        else:
+            study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
+
+        # If POST
+        if self.request.method == 'POST':
+            return form_class(self.request.POST, self.request.FILES, instance=self.object, study=study, user=self.request.user)
+        # If GET
+        else:
+            return form_class(instance=self.object, study=study, user=self.request.user)
+
+
+class AssayMatrixAddPrototype(AssayMatrixMixin, CreateView):
     pass
 
 
-class AssayMatrixUpdate(AssayMatrixMixin, UpdateView):
+class AssayMatrixUpdatePrototype(AssayMatrixMixin, UpdateView):
     pass
 
 
 # TODO REFACTOR
-class AssayMatrixAddOld(StudyGroupMixin, CreateView):
+# TODO REFACTOR
+class AssayMatrixAdd(StudyGroupMixin, CreateView):
     """Add a matrix"""
     model = AssayMatrix
     template_name = 'assays/assaymatrix_add.html'
@@ -1384,9 +1402,9 @@ class AssayMatrixAddOld(StudyGroupMixin, CreateView):
 
 
 # TODO NOT THE RIGHT PERMISSION MIXIN
-class AssayMatrixUpdateOld(HistoryMixin, StudyGroupMixin, UpdateView):
+class AssayMatrixUpdate(HistoryMixin, StudyGroupMixin, UpdateView):
     model = AssayMatrix
-    template_name = 'assays/matrix_modification.html'
+    template_name = 'assays/assaymatrix_add.html'
     form_class = AssayMatrixForm
 
     # A little extreme, but should work
