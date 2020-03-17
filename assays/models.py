@@ -2052,7 +2052,9 @@ class AssayMatrix(FlaggableModel):
     )
 
     # NOTE THAT THIS FIELD TYPE IS PECULIAR TO POSTGRES
-    series_data = JSONField(default=dict)
+    # NOTE: Additionally, this is just for testing purposes
+    # Once the reset of the schema has been made, it must be removed
+    series_data = JSONField(default=dict, blank=True)
 
     def __str__(self):
         return '{0}'.format(self.name)
