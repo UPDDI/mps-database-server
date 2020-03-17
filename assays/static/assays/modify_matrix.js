@@ -307,7 +307,13 @@ $(document).ready(function () {
                     return origin[0].selectize.options[possible_int].text;
                 }
                 else {
-                    return origin[0].selectize.options[field_value].text;
+                    if (origin[0].selectize.options[field_value]) {
+                        return origin[0].selectize.options[field_value].text;
+                    }
+                    // If the current selection is blank, return the empty string
+                    else {
+                        return '';
+                    }
                 }
                 // THIS IS BROKEN, FOR PRE-SELECTIZE ERA
                 // return origin.find('option[value="' + field_value + '"]').text()
