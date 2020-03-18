@@ -31,10 +31,12 @@ class TrackableAdmin(ImportExportModelAdmin):
         obj.save()
 
     # Do not allow modification of our data but still display it:
-    readonly_fields = ('created_by',
-                       'created_on',
-                       'modified_by',
-                       'modified_on')
+    readonly_fields = (
+        'created_by',
+        'created_on',
+        'modified_by',
+        'modified_on'
+    )
 
     class Meta(object):
         abstract = True

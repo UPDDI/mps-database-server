@@ -712,7 +712,7 @@ class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
         label='Matrix Item MPS Model'
     )
     organ_model_protocol = forms.ModelChoiceField(
-        queryset=OrganModelProtocol.objects.all().order_by('version'),
+        queryset=OrganModelProtocol.objects.none(),
         required=False,
         label='Matrix Item MPS Model Version'
     )
@@ -928,8 +928,8 @@ class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
         data = super(AssayMatrixForm, self).clean()
 
         if AssayMatrix.objects.filter(
-                study_id=self.instance.study.id,
-                name=self.cleaned_data.get('name', '')
+            study_id=self.instance.study.id,
+            name=self.cleaned_data.get('name', '')
         ).exclude(pk=self.instance.pk).count():
             raise forms.ValidationError({'name': ['Matrix name must be unique within study.']})
 

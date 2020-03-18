@@ -116,7 +116,15 @@ DEFAULT_CELL_CRITERIA = (
 )
 
 
-# May be moved
+# TODO TODO TODO
+# These choices need to change
+# Please note contrivance with respect to compound/"Treated"
+TEST_TYPE_CHOICES = (
+    ('', '--------'), ('control', 'Control'), ('compound', 'Treated')
+)
+
+
+# Should be moved
 def get_center_id(group_id):
     """Get a center ID from a group ID"""
     data = {}
@@ -2080,17 +2088,629 @@ class AssayMatrix(FlaggableModel):
         return '{}delete/'.format(self.get_absolute_url())
 
 
+# Having an abstract class will cut down on problems with repetition
+class AbstractSetupCompound(models.Model):
+    """Defines an abstract compound configuration for binding to a group"""
+
+    class Meta(object):
+        abstract = True
+
+        # Default needs to be revised in models extending this, but for reference
+        unique_together = [
+            (
+                'compound_instance',
+                'concentration',
+                'concentration_unit',
+                'addition_time',
+                'duration',
+                'addition_location'
+            )
+        ]
+
+        ordering = (
+            'addition_time',
+            'compound_instance__compound__name',
+            'addition_location__name',
+            'concentration_unit__scale_factor',
+            'concentration',
+            'concentration_unit__name',
+            'duration',
+        )
+
+    # COMPOUND INSTANCE IS REQUIRED, however null=True was done to avoid a submission issue
+    # IDEALLY WE WILL RESOLVE THIS ASAP
+    compound_instance = models.ForeignKey(
+        'compounds.CompoundInstance',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name='Compound Instance'
+    )
+    concentration = models.FloatField(verbose_name='Concentration')
+    concentration_unit = models.ForeignKey(
+        'assays.PhysicalUnits',
+        verbose_name='Concentration Unit',
+        on_delete=models.CASCADE,
+    )
+
+    # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
+    addition_time = models.FloatField(
+        blank=True,
+        verbose_name='Addition Time'
+    )
+
+    # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
+    duration = models.FloatField(
+        blank=True,
+        verbose_name='Duration'
+    )
+
+    # TODO TODO TODO TEMPORARILY NOT REQUIRED
+    addition_location = models.ForeignKey(
+        AssaySampleLocation,
+        blank=True,
+        default=1,
+        on_delete=models.CASCADE,
+        verbose_name='Addition Location'
+    )
+
+    # NOT DRY
+    def get_addition_time_string(self):
+        split_times = get_split_times(self.addition_time)
+        return 'D{0:02} H{1:02} M{2:02}'.format(
+            split_times.get('day'),
+            split_times.get('hour'),
+            split_times.get('minute'),
+        )
+
+    def get_duration_string(self):
+        split_times = get_split_times(self.duration)
+        return 'D{0:02} H{1:02} M{2:02}'.format(
+            split_times.get('day'),
+            split_times.get('hour'),
+            split_times.get('minute'),
+        )
+
+    # CRUDE
+    def flex_string(self, criteria=None):
+        if criteria:
+            full_string = []
+            if 'compound_instance.compound_id' in criteria:
+                full_string.append(self.compound_instance.compound.name)
+            if 'concentration' in criteria:
+                full_string.append('{:g}'.format(self.concentration))
+                full_string.append(self.concentration_unit.unit)
+            if 'addition_time' in criteria:
+                full_string.append('Added on: ' + self.get_addition_time_string())
+            if 'duration' in criteria:
+                full_string.append('Duration of: ' + self.get_duration_string())
+            if 'addition_location_id' in criteria:
+                full_string.append(str(self.addition_location))
+            return '{}; '.format(' '.join(full_string))
+        else:
+            return str(self)
+
+    def __str__(self):
+        if self.addition_location:
+            return '{0} ({1} {2})\nAdded on: {3}; Duration of: {4}; Added to: {5}'.format(
+                self.compound_instance.compound.name,
+                self.concentration,
+                self.concentration_unit.unit,
+                self.get_addition_time_string(),
+                self.get_duration_string(),
+                self.addition_location
+            )
+        else:
+            return '{0} ({1} {2})\nAdded on: {3}; Duration of: {4}'.format(
+                self.compound_instance.compound.name,
+                self.concentration,
+                self.concentration_unit.unit,
+                self.get_addition_time_string(),
+                self.get_duration_string(),
+            )
+
+
+class AbstractSetupCell(models.Model):
+    """Defines an abstract cell configuration for binding to either a group or an MPS Model Version"""
+    class Meta(object):
+        abstract = True
+
+        # Default needs to be revised in models extending this, but for reference
+        unique_together = [
+            (
+                'cell_sample',
+                'biosensor',
+                # Skip density?
+                'density',
+                'density_unit',
+                'passage',
+                'addition_time',
+                'addition_location'
+                # Will we need addition time and location here?
+            )
+        ]
+
+        ordering = (
+            'addition_time',
+            'cell_sample__cell_type__name',
+            'cell_sample',
+            'addition_location__name',
+            'biosensor__name',
+            'density',
+            'density_unit__name',
+            'passage'
+        )
+
+    cell_sample = models.ForeignKey(
+        'cellsamples.CellSample',
+        on_delete=models.CASCADE,
+        verbose_name='Cell Sample'
+    )
+    biosensor = models.ForeignKey(
+        'cellsamples.Biosensor',
+        on_delete=models.CASCADE,
+        # Default is naive
+        default=2,
+        verbose_name='Biosensor'
+    )
+    density = models.FloatField(
+        verbose_name='density',
+        default=0
+    )
+
+    density_unit = models.ForeignKey(
+        'assays.PhysicalUnits',
+        on_delete=models.CASCADE,
+        verbose_name='Density Unit'
+    )
+    passage = models.CharField(
+        max_length=16,
+        verbose_name='Passage#',
+        blank=True,
+        default=''
+    )
+
+    # DO WE WANT ADDITION TIME AND DURATION?
+    # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
+    # TODO TODO TODO TEMPORARILY NOT REQUIRED
+    addition_time = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Addition Time'
+    )
+
+    # TODO TODO TODO DO WE WANT DURATION????
+    # duration = models.FloatField(null=True, blank=True)
+
+    # TODO TODO TODO TEMPORARILY NOT REQUIRED
+    addition_location = models.ForeignKey(
+        AssaySampleLocation,
+        blank=True,
+        default=1,
+        on_delete=models.CASCADE,
+        verbose_name='Addition Location'
+    )
+
+    # NOT DRY
+    def get_addition_time_string(self):
+        split_times = get_split_times(self.addition_time)
+        return 'D{0:02} H{1:02} M{2:02}'.format(
+            split_times.get('day'),
+            split_times.get('hour'),
+            split_times.get('minute'),
+        )
+
+    # def get_duration_string(self):
+    #     split_times = get_split_times(self.duration)
+    #     return 'D{0:02} H{1:02} M{2:02}'.format(
+    #         split_times.get('day'),
+    #         split_times.get('hour'),
+    #         split_times.get('minute'),
+    #     )
+
+    # CRUDE
+    def flex_string(self, criteria=None):
+        if criteria:
+            full_string = []
+            if 'cell_sample_id' in criteria:
+                full_string.append(str(self.cell_sample))
+            if 'cell_sample_id' not in criteria and 'cell_sample.cell_type_id' in criteria:
+                full_string.append(str(self.cell_sample.cell_type))
+            if 'cell_sample_id' not in criteria and 'cell_sample.cell_subtype_id' in criteria:
+                full_string.append(str(self.cell_sample.cell_subtype))
+            if 'passage' in criteria:
+                full_string.append(self.passage)
+            if 'density' in criteria:
+                full_string.append('{:g}'.format(self.density))
+                full_string.append(self.density_unit.unit)
+            if 'addition_time' in criteria:
+                full_string.append('Added on: ' + self.get_addition_time_string())
+            # if 'duration' in criteria:
+            #     full_string.append('Duration of: ' + self.get_duration_string())
+            if 'addition_location_id' in criteria:
+                full_string.append(str(self.addition_location))
+            return '{}; '.format(' '.join(full_string))
+        else:
+            return str(self)
+
+    def __str__(self):
+        passage = ''
+
+        if self.passage:
+            passage = 'p{}'.format(self.passage)
+
+        if self.addition_location:
+            return '{0} {1}\n~{2:.2e} {3}, Added to: {4}'.format(
+                self.cell_sample,
+                passage,
+                self.density,
+                self.density_unit.unit,
+                self.addition_location
+            )
+        else:
+            return '{0} {1}\n~{2:.2e} {3}'.format(
+                self.cell_sample,
+                passage,
+                self.density,
+                self.density_unit.unit,
+            )
+
+
+class AbstractSetupSetting(models.Model):
+    """Defines an abstract setting for binding to either a group or an MPS Model Version"""
+    class Meta(object):
+        abstract = True
+
+        # Default needs to be revised in models extending this, but for reference
+        unique_together = [
+            (
+                'setting',
+                'addition_location',
+                'unit',
+                'addition_time',
+                'duration',
+            )
+        ]
+
+        ordering = (
+            'addition_time',
+            'setting__name',
+            'addition_location__name',
+            'unit__name',
+            'value',
+            'duration',
+        )
+
+    setting = models.ForeignKey(
+        'assays.AssaySetting',
+        on_delete=models.CASCADE,
+        verbose_name='Setting'
+    )
+    # DEFAULTS TO NONE, BUT IS REQUIRED
+    unit = models.ForeignKey(
+        'assays.PhysicalUnits',
+        blank=True,
+        default=14,
+        on_delete=models.CASCADE,
+        verbose_name='Unit'
+    )
+    value = models.CharField(
+        max_length=255,
+        verbose_name='Value'
+    )
+
+    # Will we include these??
+    # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
+    addition_time = models.FloatField(
+        blank=True,
+        verbose_name='Addition Time'
+    )
+
+    # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
+    duration = models.FloatField(
+        blank=True,
+        verbose_name='Duration'
+    )
+
+    # TODO TODO TODO TEMPORARILY NOT REQUIRED
+    addition_location = models.ForeignKey(
+        AssaySampleLocation,
+        blank=True,
+        default=1,
+        on_delete=models.CASCADE,
+        verbose_name='Addition Location'
+    )
+
+    # NOT DRY
+    def get_addition_time_string(self):
+        split_times = get_split_times(self.addition_time)
+        return 'D{0:02} H{1:02} M{2:02}'.format(
+            split_times.get('day'),
+            split_times.get('hour'),
+            split_times.get('minute'),
+        )
+
+    def get_duration_string(self):
+        split_times = get_split_times(self.duration)
+        return 'D{0:02} H{1:02} M{2:02}'.format(
+            split_times.get('day'),
+            split_times.get('hour'),
+            split_times.get('minute'),
+        )
+
+    # CRUDE
+    def flex_string(self, criteria=None):
+        if criteria:
+            full_string = []
+            if 'setting_id' in criteria:
+                full_string.append(str(self.setting))
+            if 'value' in criteria:
+                full_string.append(self.value)
+                if self.unit:
+                    full_string.append(self.unit.unit)
+            if 'addition_time' in criteria:
+                full_string.append('Added on: ' + self.get_addition_time_string())
+            if 'duration' in criteria:
+                full_string.append('Duration of: ' + self.get_duration_string())
+            if 'addition_location_id' in criteria:
+                full_string.append(str(self.addition_location))
+            return '{}; '.format(' '.join(full_string))
+        else:
+            return str(self)
+
+    def __str__(self):
+        return '{} {} {}'.format(self.setting.name, self.value, self.unit)
+
+# THINKING ABOUT THIS
+# WE NEED TO DECREASE THE SPARSITY OF THE DATA, STORING GROUPS IS ONE WAY TO DO THAT
+# Theoretically, there will be collisions across matrices, but for ease of editing we will not store groups at a higher level that matrices
+# We *could* have a distinct table for a Series, this will mitigate problems with regard to figuring out how the heck we are supposed to deal with intervals
+# Getting a series implicitly from groups is a problem because we don't know what kind of dilution people were intending unless we stored it by group or something?
+# The only thing, in theory, that couldn't be part of a series are compounds...
+# Calculating the concentration every time would be idiotic, just as problematic would be to generate groups for every dilution after submission and only show those (we would only benefit when adding, what if someone wanted to change a series?)
+
+# The make or break for this comes down to how we handle compounds, of course
+# What I need to take advantage of is the fact that dilutions are the only interval right now
+# (Though that assumption may cause us pain later!)
+# Trivially, we can match groups to series with a FK, but that isn't exactly the end of it
+# There will be some sparsity were we to attach cells and settings to groups (only the compound changes within a series)
+# An additional complication, now that I consider it, arises from multiple dilution series
+
+# Perhaps we should have everything have a series, if there is just the one it is one to one and many to one otherwise
+# If it is many to one (and as a contrivance otherwise) we ought to have an index number attached to the group
+# We would still have to do the somewhat deplorable prefetching, but the number of queries should be vastly reduced
+class AssayItemSeries(models.Model):
+    # We need a matrix because matrices are how we edit things
+    matrix = models.ForeignKey(
+        AssayMatrix,
+        on_delete=models.CASCADE,
+        verbose_name='Matrix'
+    )
+
+    # Will we tie a series to a study, or a matrix?
+    # study = models.ForeignKey(
+    #     AssayStudy,
+    #     on_delete=models.CASCADE,
+    #     verbose_name='Study'
+    # )
+
+    # Need to store test type here, acquiring it implicitly is unpleasant
+    test_type = models.CharField(
+        max_length=8,
+        choices=TEST_TYPE_CHOICES,
+        # default='control',
+        verbose_name='Test Type'
+    )
+
+    # NOTE that I probably will not put device in here explicitly
+    # We should, at least, store the organ model here
+    organ_model = models.ForeignKey(
+        OrganModel,
+        verbose_name='MPS Model',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
+    )
+
+    # Will we also store the version?
+    # To my understanding, no, as many items will lack a version
+    # organ_model_protocol = models.ForeignKey(
+    #     OrganModelProtocol,
+    #     verbose_name='MPS Model Version',
+    #     null=True,
+    #     blank=True,
+    #     on_delete=models.CASCADE
+    # )
+
+# Interstingly, there is some level of redundancy here to accommodate for dilutions
+# NOTE that IMPORTANTLY THIS MEANS GROUPS NEED TO BE EDITED PROPERLY WHEN CHANGING A SERIES
+# The only tricky one to deal with, a series compound needs to include dilution paramters
+class AssaySeriesCompound(AbstractSetupCompound):
+    class Meta(object):
+        # Needs to include series
+        unique_together = [
+            (
+                'series',
+                'compound_instance',
+                'concentration',
+                'concentration_unit',
+                'addition_time',
+                'duration',
+                'addition_location'
+            )
+        ]
+
+    series = models.ForeignKey(
+        AssayItemSeries,
+        on_delete=models.CASCADE,
+        verbose_name='Series'
+    )
+
+    # TODO: Make sure that all of the dilution fields are present if a dilution is being used
+    # We could try something fancy with custom constraints to make these required together, but we can just use be careful how we clean the form alternatively
+    # The factor to use for division etc.
+    dilution_factor = models.FloatField(blank=True, null=True)
+
+    # TODO choices should be global to make them available to other files?
+    # Doesn't really need to be a foreignkey field
+    dilution_operator = models.CharField(
+        # Just need to store the one character
+        max_length=1,
+        choices=(
+            ('/', 'Divide'),
+            ('*', 'Multiply'),
+            ('+', 'Add'),
+            ('-', 'Subtract')
+        ),
+        blank=True,
+        # Divide by default
+        default='/'
+    )
+
+    # TODO: The direction of the dilution
+    dilution_direction = models.CharField(
+        # Just need to store three characters
+        max_length=3,
+        choices=(
+            ('lr', 'Left to Right'),
+            ('d', 'Down'),
+            ('rl', 'Right to Left'),
+            ('u', 'Up'),
+            ('lrd', 'Left to Right and Down'),
+            ('rlu', 'Right to Left and Up')
+        ),
+        blank=True,
+        # Default to Left to Right
+        default='lr'
+    )
+
+
+class AssaySeriesCell(AbstractSetupCell):
+    class Meta(object):
+        # Needs to include series, otherwise would break constantly
+        unique_together = [
+            (
+                'series',
+                'cell_sample',
+                'biosensor',
+                # Skip density?
+                'density',
+                'density_unit',
+                'passage',
+                'addition_time',
+                'addition_location'
+                # Will we need addition time and location here?
+            )
+        ]
+
+    series = models.ForeignKey(
+        AssayItemSeries,
+        on_delete=models.CASCADE,
+        verbose_name='Series'
+    )
+
+
+class AssaySeriesSetting(AbstractSetupSetting):
+    class Meta(object):
+        # Default needs to be revised in models extending this, but for reference
+        unique_together = [
+            (
+                'series',
+                'setting',
+                'addition_location',
+                'unit',
+                'addition_time',
+                'duration',
+            )
+        ]
+
+    series = models.ForeignKey(
+        AssayItemSeries,
+        on_delete=models.CASCADE,
+        verbose_name='Series'
+    )
+
+
+class AssayItemGroup(models.Model):
+    series = models.ForeignKey(
+        AssayItemSeries,
+        on_delete=models.CASCADE,
+        verbose_name='Series'
+    )
+
+
+class AssayGroupCompound(AbstractSetupCompound):
+    class Meta(object):
+        # Needs to include series
+        unique_together = [
+            (
+                'group',
+                'compound_instance',
+                'concentration',
+                'concentration_unit',
+                'addition_time',
+                'duration',
+                'addition_location'
+            )
+        ]
+
+    group = models.ForeignKey(
+        AssayItemGroup,
+        on_delete=models.CASCADE,
+        verbose_name='Group'
+    )
+
+
+class AssayGroupCell(AbstractSetupCell):
+    class Meta(object):
+        unique_together = [
+            (
+                'group',
+                'cell_sample',
+                'biosensor',
+                # Skip density?
+                'density',
+                'density_unit',
+                'passage',
+                'addition_time',
+                'addition_location'
+                # Will we need addition time and location here?
+            )
+        ]
+
+    group = models.ForeignKey(
+        AssayItemGroup,
+        on_delete=models.CASCADE,
+        verbose_name='Group'
+    )
+
+
+class AssayGroupSetting(AbstractSetupSetting):
+    class Meta(object):
+        unique_together = [
+            (
+                'group',
+                'setting',
+                'addition_location',
+                'unit',
+                'addition_time',
+                'duration',
+            )
+        ]
+
+    group = models.ForeignKey(
+        AssayItemGroup,
+        on_delete=models.CASCADE,
+        verbose_name='Group'
+    )
+
+
+
 class AssayFailureReason(FlaggableModel):
     """Describes a type of failure"""
     name = models.CharField(max_length=512, unique=True)
     description = models.CharField(max_length=2000)
 
-# TODO TODO TODO
-# These choices need to change
-# Please note contrivance with respect to compound/"Treated"
-TEST_TYPE_CHOICES = (
-    ('', '--------'), ('control', 'Control'), ('compound', 'Treated')
-)
 
 # SUBJECT TO REMOVAL (MAY JUST USE ASSAY SETUP)
 class AssayMatrixItem(FlaggableModel):
@@ -2163,15 +2783,14 @@ class AssayMatrixItem(FlaggableModel):
     column_index = models.IntegerField(verbose_name='Column Index')
 
     # TODO DEPRECATED: PURGE
-    # HENCEFORTH ALL ITEMS WILL HAVE AN ORGAN MODEL PROTOCOL
+    # REDUNDANT
     device = models.ForeignKey(
         Microdevice,
         verbose_name='Device',
         on_delete=models.CASCADE
     )
 
-    # TODO DEPRECATED: PURGE
-    # HENCEFORTH ALL ITEMS WILL HAVE AN ORGAN MODEL PROTOCOL
+    # TODO: SHOULD THIS JUST BE IN THE SERIES?
     organ_model = models.ForeignKey(
         OrganModel,
         verbose_name='MPS Model',
@@ -2180,6 +2799,7 @@ class AssayMatrixItem(FlaggableModel):
         on_delete=models.CASCADE
     )
 
+    # At one point it was proposed that all items have a version, this may no longer be the case
     organ_model_protocol = models.ForeignKey(
         OrganModelProtocol,
         verbose_name='MPS Model Version',
@@ -2198,6 +2818,7 @@ class AssayMatrixItem(FlaggableModel):
     )
 
     # Likely to change in future
+    # TODO: THIS SHOULD BE IN THE SERIES
     test_type = models.CharField(
         max_length=8,
         choices=TEST_TYPE_CHOICES,
@@ -2223,9 +2844,25 @@ class AssayMatrixItem(FlaggableModel):
         verbose_name='Failure Reason'
     )
 
+    # It is somewhat redundant, but for convenience we will tie to both a group and series
+    # Note that both of which are required, everything is mediated through a series
+    series = models.ForeignKey(
+        AssayItemSeries,
+        on_delete=models.CASCADE,
+        verbose_name='Series'
+    )
+
+    group = models.ForeignKey(
+        AssayItemGroup,
+        on_delete=models.CASCADE,
+        verbose_name='Group'
+    )
+
+
     def __str__(self):
         return str(self.name)
 
+    # THIS MANNER OF DEVOLUTION IS DEPRECATED
     def devolved_settings(self, criteria=DEFAULT_SETTING_CRITERIA):
         """Makes a tuple of cells (for comparison)"""
         setting_tuple = []
@@ -2259,6 +2896,7 @@ class AssayMatrixItem(FlaggableModel):
 
         return tuple(sorted(set(cell_tuple)))
 
+    # THESE STRINGIFIERS ARE BEING DEPRECATED
     def stringify_cells(self, criteria=None):
         """Stringified cells for a setup"""
         cells = []
@@ -2292,6 +2930,7 @@ class AssayMatrixItem(FlaggableModel):
 
         return '\n'.join(collections.OrderedDict.fromkeys(compounds))
 
+    # TO BE DEPRECATED
     def get_compound_profile(self, matrix_item_compound_post_filters):
         """Compound profile for determining concentration at time point"""
         compound_profile = []
@@ -2320,6 +2959,7 @@ class AssayMatrixItem(FlaggableModel):
 
         return compound_profile
 
+    # TO BE DEPRECATED
     # SPAGHETTI CODE
     # TERRIBLE, BLOATED
     def quick_dic(
