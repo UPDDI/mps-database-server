@@ -39,15 +39,19 @@
 {% endblock %}
 
 {% block sidebar %}
+    {% if update %}
     {% include 'assays/grouping_filtering.html' with charts="true" %}
+    {% endif %}
 {% endblock %}
 
 {# TODO MAKE SURE FLUID CONTENT STUFF IS NEAT #}
 {% block fluid-content %}
+    <div class="container">
     {% if update %}
         <form enctype="multipart/form-data" class="form-horizontal" method="post" >
         <h1>
             Edit Matrix <em>{{ object }}</em>
+    {# TODO #}
     {% elif detail %}
         <form enctype="multipart/form-data" class="form-horizontal" method="post" >
         <h1>
@@ -58,17 +62,13 @@
             Add Matrix
     {% endif %}
     {% csrf_token %}
-    </h1>
+        </h1>
 
-    {% if detail %}
-    <div hidden>
-    {% endif %}
+    {# TODO REVISIONS TO MAKE THIS A DETAIL PAGE AS WELL #}
 
-    {% if not detail %}
     {% include "submit.html" with flag="y" group=study.group.name %}
 
     {% include 'errors.html' %}
-    {% endif %}
 
     {% include 'tracking.html' %}
 
@@ -120,12 +120,6 @@
     </div>
     </div>
 
-    <div hidden id="invalid_matrix_message">
-        <div class="alert alert-danger text-center" role="alert">
-            <h2>
-                This Set has no Items. Please edit this set as a Matrix and add Items.
-            </h2>
-        </div>
     </div>
 
     {# This section is a setup table similar to the new study page #}
@@ -134,7 +128,7 @@
     {# TODO PUT THE TABLE THING HERE #}
     <div id="study_setup_table_section">
             {# Section for visibility checkboxes #}
-            {# A litle awkward #}
+            {# A little awkward #}
             <div class="row large-padding-top">
             <div class="col-md-4 col-lg-3">
                 <div class="fancy-checkbox table-filter padded-bottom" align="left">
@@ -228,7 +222,10 @@
         <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="setting">Add Setting</a>
         </div>
 
-        <table class="table table-striped table-bordered table-nonfluid" id="study_setup_table">
+        {# Avoid inline styles #}
+        <div class="overflow-auto" style="margin-bottom: 100px;">
+        {# Contrived inline style #}
+        <table style="min-width: 1000px; margin-bottom: 0px;" class="table table-striped table-bordered table-nonfluid" id="study_setup_table">
             <thead>
                 <th>Series</th>
                 <th>MPS Model</th>
@@ -239,16 +236,15 @@
             </thead>
             <tbody></tbody>
         </table>
+        </div>
     </div>
 
     <div class="well padded-bottom">
-        <div id="matrix_wrapper" class="overflow-scroll" style="max-height:950px; margin: -15px;">
-            {# NO INLINE STYLE PLEASE #}
-            <div id="matrix_container" style="margin: 30px;">
-            <table id="matrix_table" class="table">
+        {# For now, let's just set a min-width of 1000px #}
+        <div id="matrix_wrapper" class="overflow-scroll" style="max-height:950px;">
+            <table id="matrix_table" class="table" style="min-width:1000px;">
                 <tbody id="matrix_body"></tbody>
             </table>
-            </div>
         </div>
     </div>
 
@@ -262,15 +258,10 @@
     </form>
     {# End FORMS #}
 
-    {% include 'assays/revised_group_editing.html' %}
-
     {# CHARTING STUFF #}
-    <div>
 
-    {# {% include 'assays/grouping_filtering.html' %} #}
-
-    {# {% include 'assays/chart_options.html' with chart_prefix="charts" chart_title="Current Data" % #}
-
+    {# Don't put charts in a container? #}
+    {% if update %}
     {% include 'assays/sidebar_extras.html' with show_hide="true" %}
 
     {# Note indicating no data to display initially #}
@@ -279,4 +270,7 @@
     </div>
 
     {% include 'assays/group_table.html' %}
+    {% endif %}
+
+    {% include 'assays/revised_group_editing.html' %}
 {% endblock %}

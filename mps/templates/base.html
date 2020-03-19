@@ -310,6 +310,16 @@
 
   <div id="page" style="margin-top: 70px;">
 
+  {# No breadcrumbs in popup #}
+  {% if request.GET.popup != '1' %}
+  <div class="container">
+    <ol id="breadcrumbs" class="breadcrumb">
+      <li><a href="/">Home</a></li>
+      {% block breadcrumbs %}{% endblock %}
+    </ol>
+  </div>
+  {% endif %}
+
   {# For most elements #}
   {% if request.GET.popup == '1' and request.GET.close == '1' %}
   <div id="content" class="container">
@@ -323,14 +333,6 @@
   </div>
   {% else %}
   <div id="content" class="container">
-
-  {# No breadcrumbs in popup #}
-  {% if request.GET.popup != '1' %}
-  <ol id="breadcrumbs" class="breadcrumb">
-    <li><a href="/">Home</a></li>
-    {% block breadcrumbs %}{% endblock %}
-  </ol>
-  {% endif %}
 
   {% block content %}{% endblock %}
 
