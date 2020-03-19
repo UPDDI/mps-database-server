@@ -763,6 +763,7 @@ $(document).ready(function () {
 
     // EXPERIMENTAL
     // IF THERE IS A SIDEBAR, GET RID OF CONTAINER CLASS IN BREADCRUMBS AND FOOTER
-    $('#content').removeClass('container').addClass('fluid-container');
+    // No longer put breadcrumbs into a fluid container
+    // $('#content').removeClass('container').addClass('fluid-container');
     $('#footer').removeClass('container').addClass('fluid-container');
 });
