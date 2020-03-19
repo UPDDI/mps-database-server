@@ -1218,7 +1218,7 @@ $(document).ready(function () {
                     var current_pos = $(all_charts[charts][chart_index].container).position();
 
                     var current_top = current_pos.top + 75;
-                    var current_left = $('#breadcrumbs').position().left;
+                    var current_left = $('#fluid-content').position().left;
 
                     if (is_popup) {
                         current_pos = $(all_charts[charts][chart_index].container).parent().parent().parent().position();

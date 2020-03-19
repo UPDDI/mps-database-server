@@ -1602,7 +1602,7 @@ $(document).ready(function () {
             matrix_contents_hover.show();
             // var left = $(this).offset().left - 10;
             // Hard value for left (TODO: Probably better to set to left of the matrix?)
-            var left = 300;
+            var left = $('#fluid-content').position().left + 30;
             // Place slightly below current label
             var top = $(this).offset().top + 50;
             matrix_contents_hover.offset({left: left, top: top});
