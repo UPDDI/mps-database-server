@@ -503,7 +503,9 @@ $(document).ready(function () {
             .clone()
             .removeAttr('id')
             .attr('data-row', row_index)
-            .addClass('test-type');
+            .addClass('test-type')
+            // Contrived: prevent from getting smashed
+            .css('min-width', 100);
 
         // SLOPPY
         test_type_input.attr('required', 'required');
