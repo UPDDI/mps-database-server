@@ -1,0 +1,456 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+
+{% block load_js %}
+    <script src="{% static "assays/grouping_filtering.js" %}"></script>
+    <script src="{% static "assays/assay_pbpk.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li>Query Data</li>
+    <li class="active">PBPK Analysis</li>
+{% endblock %}
+
+{% block sidebar %}
+    {% include 'assays/grouping_filtering.html' %}
+{% endblock %}
+
+{% block fluid-content %}
+
+    <div class="row padded-row text-center padded-bottom large-padding-top hidden-print">
+        <a href="/assays/pbpk_filter/?filters=" type="button" class="btn btn-xlarge btn-primary text-center submit-button" id="back_button">
+            <span class="glyphicon glyphicon glyphicon-hand-left" aria-hidden="true"></span>
+            Selection
+        </a>
+    </div>
+
+    {% include 'assays/sidebar_extras.html' %}
+
+    <!-- <div class="well">
+        <div id="intro-text">
+            Here be descriptive text regarding PBPK things.
+        </div>
+        <div class="text-center">
+            <button id="toggle-intro-text" class="btn btn-primary">Show/Hide Introduction</button>
+        </div>
+    </div> -->
+
+    <h3>Select a Dataset for PBPK Analysis</h3>
+    <table id='group-table' class="display table-bordered" width="100%">
+
+    </table>
+
+    <div id="pbpk-information" hidden>
+        <hr>
+        <div class="row large-padding-top">
+            <div class="col-sm-12 col-lg-6">
+                <div id="summary-graph">
+
+                </div>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+                <h4>Cell Parameters</h4>
+                <table id="cell-profiles-table" class="display table-bordered">
+                    <tr>
+                        <th>Select</th>
+                        <th>Cell Profile</th>
+                        <th>Cells</th>
+                    </tr>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                </table>
+                <br>
+                <div id="cell-free">
+                    &nbsp;&nbsp;<input type="checkbox" id="cell-free-checkbox" class="big-checkbox" checked>
+                    <label>&nbsp;&nbsp;Include Cell-free Data</label>
+                </div>
+                <br>
+                <table class="display table-bordered">
+                    <tr>
+                        <th># of Cells in Chip (for Calculations)</th>
+                        <td><input type="text" id="number-of-cells-calc" class="required"></td>
+                    </tr>
+                </table>
+                <br>
+            </div>
+        </div>
+        <div class="row large-padding-top">
+            <div class="col-sm-12 col-lg-6">
+                <h4>MPS Model PK Experiment Parameters</h4>
+                <table class="display table-bordered">
+                    <tr>
+                        <th>PK Type</th>
+                        <td><input type="text" id="experiment-pk-type" disabled></td>
+                    </tr>
+                    <tr>
+                        <th>Compound</th>
+                        <td><input type="text" id="experiment-compound" disabled></td>
+                    </tr>
+                    <tr>
+                        <th>Study</th>
+                        <td><input type="text" id="experiment-study" disabled></td>
+                    </tr>
+                    <tr>
+                        <th>MPS Model</th>
+                        <td><input type="text" id="experiment-model" disabled></td>
+                    </tr>
+                    <tr>
+                        <th>Device</th>
+                        <td><input type="text" id="experiment-device" disabled></td>
+                    </tr>
+                    <tr>
+                        <th>Target/Analyte</th>
+                        <td><input type="text" id="experiment-target" disabled></td>
+                    </tr>
+                    <tr>
+                        <th>Method/Kit</th>
+                        <td><input type="text" id="experiment-method" disabled></td>
+                    </tr>
+                    <tr>
+                        <th>Sample Location</th>
+                        <td><input type="text" id="experiment-location" disabled></td>
+                    </tr>
+                    <tr>
+                        <th>Total Device Volume (mL)</th>
+                        <td><input type="text" id="experiment-total-vol" disabled></td>
+                    </tr>
+                    <tr>
+                        <th>Flow Rate (&micro;L/hour)</th>
+                        <td><input type="text" id="experiment-flow-rate" disabled></td>
+                    </tr>
+                    <tr>
+                        <th># of Cells in MPS Model</th>
+                        <td><input type="text" id="experiment-number-cells" disabled></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+                <h4>Species Parameters</h4>
+                <table class="display table-bordered">
+                    <tr>
+                        <th>Species </th>
+                        <td><input type="text" id="species-species" disabled></td>
+                    </tr>
+                    <tr>
+                        <th>Organ </th>
+                        <td><input type="text" id="species-organ" disabled></td>
+                    </tr>
+                    <tr>
+                        <th>Body Mass (kg) </th>
+                        <td><input type="text" id="species-body-mass" class="required"></td>
+                    </tr>
+                    <tr>
+                        <th id="label-species-total-organ-weight">Total Organ Weight (g) </th>
+                        <td><input type="text" id="species-total-organ-weight" class="required"></td>
+                    </tr>
+                    <tr>
+                        <th id="label-species-organ-tissue">Organ Tissue (Cells/g) </th>
+                        <td><input type="text" id="species-organ-tissue" class="required"></td>
+                    </tr>
+                    <tr>
+                        <th id="label-species-plasma-vol">Plasma Volume (L) </th>
+                        <td><input type="text" id="species-plasma-vol" class="required"></td>
+                    </tr>
+                    <tr>
+                        <th id="label-species-vp">V<sub>p</sub> (L/kg) </th>
+                        <td><input type="text" id="species-vp" class="required"></td>
+                    </tr>
+                    <tr>
+                        <th id="label-species-ve">V<sub>E</sub> (L/kg) </th>
+                        <td><input type="text" id="species-ve" class="required"></td>
+                    </tr>
+                    <tr>
+                        <th id="label-species-rei">R<sub>E/I</sub> </th>
+                        <td><input type="text" id="species-rei" class="required"></td>
+                    </tr>
+                    <tr>
+                        <th id="label-species-vr">V<sub>R</sub> (L/kg) </th>
+                        <td><input type="text" id="species-vr" class="required"></td>
+                    </tr>
+                    <tr>
+                        <th id="label-species-asr">Absorptive Surface Area (m<sup>2</sup>) </th>
+                        <td><input type="text" id="species-asr" class="required"></td>
+                    </tr>
+                    <tr>
+                        <th id="label-species-ki">K<sub>i</sub> (1/min) </th>
+                        <td><input type="text" id="species-ki" class="required"></td>
+                    </tr>
+                    <tr>
+                        <th>Reference </th>
+                        <td><input type="text" id="species-reference" disabled></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <hr>
+        <h3>Predict Intrinsic Clearance</h3>
+        <div class="row large-padding-top">
+            <div class="col-sm-12 col-lg-6">
+                <table class="display table-bordered">
+                    <tr>
+                        <th>Calculation Start Time</th>
+                        <td><select id="clearance-time-start"></td>
+                    </tr>
+                    <tr>
+                        <th>Calculation End Time</th>
+                        <td><select id="clearance-time-end"></td>
+                    </tr>
+                </table>
+                <button id="button-clearance" class="btn btn-lg btn-primary">Predict Intrinsic Clearance</button>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+                <div class="row">
+                    <div class="col-xs-12 no-padding">
+                        <div id="pk-summary-graph">
+
+                        </div>
+                    </div>
+                    <div class="col-xs-12 no-padding">
+                        <div id="pk-clearance-graph">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row large-padding-top">
+            <div class="col-sm-12 col-lg-6">
+                <!-- <div class="well">
+
+                </div>
+                <div class="well">
+                    <h6><i>
+                        Extraction Ratio =
+                        <table>
+                          <tbody>
+                            <tr>
+                              <td style="border-bottom:solid 1px">Compound Conc. Recovered w/o Cells &minus; Compound Conc. Recovered w/ Cells</td>
+                              </tr>
+                              <tr>
+                                <td>Compound Conc. Recovered w/o Cells</td>
+                              </tr>
+                          </tbody>
+                       </table>
+                       <br>
+                       Clearance From MPS Model (&micro;L/hr) =
+                       <table>
+                         <tbody>
+                           <tr>
+                             <td>Extraction Ratio &times; Flow Rate</td>
+                             </tr>
+                         </tbody>
+                      </table>
+                    </i></h6>
+                </div> -->
+            </div>
+            <div id="continuous-table" class="col-sm-12 col-lg-6">
+                <table id="continuous-infusion-table" class="display table-bordered">
+                </table>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-xl-12">
+                <div id='clearance-error-container' hidden>
+                    <div class="alert alert-danger text-center" role="alert">
+                        <h1><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span><br><span id="clearance-error-text"></span></h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div id="predict-dosing-container" hidden>
+            <h3>Predict Dosing</h3>
+            <div class="row large-padding-top">
+                <div class="col-sm-12 col-lg-6">
+                    <h4>Compound Physicochemical Parameters</h4>
+                    <table class="display table-bordered">
+                        <tr>
+                            <th>Compound</th>
+                            <td><input type="text" id="compound-compound" disabled></td>
+                        </tr>
+                        <tr>
+                            <th id="label-compound-mw">MW </th>
+                            <td><input type="text" id="compound-mw" disabled></td>
+                        </tr>
+                        <tr>
+                            <th id="label-compound-logd">logD </th>
+                            <td><input type="text" id="compound-logd" disabled></td>
+                        </tr>
+                        <tr>
+                            <th id="label-compound-pka">pKa </th>
+                            <td><input type="text" id="compound-pka" disabled></td>
+                        </tr>
+                        <tr>
+                            <th id="label-compound-bioavailability">Bioavailability (F) </th>
+                            <td><input type="text" id="compound-bioavailability" disabled></td>
+                        </tr>
+                        <tr>
+                            <th id="label-compound-fu">f<sub>u</sub> </th>
+                            <td><input type="text" id="compound-fu" disabled></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-sm-12 col-lg-6">
+                    <table class="display table-bordered">
+                        <tr>
+                            <th>Predicted Intrinsic Clearance (mL/min)</th>
+                            <td><input id="input-predicted-intrinsic-clearance" disabled></td>
+                        </tr>
+                        <tr>
+                            <th>F<sub>a</sub></th>
+                            <td><input type="number" id="input-fa" class="required"></td>
+                        </tr>
+                        <tr>
+                            <th>K<sub>a</sub> (1/h) (range from 0.6 - 4.2)</th>
+                            <td><input type="number" id="input-ka" class="required" value="3.84"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="row large-padding-top">
+                <div class="col-sm-12 col-lg-6">
+                    <h4>Input to Predict Plasma Levels</h4>
+                    <table class="display table-bordered">
+                        <tr>
+                            <th>Dose (mg)</th>
+                            <td><input type="number" id="input-plasma-dose" class="required" value="40"></td>
+                        </tr>
+                        <tr>
+                            <th>Dose Interval (h)</th>
+                            <td><input type="number" id="input-plasma-dose-interval" class="required" value="12"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-sm-12 col-lg-6">
+                    <h4>Input to Estimate Dosing</h4>
+                    <table class="display table-bordered">
+                        <tr>
+                            <th>Desired Cp (mM)</th>
+                            <td><input type="number" id="input-dosing-cp" class="required" value="0.25"></td>
+                        </tr>
+                        <tr>
+                            <th>Desired Dose Interval (h)</th>
+                            <td><input type="number" id="input-dosing-interval" class="required" value="24"></td>
+                        </tr>
+                        <tr>
+                            <th>Estimated Fraction Absorbed</th>
+                            <td><input type="number" id="input-dosing-absorbed" class="required" value="0.7"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="row large-padding-top">
+                <div class="col-lg-12">
+                    <button id="button-dosing" class="btn btn-lg btn-primary">Predict Dosing</button>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-xl-12">
+                    <div id='dosing-error-container' hidden>
+                        <div class="alert alert-danger text-center" role="alert">
+                            <h1><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span><br><span id="dosing-error-text"></span></h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="calculated-pk-container" hidden>
+            <div class="row large-padding-top">
+                <div class="col-sm-12 col-lg-6">
+                    <h4>Calculated PK Parameters</h4>
+                    <table class="display table-bordered">
+                        <tr>
+                            <th>VDss (L)</th>
+                            <td><input id="pk-param-vdss" disabled></td>
+                        </tr>
+                        <tr>
+                            <th>ke (1/h)</th>
+                            <td><input id="pk-param-ke" disabled></td>
+                        </tr>
+                        <tr>
+                            <th>Elimination Half-life (h)</th>
+                            <td><input id="pk-param-half-life-3-confirmed" disabled></td>
+                        </tr>
+                        <tr>
+                            <th>AUC (mg*min/L)</th>
+                            <td><input id="pk-param-auc" disabled></td>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <th>Single Oral Dose:</th>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <th>Mmax (mg)</th>
+                            <td><input id="pk-single-mmax" disabled></td>
+                        </tr>
+                        <tr>
+                            <th>Cmax (mg/L)</th>
+                            <td><input id="pk-single-cmax" disabled></td>
+                        </tr>
+                        <tr>
+                            <th>tmax (h)</th>
+                            <td><input id="pk-single-tmax" disabled></td>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <th>Multiple Oral Doses:</th>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <th>Mss (mg)</th>
+                            <td><input id="pk-multi-mss" disabled></td>
+                        </tr>
+                        <tr>
+                            <th>Css (mg/L)</th>
+                            <td><input id="pk-multi-css" disabled></td>
+                        </tr>
+                        <tr>
+                            <th>tmax (h)</th>
+                            <td><input id="pk-multi-tmax" disabled></td>
+                        </tr>
+                    </table>
+                    <h4>Dosing to Reach Desired Plasma Levels</h4>
+                    <table class="display table-bordered">
+                        <tr>
+                            <th>Dose<sub>calc</sub> (mg)</th>
+                            <td><input id="pk-desired-dose" disabled></td>
+                        </tr>
+                        <tr>
+                            <th># of Doses to Reach 50%</th>
+                            <td><input id="pk-desired-50" disabled></td>
+                        </tr>
+                        <tr>
+                            <th># of Doses to Reach 90%</th>
+                            <td><input id="pk-desired-90" disabled></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-sm-12 col-lg-6">
+                    <div id="dosing-graph">
+
+                    </div>
+                    <div id="dosing-slider" style="margin-right: 2em;">
+                        <div id="dosing-slider-handle" class="ui-slider-handle"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

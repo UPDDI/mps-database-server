@@ -83,7 +83,10 @@ from assays.views import (
     AssayPlateReaderMapDataFileView,
     AssayPlateReaderMapDataFileDelete,
     AssayStudyTemplate,
-    get_current_upload_template
+    get_current_upload_template,
+    get_current_upload_template,
+    PBPKFilterView,
+    PBPKView,
 )
 import assays.ajax
 
@@ -182,6 +185,11 @@ urlpatterns = [
 
     # Power Analysis
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/power_analysis/$', AssayStudyPowerAnalysisStudy.as_view(), name='assays-power-analysis-study'),
+
+    # PBPK filter
+    url(r'^assays/pbpk_filter/$', PBPKFilterView.as_view(), name='assays-pbpk-filter'),
+    # PBPK
+    url(r'^assays/pbpk/$', PBPKView.as_view(), name='assays-pbpk'),
 
     # References
     url(r'^assays/assayreference/$', AssayReferenceList.as_view(), name='assays-assayreference-list'),

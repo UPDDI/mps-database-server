@@ -368,7 +368,6 @@ $(document).ready(function () {
                 },
                 type: 'POST',
                 dataSrc: function(json) {
-                    data_groups = json.data_groups;
                     header_keys = json.header_keys;
                     data_groups = json.data_groups;
                     treatment_groups = json.treatment_groups;

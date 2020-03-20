@@ -2528,7 +2528,7 @@ class AssayTargetRestrictedForm(BootstrapForm):
 
 class AssayMethodForm(BootstrapForm):
     # For adding to target m2m
-    target = forms.ModelMultipleChoiceField(
+    targets = forms.ModelMultipleChoiceField(
         queryset=AssayTarget.objects.all().order_by('name'),
         # No longer required to prevent circularity with Target
         required=False
@@ -2550,7 +2550,7 @@ class AssayMethodForm(BootstrapForm):
             self.initial_targets = AssayTarget.objects.filter(
                 methods__id=self.instance.id
             )
-            self.fields['target'].initial = (
+            self.fields['targets'].initial = (
                 self.initial_targets
             )
         else:
@@ -2560,13 +2560,13 @@ class AssayMethodForm(BootstrapForm):
         new_method = super(AssayMethodForm, self).save(commit)
 
         if commit:
-            for current_target in self.cleaned_data.get('target', None):
+            for current_target in self.cleaned_data.get('targets', None):
                 current_target.methods.add(self.instance)
 
             # Permit removals for the moment
             # Crude removal
             for initial_target in self.initial_targets:
-                if initial_target not in self.cleaned_data.get('target', None):
+                if initial_target not in self.cleaned_data.get('targets', None):
                     initial_target.methods.remove(self.instance)
 
         return new_method
@@ -2574,7 +2574,7 @@ class AssayMethodForm(BootstrapForm):
 
 class AssayMethodRestrictedForm(BootstrapForm):
     # For adding to target m2m
-    target = forms.ModelMultipleChoiceField(
+    targets = forms.ModelMultipleChoiceField(
         queryset=AssayTarget.objects.all().order_by('name'),
         # No longer required to prevent circularity with Target
         required=False
@@ -2583,7 +2583,7 @@ class AssayMethodRestrictedForm(BootstrapForm):
     class Meta(object):
         model = AssayMethod
         # Only include the target, we don't want anything else to change
-        fields = ['target']
+        fields = ['targets']
 
     def __init__(self, *args, **kwargs):
         super(AssayMethodRestrictedForm, self).__init__(*args, **kwargs)
@@ -2591,7 +2591,7 @@ class AssayMethodRestrictedForm(BootstrapForm):
         # Get target if possible
         # (It should always be possible, this form is only for editing)
         if self.instance and self.instance.id:
-            self.fields['target'].initial = (
+            self.fields['targets'].initial = (
                 AssayTarget.objects.filter(
                     methods__id=self.instance.id
                 )
@@ -2602,7 +2602,7 @@ class AssayMethodRestrictedForm(BootstrapForm):
 
         if commit:
             # In the restricted form, one is allowed to add targets ONLY
-            for current_target in self.cleaned_data.get('target', None):
+            for current_target in self.cleaned_data.get('targets', None):
                 current_target.methods.add(self.instance)
 
         return new_method

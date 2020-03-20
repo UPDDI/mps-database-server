@@ -5,7 +5,8 @@ $(document).ready(function() {
         'organ_models': 'Please Select at Least One MPS Model.',
         'groups': 'Please Select at Least One MPS User Group.',
         'targets': 'Please Select at Least One Target.',
-        'compounds': 'Please Select at Least One Compound.'
+        'compounds': 'Please Select at Least One Compound.',
+        'studies': 'Please Select at Least One Study'
     };
 
     var submit_buttons_selector = $('.submit-button');
@@ -17,12 +18,16 @@ $(document).ready(function() {
     var treatment_group_table = $('#treatment_group_table');
 
     // Default all empty
-    window.GROUPING.filters = {
-        'organ_models': {},
-        'groups': {},
-        'compounds': {},
-        'targets': {}
-    };
+    // window.GROUPING.filters = {
+    //     'organ_models': {},
+    //     'groups': {},
+    //     'compounds': {},
+    //     'targets': {}
+    // };
+    // window.GROUPING.filters = {};
+    // $.each($('.filter-table'), function(index, current_filter_table) {
+    //     window.GROUPING.filters[$(current_filter_table).attr('id').replace('filter_', '')] = {};
+    // });
 
     // PROCESS GET PARAMS INITIALLY
     window.GROUPING.process_get_params();
@@ -39,7 +44,7 @@ $(document).ready(function() {
         // Disable all checkboxes
         // $('.filter-checkbox').attr('disabled', 'disabled');
         $('.filter-table').addClass('gray-out');
-
+        console.log(JSON.stringify(window.GROUPING.filters));
         $.ajax({
             url: "/assays_ajax/",
             type: "POST",
@@ -82,7 +87,7 @@ $(document).ready(function() {
                         return false;
                     }
                 });
-
+                console.log(json);
                 $.each(json.filters, function (filter, contents) {
                     // Do not refresh current
                     if (filter === parent_filter) {

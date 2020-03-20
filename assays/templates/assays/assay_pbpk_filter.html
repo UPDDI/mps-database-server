@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+
+{% block load_js %}
+    {# FOR PARAMETER STUFF #}
+    <script src="{% static "assays/grouping_filtering.js" %}"></script>
+    <script src="{% static "assays/assay_filter.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li class="active">Query Data</li>
+{% endblock %}
+
+{% block fluid-content %}
+    <div class="row padded-row text-center padded-bottom large-padding-top">
+        <!-- <a href="/assays/assaystudy_data_plots/?" type="button" class="btn btn-xlarge btn-primary text-center submit-button" id="charts_submit">
+            <span class="glyphicon glyphicon glyphicon-stats" aria-hidden="true"></span>
+            Show Plots
+        </a> -->
+        <a href="/assays/pbpk/?" type="button" class="btn btn-xlarge btn-primary text-center submit-button" id="repro_submit">
+            <span class="glyphicon glyphicon glyphicon-random" aria-hidden="true"></span>
+            Show PBPK
+        </a>
+        <!-- <a href="/assays/data_from_filters/?" type="button" class="btn btn-xlarge btn-info text-center submit-button" id="download_submit">
+            <span class="glyphicon glyphicon glyphicon-download-alt" aria-hidden="true"></span>
+            Download
+        </a> -->
+    </div>
+
+    <div id="filter">
+    <div id="number_of_points_container" class="row text-center padded-bottom text-success">
+        <h1 id="make_more_selections_message" class="text-danger">Please Select at Least One MPS Model</h1>
+        <h2>Number of Points: <span id="number_of_points"></span></h2>
+    </div>
+
+    <div class="row padded-bottom">
+        <div class="col-md-6">
+            <div class="padded-bottom">
+                <a data-target-id="filter_organ_models" class="btn btn-primary filter-select-all">Select All</a>
+                <a data-target-id="filter_organ_models" class="btn btn-danger filter-deselect-all">Deselect All</a>
+            </div>
+            <table id="filter_organ_models" class="table table-striped table-hover filter-table">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>MPS Model</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-6">
+            <div class="padded-bottom">
+                <a data-target-id="filter_groups" class="btn btn-primary filter-select-all">Select All</a>
+                <a data-target-id="filter_groups" class="btn btn-danger filter-deselect-all">Deselect All</a>
+            </div>
+            <table id="filter_groups" class="table table-striped table-hover filter-table">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>MPS User Group</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row padded-bottom">
+        <div class="col-md-6">
+            <div class="padded-bottom">
+                <a data-target-id="filter_compounds" class="btn btn-primary filter-select-all">Select All</a>
+                <a data-target-id="filter_compounds" class="btn btn-danger filter-deselect-all">Deselect All</a>
+            </div>
+            <table id="filter_compounds" class="table table-striped table-hover filter-table">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Compound</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-6">
+            <div class="padded-bottom">
+                <a data-target-id="filter_studies" class="btn btn-primary filter-select-all">Select All</a>
+                <a data-target-id="filter_studies" class="btn btn-danger filter-deselect-all">Deselect All</a>
+            </div>
+            <table id="filter_studies" class="table table-striped table-hover filter-table">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Study</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    </div>
+{% endblock %}

@@ -57,6 +57,7 @@ import scipy.stats as stats
 from scipy.interpolate import CubicSpline
 from scipy import integrate
 from scipy.stats import ttest_ind
+from scipy import stats
 from sympy import gamma
 from statsmodels.stats.power import (tt_solve_power, TTestIndPower)
 import rpy2.robjects as robjects
@@ -2542,10 +2543,10 @@ def pa_power_analysis_report(power_group_data, type='d', sig_level=0.05):
     return power_analysis_table
 
 
-def pa_power_sample_size_curves_matrix(power_group_data, power_inteval=0.02, type='d', sig_level=0.05):
+def pa_power_sample_size_curves_matrix(power_group_data, power_interval=0.02, type='d', sig_level=0.05):
     # Calculate and report the power analysis for two treatments' time series from replicates assay measurements
     max_power = 1
-    power_inteval = 0.01
+    power_interval = 0.01
 
     power_group_data = power_group_data.dropna(subset=['Value'])
     # Confirm whether there are two treatments
@@ -2605,7 +2606,7 @@ def pa_power_sample_size_curves_matrix(power_group_data, power_inteval=0.02, typ
                 if power_value < 0.4:
                     min_power = power_value
 
-                power_array = np.arange(min_power, max_power, power_inteval)
+                power_array = np.arange(min_power, max_power, power_interval)
                 n_pc = len(power_array)
                 # create dataframe for each time point
                 time_power_df = pd.DataFrame(
@@ -2675,7 +2676,7 @@ def two_sample_power_analysis(data, type, sig):
 
     # Call fuction to get the predicted sample size of chip replicates at each time for given power
     power_vs_sample_size_curves_matrix = pa_power_sample_size_curves_matrix(
-        power_group_data, power_inteval=0.02, type=type, sig_level=sig)
+        power_group_data, power_interval=0.02, type=type, sig_level=sig)
 
     # Call Sample size prediction
     sample_size_prediction_matrix = pa_predicted_sample_size_time_series(
@@ -3216,7 +3217,7 @@ def review_plate_reader_data_file_format(my_file_object, set_dict):
         # use other provided info to guess the plate size
         # the last resort is the one that assumes vertical stacking
         form_plate_size = sub_function_inside_utils_plate_reader_map_file_guess_plate_size(
-            file_list, file_length_list, form_number_blank_columns, set_number_blank_columns, 
+            file_list, file_length_list, form_number_blank_columns, set_number_blank_columns,
             rows_idx_with_1_2_3, cols_idx_with_1_of_1_2_3, rows_idx_with_blank_or_end, rows_that_are_empty_first_if_series
             )
 
@@ -3522,7 +3523,7 @@ def sub_function_inside_utils_plate_reader_map_file_best_guess_block_detect(
 
 
 def sub_function_inside_utils_plate_reader_map_file_guess_plate_size(
-        file_list, file_length_list, form_number_blank_columns, set_number_blank_columns, 
+        file_list, file_length_list, form_number_blank_columns, set_number_blank_columns,
         rows_idx_with_1_2_3, cols_idx_with_1_of_1_2_3, rows_idx_with_blank_or_end, rows_that_are_empty_first_if_series):
 
     # function NOT robustly tested.....
@@ -3787,3 +3788,381 @@ def add_update_plate_reader_data_map_item_values_from_file(
     #             print(query_instance, query_instance.time, query_instance.well_use, query_instance.plate_index)
 
     return "done"
+
+
+def pk_clearance_results(pk_type,
+                         with_no_cell_data,
+                         cell_name,
+                         start_time,
+                         end_time,
+                         total_device_vol_ul,
+                         total_cells_in_device,
+                         flow_rate,
+                         cells_per_tissue_g,
+                         total_organ_weight_g,
+                         compound_conc,
+                         compound_pk_data):
+    # Calculate t-half and intrinsic clearance
+    compound_pk_data = pd.DataFrame(compound_pk_data, columns=["Time", "Cells", "Value"])
+    compound_pk_data.dropna()
+    if pk_type == "Bolus":
+        # Bolus clearance calculation
+        cl_ml_min = pk_clearance_bolus(
+            start_time,
+            end_time,
+            cells_per_tissue_g,
+            total_organ_weight_g,
+            total_device_vol_ul,
+            total_cells_in_device,
+            compound_pk_data
+        )
+        return {"clearance": cl_ml_min, "clearance_data": ''}
+    else:
+        if start_time > end_time:
+            return {'error': 'The Selected "Start Time" comes after the selected "End Time". Please adjust these parameters and run the calculation again.'}
+        steady_state_table_key = compound_pk_data[["Cells"]]
+        if len(steady_state_table_key.drop_duplicates().index) >= 2:
+            if len(compound_pk_data.loc[compound_pk_data['Cells'] == '-No Cell Samples-'].index) > 0:
+                clist = [cell_name, '-No Cell Samples-']
+                compound_pk_data = compound_pk_data[compound_pk_data.Cells.isin(clist)]
+            else:
+                compound_pk_data = compound_pk_data[compound_pk_data['Cells'] == cell_name]
+
+        steady_state_table_key = compound_pk_data[["Cells"]]
+        if len(steady_state_table_key.drop_duplicates().index) == 2:
+            if len(compound_pk_data.loc[compound_pk_data['Cells'] == '-No Cell Samples-'].index) > 0:
+                pk_steady_state_data = pk_calc_clearance_continuous_infusion_matrix(
+                    with_no_cell_data,
+                    cell_name,
+                    total_device_vol_ul,
+                    total_cells_in_device,
+                    flow_rate,
+                    cells_per_tissue_g,
+                    total_organ_weight_g,
+                    compound_conc,
+                    compound_pk_data
+                )
+                cl_ml_min = pk_calc_clearance_steady_state(
+                    pk_steady_state_data,
+                    start_time,
+                    end_time
+                )
+                if cl_ml_min < 0:
+                    return {'error': 'The "Compound Recovered From Device With Cells" concentration is greater than the "Compound Recovered From Device Without Cells". Do not include cell-free data for PK analysis with this data.'}
+            else:
+                return {'error': 'There is no data for this compound from device without cells. Please group the PK group sets by Cells.'}
+        elif len(steady_state_table_key.drop_duplicates().index) == 1 and len(compound_pk_data.loc[compound_pk_data['Cells'] == '-No Cell Samples-'].index) == 0:
+            with_no_cell_data = False
+            pk_steady_state_data = pk_calc_clearance_continuous_infusion_matrix(
+                with_no_cell_data,
+                total_device_vol_ul,
+                total_cells_in_device,
+                flow_rate,
+                cells_per_tissue_g,
+                total_organ_weight_g,
+                compound_conc,
+                compound_pk_data
+            )
+            cl_ml_min = pk_calc_clearance_steady_state(
+                pk_steady_state_data,
+                start_time,
+                end_time
+            )
+        elif len(steady_state_table_key.drop_duplicates().index) == 1 and len(compound_pk_data.loc[compound_pk_data['Cells'] == '-No Cell Samples-'].index) > 0:
+            return {'error': 'Only Cell-Free Data is Present!'}
+
+    return {"clearance": cl_ml_min, "clearance_data": pk_steady_state_data.to_dict('split')}
+
+
+def pk_clearance_bolus(start_time,
+                       end_time,
+                       cells_per_tissue_g,
+                       total_organ_weight_g,
+                       total_device_vol_ul,
+                       total_cells_in_device,
+                       compound_pk_data):
+
+    # Filter data by defined time interval
+    filtered_data = compound_pk_data[compound_pk_data['Time'] <= end_time*60]
+    filtered_data = filtered_data[filtered_data['Time'] >= start_time*60]
+    agg_mean_data = filtered_data.groupby(['Time'], as_index=False)['Value'].mean()
+
+    x = agg_mean_data['Time']
+    y = np.log(agg_mean_data['Value'])
+
+    # Generated linear regression fit
+    slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+    # Calculate t half
+    t_half = np.log(2)/abs(slope)
+
+    # Calculate intrinsic clearance
+    intrinsic_clearance = 0.693/t_half*total_device_vol_ul/1000*cells_per_tissue_g*total_organ_weight_g/total_cells_in_device
+
+    return intrinsic_clearance
+
+
+def pk_calc_clearance_continuous_infusion_matrix(with_no_cell_data,
+                                                 cell_name,
+                                                 total_device_vol_ul,
+                                                 total_cells_in_device,
+                                                 flow_rate,
+                                                 cells_per_tissue_g,
+                                                 total_organ_weight_g,
+                                                 compound_conc,
+                                                 compound_pk_data):
+    influent_conc = compound_conc
+    compound_pk_data.dropna()
+    steady_state_table_key = compound_pk_data[["Cells"]]
+    if len(steady_state_table_key.drop_duplicates().index) >= 2:
+        if len(compound_pk_data.loc[compound_pk_data['Cells'] == '-No Cell Samples-'].index) >0:
+            clist = [cell_name, '-No Cell Samples-']
+            compound_pk_data = compound_pk_data[compound_pk_data.Cells.isin(clist)]
+        else:
+            compound_pk_data = compound_pk_data[compound_pk_data['Cells'] == cell_name]
+
+    steady_state_table_key = compound_pk_data[["Cells"]]
+    if len(steady_state_table_key.drop_duplicates().index) == 2:
+        steady_state_pivot = pd.pivot_table(compound_pk_data, values='Value', index='Time', columns=['Cells'], aggfunc=np.mean)
+        if len(compound_pk_data.loc[compound_pk_data['Cells'] == '-No Cell Samples-'].index) > 0:
+            column_list = steady_state_pivot.columns.values.tolist()
+            no_cell_col_index = column_list.index('-No Cell Samples-')
+            if no_cell_col_index > 0:
+                column_list = column_list[-1:] + column_list[:-1]
+                steady_state_pivot=steady_state_pivot[column_list]
+            old_column_names = steady_state_pivot.columns.values.tolist()
+            new_column_names = ['Compound Recovered From Device Without Cells (uM)', 'Compound Recovered From Device With Cells (uM)']
+            steady_state_pivot.rename(columns=dict(zip(old_column_names, new_column_names)), inplace=True)
+            # Create Continuous Infusion clearance analysis matrix
+            header_list = steady_state_pivot.columns.values.tolist()
+            header_list.append('Extraction Ratio')
+            header_list.append('Clearance from MPS Model (uL/hr)')
+            header_list.append('Predicted intrinsic clearance (ul/min)')
+
+            # Define all columns of intrinsic clearance analysis table
+            steady_state_pivot = steady_state_pivot.reindex(columns=header_list)
+            steady_state_pivot['Time'] = steady_state_pivot.index
+
+            if with_no_cell_data:
+                for i in range(steady_state_pivot.shape[0]):
+                    steady_state_pivot.iloc[i, 2] = (steady_state_pivot.iloc[i, 0]-steady_state_pivot.iloc[i, 1])/steady_state_pivot.iloc[i, 0]
+                    steady_state_pivot.iloc[i, 3] = steady_state_pivot.iloc[i, 2]*flow_rate
+                    steady_state_pivot.iloc[i, 4] = ((steady_state_pivot.iloc[i, 3]*(cells_per_tissue_g/total_cells_in_device)*total_organ_weight_g)/60*0.001)
+            else:
+                for i in range(steady_state_pivot.shape[0]):
+                    steady_state_pivot.iloc[i, 2] = (influent_conc-steady_state_pivot.iloc[i, 1])/influent_conc
+                    steady_state_pivot.iloc[i, 3] = steady_state_pivot.iloc[i, 2]*flow_rate
+                    steady_state_pivot.iloc[i, 4] = ((steady_state_pivot.iloc[i, 3]*(cells_per_tissue_g/total_cells_in_device)*total_organ_weight_g)/60*0.001)
+        steady_state_matrix = steady_state_pivot
+    elif len(steady_state_table_key.drop_duplicates().index) == 1 and len(compound_pk_data.loc[compound_pk_data['Cells'] == '-No Cell Samples-'].index) == 0:
+        steady_state_data = compound_pk_data.groupby(['Time'], as_index=False)['Value'].mean()
+        old_column_names = steady_state_data.columns.values.tolist()
+        new_column_names = ['Time', 'Compound Recovered From Device With Cells (uM)']
+        steady_state_data.rename(columns=dict(zip(old_column_names, new_column_names)), inplace=True)
+        # Create Continuous Infusion clearance analysis matrix
+        header_list = steady_state_data.columns.values.tolist()
+        header_list.append('Extraction Ratio')
+        header_list.append('Clearance from MPS Model (uL/hr)')
+        header_list.append('Predicted intrinsic clearance (ul/min)')
+
+        # Define all columns of intrinsic clearance analysis table
+        steady_state_data = steady_state_data.reindex(columns=header_list)
+        for i in range(steady_state_data.shape[0]):
+            steady_state_data.iloc[i, 2] = (influent_conc-steady_state_pivot.iloc[i, 1])/influent_conc
+            steady_state_data.iloc[i, 3] = steady_state_data.iloc[i, 2]*flow_rate
+            steady_state_data.iloc[i, 4] = ((steady_state_data.iloc[i, 3]*(cells_per_tissue_g/total_cells_in_device)*total_organ_weight_g)/60*0.001)
+
+        steady_state_matrix = steady_state_data
+    else:
+        steady_state_matrix = np.nan
+    return steady_state_matrix
+
+
+def pk_calc_clearance_steady_state(pk_steady_state_data, start_time, end_time):
+    clearance_start_matrix = pk_steady_state_data.loc[pk_steady_state_data['Time'] >= start_time]
+    if not np.isnan(end_time):
+        clearance_start_matrix = clearance_start_matrix.loc[clearance_start_matrix['Time'] <= end_time]
+    clearance = clearance_start_matrix['Predicted intrinsic clearance (ul/min)'].mean()
+    return clearance
+
+
+def calculate_pk_parameters(cl_ml_min,
+                            pk_volume_data,
+                            body_mass,
+                            MW,
+                            logD,
+                            pKa,
+                            fu,
+                            Vp,
+                            VE,
+                            REI,
+                            VR,
+                            ASR,
+                            Ki,
+                            Ka,
+                            Fa,
+                            dose_mg,
+                            dose_interval,
+                            desired_Cp,
+                            desired_dose_interval,
+                            estimated_fraction_absorbed,
+                            prediction_time_length):
+
+    ElogD = (logD*0.9638)+0.0417
+    Log_vo_w = (1.099*logD)-1.31
+
+    # Create the hardcoded organ volume table thing
+    vol_data_col_names = pk_volume_data.pop(0)
+    pk_volume_data = pd.DataFrame(pk_volume_data, columns=vol_data_col_names)
+
+    # Calculate Vc
+    fup_fut = 1
+    v_row_count = pk_volume_data.shape[0]
+
+    vol_df = pd.DataFrame(index=range(v_row_count), columns=["A", "B", "C"])
+    for i in range(v_row_count):
+        vol_df.iloc[i, 0] = ((10**Log_vo_w*(pk_volume_data.iloc[6, 3]+(0.3*pk_volume_data.iloc[6, 4])))+pk_volume_data.iloc[6, 2]+(0.7*pk_volume_data.iloc[6, 4]))/((10**Log_vo_w*(pk_volume_data.iloc[i, 3]+(0.3*pk_volume_data.iloc[i, 4])))+pk_volume_data.iloc[i, 2]+(0.7*pk_volume_data.iloc[i, 4]))
+        vol_df.iloc[i, 1] = pk_volume_data.iloc[i, 1]*vol_df.iloc[i, 0]
+        vol_df.iloc[i, 2] = vol_df.iloc[i, 1]*fup_fut
+
+    Vc = np.sum(vol_df.iloc[:, 2])
+    fi = 1/(1+(10**((7.4-pKa)*1)))
+    fut = 10**(0.008-(0.2294*ElogD)-(0.9311*fi)+(0.8885*(np.log10(fu))))
+    Vp_L = body_mass*Vp
+    VE_L = body_mass*VE
+    VR_L = body_mass*VR
+    CL_L = (cl_ml_min/1000)*60
+    VDss = (Vp_L*(1+REI))+(fu*Vp_L*((VE_L/Vp_L)-REI)+((VR_L*fu)/fut))
+    Ke = CL_L/VDss
+    AUC = Fa*dose_mg/VDss/Ke
+    EHL = ((0.693*VDss)/CL_L)
+
+    par_col_names = [
+        "fi(7.4)",
+        "fut",
+        "Vp (L)",
+        "VE (L)",
+        "VR (L)",
+        "CL (L/h)",
+        "Logvo/w",
+        "Vc (L)",
+        "ELogD",
+        "VDss (L)",
+        "Ke(1/h)",
+        "Elimination half-life",
+        "Ka (1/h)",
+        "Fa",
+        "AUC"
+    ]
+    calculate_pk_parameters_df = pd.DataFrame(index=range(1), columns=par_col_names)
+    calculate_pk_parameters_df.iloc[0, 0] = fi
+    calculate_pk_parameters_df.iloc[0, 1] = fut
+    calculate_pk_parameters_df.iloc[0, 2] = Vp_L
+    calculate_pk_parameters_df.iloc[0, 3] = VE_L
+    calculate_pk_parameters_df.iloc[0, 4] = VR_L
+    calculate_pk_parameters_df.iloc[0, 5] = CL_L
+    calculate_pk_parameters_df.iloc[0, 6] = Log_vo_w
+    calculate_pk_parameters_df.iloc[0, 7] = Vc
+    calculate_pk_parameters_df.iloc[0, 8] = ElogD
+    calculate_pk_parameters_df.iloc[0, 9] = VDss
+    calculate_pk_parameters_df.iloc[0, 10] = Ke
+    calculate_pk_parameters_df.iloc[0, 11] = EHL
+    calculate_pk_parameters_df.iloc[0, 12] = Ka
+    calculate_pk_parameters_df.iloc[0, 13] = Fa
+    calculate_pk_parameters_df.iloc[0, 14] = AUC
+
+    # Single Oral Dose: Calculated PK Parameters
+    par_col_names = ["AUC (mg*min/L)", "Mmax (mg)", "Cmax (mg/L)", "tmax (h)"]
+    calculate_pk_parameters_single_oral_dose = pd.DataFrame(index=range(1), columns=par_col_names)
+
+    VDss = calculate_pk_parameters_df.iloc[0, 9]
+    Ke = calculate_pk_parameters_df.iloc[0, 10]
+    Ka = calculate_pk_parameters_df.iloc[0, 12]
+    Fa = calculate_pk_parameters_df.iloc[0, 13]
+    calculate_pk_parameters_single_oral_dose.iloc[0, 0] = (Fa*dose_mg)/(VDss*Ke)  # AUC (mg*min/L)
+    Mmax = (Fa*dose_mg)*((Ke/Ka)**(Ke/(Ka-Ke)))  # Mmax (mg)
+    calculate_pk_parameters_single_oral_dose.iloc[0, 1] = Mmax
+    calculate_pk_parameters_single_oral_dose.iloc[0, 2] = Mmax/VDss  # Cmax (mg/L)
+    calculate_pk_parameters_single_oral_dose.iloc[0, 3] = (np.log(Ka)-np.log(Ke))/(Ka-Ke)  # tmax (hour)
+
+    # Multiple Oral Dose: Calculated PK Parameters
+    par_col_names = ["Mss (mg)", "Css (mg/L)", "tmax (h)"]
+    calculate_pk_parameters_multiple_oral_dose = pd.DataFrame(index=range(1), columns=par_col_names)
+
+    VDss = calculate_pk_parameters_df.iloc[0, 9]
+    Ke = calculate_pk_parameters_df.iloc[0, 10]
+    Ka = calculate_pk_parameters_df.iloc[0, 12]
+    Fa = calculate_pk_parameters_df.iloc[0, 13]
+    CL_L = calculate_pk_parameters_df.iloc[0, 5]
+    elimination_half_life = calculate_pk_parameters_df.iloc[0, 11]
+    AUC = Fa*dose_mg/VDss/Ke
+    Mss = (Fa*dose_mg)/(Ke*dose_interval)
+    Css = (Fa*dose_mg)/(CL_L*dose_interval)
+    tmax = np.log((Ka*(1-np.exp(-Ke*dose_interval)))/(Ke*(1-np.exp(-Ka*dose_interval))))/(Ka-Ke)
+    calculate_pk_parameters_multiple_oral_dose.iloc[0, 0] = Mss
+    calculate_pk_parameters_multiple_oral_dose.iloc[0, 1] = Css
+    calculate_pk_parameters_multiple_oral_dose.iloc[0, 2] = tmax
+
+    # Single oral dose prediction
+    single_dose_Mmax = (Fa*dose_mg)*((Ke/Ka)**(Ke/(Ka-Ke)))  # Mmax (mg)
+    single_dose_Cmax = Mmax/VDss  # Cmax (mg/L)
+    single_dose_tmax = (np.log(Ka)-np.log(Ke))/(Ka-Ke)  # tmax (hour)
+
+    # Multiple oral dose prediction
+    multiple_dose_Mss = (Fa*dose_mg)/(Ke*dose_interval)  # Mss (mg)
+    multiple_dose_Css = (Fa*dose_mg)/(CL_L*dose_interval)  # Css (mg/L)
+    multiple_dose_tmax = np.log((Ka*(1-np.exp(-Ke*dose_interval)))/(Ke*(1-np.exp(-Ka*dose_interval))))/(Ka-Ke)  # tmax (h)
+
+    # To Reach Desired Plasma Levels:
+    par_col_names = ["Dosecalc (mg)", "No. of Doses to Reach 50%", "No. of Doses to Reach 90%"]
+    calculate_pk_parameters_reach_desired_plasma_levels = pd.DataFrame(index=range(1), columns=par_col_names)
+    Dosecalc = (((desired_Cp/1000000)*VDss*MW*1000)*Ke*desired_dose_interval)/estimated_fraction_absorbed
+    n_doses_reach_50_percent = np.int((3.323*np.log(1-0.5))/-(desired_dose_interval/elimination_half_life))
+    n_doses_reach_90_percent = np.int((3.323*np.log(1-0.9))/-(desired_dose_interval/elimination_half_life))
+    calculate_pk_parameters_reach_desired_plasma_levels.iloc[0, 0] = Dosecalc
+    calculate_pk_parameters_reach_desired_plasma_levels.iloc[0, 1] = n_doses_reach_50_percent
+    calculate_pk_parameters_reach_desired_plasma_levels.iloc[0, 2] = n_doses_reach_90_percent
+
+    dosage_data = [single_dose_Mmax, single_dose_Cmax, single_dose_tmax, multiple_dose_Mss, multiple_dose_Css, multiple_dose_tmax, Dosecalc, n_doses_reach_50_percent, n_doses_reach_90_percent]
+
+    par_col_names = ["Time (hr)", "Time Interval (hr)", "Dose Number", "Single Dose (mg/L)", "Single Dose", "Elimination Coefficient", "Multiple Dose (mg/L)", "Multiple Dose (mg)"]
+    prediction_dose_plot_table = pd.DataFrame(index=range(prediction_time_length+1), columns=par_col_names)
+    FDK = (Fa*dose_mg*Ka)/(Ka-Ke)
+
+    for i in range(prediction_time_length+1):
+        if i == 0:
+            prediction_dose_plot_table.iloc[i, 0] = i
+            prediction_dose_plot_table.iloc[i, 1] = i
+            prediction_dose_plot_table.iloc[i, 2] = 1
+        else:
+            prediction_dose_plot_table.iloc[i, 0] = (i-1)+1
+            if prediction_dose_plot_table.iloc[i-1, 1] < dose_interval:
+                prediction_dose_plot_table.iloc[i, 1] = prediction_dose_plot_table.iloc[i-1, 1]+1
+            else:
+                prediction_dose_plot_table.iloc[i, 1] = 1
+            if prediction_dose_plot_table.iloc[i, 0] % dose_interval == 0:
+                prediction_dose_plot_table.iloc[i, 2] = prediction_dose_plot_table.iloc[i-1, 2]+1
+            else:
+                prediction_dose_plot_table.iloc[i, 2] = prediction_dose_plot_table.iloc[i-1, 2]
+        time = prediction_dose_plot_table.iloc[i, 0]
+        time_interval = prediction_dose_plot_table.iloc[i, 1]
+        dose_no = prediction_dose_plot_table.iloc[i, 2]
+        single_dose_calc = ((Fa*dose_mg*Ka)/(VDss*(Ka-Ke)))*(np.exp(-(Ke*time))-np.exp(-(Ka*time)))
+        single_dose_mg = single_dose_calc*VDss
+        ec1 = (1-np.exp(-dose_no*Ke*dose_interval))
+        ec2 = ((ec1/(1-np.exp(-Ke*dose_interval)))*np.exp(-Ke*time_interval))
+        ec3 = ((1-np.exp(-dose_no*Ka*dose_interval))/(1-np.exp(-Ka*dose_interval)))
+        EC = ec2-(ec3*np.exp(-Ka*time_interval))
+        mult_dose_mg = FDK*EC
+        mult_dose_calc = mult_dose_mg/VDss
+        prediction_dose_plot_table.iloc[i, 3] = single_dose_calc
+        prediction_dose_plot_table.iloc[i, 4] = single_dose_mg
+        prediction_dose_plot_table.iloc[i, 5] = EC
+        prediction_dose_plot_table.iloc[i, 6] = mult_dose_calc
+        prediction_dose_plot_table.iloc[i, 7] = mult_dose_mg
+    prediction_plot_table = prediction_dose_plot_table[prediction_dose_plot_table["Time (hr)"] <= prediction_time_length]
+    x = prediction_plot_table["Time (hr)"]
+    y_single = prediction_plot_table["Single Dose (mg/L)"]
+    y_multiple = prediction_plot_table["Multiple Dose (mg/L)"]
+    max_y = y_multiple.max()
+
+    return {'calculated_pk_parameters': calculate_pk_parameters_df.to_dict('list'), 'prediction_plot_table': prediction_plot_table.to_dict('list'), 'dosing_data': dosage_data}

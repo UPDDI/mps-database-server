@@ -28,12 +28,7 @@ window.GROUPING = {
     set_grouping_filtering: null,
     get_grouping_filtering: null,
     // INDICATES THE ORDER OF FILTERS FOR PROCESSING
-    ordered_filters: [
-        'organ_models',
-        'groups',
-        'targets',
-        'compounds'
-    ],
+    ordered_filters: [],
     full_get_parameters: '',
     filters: null,
     // Probably doesn't need to be global
@@ -43,6 +38,8 @@ window.GROUPING = {
     filters_param: '',
     group_criteria_param: '',
     post_filter_param: '',
+    // Indicate whether this is pbpk or not
+    is_pbpk: window.location.href.indexOf('pbpk') > -1,
 };
 
 // Naive encapsulation
@@ -89,6 +86,26 @@ $(document).ready(function () {
 
     // Contrived: Show the toggle sidebar button
     toggle_sidebar_button.removeClass('hidden');
+
+    if (window.GROUPING.is_pbpk) {
+        window.GROUPING.ordered_filters = [
+            'organ_models',
+            'groups',
+            'compounds',
+            'studies'
+        ];
+    } else {
+        window.GROUPING.ordered_filters = [
+            'organ_models',
+            'groups',
+            'compounds',
+            'targets'
+        ];
+    }
+    window.GROUPING.filters = {};
+    $.each(window.GROUPING.ordered_filters, function(index, current_filter) {
+        window.GROUPING.filters[current_filter] = {};
+    });
 
     // Gray out filters with nothing in them
     window.GROUPING.set_grouping_filtering = function(new_post_filter) {
@@ -148,12 +165,12 @@ $(document).ready(function () {
         }
         if (raw_filters) {
             // Default all empty
-            window.GROUPING.filters = {
-                'organ_models': {},
-                'groups': {},
-                'compounds': {},
-                'targets': {}
-            };
+            // window.GROUPING.filters = {
+            //     'organ_models': {},
+            //     'groups': {},
+            //     'compounds': {},
+            //     'targets': {}
+            // };
 
             raw_filters = raw_filters.split('+');
 
@@ -165,6 +182,8 @@ $(document).ready(function () {
                     window.GROUPING.filters[current_filter][current_id] = 'true';
                 });
             });
+
+            console.log(window.GROUPING.filters);
         }
 
         // TODO
@@ -355,6 +374,7 @@ $(document).ready(function () {
     };
 
     window.GROUPING.modify_filters_param = function() {
+        console.log(window.GROUPING.filters, window.GROUPING.ordered_filters);
         // DESTROY POST FILTER
         window.GROUPING.post_filter_param = '';
         window.GROUPING.post_filter = {};

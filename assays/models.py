@@ -2387,6 +2387,8 @@ class AssayMatrixItem(FlaggableModel):
             # 'device': self.device.name,
             # OBJECTIVELY BAD
             'Center': self.study.group.microphysiologycenter_set.first().name,
+            # TODO May need to prefetch device (potential n+1)
+            'Device': self.device.name,
             'MPS User Group': self.study.group.name,
             'Study': self.get_hyperlinked_study(),
             'Matrix': self.get_hyperlinked_matrix(),
@@ -4088,3 +4090,84 @@ class AssayPlateReaderMapItemValue(models.Model):
         return '{}delete/'.format(self.get_absolute_url())
 
 ##### END ASSAY PLATE MAP SECTION
+
+
+class SpeciesParameters(models.Model):
+    species = models.ForeignKey(
+        'drugtrials.Species',
+        on_delete=models.CASCADE,
+        verbose_name='Species'
+    )
+    organ = models.ForeignKey(
+        'cellsamples.Organ',
+        on_delete=models.CASCADE,
+        verbose_name='Organ'
+    )
+    reference = models.ForeignKey(
+        AssayReference,
+        on_delete=models.CASCADE,
+        verbose_name='Reference'
+    )
+    body_mass = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Body Mass (kg)',
+        help_text='Body Mass'
+    )
+    total_organ_weight = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Total Organ Weight (g)',
+        help_text='Total Organ Weight'
+    )
+    organ_tissue = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Organ Tissue (cells/g)',
+        help_text='Organ Tissue'
+    )
+    plasma_volume = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='VP (L)',
+        help_text='Plasma Volume'
+    )
+    vp = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='VP (L/kg)',
+        help_text='Plasma Volume'
+    )
+    ve = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='VE (L/kg)',
+        help_text='Extracellular Volume'
+    )
+    rei = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='RE/I',
+        help_text='Extravascular/Intravascular Ratio'
+    )
+    vr = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='VR',
+        help_text='Volume of Drug Distribution Minus Extracellular Space'
+    )
+    absorptive_surface_area = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Absorptive Surface Area',
+        help_text='Absorptive Surface Area (m^2)'
+    )
+    ki = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Ki (1/min)',
+        help_text='Inverse of Small Intestine Transit Time'
+    )
+
+    def __str__(self):
+        return '{} - {} ({})'.format(self.species, self.organ, self.reference)

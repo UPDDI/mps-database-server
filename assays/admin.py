@@ -54,6 +54,7 @@ from assays.models import (
     AssayPlateReaderMapDataFile,
     AssayPlateReaderMapDataFileBlock,
     AssayPlateReaderMapItemValue,
+    SpeciesParameters,
 )
 from microdevices.models import MicrophysiologyCenter
 # from compounds.models import Compound
@@ -1315,6 +1316,7 @@ class AssayPlateReaderMapAdmin(ImportExportModelAdmin):
 
 admin.site.register(AssayPlateReaderMap, AssayPlateReaderMapAdmin)
 
+
 class AssayPlateReaderMapDataFileAdmin(ImportExportModelAdmin):
     model = AssayPlateReaderMapDataFile
     list_display = ('description', )
@@ -1322,9 +1324,17 @@ class AssayPlateReaderMapDataFileAdmin(ImportExportModelAdmin):
 
 admin.site.register(AssayPlateReaderMapDataFile, AssayPlateReaderMapDataFileAdmin)
 
+
 class AssayPlateReaderMapDataFileBlockAdmin(ImportExportModelAdmin):
     model = AssayPlateReaderMapDataFileBlock
     list_display = ('assayplatereadermap', 'assayplatereadermapdatafile', 'data_block', 'data_processing_parsable')
     search_fields = ('data_block',)
 
 admin.site.register(AssayPlateReaderMapDataFileBlock, AssayPlateReaderMapDataFileBlockAdmin)
+
+
+class SpeciesParametersAdmin(ImportExportModelAdmin):
+    model = SpeciesParameters
+    search_fields = ('species', 'organ', 'reference')
+
+admin.site.register(SpeciesParameters, SpeciesParametersAdmin)
