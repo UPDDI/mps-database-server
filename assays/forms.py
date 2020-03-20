@@ -694,6 +694,7 @@ class SetupFormsMixin(BootstrapForm):
 
 # TODO ADD STUDY
 class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
+    # One issue with all of these extra fields is that they are registered in the change log
     test_type = forms.ChoiceField(
         initial='control',
         choices=TEST_TYPE_CHOICES,
