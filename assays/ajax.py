@@ -5467,8 +5467,8 @@ def get_pbpk_info(data_points, matrix_items):
         ).setdefault(
             legend, {}
         ).setdefault(
-            # NOTE CONVERT TO DAYS
-            point.time / 1440.0, []
+            # NOTE CONVERT TO HOURS
+            point.time / 60.0, []
         ).append(point.standard_value)
 
     for this_set, legends in list(initial_chart_data.items()):
@@ -5514,200 +5514,8 @@ def get_pbpk_info(data_points, matrix_items):
             for y, value in list(data_point.items()):
                 current_table[y_header.get(y)][x_header.get(x)] = value
 
-    # Reset chart data again
-    # initial_chart_data = {}
-
-    # reproducibility_results_table, inter_data_table = get_inter_study_reproducibility_report(
-    #     len(treatment_group_table),
-    #     inter_data,
-    #     inter_level,
-    #     max_interpolation_size,
-    #     initial_norm
-    # )
-    #
-    # if inter_data_table.get('errors', ''):
-    #     return inter_data_table
-    #
-    # reproducibility_results_table = reproducibility_results_table.astype(object).replace(np.nan, '')
-    # # results_columns = [i for i in reproducibility_results_table.columns]
-    # # results_rows = results_columns + [[row[i] for i in range(1, len(row))] for row in reproducibility_results_table.itertuples()]
-    # results_rows = [
-    #     [row[i] for i in range(1, len(row))] for row in reproducibility_results_table.itertuples()
-    # ]
-    # # Make into a suitable dictionary
-    # results_rows_full = {}
-    # results_rows_best = []
-    # excellent_counter = acceptable_counter = poor_counter = 0
-    # for row in results_rows:
-    #     current_dic = results_rows_full.setdefault(
-    #         row[0], {}
-    #     )
-    #     current_dic.update({
-    #         row[1]: row
-    #     })
-    #
-    #     # Get numeric ICC
-    #     current_icc = float(row[6]) if row[6] else 0
-    #     compare_icc = float(current_dic.get('best')[6]) if current_dic.get('best') and current_dic.get('best')[6] else 0
-    #
-    #     if current_dic.get('best', '') and (current_icc > compare_icc or not compare_icc):
-    #         current_dic.update({
-    #             'best': row
-    #         })
-    #     # Subject to revision
-    #     elif not current_dic.get('best', ''):
-    #         current_dic.update({
-    #             'best': row
-    #         })
-    #
-    # for this_set, current_dic in list(results_rows_full.items()):
-    #     current_best = current_dic.get('best')
-    #
-    #     # If the current best has no ICC, try CV
-    #     if not current_best[6]:
-    #         for current_type, row in list(current_dic.items()):
-    #             current_cv = float(row[5]) if row[5] else 999
-    #             compare_cv = float(current_dic.get('best')[5]) if current_dic.get('best') and current_dic.get('best')[5] else 999
-    #
-    #             if current_cv < compare_cv:
-    #                 current_dic.update({
-    #                     'best': row
-    #                 })
-    #
-    # for this_set, current_dic in list(results_rows_full.items()):
-    #     current_best = current_dic.get('best')
-    #
-    #     for current_type, row in list(current_dic.items()):
-    #         # Format the ICC
-    #         if row[6] and not type(row[6]) == str:
-    #             row[6] = '{0:.4g}'.format(row[6])
-    #
-    #         # Format Max CV while I am at it
-    #         if row[5] and not type(row[5]) == str:
-    #             row[5] = '{0:.4g}'.format(row[5])
-    #
-    #     # Removed for now
-    #     # Make sure it actually has points overlapping
-    #     # if current_best[4]:
-    #     #     results_rows_best.append(current_best)
-    #     results_rows_best.append(current_best)
-    #
-    # inter_data_table = inter_data_table.astype(object).replace(np.nan, '')
-    # # inter_data_columns = [i for i in inter_data_table.columns]
-    # inter_data_rows = [[row[i] for i in range(1, len(row))] for row in inter_data_table.itertuples()]
-    #
-    # inter_chart_data = {}
-    #
-    # for row in inter_data_rows:
-    #     # BE CAREFUL, INDICES MAY CHANGE
-    #     shape = ''
-    #     if row[3] != 'Original':
-    #         shape = 'point {shape-type: star; size: 9;}'
-    #     inter_chart_data.setdefault(
-    #         row[5], {}
-    #     ).setdefault(
-    #         row[4], {}
-    #     ).setdefault(
-    #         row[1], {}
-    #     ).setdefault(
-    #         # NOTE CONVERT TO DAYS
-    #         row[0] / 1440.0, (row[2], shape)
-    #     )
-    #
-    # for this_set, chart_groups in list(inter_chart_data.items()):
-    #     current_set = final_chart_data.setdefault(this_set, {})
-    #     for chart_group, legends in list(chart_groups.items()):
-    #         current_data = {}
-    #         current_table = current_set.setdefault(chart_group, [['Time']])
-    #         x_header = {}
-    #         y_header = {}
-    #         for legend, times in list(legends.items()):
-    #             # Get the median
-    #             current_median = np.median([
-    #                 np.median(x) for x in list(initial_chart_data.get(
-    #                     this_set
-    #                 ).get(
-    #                     'average'
-    #                 ).get(
-    #                     legend
-    #                 ).values())
-    #             ])
-    #
-    #             x_header.update({
-    #                 legend: True,
-    #                 # This is to deal with the style
-    #                 '{}{}'.format(legend, SHAPE_SIGIL): True,
-    #                 # This is to deal with intervals
-    #                 '{}{}'.format(legend, INTERVAL_1_SIGIL): True,
-    #                 '{}{}'.format(legend, INTERVAL_2_SIGIL): True,
-    #             })
-    #             for time, value_shape in list(times.items()):
-    #                 value, shape = value_shape[0], value_shape[1]
-    #                 if shape:
-    #                     current_data.setdefault(legend, {}).update({time: value})
-    #                     current_data.setdefault('{}{}'.format(legend, SHAPE_SIGIL), {}).update({time: shape})
-    #                     y_header.update({time: True})
-    #                 else:
-    #                     values = initial_chart_data.get(
-    #                         this_set
-    #                     ).get(
-    #                         'average'
-    #                     ).get(
-    #                         legend
-    #                     ).get(
-    #                         time
-    #                     )
-    #
-    #                     if initial_norm == 1 and current_median:
-    #                         values = [current_value / current_median for current_value in values]
-    #
-    #                     if len(values) > 1:
-    #                         # TODO TODO TODO ONLY ARITHMETIC MEAN RIGHT NOW
-    #                         value = np.mean(values)
-    #                         std = np.std(values)
-    #                         current_data.setdefault(legend, {}).update({time: value})
-    #                         current_data.setdefault('{}{}'.format(legend, INTERVAL_1_SIGIL), {}).update({time: value - std})
-    #                         current_data.setdefault('{}{}'.format(legend, INTERVAL_2_SIGIL), {}).update({time: value + std})
-    #                         current_data.setdefault('{}{}'.format(legend, SHAPE_SIGIL), {}).update({time: shape})
-    #                     else:
-    #                         current_data.setdefault(legend, {}).update({time: values[0]})
-    #
-    #                     y_header.update({time: True})
-    #
-    #         x_header_keys = list(x_header.keys())
-    #         x_header_keys.sort(key=alphanum_key)
-    #         current_table[0].extend(x_header_keys)
-    #
-    #         x_header = {x_header_keys[index]: index + 1 for index in range(len(x_header_keys))}
-    #
-    #         y_header = list(y_header.keys())
-    #         y_header.sort(key=float)
-    #
-    #         for y in y_header:
-    #             current_table.append([y] + [None] * (len(x_header)))
-    #
-    #         y_header = {y_header[index]: index + 1 for index in range(len(y_header))}
-    #
-    #         for x, data_point in list(current_data.items()):
-    #             for y, value in list(data_point.items()):
-    #                 current_table[y_header.get(y)][x_header.get(x)] = value
-
-    # final_data_group_to_studies = {}
-    # for data_group, current_studies in list(data_group_to_studies.items()):
-    #     final_data_group_to_studies[data_group] = sorted(current_studies, key=current_studies.get)
-    #
-    # final_data_group_to_sample_locations = {}
-    # for data_group, current_sample_location in list(data_group_to_sample_locations.items()):
-    #     final_data_group_to_sample_locations[data_group] = sorted(current_sample_location)
-    #
-    # final_data_group_to_organ_models = {}
-    # for data_group, current_organ_model in list(data_group_to_organ_models.items()):
-    #     final_data_group_to_organ_models[data_group] = sorted(current_organ_model)
-
     data = {
         'chart_data': final_chart_data,
-        # 'repro_table_data_full': results_rows_full,
-        # 'repro_table_data_best': results_rows_best,
         'data_groups': treatment_group_table,
         'header_keys': {
             'treatment': treatment_header_keys,
@@ -5715,10 +5523,6 @@ def get_pbpk_info(data_points, matrix_items):
         },
         'treatment_groups': treatment_group_representatives,
         'study_name_to_pk_params': study_name_to_pk_params
-        # 'data_group_to_studies': final_data_group_to_studies,
-        # 'data_group_to_sample_locations': final_data_group_to_sample_locations,
-        # 'data_group_to_organ_models': final_data_group_to_organ_models,
-        # 'sets_intra_points': sets_intra_points
     }
 
     return data
@@ -5733,6 +5537,7 @@ def fetch_species_parameters(request):
         'species': species_params.species.species_name,
         'organ': species_params.organ.organ_name,
         'reference': str(species_params.reference),
+        'reference_url': str(species_params.reference.get_absolute_url()),
         'body_mass': species_params.body_mass,
         'total_organ_weight': species_params.total_organ_weight,
         'organ_tissue': species_params.organ_tissue,

@@ -44,11 +44,14 @@ $(document).ready(function () {
     var species_vr_tooltip = "Volume into which drug is distributed minus extracellular space.";
     var species_asr_tooltip = "Intestinal absorptive surface area.";
     var species_ki_tooltip = "Inverse of small intestine transit time."
-    var compound_mw_tooltip = "Molecular weight."
-    var compound_logd_tooltip = "."
-    var compound_pka_tooltip = "."
-    var compound_bioavailability_tooltip = "."
-    var compound_fu_tooltip = "."
+    var compound_mw_tooltip = "Molecular weight is a measure of the sum of the atomic weight values of the atoms in a molecule."
+    var compound_logd_tooltip = "logD is a log of partition of a chemical compound between the lipid and aqueous phases."
+    var compound_pka_tooltip = "pKa is the negative log of the acid dissociation constant or Ka value."
+    var compound_bioavailability_tooltip = "The proportion of a drug or other substance which enters the circulation when introduced into the body and so is able to have an active effect."
+    var compound_fu_tooltip = "The free (or unbound) fraction of a drug is usually the portion that exerts a pharmacologic effect."
+    var input_icl_tooltip = "Predicted intrinsic clearance."
+    var input_fa_tooltip = "Fraction absorbed."
+    var input_ka_tooltip = "Absorption rate constant (range from 0.6 - 4.2)."
 
     $("#label-species-vp").html($("#label-species-vp").html() + make_escaped_tooltip(species_vp_tooltip));
     $("#label-species-ve").html($("#label-species-ve").html() + make_escaped_tooltip(species_ve_tooltip));
@@ -61,20 +64,9 @@ $(document).ready(function () {
     $("#label-compound-pka").html($("#label-compound-pka").html() + make_escaped_tooltip(compound_pka_tooltip));
     $("#label-compound-bioavailability").html($("#label-compound-bioavailability").html() + make_escaped_tooltip(compound_bioavailability_tooltip));
     $("#label-compound-fu").html($("#label-compound-fu").html() + make_escaped_tooltip(compound_fu_tooltip));
-    //
-    // $("#species-species").val(data.species);
-    // $("#species-organ").val(data.organ);
-    // $("#species-body-mass").val(data.body_mass);
-    // $("#species-total-organ-weight").val(data.total_organ_weight);
-    // $("#species-organ-tissue").val(data.organ_tissue);
-    // $("#species-plasma-vol").val(data.plasma_volume);
-    // $("#species-vp").val(data.vp);
-    // $("#species-ve").val(data.ve);
-    // $("#species-rei").val(data.rei);
-    // $("#species-vr").val(data.vr);
-    // $("#species-asr").val(data.asr);
-    // $("#species-ki").val(data.ki);
-    // $("#species-reference").val(data.reference);
+    $("#label-input-icl").html($("#label-input-icl").html() + make_escaped_tooltip(input_icl_tooltip));
+    $("#label-input-fa").html($("#label-input-fa").html() + make_escaped_tooltip(input_fa_tooltip));
+    $("#label-input-ka").html($("#label-input-ka").html() + make_escaped_tooltip(input_ka_tooltip));
 
     var group_table_columns = [
         {
@@ -175,21 +167,21 @@ $(document).ready(function () {
             width: '20%'
         },
         {
-            title: "# of Cells in MPS Model",
+            title: "No. of Cells in MPS Model",
             "render": function (data, type, row) {
                 return study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["Relevant Cells"];;
             },
             width: '20%'
         },
         {
-            title: "# of Chips",
+            title: "No. of Chips",
             "render": function (data, type, row) {
                 return treatment_groups[data_groups[row][4]]["item_ids"].length;
             },
             width: '20%'
         },
         {
-            title: "# of Time Points",
+            title: "No. of Time Points",
             "render": function (data, type, row) {
                 return chart_data[row].length-1;
             },
@@ -302,10 +294,6 @@ $(document).ready(function () {
         });
     }
 
-    $("#toggle-intro-text").click(function() {
-        $("#intro-text").toggle();
-    })
-
     // Group Table Checkbox click event
     $(document).on("click", ".pk-set-checkbox", function() {
         checkbox = $(this);
@@ -400,7 +388,7 @@ $(document).ready(function () {
         $("#experiment-location").val(row_info[9]);
         $("#experiment-flow-rate").val(row_info[11]);
         $("#experiment-total-vol").val(row_info[10]);
-        $("#experiment-number-cells").val(row_info[12]);
+        $("#experiment-number-cells").val(numberWithCommas(row_info[12]));
 
         // Populate Experiment Parameters Table.
         $("#experiment-pk-type").attr("title", row_info[2]);
@@ -413,10 +401,10 @@ $(document).ready(function () {
         $("#experiment-location").attr("title", row_info[9]);
         $("#experiment-flow-rate").attr("title", row_info[11]);
         $("#experiment-total-vol").attr("title", row_info[10]);
-        $("#experiment-number-cells").attr("title", row_info[12]);
+        $("#experiment-number-cells").attr("title", numberWithCommas(row_info[12]));
 
         // PK Type Specific Logic
-        $("#number-of-cells-calc").val(row_info[12]);
+        $("#number-of-cells-calc").val(numberWithCommas(row_info[12]));
         if (row_info[2] === "Bolus") {
             $("#cell-free").hide();
         } else {
@@ -444,8 +432,8 @@ $(document).ready(function () {
             $("#species-species").val(data.species);
             $("#species-organ").val(data.organ);
             $("#species-body-mass").val(data.body_mass);
-            $("#species-total-organ-weight").val(data.total_organ_weight);
-            $("#species-organ-tissue").val(data.organ_tissue);
+            $("#species-total-organ-weight").val(numberWithCommas(data.total_organ_weight));
+            $("#species-organ-tissue").val(numberWithCommas(data.organ_tissue));
             $("#species-plasma-vol").val(data.plasma_volume);
             $("#species-vp").val(data.vp);
             $("#species-ve").val(data.ve);
@@ -453,7 +441,7 @@ $(document).ready(function () {
             $("#species-vr").val(data.vr);
             $("#species-asr").val(data.asr);
             $("#species-ki").val(data.ki);
-            $("#species-reference").val(data.reference);
+            $("#species-reference").html('<a href="'+data.reference_url+'" target="_blank">'+data.reference+'</a>');
         })
         .fail(function(xhr, errmsg, err) {
             // Stop spinner
@@ -566,9 +554,14 @@ $(document).ready(function () {
     $('#cell-free').change(function() {
         update_chart();
     });
+
     $("input[name='cell-profile']").change(function() {
         update_chart();
     });
+
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+    }
 
     $('#button-clearance').click(function() {
         if (start_time_dropdown.getValue() == "") {
@@ -594,10 +587,10 @@ $(document).ready(function () {
                     start_time: start_time_dropdown.getValue(),
                     end_time: end_time_dropdown.getValue(),
                     total_device_vol_ul: $('#experiment-total-vol').val(),
-                    total_cells_in_device: $('#experiment-number-cells').val(),
+                    total_cells_in_device: $('#number-of-cells-calc').val().replace(/\,/g,''),
                     flow_rate: $('#experiment-flow-rate').val(),
-                    cells_per_tissue_g: $('#species-organ-tissue').val(),
-                    total_organ_weight_g: $('#species-total-organ-weight').val(),
+                    cells_per_tissue_g: $('#species-organ-tissue').val().replace(/\,/g,''),
+                    total_organ_weight_g: $('#species-total-organ-weight').val().replace(/\,/g,''),
                     compound_conc: $('#experiment-compound').val().split(" ")[$('#experiment-compound').val().split(" ").length - 3],
                     compound_pk_data: JSON.stringify(chart_data[group_num], function(key, value) {return (value == null) ? "0" : value})
                 },
@@ -617,7 +610,7 @@ $(document).ready(function () {
                 $('#clearance-error-container').show();
             } else {
                 pbpk_intrinsic_clearance = data.clearance;
-                $('#input-predicted-intrinsic-clearance').val(pbpk_intrinsic_clearance)
+                $('#input-icl').val(pbpk_intrinsic_clearance.toFixed(3))
 
                 if (pk_type == 'Bolus') {
                     make_chart("", 'Avg Recovered Compound (µM)', $('#pk-summary-graph')[0], JSON.parse(JSON.stringify(chart_data[group_num])), 400);
@@ -637,23 +630,23 @@ $(document).ready(function () {
 
                     var clearance_table_html = "";
                     if ($('#cell-free-checkbox').is(":checked")) {
-                        clearance_table_html = "<tr><th>Compound Recovered From Device Without Cells (uM)</th><th>Compound Recovered From Device With Cells (uM)</th><th>Extraction Ratio</th><th>Clearance from MPS Model (uL/hr)</th><th>Predicted intrinsic clearance (ul/min)</th><th>Time</th></tr>"
+                        clearance_table_html = "<tr><th>Compound Recovered From Device Without Cells (&micro;M)</th><th>Compound Recovered From Device With Cells (&micro;M)</th><th>Extraction Ratio</th><th>Clearance from MPS Model (&micro;L/hr)</th><th>Predicted Intrinsic Clearance (&micro;L/min)</th><th>Time (Hours)</th></tr>"
                         for (var x=1; x<clearance_table_data.length; x++) {
-                            clearance_table_html += "<tr><td>"+clearance_table_data[x][0]+"</td><td>"+clearance_table_data[x][1]+"</td><td>"+clearance_table_data[x][2]+"</td><td>"+clearance_table_data[x][3]+"</td><td>"+clearance_table_data[x][4]+"</td><td>"+clearance_table_data[x][5]+"</td></tr>"
+                            clearance_table_html += "<tr><td>"+clearance_table_data[x][0].toFixed(3)+"</td><td>"+clearance_table_data[x][1].toFixed(3)+"</td><td>"+clearance_table_data[x][2].toFixed(3)+"</td><td>"+clearance_table_data[x][3].toFixed(3)+"</td><td>"+clearance_table_data[x][4].toFixed(3)+"</td><td>"+clearance_table_data[x][5]+"</td></tr>"
                         }
                     } else {
-                        clearance_table_html = "<tr><th>Compound Recovered From Device With Cells (uM)</th><th>Extraction Ratio</th><th>Clearance from MPS Model (uL/hr)</th><th>Predicted intrinsic clearance (ul/min)</th><th>Time</th></tr>"
+                        clearance_table_html = "<tr><th>Compound Recovered From Device With Cells (&micro;M)</th><th>Extraction Ratio</th><th>Clearance from MPS Model (&micro;L/hr)</th><th>Predicted Intrinsic Clearance (&micro;L/min)</th><th>Time (Hours)</th></tr>"
                         for (var x=1; x<clearance_table_data.length; x++) {
-                            clearance_table_html += "<tr><td>"+clearance_table_data[x][1]+"</td><td>"+clearance_table_data[x][2]+"</td><td>"+clearance_table_data[x][3]+"</td><td>"+clearance_table_data[x][4]+"</td><td>"+clearance_table_data[x][5]+"</td></tr>"
+                            clearance_table_html += "<tr><td>"+clearance_table_data[x][1].toFixed(3)+"</td><td>"+clearance_table_data[x][2].toFixed(3)+"</td><td>"+clearance_table_data[x][3].toFixed(3)+"</td><td>"+clearance_table_data[x][4].toFixed(3)+"</td><td>"+clearance_table_data[x][5]+"</td></tr>"
                         }
                     }
 
                     $('#continuous-infusion-table').html(clearance_table_html)
 
-                    make_chart("", 'Avg Recovered Compound (µM)', $('#pk-summary-graph')[0], JSON.parse(JSON.stringify(chart_data[group_num])), 200);
+                    make_chart("", 'Avg Recovered Compound (µM)', $('#pk-summary-graph')[0], JSON.parse(JSON.stringify(chart_data[group_num])), 250);
 
                     options = {
-                        title: 'Predicted Intrinsic Clearance (ml/min) = ' + pbpk_intrinsic_clearance,
+                        title: 'Predicted Intrinsic Clearance (ml/min) = ' + pbpk_intrinsic_clearance.toFixed(3),
                         interpolateNulls: true,
                         tooltip: {
                             isHtml: true
@@ -671,7 +664,7 @@ $(document).ready(function () {
                             }
                         },
                         hAxis: {
-                            title: 'Time (Days)',
+                            title: 'Time (Hours)',
                             textStyle: {
                                 bold: true
                             },
@@ -701,7 +694,7 @@ $(document).ready(function () {
                             'height': '70%',
                             left: 100
                         },
-                        'height': 200,
+                        'height': 250,
                         focusTarget: 'datum',
                         intervals: {
                             'lineWidth': 0.75
@@ -880,19 +873,19 @@ $(document).ready(function () {
             } else {
                 $('#calculated-pk-container').show();
 
-                $('#pk-param-vdss').val(data.calculated_pk_parameters['VDss (L)'][0]);
-                $('#pk-param-ke').val(data.calculated_pk_parameters['Ke(1/h)'][0]);
-                $('#pk-param-half-life-3-confirmed').val(data.calculated_pk_parameters['Elimination half-life'][0]);
-                $('#pk-param-auc').val(data.calculated_pk_parameters['AUC'][0]);
-                $('#pk-single-mmax').val(data.dosing_data[0]);
-                $('#pk-single-cmax').val(data.dosing_data[1]);
-                $('#pk-single-tmax').val(data.dosing_data[2]);
-                $('#pk-multi-mss').val(data.dosing_data[3]);
-                $('#pk-multi-css').val(data.dosing_data[4]);
-                $('#pk-multi-tmax').val(data.dosing_data[5]);
-                $('#pk-desired-dose').val(data.dosing_data[6]);
-                $('#pk-desired-50').val(data.dosing_data[7]);
-                $('#pk-desired-90').val(data.dosing_data[8]);
+                $('#pk-param-vdss').val(data.calculated_pk_parameters['VDss (L)'][0].toFixed(3));
+                $('#pk-param-ke').val(data.calculated_pk_parameters['Ke(1/h)'][0].toFixed(3));
+                $('#pk-param-half-life-3-confirmed').val(data.calculated_pk_parameters['Elimination half-life'][0].toFixed(3));
+                $('#pk-param-auc').val(data.calculated_pk_parameters['AUC'][0].toFixed(3));
+                $('#pk-single-mmax').val(data.dosing_data[0].toFixed(3));
+                $('#pk-single-cmax').val(data.dosing_data[1].toFixed(3));
+                $('#pk-single-tmax').val(data.dosing_data[2].toFixed(3));
+                $('#pk-multi-mss').val(data.dosing_data[3].toFixed(3));
+                $('#pk-multi-css').val(data.dosing_data[4].toFixed(3));
+                $('#pk-multi-tmax').val(data.dosing_data[5].toFixed(3));
+                $('#pk-desired-dose').val(data.dosing_data[6].toFixed(3));
+                $('#pk-desired-50').val(data.dosing_data[7].toFixed(3));
+                $('#pk-desired-90').val(data.dosing_data[8].toFixed(3));
 
                 prediction_plot_data = JSON.parse(JSON.stringify(data.prediction_plot_table));
                 make_dosing_plot(prediction_plot_data, 300)
@@ -935,9 +928,16 @@ $(document).ready(function () {
     });
 
     // Attempt to limit input
-    $('input[type=number]').on('mouseup keyup', function () {
-        $(this).val(Math.min(10, Math.max(2, $(this).val())));
-    })
+    // $('input[type=number]').on('mouseup keyup', function () {
+    //     $(this).val(Math.min(10, Math.max(2, $(this).val())));
+    // });
+
+    $("#toggle-intro-text").click(function() {
+        $("#intro-text").toggle();
+    });
+
+    $('#clearance-time-start-selectized').parent().css("display", "block");
+    $('#clearance-time-end-selectized').parent().css("display", "block");
 
     var remove_col = function(arr, col_index) {
         for (var i = 0; i < arr.length; i++) {
@@ -948,7 +948,7 @@ $(document).ready(function () {
 
     function update_chart() {
         // Summary Graph
-        make_chart(row_info[3], 'Avg Value', $('#summary-graph')[0], JSON.parse(JSON.stringify(chart_data[group_num])), 400);
+        make_chart(row_info[3], 'Avg Recovered Compound (μM)', $('#summary-graph')[0], JSON.parse(JSON.stringify(chart_data[group_num])), 400);
     }
 
     function make_dosing_plot(data, time) {
@@ -1050,7 +1050,6 @@ $(document).ready(function () {
         });
     });
 
-
     function make_chart(assay, unit, selector, data, height) {
         // Clear old chart (when applicable)
         $(selector).empty();
@@ -1115,7 +1114,7 @@ $(document).ready(function () {
             },
             hAxis: {
                 // Begins empty
-                title: 'Time (Days)',
+                title: 'Time (Hours)',
                 textStyle: {
                     bold: true
                 },

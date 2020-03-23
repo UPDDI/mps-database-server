@@ -3930,13 +3930,13 @@ def pk_calc_clearance_continuous_infusion_matrix(with_no_cell_data,
                 column_list = column_list[-1:] + column_list[:-1]
                 steady_state_pivot=steady_state_pivot[column_list]
             old_column_names = steady_state_pivot.columns.values.tolist()
-            new_column_names = ['Compound Recovered From Device Without Cells (uM)', 'Compound Recovered From Device With Cells (uM)']
+            new_column_names = ['Compound Recovered From Device Without Cells (\u03BCM)', 'Compound Recovered From Device With Cells (\u03BCM)']
             steady_state_pivot.rename(columns=dict(zip(old_column_names, new_column_names)), inplace=True)
             # Create Continuous Infusion clearance analysis matrix
             header_list = steady_state_pivot.columns.values.tolist()
             header_list.append('Extraction Ratio')
-            header_list.append('Clearance from MPS Model (uL/hr)')
-            header_list.append('Predicted intrinsic clearance (ul/min)')
+            header_list.append('Clearance from MPS Model (\u03BCL/hr)')
+            header_list.append('Predicted intrinsic clearance (\u03BCl/min)')
 
             # Define all columns of intrinsic clearance analysis table
             steady_state_pivot = steady_state_pivot.reindex(columns=header_list)
@@ -3956,13 +3956,13 @@ def pk_calc_clearance_continuous_infusion_matrix(with_no_cell_data,
     elif len(steady_state_table_key.drop_duplicates().index) == 1 and len(compound_pk_data.loc[compound_pk_data['Cells'] == '-No Cell Samples-'].index) == 0:
         steady_state_data = compound_pk_data.groupby(['Time'], as_index=False)['Value'].mean()
         old_column_names = steady_state_data.columns.values.tolist()
-        new_column_names = ['Time', 'Compound Recovered From Device With Cells (uM)']
+        new_column_names = ['Time', 'Compound Recovered From Device With Cells (\u03BCM)']
         steady_state_data.rename(columns=dict(zip(old_column_names, new_column_names)), inplace=True)
         # Create Continuous Infusion clearance analysis matrix
         header_list = steady_state_data.columns.values.tolist()
         header_list.append('Extraction Ratio')
-        header_list.append('Clearance from MPS Model (uL/hr)')
-        header_list.append('Predicted intrinsic clearance (ul/min)')
+        header_list.append('Clearance from MPS Model (\u03BCL/hr)')
+        header_list.append('Predicted intrinsic clearance (\u03BCl/min)')
 
         # Define all columns of intrinsic clearance analysis table
         steady_state_data = steady_state_data.reindex(columns=header_list)
@@ -3981,7 +3981,7 @@ def pk_calc_clearance_steady_state(pk_steady_state_data, start_time, end_time):
     clearance_start_matrix = pk_steady_state_data.loc[pk_steady_state_data['Time'] >= start_time]
     if not np.isnan(end_time):
         clearance_start_matrix = clearance_start_matrix.loc[clearance_start_matrix['Time'] <= end_time]
-    clearance = clearance_start_matrix['Predicted intrinsic clearance (ul/min)'].mean()
+    clearance = clearance_start_matrix['Predicted intrinsic clearance (\u03BCl/min)'].mean()
     return clearance
 
 
