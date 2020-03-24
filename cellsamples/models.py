@@ -46,11 +46,18 @@ class CellType(FrontEndModel, LockableModel):
         help_text='Example: hepatocyte, muscle, kidney, etc',
         verbose_name='Cell Type'
     )
-    species = models.CharField(
+    # TODO DEPRECATED
+    species_old = models.CharField(
         max_length=10,
         choices=SPECIESTYPE,
         default='Human',
         blank=True
+    )
+    # Kind of odd, but import species from drugtrials
+    species = models.ForeignKey(
+        'drugtrials.Species',
+        default='1',
+        on_delete=models.CASCADE
     )
 
     # Deprecated

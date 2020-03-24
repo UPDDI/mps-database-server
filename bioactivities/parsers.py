@@ -268,7 +268,7 @@ def generate_list_of_all_drugtrials(desired_organisms):
 
     result = FindingResult.objects.filter(
         value__isnull=False,
-        drug_trial__species__species_name__in=desired_organisms
+        drug_trial__species__name__in=desired_organisms
     ).exclude(
         drug_trial__compound__isnull=True
     ).prefetch_related(
@@ -643,7 +643,7 @@ def fetch_all_standard_drugtrials_data(
             finding_name__finding_name=finding,
             value__isnull=False,
             drug_trial__compound__name__in=desired_compounds,
-            drug_trial__species__species_name__in=desired_organisms
+            drug_trial__species__name__in=desired_organisms
         ).exclude(
             drug_trial__compound__isnull=True
         )

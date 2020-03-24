@@ -70,7 +70,7 @@ class SpeciesAdmin(LockableAdmin):
         (
             None, {
                 'fields': (
-                    'species_name',
+                    'name',
                 )
             }
         ),
@@ -194,7 +194,7 @@ class DrugTrialAdmin(LockableAdmin):
         'source_page', 'start_date', 'locked')
     list_filter = ['trial_type', ]
     search_fields = [
-        'compound__name', 'species__species_name']
+        'compound__name', 'species__name']
     actions = ['update_fields']
     raw_id_fields = ('compound',)
     readonly_fields = ['created_on', 'created_by', 'modified_by',
