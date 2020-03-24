@@ -3218,6 +3218,11 @@ class AssayImage(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Setting'
     )
+    study = models.ForeignKey(
+        AssayStudy,
+        on_delete=models.CASCADE,
+        verbose_name='Setting'
+    )
 
     # ?
     def get_metadata(self):

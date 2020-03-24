@@ -10,32 +10,37 @@ $(document).ready(function() {
 
     var at_least_one_pie_chart = false;
 
+    var pie_options = {
+        legend: 'none',
+        slices: {
+            0: {color: '#74ff5b'},
+            1: {color: '#fcfa8d'},
+            2: {color: '#ff7863'}
+        },
+        pieSliceText: 'none',
+        pieSliceTextStyle: {
+            color: 'black',
+            bold: true,
+            fontSize: 12
+        },
+        'chartArea': {'width': '90%', 'height': '90%'},
+        backgroundColor: {fill: 'transparent'},
+        pieSliceBorderColor: "black",
+        tooltip: {
+            textStyle: {
+                fontName: 'verdana', fontSize: 10
+            }
+        }
+        // enableInteractivity: false
+    };
+
+    function make_pie_charts() {
+
+    }
+
     function reproPie() {
         studies_table.show();
 
-        var pieOptions = {
-            legend: 'none',
-            slices: {
-                0: {color: '#74ff5b'},
-                1: {color: '#fcfa8d'},
-                2: {color: '#ff7863'}
-            },
-            pieSliceText: 'none',
-            pieSliceTextStyle: {
-                color: 'black',
-                bold: true,
-                fontSize: 12
-            },
-            'chartArea': {'width': '90%', 'height': '90%'},
-            backgroundColor: {fill: 'transparent'},
-            pieSliceBorderColor: "black",
-            tooltip: {
-                textStyle: {
-                    fontName: 'verdana', fontSize: 10
-                }
-            }
-            // enableInteractivity: false
-        };
 
         var number_of_rows = studies_table.find('tr').length - 1;
         var pie, pieData, pieChart;
