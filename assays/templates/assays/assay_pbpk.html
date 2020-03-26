@@ -68,7 +68,7 @@
                 </table>
                 <br>
                 <div id="cell-free">
-                    &nbsp;&nbsp;<input type="checkbox" id="cell-free-checkbox" class="big-checkbox" checked>
+                    &nbsp;&nbsp;<input type="checkbox" id="cell-free-checkbox" class="big-checkbox">
                     <label>&nbsp;&nbsp;Include Cell-free Data</label>
                 </div>
                 <br>
@@ -221,33 +221,7 @@
         </div>
         <div class="row large-padding-top">
             <div class="col-sm-12 col-lg-4">
-                <!-- <div class="well">
 
-                </div>
-                <div class="well">
-                    <h6><i>
-                        Extraction Ratio =
-                        <table>
-                          <tbody>
-                            <tr>
-                              <td style="border-bottom:solid 1px">Compound Conc. Recovered w/o Cells &minus; Compound Conc. Recovered w/ Cells</td>
-                              </tr>
-                              <tr>
-                                <td>Compound Conc. Recovered w/o Cells</td>
-                              </tr>
-                          </tbody>
-                       </table>
-                       <br>
-                       Clearance From MPS Model (&micro;L/hr) =
-                       <table>
-                         <tbody>
-                           <tr>
-                             <td>Extraction Ratio &times; Flow Rate</td>
-                             </tr>
-                         </tbody>
-                      </table>
-                    </i></h6>
-                </div> -->
             </div>
             <div id="continuous-table" class="col-sm-12 col-lg-8">
                 <table id="continuous-infusion-table" class="display table-bordered" style="width: 100%">
@@ -295,15 +269,6 @@
                             <th id="label-compound-fu" style="width: 135px; white-space: nowrap;">f<sub>u</sub> </th>
                             <td><textarea id="compound-fu" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
                         </tr>
-                    </table>
-                </div>
-                <div class="col-sm-12 col-lg-6">
-                    <h4>Putting a Header Here So It Looks Nice</h4>
-                    <table class="display table-bordered" style="width: 100%">
-                        <tr>
-                            <th id="label-input-icl">ICL (mL/min) </th>
-                            <td><textarea id="input-icl" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
                         <tr>
                             <th id="label-input-fa">F<sub>a</sub> </th>
                             <td><textarea id="input-fa" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
@@ -314,8 +279,6 @@
                         </tr>
                     </table>
                 </div>
-            </div>
-            <div class="row large-padding-top">
                 <div class="col-sm-12 col-lg-6">
                     <h4>Input to Predict Plasma Levels</h4>
                     <table class="display table-bordered" style="width: 100%">
@@ -328,8 +291,7 @@
                             <td><textarea id="input-plasma-dose-interval" class="required" rows="1" style="resize: none; display: block; width: 100%">12</textarea></td>
                         </tr>
                     </table>
-                </div>
-                <div class="col-sm-12 col-lg-6">
+                    <br>
                     <h4>Input to Estimate Dosing</h4>
                     <table class="display table-bordered" style="width: 100%">
                         <tr>
@@ -343,6 +305,17 @@
                         <tr>
                             <th style="width: 200px; white-space: nowrap;">Estimated Fraction Absorbed</th>
                             <td><textarea id="input-dosing-absorbed" class="required" rows="1" style="resize: none; display: block; width: 100%">0.7</textarea></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="row large-padding-top">
+                <div class="col-sm-12 col-lg-6">
+                    <h4>Predicted MPS Model Physiological Parameter</h4>
+                    <table class="display table-bordered" style="width: 100%">
+                        <tr>
+                            <th id="label-input-icl">ICL (mL/min) </th>
+                            <td><textarea id="input-icl" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
                         </tr>
                     </table>
                 </div>

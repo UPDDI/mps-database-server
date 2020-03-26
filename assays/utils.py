@@ -3914,7 +3914,7 @@ def pk_calc_clearance_continuous_infusion_matrix(with_no_cell_data,
     compound_pk_data.dropna()
     steady_state_table_key = compound_pk_data[["Cells"]]
     if len(steady_state_table_key.drop_duplicates().index) >= 2:
-        if len(compound_pk_data.loc[compound_pk_data['Cells'] == '-No Cell Samples-'].index) >0:
+        if len(compound_pk_data.loc[compound_pk_data['Cells'] == '-No Cell Samples-'].index) > 0:
             clist = [cell_name, '-No Cell Samples-']
             compound_pk_data = compound_pk_data[compound_pk_data.Cells.isin(clist)]
         else:
@@ -3978,9 +3978,9 @@ def pk_calc_clearance_continuous_infusion_matrix(with_no_cell_data,
 
 
 def pk_calc_clearance_steady_state(pk_steady_state_data, start_time, end_time):
-    clearance_start_matrix = pk_steady_state_data.loc[pk_steady_state_data['Time'] >= start_time]
+    clearance_start_matrix = pk_steady_state_data.loc[pk_steady_state_data['Time'] >= start_time*60]
     if not np.isnan(end_time):
-        clearance_start_matrix = clearance_start_matrix.loc[clearance_start_matrix['Time'] <= end_time]
+        clearance_start_matrix = clearance_start_matrix.loc[clearance_start_matrix['Time'] <= end_time*60]
     clearance = clearance_start_matrix['Predicted intrinsic clearance (\u03BCl/min)'].mean()
     return clearance
 

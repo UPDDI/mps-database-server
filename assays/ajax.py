@@ -5566,7 +5566,7 @@ def fetch_compound_physicochemical_parameters(request):
     compound = Compound.objects.filter(name__iexact=pk_compound)[0]
 
     if compound.protein_binding:
-        fu = float(re.findall(r"[-+]?\d*\.\d+|\d+", compound.protein_binding)[0])/100
+        fu = 1.0-(float(re.findall(r"[-+]?\d*\.\d+|\d+", compound.protein_binding)[0])/100)
     else:
         fu = compound.protein_binding
 
