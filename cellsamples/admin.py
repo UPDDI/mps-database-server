@@ -71,7 +71,7 @@ class OrganAdmin(LockableAdmin):
         (
             None, {
                 'fields': (
-                    'organ_name',
+                    'name',
                 )
             }
         ),

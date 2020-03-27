@@ -24,8 +24,7 @@ def fetch_adverse_events_data(request):
         'event__event',
         'frequency',
         'compound__estimated_usage',
-        # WHY ISN'T THIS JUST NAME??
-        'event__organ__organ_name',
+        'event__organ__name',
         # Add logp
         'compound__compound__logp',
         'compound__compound__alogp',
@@ -52,8 +51,8 @@ def fetch_adverse_events_data(request):
 
         organ_name = ''
 
-        if ae.get('event__organ__organ_name'):
-            organ_name = ae.get('event__organ__organ_name')
+        if ae.get('event__organ__name'):
+            organ_name = ae.get('event__organ__name')
 
         black_box_warning = False
 
@@ -163,7 +162,7 @@ def fetch_aggregate_ae_by_event(request):
         organ_name = ''
 
         if adverse_event.organ:
-            organ_name = adverse_event.organ.organ_name
+            organ_name = adverse_event.organ.name
 
         checkbox = '<input class="table-checkbox big-checkbox adverse-event" type="checkbox" value="{}">'.format(adverse_event.event)
 

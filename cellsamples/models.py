@@ -13,17 +13,17 @@ from mps.utils import *
 
 class Organ(LockableModel):
     """Organ details an organ name and (with an inline) the cell types associated with it"""
-    organ_name = models.CharField(
+    name = models.CharField(
         max_length=255,
         unique=True,
         verbose_name='Name'
     )
 
     class Meta(object):
-        ordering = ('organ_name', )
+        ordering = ('name', )
 
     def __str__(self):
-        return '{}'.format(self.organ_name)
+        return '{}'.format(self.name)
 
 
 class CellType(FrontEndModel, LockableModel):

@@ -218,9 +218,9 @@ def mps_about(request):
 
     for organ_model in all_organ_models:
         distinct_by_name_and_center[
-            (organ_model.organ.organ_name, organ_model.center.name)
+            (organ_model.organ.name, organ_model.center.name)
         ] = distinct_by_name_and_center.setdefault(
-            (organ_model.organ.organ_name, organ_model.center.name), 0
+            (organ_model.organ.name, organ_model.center.name), 0
         ) + 1
 
     reduce_distinct_to_list = []

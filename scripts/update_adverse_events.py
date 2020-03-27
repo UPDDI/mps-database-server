@@ -146,42 +146,42 @@ def get_event_frequency(generic_name, organs):
 def run():
     organs = {
         'Liver': {
-                'model': Organ.objects.get(organ_name='Liver'),
+                'model': Organ.objects.get(name='Liver'),
                 'terms': {},
                 'file': SCRIPTS_ROOT + 'Liver.tsv',
                 'events': 0,
                 'highest': 0
         },
         'Kidney': {
-                'model': Organ.objects.get(organ_name='Kidney'),
+                'model': Organ.objects.get(name='Kidney'),
                 'terms': {},
                 'file': SCRIPTS_ROOT + 'Kidney.tsv',
                 'events': 0,
                 'highest': 0
         },
         'Intestine': {
-            'model': Organ.objects.get(organ_name='Intestine'),
+            'model': Organ.objects.get(name='Intestine'),
             'terms': {},
             'file': SCRIPTS_ROOT + 'Intestine.tsv',
             'events': 0,
             'highest': 0
         },
         'Skeletal Muscle': {
-            'model': Organ.objects.get(organ_name='Skeletal Muscle'),
+            'model': Organ.objects.get(name='Skeletal Muscle'),
             'terms': {},
             'file': SCRIPTS_ROOT + 'Skeletal Muscle.tsv',
             'events': 0,
             'highest': 0
         },
         'Brain': {
-            'model': Organ.objects.get(organ_name='Brain'),
+            'model': Organ.objects.get(name='Brain'),
             'terms': {},
             'file': SCRIPTS_ROOT + 'Brain.tsv',
             'events': 0,
             'highest': 0
         },
         'Heart': {
-            'model': Organ.objects.get(organ_name='Heart'),
+            'model': Organ.objects.get(name='Heart'),
             'terms': {},
             'file': SCRIPTS_ROOT + 'Heart.tsv',
             'events': 0,
@@ -189,7 +189,7 @@ def run():
         }
     }
 
-    # liver_model = Organ.objects.get(organ_name='Liver')
+    # liver_model = Organ.objects.get(name='Liver')
 
     # liver = {}
     # liver_file = open('/home/developer/github/mps-database-server/scripts/Liver.tsv', 'r')
