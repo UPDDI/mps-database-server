@@ -125,6 +125,9 @@ $(document).ready(function () {
         if (current_model === 'CellSample') {
             var cell_sample_table = $('#cellsamples');
 
+            // Clear the search!
+            cell_sample_table.DataTable().search('').draw();
+
             var new_row = cell_sample_table
                 .find('tbody')
                 .find('tr')
@@ -158,6 +161,9 @@ $(document).ready(function () {
             var pmid = split_name[2];
 
             var reference_table = $('#reference_table');
+
+            // Clear the search!
+            reference_table.DataTable().search('').draw();
 
             var new_row = reference_table
                 .find('tbody')

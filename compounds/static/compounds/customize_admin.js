@@ -289,7 +289,7 @@ $(document).ready(function () {
                      .text(result.synonyms))
                 .append($('<td>').append($('<img>')
                      // .attr('src', 'https://www.ebi.ac.uk/chembldb/compound/displayimage/' + result.chembl_id)))
-                     .attr('src', 'https://www.ebi.ac.uk/chembl/api/data/image/' + result.chembl_id + '.svg?engine=indigo')))
+                     .attr('src', 'https://www.ebi.ac.uk/chembl/api/data/image/' + result.chembl_id + '.svg')))
                 .append($('<td>').append($('<button>')
                     .addClass('btn btn-primary')
                     .text('Select')

@@ -87,6 +87,7 @@ sqlparse
 # Statistical profiling
 statprof
 statsmodels
+sympy
 # suds
 # Validation support for WSGI
 # wsgiref
