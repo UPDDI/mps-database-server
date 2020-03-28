@@ -3507,8 +3507,9 @@ class AssayCategory(FlaggableModel):
 # sck - ASSAY PLATE MAP SECTION
 assay_plate_reader_time_unit_choices = [
     ('day', 'Day'),
-    ('hour', 'Hour'),
-    ('minute', 'Minute')
+    ('minute', 'Minute'),
+    ('hour', 'Hour')
+
 ]
 assay_plate_reader_well_use_choices = [
     ('sample', 'Sample'),
@@ -4061,9 +4062,10 @@ class AssayPlateReaderMapItemValue(models.Model):
     #     null=True,
     #     blank=True
     # )
-    # replaced = models.BooleanField(
-    #     default=False
-    # )
+    # when commented this out, got a save error. Must have a reference somewhere I didn't find....
+    replaced = models.BooleanField(
+        default=False
+    )
     # notes = models.CharField(
     #     max_length=255,
     #     default='',

@@ -3818,15 +3818,18 @@ class AssayPlateReaderMapAdd(StudyGroupMixin, CreateView):
         # context['matrix_list_size'] = return_list[0]
         # context['matrix_list_pk'] = return_list[1]
         # context['matrix_column_size'] = return_list[2]
+        # print("add context")
         return context
 
     def form_valid(self, form):
+        # print("a")
         study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
         formset = AssayPlateReaderMapItemFormSetFactory(
             self.request.POST,
             instance=form.instance,
             study=study
         )
+        # print("b")
         # this is the add page, so yes, we want to call the value_formset
         value_formset = AssayPlateReaderMapItemValueFormSetFactory(
             self.request.POST,
@@ -3836,10 +3839,12 @@ class AssayPlateReaderMapAdd(StudyGroupMixin, CreateView):
         formsets = [formset, value_formset, ]
         formsets_are_valid = True
 
+        # print("c")
         for formset in formsets:
             if not formset.is_valid():
                 formsets_are_valid = False
 
+        # print("d")
         if form.is_valid() and formsets_are_valid:
             save_forms_with_tracking(self, form, formset=formsets, update=False)
 
@@ -3867,9 +3872,10 @@ class AssayPlateReaderMapAdd(StudyGroupMixin, CreateView):
             cursor = connection.cursor()
             cursor.execute(mysql)
             # ONLY NEED if ADD - END
-
+            # print("e")
             return redirect(self.object.get_post_submission_url())
         else:
+            # print("f")
             # return this for ADD
             return self.render_to_response(self.get_context_data(form=form))
             # return this for UPDATE or VIEW
@@ -3955,17 +3961,19 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
         return context
 
     def form_valid(self, form):
+        # print("0")
         formset = AssayPlateReaderMapItemFormSetFactory(
             self.request.POST,
             instance=self.object
         )
-
+        # print("1")
         # adding 20200113
         value_formsets_include_template = AssayPlateReaderMapItemValue.objects.filter(
             assayplatereadermap=self.object
         ).filter(
             plate_index=0
         )
+        # print("2")
         # one is the empty set (no file/block attached) - the template value set
         if len(value_formsets_include_template) == 1:
 
@@ -3980,14 +3988,34 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
             formsets_are_valid = True
         # end update fo 20200113
 
+        # print("3")
         for formset in formsets:
             if not formset.is_valid():
                 formsets_are_valid = False
 
+        # print("4")
         if form.is_valid() and formset.is_valid():
+            # name = form.cleaned_data.get('name')
+            # print(name)
+            # form_calibration_curve_method_used = form.cleaned_data.get('form_calibration_curve_method_used')
+            # print("form_calibration_curve_method_used ", form_calibration_curve_method_used)
+
+            # form_calibration_curve_method_used = form.cleaned_data.get('form_calibration_curve_method_used')
+            # form_calibration_equation = form.cleaned_data.get('form_calibration_equation')
+            # form_calibration_rsquared = form.cleaned_data.get('form_calibration_rsquared')
+            # se_block_standard_borrow_string = form.cleaned_data.get('se_block_standard_borrow_string')
+            # print("form_calibration_curve_method_used ", form_calibration_curve_method_used)
+            # print("form_calibration_equation ", form_calibration_equation)
+            # print("form_calibration_rsquared ", form_calibration_rsquared)
+            # print("se_block_standard_borrow_string ",se_block_standard_borrow_string)
+
             save_forms_with_tracking(self, form, formset=formsets, update=True)
+            # print("5")
+
+
             return redirect(self.object.get_post_submission_url())
         else:
+            # print("6")
             return self.render_to_response(self.get_context_data(form=form, formset=formset))
 
 

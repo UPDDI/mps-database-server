@@ -2697,42 +2697,6 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
             study_id=study_id
         ).order_by('name',)
         self.fields['se_platemap'].widget.attrs.update({'class': ' required'})
-        self.fields['se_form_calibration_curve'].widget.attrs.update({'class': ' required'})
-
-    # processing the data fields added
-    se_form_calibration_curve = forms.ChoiceField(
-        choices=(('no_calibration', 'No Processing (send Raw Values)'),
-                 ('best_fit', 'Best Fit'),
-                 ('linear', 'Linear w/fitted intercept'),
-                 ('linear0', 'Linear w/intercept = 0'),
-                 ('log', 'Logarithmic w/fitted intercept'),
-                 ('poly2', 'Polynomial (2) w/fitted intercept'),
-                 ('log4', 'Logistic (4 parameter)'),
-                 ('log5', 'Logistic (5 parameter)'),
-                 )
-    )
-    se_form_blank_handling = forms.ChoiceField(
-        choices=(('subtract', 'Subtract Average Standard Blanks from Standards and Average Sample Blanks from Samples'),
-                 ('subtractstandard', 'Subtract Average Standard Blanks from Standards (ignore sample blanks)'),
-                 ('subtractsample', 'Subtract Average Sample Blanks from Samples (ignore standard blanks)'),
-                 ('ignore', 'Ignore the Blanks'))
-    )
-    # se_form_well_volume = forms.ChoiceField(
-    #     choices=(('mL', 'mL'), ('uL', 'uL'))
-    # )
-
-    form_min_standard = forms.DecimalField(
-        required=False,
-        initial=0,
-    )
-    form_min_standard.widget.attrs.update({'class': 'form-control'})
-
-    form_max_standard = forms.DecimalField(
-        required=False,
-        initial=1,
-    )
-    form_max_standard.widget.attrs.update({'class': 'form-control'})
-
 
     # before got to processing the data
     ns_matrix_item = forms.ModelChoiceField(
@@ -2803,11 +2767,6 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
         initial=1,
     )
     form_number_increment_value.widget.attrs.update({'class': 'form-control'})
-    form_data_processing_multiplier = forms.DecimalField(
-        required=True,
-        initial=1,
-    )
-    form_data_processing_multiplier.widget.attrs.update({'class': 'form-control'})
 
 
 # Parent for plate reader map page
@@ -2914,6 +2873,8 @@ class AssayPlateReaderMapForm(BootstrapForm):
         # self.fields['ns_file_pk_block_pk'].widget.attrs['class'] += ' no-selectize'
         self.fields['form_number_file_block_combos'].required = False
         self.fields['form_number_file_block_combos'].initial = number_filed_combos
+
+        # file block options associated with a specific plate map
         self.fields['se_block_select_string'].required = False
         self.fields['se_block_select_string'].widget.attrs['class'] += ' required'
         self.fields['se_block_select_string'].choices = distinct_plate_map_with_select_string
@@ -2921,29 +2882,190 @@ class AssayPlateReaderMapForm(BootstrapForm):
         self.fields['ns_block_select_pk'].widget.attrs.update({'class': 'no-selectize'})
         self.fields['ns_block_select_pk'].choices = distinct_plate_map_with_block_pk
 
-        # self.fields['ns_block_select_standard_string'].required = False
-        # self.fields['ns_block_select_standard_string'].widget.attrs.update({'class': 'no-selectize'})
-        # self.fields['ns_block_select_standard_string'].widget.attrs['class'] += ' form-control'
+        self.fields['se_form_calibration_curve'].widget.attrs.update({'class': ' required'})
+        self.fields['form_make_mifc_on_submit'].widget.attrs.update({'class': ' big-checkbox'})
+        self.fields['se_form_calibration_curve'].required = False
+        self.fields['se_form_blank_handling'].required = False
+        self.fields['radio_replicate_handling_average_or_not'].required = False
 
-        # not using these right now - some function moved around
-        # self.fields['se_block_select_standard_pk'].required = False
-        self.fields['se_block_select_standard_string'].required = False
-        self.fields['se_block_select_standard_string'].widget.attrs['class'] += ' required'
-        # self.fields['se_block_select_standard_string'].choices = distinct_plate_map_with_select_standard_string
-        # self.fields['ns_block_select_standard_pk'].choices = distinct_plate_map_with_block_standard_pk
+        # getting sent empty to be filled with ajax - took to long to do as routine
+        # update, sending empty caused problems, fill with place holder
+        self.fields['se_block_standard_borrow_string'].widget.attrs['class'] += ' required'
+        self.fields['se_block_standard_borrow_string'].required = False
+
+        # HANDY - save problems, this is likely the cause (required fields!)
+        self.fields['form_data_processing_multiplier_string'].required = False
+        self.fields['form_calibration_curve_method_used'].required = False
+        self.fields['form_calibration_equation'].required = False
+        self.fields['form_calibration_rsquared'].required = False
+        self.fields['form_file_block_pk_borrowed_for_standard'].required = False
+        self.fields['form_calibration_parameter_1_string'].required = False
+        self.fields['form_calibration_parameter_2_string'].required = False
+        self.fields['form_calibration_parameter_3_string'].required = False
+        self.fields['form_calibration_parameter_4_string'].required = False
+        self.fields['form_calibration_parameter_5_string'].required = False
+        self.fields['form_calibration_parameter_1_value'].required = False
+        self.fields['form_calibration_parameter_2_value'].required = False
+        self.fields['form_calibration_parameter_3_value'].required = False
+        self.fields['form_calibration_parameter_4_value'].required = False
+        self.fields['form_calibration_parameter_5_value'].required = False
+        self.fields['form_calibration_standard_fitted_min_for_e'].required = False
+        self.fields['form_calibration_standard_fitted_max_for_e'].required = False
+        self.fields['form_calibration_standard_blank_average'].required = False
+        self.fields['form_calibration_standard_standard0_average'].required = False
 
     # these raw data
     form_number_file_block_combos = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
     se_block_select_string = forms.ChoiceField()
     ns_block_select_pk = forms.ChoiceField()
 
-    # these for standard - they get filled, if needed, in an ajax call
-    # ns_block_select_standard_string = forms.ChoiceField()
-    se_block_select_standard_string = forms.ChoiceField()
-    # ns_block_select_standard_pk = forms.ChoiceField()
+    # HAVE to have one for the form to save correctly
+    # HANDY error saving undefined
+    se_block_standard_borrow_string = forms.ChoiceField(
+        choices=(
+            (0, 'Select One'),
+            )
+    )
+    form_block_standard_borrow_pk_single_for_storage = forms.IntegerField(
+        required=False,
+    )
+    form_block_standard_borrow_pk_platemap_single_for_storage = forms.IntegerField(
+        required=False,
+    )
     # END section to deal with raw data showing in the plate map after file assignment and deal with standard in a different file block
 
     # print("MAIN FORM")
+
+    # processing the data fields added
+    se_form_calibration_curve = forms.ChoiceField(
+        choices=(
+            ('select_one', 'Select One'),
+                 ('no_calibration', 'No Calibration'),
+                 ('best_fit', '(Not working yet - linear0) Best Fit'),
+                 ('linear', 'Linear w/fitted intercept'),
+                 ('linear0', 'Linear w/intercept = 0'),
+                 ('log', '(Not working yet - linear0) Logarithmic w/fitted intercept'),
+                 ('poly2', '(Not working yet - linear0) Polynomial (2) w/fitted intercept'),
+                 ('log4', '(Not working yet - linear0) Logistic (4 parameter)'),
+                 ('log5', '(Not working yet - linear0) Logistic (5 parameter)'),
+                 )
+    )
+
+    se_form_blank_handling = forms.ChoiceField(
+        choices=(('subtract', 'Subtract Average Standard Blanks from Standards and Average Sample Blanks from Samples'),
+                 ('subtractstandard', 'Subtract Average Standard Blanks from Standards (ignore sample blanks)'),
+                 ('subtractsample', 'Subtract Average Sample Blanks from Samples (ignore standard blanks)'),
+                 ('ignore', 'Ignore the Blanks'))
+    )
+
+    form_min_standard = forms.DecimalField(
+        required=False,
+
+    )
+    form_min_standard.widget.attrs.update({'class': 'form-control'})
+
+    form_max_standard = forms.DecimalField(
+        required=False,
+
+    )
+    form_max_standard.widget.attrs.update({'class': 'form-control'})
+
+    form_data_processing_multiplier = forms.DecimalField(
+        required=False,
+        initial=1,
+    )
+    form_data_processing_multiplier.widget.attrs.update({'class': 'form-control'})
+
+    # works but only one line
+    # form_data_processing_multiplier_string = forms.CharField(
+    #     required=False,
+    #     initial="",
+    # )
+    # works but only one line
+    # form_data_processing_multiplier_string = forms.CharField()
+    # form_data_processing_multiplier_string.widget.attrs.update({'required': False, 'initial': ""})
+
+    # HANDY - how to make an extra field a widget so can manipulate it eg readonly
+    form_data_processing_multiplier_string = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 1, 'readonly': 'readonly', 'required': False})
+    )
+
+    form_calibration_curve_method_used = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
+    )
+
+    # form_calibration_curve_method_used = forms.CharField(
+    #     required=False,
+    #     initial="-",
+    # )
+    form_calibration_equation = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
+    )
+    form_calibration_rsquared = forms.DecimalField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+    )
+    form_file_block_pk_borrowed_for_standard = forms.IntegerField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+    )
+    # NOTE: ns_block_select_pk is the field with the block that is being processed
+
+    radio_replicate_handling_average_or_not = forms.ChoiceField(
+        # widget=forms.RadioSelect(attrs={'id': 'value'}),
+        widget=forms.RadioSelect,
+        choices=[('average', 'Send the Average of the Replicates to the Study Summary'),
+                 ('each', 'Send Each Replicates Value to the Study Summary')])
+    radio_standard_option_use_or_not = forms.ChoiceField(
+        required=False,
+        widget=forms.RadioSelect,
+        choices=[('no_calibration', 'No Calibration'), ('pick_block', 'Pick a Block of Data with Standards')])
+
+    # going to need to pass some calibration parameters
+    # think the max I will need is 5 for 5 parameter logistic
+    # going to need to keep track of order
+    form_calibration_parameter_1_string = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
+    )
+    form_calibration_parameter_2_string = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
+    )
+    form_calibration_parameter_3_string = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
+    )
+    form_calibration_parameter_4_string = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
+    )
+    form_calibration_parameter_5_string = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
+    )
+    form_calibration_parameter_1_value = forms.DecimalField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+    )
+    form_calibration_parameter_2_value = forms.DecimalField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+    )
+    form_calibration_parameter_3_value = forms.DecimalField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+    )
+    form_calibration_parameter_4_value = forms.DecimalField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+    )
+    form_calibration_parameter_5_value = forms.DecimalField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+    )
+    form_calibration_standard_fitted_min_for_e = forms.DecimalField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+    )
+    form_calibration_standard_fitted_max_for_e = forms.DecimalField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+    )
+    form_calibration_standard_blank_average = forms.DecimalField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+    )
+    form_calibration_standard_standard0_average = forms.DecimalField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+    )
+
+    form_make_mifc_on_submit = forms.BooleanField(required=False)
 
 # There should be a complete set of items for each saved plate map (one for each well in the selected plate)
 class AssayPlateReaderMapItemForm(forms.ModelForm):
@@ -3266,7 +3388,6 @@ class AssayPlateReaderMapDataFileBlockForm(forms.ModelForm):
         # this made the dropdown behave when copied with the formset!
         # SUPER IMPORTANT and HANDY when need to copy formsets with dropdowns - if have selectized, it is a big mess
         self.fields['assayplatereadermap'].widget.attrs.update({'class': ' no-selectize required'})
-        # self.fields['form_marked_to_make_mifc'].initial = True
 
     # move to the java script...it will be better for the user
     # def clean(self):
@@ -3300,7 +3421,6 @@ class AssayPlateReaderMapDataFileBlockForm(forms.ModelForm):
     form_selected_plate_map_time_unit = forms.CharField(
         required=False,
     )
-    # form_marked_to_make_mifc = forms.BooleanField()
 
 # formsets
 class AssayPlateReaderMapFileBlockFormSet(BaseInlineFormSetForcedUniqueness):

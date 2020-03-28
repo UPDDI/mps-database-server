@@ -846,6 +846,7 @@ $(document).ready(function () {
 
         if (global_file_set_plate_size == false) {
             // make the plate size show what was identified
+            // HANDY to update a selectize selection
             global_file_setting_box_form_plate_size = file_block_info[0]['plate_size'];
             $("#id_se_form_plate_size").selectize()[0].selectize.setValue(global_file_setting_box_form_plate_size);
             $("#id_upload_plate_size").val(global_file_setting_box_form_plate_size);

@@ -38,6 +38,7 @@ from .models import (
     assay_plate_reader_map_info_shape_col_dict,
     assay_plate_reader_map_info_shape_row_dict,
     assay_plate_reader_map_info_plate_size_choices_list,
+    PhysicalUnits,
 )
 from microdevices.models import (
     MicrophysiologyCenter,
@@ -78,6 +79,8 @@ from .utils import (
     review_plate_reader_data_file_return_file_list,
     pk_clearance_results,
     calculate_pk_parameters,
+    plate_reader_data_file_process_data,
+    sandrasGeneralFormatNumberFunction,
 )
 
 import csv
@@ -105,6 +108,7 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import os
+import copy
 
 from django.utils import timezone
 
@@ -4864,7 +4868,6 @@ def fetch_review_plate_reader_data_file_with_block_info(request):
     file_info = review_plate_reader_data_file_format(my_file_object, set_dict)
 
     data = {}
-    data_fields = {}
     data_to_return = []
     idx = 1
     # file_info is a list with a dictionary FOR EACH BLOCK (with the fields)
@@ -5074,18 +5077,24 @@ def fetch_information_for_study_platemap_standard_file_blocks(request):
         assayplatereadermapdatafileblock__isnull=False
     ).filter(
         well_use='standard'
+    ).prefetch_related(
+        'assayplatereadermapdatafileblock',
+        'assayplatereadermap',
     ).order_by(
         'assayplatereadermapdatafileblock__id', 'well_use'
     )
 
-    distinct_plate_map_with_select_standard_string = []
-    distinct_plate_map_with_block_standard_pk = []
+    # print(as_value_formset_with_file_block_standard)
+
     number_filed_combos_standard = len(as_value_formset_with_file_block_standard)
     data = {}
-    data_to_return = []
+
+    data_to_return_fileblock_database_pk = []
+    data_to_return_string = []
+    data_to_return_platemap_pk = []
 
     prev_file = "none"
-    prev_data_block = 0
+    prev_data_block_file_specific_pk = 0
 
     # print(as_value_formset_with_file_block_standard)
 
@@ -5098,34 +5107,31 @@ def fetch_information_for_study_platemap_standard_file_blocks(request):
     if number_filed_combos_standard > 0:
         i = 0
         for record in as_value_formset_with_file_block_standard:
-            short_file_name = os.path.basename(str(record.assayplatereadermapdatafile.plate_reader_file))
-            data_block_label = str(record.assayplatereadermapdatafileblock.data_block)
-            # print(short_file_name)
-            # print(data_block_label)
+            # print("i ", i)
 
-            if prev_file == short_file_name and prev_data_block == data_block_label:
+            short_file_name = os.path.basename(str(record.assayplatereadermapdatafile.plate_reader_file))
+            # this is the data block of the file (for file 0 to something...)
+            data_block_file_specific_pk = record.assayplatereadermapdatafileblock.data_block
+
+            if prev_file == short_file_name and prev_data_block_file_specific_pk == data_block_file_specific_pk:
                 pass
             else:
+                data_platemap_pk = record.assayplatereadermap_id
+                data_platemap_name = record.assayplatereadermap.name
                 data_block_metadata = record.assayplatereadermapdatafileblock.data_block_metadata
-                data_file_block_id_str = str(record.assayplatereadermapdatafileblock.id)
+                data_block_database_pk = record.assayplatereadermapdatafileblock.id
+
                 # make a choice tuple list for showing selections and a choice tuple list of containing the file pk and block pk for javascript
-                pick_value = str(i)
-                pick_string = 'FILE: ' + short_file_name + ' BLOCK: ' + data_block_label + '  ' + data_block_metadata
-                # pick_string_pk = data_file_id_str + '-' + data_file_block_id_str
-                pick_string_block_pk = data_file_block_id_str
-                distinct_plate_map_with_select_standard_string.append((pick_value, pick_string))
-                distinct_plate_map_with_block_standard_pk.append((pick_value, pick_string_block_pk))
-                data_to_return.append({pick_value: pick_string})
-                data.update({'file_blocks_with_standards': data_to_return, })
+                pick_string = 'PLATEMAP: ' + data_platemap_name + '  FILE: ' + short_file_name + '  BLOCK: ' + data_block_metadata + ' (' + str(data_block_file_specific_pk) + ')'
+                data_to_return_fileblock_database_pk.append({str(i): data_block_database_pk})
+                data_to_return_string.append({str(i): pick_string})
+                data_to_return_platemap_pk.append({str(i): data_platemap_pk})
 
             prev_file = short_file_name
-            prev_data_block = data_block_label
+            prev_data_block_file_specific_pk = data_block_file_specific_pk
             i = i + 1
 
-    # print(distinct_plate_map_with_select_standard_string)
-    # print(distinct_plate_map_with_block_standard_pk)
-
-    data.update({'block_data': data_to_return, })
+    data.update({'block_data_fileblock_database_pk': data_to_return_fileblock_database_pk, 'block_data_string': data_to_return_string, 'block_data_platemap_pk': data_to_return_platemap_pk,})
     # print(data)
     return HttpResponse(json.dumps(data),
                         content_type="application/json")
@@ -5690,6 +5696,468 @@ def fetch_pbpk_dosing_results(request):
         content_type="application/json"
     )
 
+
+# sck - Find the multiplier for the unit conversion in the plate map integration
+def fetch_multiplier_for_data_processing_plate_map_integration(request):
+    """
+        Assay PLATE READER MAP DATA PROCESSING find the multiplier
+    """
+
+    target = request.POST.get('target', '0')
+    method = request.POST.get('method', '0')
+    reportin_unit = request.POST.get('unit', '0')
+    standard_unit = request.POST.get('standard_unit', '0')
+    volume_unit = request.POST.get('volume_unit', '0')
+    well_volume = request.POST.get('well_volume', '0')
+    cell_count = request.POST.get('cell_count', '0')
+    molecular_weight = request.POST.get('molecular_weight', '0')
+    time_unit = request.POST.get('time_unit', '0').lower()
+
+    if not standard_unit:
+        return HttpResponseServerError()
+
+    try:
+        cell_count = float(cell_count)
+    except:
+        cell_count = 0.0
+    try:
+        well_volume = float(well_volume)
+    except:
+        well_volume = 0.0
+    try:
+        molecular_weight = float(molecular_weight)
+    except:
+        molecular_weight = 0.0
+
+    # limit option of mole units for all
+    # print("**0A standard_unit: ", standard_unit)
+    # print("**0A reportin_unit: ", reportin_unit)
+    standard_unit = re.sub('M', 'mol/L', standard_unit)
+    standard_unit = re.sub('N', 'nmol/L', standard_unit)
+    standard_unit = re.sub('mols', 'mol', standard_unit)
+    reportin_unit = re.sub('M', 'mol/L', reportin_unit)
+    reportin_unit = re.sub('N', 'nmol/L', reportin_unit)
+    reportin_unit = re.sub('mols', 'mol', reportin_unit)
+    # print("**0B standard_unit: ", standard_unit)
+    # print("**0B reportin_unit: ", reportin_unit)
+
+    # set the defaults
+    more_conversions_needed = "yes"
+    multiplier = 1.0
+    multiplier_string = reportin_unit + " = " + standard_unit
+    multiplier_string_display = ""
+    data = {}
+    data_to_return = []
+
+    # do we just have a base unit conversion?
+    long_list_of_things = sub_to_fetch_multiplier_for_data_processing_plate_map_integration(more_conversions_needed, standard_unit, reportin_unit)
+    more_conversions_needed = long_list_of_things[0]
+    rmultiplier = long_list_of_things[1]
+    rmultiplier_string = long_list_of_things[2]
+    rmultiplier_string_display = long_list_of_things[3]
+
+    if more_conversions_needed == "error" or more_conversions_needed == "done":
+        multiplier = multiplier * rmultiplier
+        multiplier_string = multiplier_string + rmultiplier_string
+        multiplier_string_display = multiplier_string_display + " " + rmultiplier_string_display
+        more_conversions_needed = "STOP"
+        # print("**1A first send: ", multiplier_string)
+        # print("**1A standard_unit: ", standard_unit)
+    elif more_conversions_needed == "yes":
+        # print("**1B first send: ", multiplier_string)
+        # print("**1B standard_unit: ", standard_unit)
+        # did not fail but need more conversion
+        # try seeing if a mole to mass conversion is needed (only works one way - mole to mass)
+        # print("re.search(r'mol', standard_base_unit_unit) ",re.search(r'mol', standard_base_unit_unit))
+        if re.search(r'pmol', standard_unit) and re.search(r'g', reportin_unit):
+            standard_unit = re.sub('mol', 'g', standard_unit)
+            multiplier = multiplier * molecular_weight * 1/10**12
+            multiplier_string = multiplier_string + " * (1g/10^12pg) * (" + str(molecular_weight) + "g/mol)"
+        elif re.search(r'nmol', standard_unit) and re.search(r'g', reportin_unit):
+            standard_unit = re.sub('mol', 'g', standard_unit)
+            multiplier = multiplier * molecular_weight * 1/10**9
+            multiplier_string = multiplier_string + " * (1g/10^9ng) * (" + str(molecular_weight) + "g/mol)"
+        elif re.search(r'µmol', standard_unit) and re.search(r'g', reportin_unit):
+            standard_unit = re.sub('mol', 'g', standard_unit)
+            multiplier = multiplier * molecular_weight * 1/10**6
+            multiplier_string = multiplier_string + " * (1g/10^6µg) * (" + str(molecular_weight) + "g/mol)"
+        elif re.search(r'mmol', standard_unit) and re.search(r'g', reportin_unit):
+            standard_unit = re.sub('mol', 'g', standard_unit)
+            multiplier = multiplier * molecular_weight * 1/10**3
+            multiplier_string = multiplier_string + " * (1g/10^3mg) * (" + str(molecular_weight) + "g/mol)"
+        elif re.search(r'mol', standard_unit) and re.search(r'g', reportin_unit):
+            standard_unit = re.sub('mol', 'g', standard_unit)
+            multiplier = multiplier * molecular_weight
+            multiplier_string = multiplier_string + " * (1g/1g) * (" + str(molecular_weight) + "g/mol)"
+
+        # if there was a 'well', there will be a need to divide by the well volume, so that before checking next
+        # print("1B.1** after mole to mass: ", multiplier_string)
+        # print("1B.1** standard_unit: ", standard_unit)
+
+        # did not fail but need more conversion
+        # see if standard unit has a 'well' in it
+        locationWellStart = -1
+        locationWellEnd = -1
+        try:
+            locationWellStart = re.search(r'well', standard_unit).start()
+            locationWellEnd = re.search(r'well', standard_unit).end()
+        except:
+            locationWellStart = -1
+            locationWellEnd = -1
+
+        # print("locationWellStart ", locationWellStart)
+        # print("locationWellEnd ", locationWellEnd)
+        if locationWellStart >= 0:
+            # print("stardard_unit[:locationWellStart] ", standard_unit[:locationWellStart])
+            # print("stardard_unit[locationWellEnd:] ", standard_unit[locationWellEnd:])
+            standard_unit = standard_unit[:locationWellStart].strip() + volume_unit + standard_unit[locationWellEnd:].strip()
+            # print("standard_unit ", standard_unit)
+            multiplier = multiplier / well_volume
+            multiplier_string = multiplier_string + " * (well/" + str(well_volume) + volume_unit + ")"
+            # print("multiplier string ", multiplier_string)
+            # print("standard_unit ", standard_unit)
+
+        # now, check and see if, with the mol to g and the well to well volume if base unit will convert
+        # are we down to just a base unit conversion?
+        long_list_of_things = sub_to_fetch_multiplier_for_data_processing_plate_map_integration(more_conversions_needed, standard_unit, reportin_unit)
+        more_conversions_needed = long_list_of_things[0]
+        rmultiplier = long_list_of_things[1]
+        rmultiplier_string = long_list_of_things[2]
+        rmultiplier_string_display = long_list_of_things[3]
+        # print("1B.2** after mole to mass: ", multiplier_string)
+        # print("1B.2** after mole to mass: ", multiplier)
+        # print("1B.2** standard_unit: ", standard_unit)
+        # print("1B.2** more_conversions_needed: ", more_conversions_needed)
+
+    if more_conversions_needed == "error" or more_conversions_needed == "done":
+        # either error or done
+        multiplier = multiplier * rmultiplier
+        multiplier_string = multiplier_string + rmultiplier_string
+        multiplier_string_display = multiplier_string_display + " " + rmultiplier_string_display
+        more_conversions_needed = "STOP"
+        # print("2A** after per mol to mass and /well: ", multiplier_string)
+        # print("2A** after per mol to mass and /well: ", multiplier)
+        # print("2A** standard_unit: ", standard_unit)
+    elif more_conversions_needed == "yes":
+        # print("2B** after per mol to mass and /well: ", multiplier_string)
+        # print("2B** standard_unit: ", standard_unit)
+        # did not fail but need more conversion
+        # see if need to multiple by the efflux volume
+
+        # if standard_unit has L and reporting unit doesn't have L
+        # this is set up to multiple by the volume unit and divide by the time unit
+        # print(re.search(r'L', standard_unit))
+        # print(re.search(r'L', reportin_unit))
+        # put into L
+        if re.search(r'L', standard_unit) and not re.search(r'L', reportin_unit):
+            if re.search(r'/pL', standard_unit):
+                standard_unit = re.sub('/pL', '', standard_unit)
+                multiplier = multiplier * 10**12
+                multiplier_string = multiplier_string + " * efflux " + volume_unit + " * (10^12pL/1L)"
+            elif re.search(r'/nL', standard_unit):
+                standard_unit = re.sub('/nL', '', standard_unit)
+                multiplier = multiplier * 10**9
+                multiplier_string = multiplier_string + " * efflux " + volume_unit + " * (10^9nL/1L)"
+            elif re.search(r'/µL', standard_unit):
+                standard_unit = re.sub('/µL', '', standard_unit)
+                multiplier = multiplier * 10**6
+                multiplier_string = multiplier_string + " * efflux " + volume_unit + " * (10^6µL/1L)"
+            elif re.search(r'/mL', standard_unit):
+                standard_unit = re.sub('/mL', '', standard_unit)
+                multiplier = multiplier * 10**3
+                multiplier_string = multiplier_string + " * efflux " + volume_unit + " * (10^3mL/1L)"
+            elif re.search(r'/L', standard_unit):
+                standard_unit = re.sub('/L', '', standard_unit)
+                multiplier = multiplier
+                multiplier_string = multiplier_string + " * efflux " + volume_unit + " * (1L/1L)"
+
+            if re.search(r'pL', volume_unit):
+                multiplier = multiplier / 10**12
+                multiplier_string = multiplier_string + " * (1L/10^12pL) "
+            elif re.search(r'nL', volume_unit):
+                multiplier = multiplier / 10**9
+                multiplier_string = multiplier_string + " * (1L/10^9nL) "
+            elif re.search(r'µL', volume_unit):
+                multiplier = multiplier / 10**6
+                multiplier_string = multiplier_string + " * (1L/10^6µL) "
+            elif re.search(r'mL', volume_unit):
+                multiplier = multiplier / 10**3
+                multiplier_string = multiplier_string + " * (1L/10^3mL) "
+            elif re.search(r'L', volume_unit):
+                multiplier = multiplier
+                multiplier_string = multiplier_string + " * (1L/1L) "
+
+        # print("2B.1** after volume prep: ", multiplier_string)
+        # print("2B.1** after volume prep: ", multiplier)
+        # print("2B.1** standard_unit: ", standard_unit)
+
+        if re.search(r'y', reportin_unit) or re.search(r'h', reportin_unit) or re.search(r'min', reportin_unit):
+            if re.search(r'y', reportin_unit):
+                standard_unit = standard_unit + "/day"
+                if time_unit == "day":
+                    multiplier = multiplier * 1
+                    multiplier_string = multiplier_string + " * (1/efflux collection day) * (1day/1day)"
+                elif time_unit == "hour":
+                    multiplier = multiplier * 24
+                    multiplier_string = multiplier_string + " * (1/efflux collection hour) * (24hour/1day)"
+                else:
+                    multiplier = multiplier * 1440
+                    multiplier_string = multiplier_string + " * (1/efflux collection minute) * (1440minute/1day)"
+
+            elif re.search(r'h', reportin_unit):
+                standard_unit = standard_unit + "/hour"
+                if time_unit == "day":
+                    multiplier = multiplier * 1/24
+                    multiplier_string = multiplier_string + " * (1/efflux collection day) * (1day/24hour)"
+                elif time_unit == "hour":
+                    multiplier = multiplier * 1
+                    multiplier_string = multiplier_string + " * (1/efflux collection hour) * (1hour/1hour)"
+                else:
+                    multiplier = multiplier * 60
+                    multiplier_string = multiplier_string + " * (1/efflux collection minute) * (60minute/1hour)"
+
+            elif re.search(r'min', reportin_unit):
+                standard_unit = standard_unit + "/minute"
+                if time_unit == "day":
+                    multiplier = multiplier / 1440
+                    multiplier_string = multiplier_string + " * (1/efflux collection day) * (1day/1440minute)"
+                elif time_unit == "hour":
+                    multiplier = multiplier / 60
+                    multiplier_string = multiplier_string + " * (1/efflux collection hour) * (1hour/60minute)"
+                else:
+                    multiplier = multiplier * 1
+                    multiplier_string = multiplier_string + " * (1/efflux collection minute) * (1minute/1minute)"
+
+        # print("2B.2** after time prep: ", multiplier_string)
+        # print("2B.2** after time prep: ", multiplier)
+        # print("2B.2** standard_unit: ", standard_unit)
+
+        # >> > m = re.search("is", String)
+        # >> > m.span()
+        # (2, 4)
+        # >> > m.start()
+        # 2
+        # >> > m.end()
+        # 4
+
+        # deal with the reporting unit containing /cells
+        locationCellsStart = re.search(r'cells', reportin_unit).start()
+        locationCellsEnd = re.search(r'cells', reportin_unit).end()
+        location10hatStart = re.search(r'10\^', reportin_unit).start()
+        location10hatEnd = re.search(r'10\^', reportin_unit).end()
+
+        # print("locationCellsStart ",locationCellsStart)
+        # print("locationCellsEnd ",locationCellsEnd)
+        # print("location10hatStart ",location10hatStart)
+        # print("location10hatEnd ",location10hatEnd)
+        # print("heading back: ", multiplier_string)
+
+        if locationCellsStart >= 0:
+            # reportin unit has cells in it; making assumption that the standard unit does not
+            cellNumberExponent = reportin_unit[location10hatEnd:locationCellsStart].strip()
+            cellString = reportin_unit[location10hatStart:].strip()
+
+            try:
+                intcellNumberExponent = int(cellNumberExponent)
+                multiplier = multiplier / (cell_count * 10**intcellNumberExponent)
+                multiplier_string = multiplier_string + " * (1/" + str(cell_count) + "cells) * (" + cellString + "/" + cellString + ")"
+            except:
+                multiplier = 0.0
+                multiplier_string = multiplier_string + " PROBLEM with Cell Number division."
+                multiplier_string_display = multiplier_string_display + " [This is not a complete multiplier]"
+
+
+            # there is an assumption here that the 'cells' was last in the string
+            standard_unit = standard_unit + "/" + cellString
+            # print("standard_unit ", standard_unit)
+
+            # print("2B.3** after cells prep: ", multiplier_string)
+            # print("2B.3** after cells prep: ", multiplier)
+            # print("2B.3** standard_unit: ", standard_unit)
+
+            # are we down to just a base unit conversion?
+            long_list_of_things = sub_to_fetch_multiplier_for_data_processing_plate_map_integration(more_conversions_needed, standard_unit, reportin_unit)
+            more_conversions_needed = long_list_of_things[0]
+            rmultiplier = long_list_of_things[1]
+            rmultiplier_string = long_list_of_things[2]
+            rmultiplier_string_display = long_list_of_things[3]
+
+    if more_conversions_needed == "error" or more_conversions_needed == "done":
+        # either error or done
+        multiplier = multiplier * rmultiplier
+        multiplier_string = multiplier_string + rmultiplier_string
+        multiplier_string_display = multiplier_string_display + " " + rmultiplier_string_display
+        more_conversions_needed = "STOP"
+        # print("3A** after per cells: ", multiplier_string)
+        # print("3A** after per cells: ", multiplier)
+        # print("3A** standard_unit: ", standard_unit)
+    elif more_conversions_needed == "yes":
+        # print("3B1** after per mol to mass and /well: ", multiplier_string)
+        # print("3B1** after per mol to mass and /well: ", multiplier)
+        # print("3B1** standard_unit: ", standard_unit)
+        multiplier = 0.0
+        multiplier_string = multiplier_string + "  Did not have all the information needed to complete the conversion."
+        multiplier_string_display = multiplier_string_display + " " + rmultiplier_string_display + " [This is not a complete multiplier]"
+        # print("3B2** after per mol to mass and /well: ", multiplier_string)
+        # print("3B2** after per mol to mass and /well: ", multiplier)
+        # print("3B2** standard_unit: ", standard_unit)
+
+    # print("right before return: ", multiplier_string)
+    # print("standard_unit: ", standard_unit)
+    # print("--------")
+    # load the data for sending back
+    data_fields = {
+        'multiplier': str(multiplier),
+        'multiplier_string': multiplier_string,
+        'multiplier_string_display': multiplier_string_display,
+    }
+    data_to_return.append(data_fields)
+
+    data.update({'multiplier_data': data_to_return, })
+
+    return HttpResponse(json.dumps(data),
+                        content_type="application/json")
+
+
+def sub_to_fetch_multiplier_for_data_processing_plate_map_integration(more_conversions_needed, standard_unit, reportin_unit):
+    multiplier = 1
+    multiplier_string = ""
+    multiplier_string_display = ""
+    standard_scale_factor = 0
+    standard_base_unit_unit = "unk"
+    reportin_scale_factor = 0
+    reportin_base_unit_unit = "unk"
+
+    # do complete easiest case first, before mix in a lot of custom options
+    standard_unit_queryset = PhysicalUnits.objects.filter(
+        unit=standard_unit
+    ).prefetch_related(
+        'base_unit',
+    )
+    lenStandardBase = len(standard_unit_queryset)
+
+    if lenStandardBase == 0:
+        multiplier = 0.0
+        multiplier_string = multiplier_string + " Missing Base Unit in MPS Database."
+        multiplier_string_display = multiplier_string_display + " Could not find " + standard_unit + " in the database physical unit list. Add it and an associated base unit before continuing. "
+        more_conversions_needed = "error"
+
+    reportin_unit_queryset = PhysicalUnits.objects.filter(
+        unit=reportin_unit
+    ).prefetch_related(
+        'base_unit',
+    )
+    lenReportinBase = len(reportin_unit_queryset)
+
+    if lenReportinBase == 0:
+        multiplier = 0.0
+        multiplier_string = multiplier_string + " Missing Base Unit in MPS Database."
+        multiplier_string_display = multiplier_string_display + " Could not find " + reportin_unit + " in the database physical unit list. Add it and an associated base unit before continuing. "
+        more_conversions_needed = "error"
+
+    if lenStandardBase > 0 and lenReportinBase > 0:
+        # should only be one...
+        for each in standard_unit_queryset:
+            standard_scale_factor = each.scale_factor
+            standard_base_unit_unit = each.base_unit.unit
+
+        for each in reportin_unit_queryset:
+            reportin_scale_factor = each.scale_factor
+            reportin_base_unit_unit = each.base_unit.unit
+
+        if standard_base_unit_unit == reportin_base_unit_unit:
+            # units needed ONLY conversion through the base unit
+            multiplier = standard_scale_factor * (1.0/reportin_scale_factor)
+            multiplier_string = " [ (" + str(standard_scale_factor) + ")(" + standard_base_unit_unit + ")/("+standard_unit+") ]" + " / [ (" + str(reportin_scale_factor) + ")(" + reportin_base_unit_unit + ")/("+reportin_unit+") ]"
+            more_conversions_needed = "done"
+    # print("")
+    # print("----SUB")
+    # print("--multiplier ", multiplier)
+    # print("--multiplier_string ", multiplier_string)
+    # print("--standard_scale_factor ", standard_scale_factor)
+    # print("--standard_base_unit_unit ", standard_base_unit_unit)
+    # print("--reportin_scale_factor ", reportin_scale_factor)
+    # print("--reportin_base_unit_unit ", reportin_base_unit_unit)
+    # print("----SUB")
+    # print("")
+
+    return [more_conversions_needed, multiplier, multiplier_string, multiplier_string_display, standard_base_unit_unit, reportin_base_unit_unit]
+
+
+# sck - the main function for processing data - pass to a utils.py funciton
+def fetch_data_processing_for_plate_map_integration(request):
+    """
+        Assay PLATE READER MAP DATA PROCESSING do the processing - used from ajax and from form save
+    """
+    # called_from can be 'javascript' or 'formsave'
+
+    called_from =                      request.POST.get('called_from', '0')
+    study =                            request.POST.get('study', '0')
+    pk_platemap =                      request.POST.get('pk_platemap', '0')
+    pk_data_block =                    request.POST.get('pk_data_block', '0')
+    plate_name =                       request.POST.get('plate_name', '0')
+    form_calibration_curve =           request.POST.get('form_calibration_curve', '0')
+    multiplier =                       request.POST.get('multiplier', '0')
+    unit =                             request.POST.get('unit', '0')
+    standard_unit =                    request.POST.get('standard_unit', '0')
+    form_min_standard =                request.POST.get('form_min_standard', '0')
+    form_max_standard =                request.POST.get('form_max_standard', '0')
+    form_blank_handling =              request.POST.get('form_blank_handling', '0')
+    radio_standard_option_use_or_not = request.POST.get('radio_standard_option_use_or_not', '0')
+    radio_replicate_handling_average_or_not_0 = request.POST.get('radio_replicate_handling_average_or_not_0', '0')
+    borrowed_block_pk =                request.POST.get('borrowed_block_pk', '0')
+    borrowed_platemap_pk =             request.POST.get('borrowed_platemap_pk', '0')
+    count_standards_current_plate =    request.POST.get('count_standards_current_plate', '0')
+    target =                           request.POST.get('target', '0')
+    method =                           request.POST.get('method', '0')
+    time_unit =                        request.POST.get('time_unit', '0')
+    volume_unit =                      request.POST.get('volume_unit', '0')
+
+    if not standard_unit:
+        return HttpResponseServerError()
+
+    # make a dictionary to send to the utils.py
+    set_dict = {
+        'called_from'                     : called_from                             ,
+        'study'                           : study                                   ,
+        'pk_platemap'                     : pk_platemap                             ,
+        'pk_data_block'                   : pk_data_block                           ,
+        'plate_name'                      : plate_name                              ,
+        'form_calibration_curve'          : form_calibration_curve                  ,
+        'multiplier'                      : multiplier                              ,
+        'unit'                            : unit                                    ,
+        'standard_unit'                   : standard_unit                           ,
+        'form_min_standard'               : form_min_standard                       ,
+        'form_max_standard'               : form_max_standard                       ,
+        'form_blank_handling'             : form_blank_handling                     ,
+        'radio_standard_option_use_or_not': radio_standard_option_use_or_not        ,
+        'radio_replicate_handling_average_or_not_0': radio_replicate_handling_average_or_not_0,
+        'borrowed_block_pk'               : borrowed_block_pk                       ,
+        'borrowed_platemap_pk'            : borrowed_platemap_pk                    ,
+        'count_standards_current_plate'   : count_standards_current_plate           ,
+        'target'                          : target                                  ,
+        'method'                          : method                                  ,
+        'time_unit'                       : time_unit                               ,
+        'volume_unit'                     : volume_unit                             ,
+    }
+
+    # print(set_dict)
+
+    # this function is in utils.py
+    data_mover = plate_reader_data_file_process_data(set_dict)
+    data = {}
+    data.update({
+        'sendmessage':                        data_mover[0],
+        'list_of_dicts_of_each_sample_row':   data_mover[1],
+        'list_of_dicts_of_each_standard_row_points': data_mover[2],
+        'list_of_dicts_of_each_standard_row_curve':  data_mover[3],
+        'dict_of_parameter_labels':  data_mover[4],
+        'dict_of_parameter_values':  data_mover[5],
+        'dict_of_curve_info':        data_mover[6],
+        'dict_of_standard_info':     data_mover[7],
+        })
+    return HttpResponse(json.dumps(data), content_type="application/json")
+
 # TODO TODO TODO
 switch = {
     'fetch_center_id': {'call': fetch_center_id},
@@ -5792,11 +6260,13 @@ switch = {
     },
     'fetch_pbpk_dosing_results': {
         'call': fetch_pbpk_dosing_results
-    }
-    # 'fetch_dropdown': {
-    #     'call': fetch_dropdown,
-    #     'validation': valid_user_validation
-    # }
+    },
+    'fetch_multiplier_for_data_processing_plate_map_integration': {
+        'call': fetch_multiplier_for_data_processing_plate_map_integration
+    },
+    'fetch_data_processing_for_plate_map_integration': {
+        'call': fetch_data_processing_for_plate_map_integration
+    },
 }
 
 
