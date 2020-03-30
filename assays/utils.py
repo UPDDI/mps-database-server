@@ -3808,7 +3808,7 @@ def pk_clearance_results(pk_type,
                          compound_pk_data):
     # Calculate t-half and intrinsic clearance
     compound_pk_data = pd.DataFrame(compound_pk_data, columns=["Time", "Cells", "Value"])
-    compound_pk_data.dropna()
+    compound_pk_data = compound_pk_data.dropna()
     if pk_type == "Bolus":
         # Bolus clearance calculation
         cl_ml_min = pk_clearance_bolus(
@@ -3859,6 +3859,7 @@ def pk_clearance_results(pk_type,
             with_no_cell_data = False
             pk_steady_state_data = pk_calc_clearance_continuous_infusion_matrix(
                 with_no_cell_data,
+                cell_name,
                 total_device_vol_ul,
                 total_cells_in_device,
                 flow_rate,
@@ -3887,11 +3888,11 @@ def pk_clearance_bolus(start_time,
                        compound_pk_data):
 
     # Filter data by defined time interval
-    filtered_data = compound_pk_data[compound_pk_data['Time'] <= end_time*60]
-    filtered_data = filtered_data[filtered_data['Time'] >= start_time*60]
+    filtered_data = compound_pk_data[compound_pk_data['Time'] <= end_time]
+    filtered_data = filtered_data[filtered_data['Time'] >= start_time]
     agg_mean_data = filtered_data.groupby(['Time'], as_index=False)['Value'].mean()
 
-    x = agg_mean_data['Time']
+    x = agg_mean_data['Time']*60
     y = np.log(agg_mean_data['Value'])
 
     # Generated linear regression fit
@@ -3925,6 +3926,7 @@ def pk_calc_clearance_continuous_infusion_matrix(with_no_cell_data,
             compound_pk_data = compound_pk_data[compound_pk_data['Cells'] == cell_name]
 
     steady_state_table_key = compound_pk_data[["Cells"]]
+    steady_state_pivot = np.nan
     if len(steady_state_table_key.drop_duplicates().index) == 2:
         steady_state_pivot = pd.pivot_table(compound_pk_data, values='Value', index='Time', columns=['Cells'], aggfunc=np.mean)
         if len(compound_pk_data.loc[compound_pk_data['Cells'] == '-No Cell Samples-'].index) > 0:

@@ -73,7 +73,7 @@ $(document).ready(function () {
             title: "Select",
             "render": function (data, type, row, meta) {
                 if (type === 'display') {
-                    return '<input type="checkbox" class="big-checkbox pk-set-checkbox" data-table-index="' + meta.row + '">';
+                    return '<input type="checkbox" class="big-checkbox pk-set-checkbox" data-row-info="'+ encodeURIComponent(JSON.stringify(["", row, study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["PK Type"], treatment_groups[data_groups[row][4]]["Compounds"], treatment_groups[data_groups[row][4]]["Study"].split(">")[1].slice(0,-4), treatment_groups[data_groups[row][4]]["MPS Model"].split(">")[1].slice(0,-4), treatment_groups[data_groups[row][4]]["Device"], data_groups[row][0], data_groups[row][2], data_groups[row][3], study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["Total Device Volume"], study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["Flow Rate"], study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["Relevant Cells"], treatment_groups[data_groups[row][4]]["item_ids"].length, chart_data[row].length-1])) +'" data-table-index="' + meta.row + '">';
                 }
                 return '';
             },
@@ -97,7 +97,7 @@ $(document).ready(function () {
         {
             title: "PK Type",
             "render": function (data, type, row) {
-                return study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["PK Type"]
+                return study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["PK Type"];
             },
             width: '20%'
         },
@@ -108,12 +108,6 @@ $(document).ready(function () {
             },
             width: '20%'
         },
-        // {
-        //     title: "Compound Concentration (MICRO MOLAR)",
-        //     "render": function (data, type, row) {
-        //         return data_groups[row][0];
-        //     }
-        // },
         {
             title: "Study",
             "render": function (data, type, row) {
@@ -169,7 +163,7 @@ $(document).ready(function () {
         {
             title: "No. of Cells in MPS Model",
             "render": function (data, type, row) {
-                return study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["Relevant Cells"];;
+                return study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["Relevant Cells"];
             },
             width: '20%'
         },
@@ -308,10 +302,7 @@ $(document).ready(function () {
                 }
             });
             group_number = checkbox.attr('data-table-index');
-            row_info = [];
-            $($('#group-table tbody tr')[group_number]).find('td').each(function() {
-                row_info.push($(this).text());
-            });
+            row_info = JSON.parse(decodeURIComponent(checkbox.attr('data-row-info')));
             pk_type = row_info[2];
             generate_pbpk(pk_type);
         } else {
@@ -1012,7 +1003,7 @@ $(document).ready(function () {
             },
             pointSize: 5,
             'chartArea': {
-                'width': '100%',
+                'width': '80%',
                 'height': '80%',
             },
             'height': 500,
