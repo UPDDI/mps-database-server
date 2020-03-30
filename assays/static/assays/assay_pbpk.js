@@ -324,6 +324,8 @@ $(document).ready(function () {
         $('#pbpk-information').hide();
         $('#predict-dosing-container').hide();
         $('#calculated-pk-container').hide();
+        start_time_dropdown.clear();
+        end_time_dropdown.clear();
         start_time_dropdown.clearOptions();
         end_time_dropdown.clearOptions();
         $("#compound-compound").val('');
@@ -954,9 +956,9 @@ $(document).ready(function () {
     }
 
     function make_dosing_plot(data, time) {
-        var dosing_data = [["Time (hr)", "Single Dose (mg/L)", "Multiple Dose (mg/L)"]];
+        var dosing_data = [["Time (hr)", "Multiple Dose (mg/L)", "Single Dose (mg/L)"]];
         for (var x=0; x<=time; x++) {
-            dosing_data.push([data["Time (hr)"][x], data["Single Dose (mg/L)"][x], data["Multiple Dose (mg/L)"][x]]);
+            dosing_data.push([data["Time (hr)"][x], data["Multiple Dose (mg/L)"][x], data["Single Dose (mg/L)"][x]]);
         }
         options = {
             title: 'Predicted Dosing Plot',
@@ -1001,7 +1003,7 @@ $(document).ready(function () {
                 minValue: 0,
                 viewWindowMode: 'explicit'
             },
-            pointSize: 5,
+            pointShape: {visible: false},
             'chartArea': {
                 'width': '80%',
                 'height': '80%',

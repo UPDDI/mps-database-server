@@ -3876,6 +3876,8 @@ def pk_clearance_results(pk_type,
         elif len(steady_state_table_key.drop_duplicates().index) == 1 and len(compound_pk_data.loc[compound_pk_data['Cells'] == '-No Cell Samples-'].index) > 0:
             return {'error': 'Only Cell-Free Data is Present!'}
 
+    if (np.isnan(cl_ml_min)):
+        return {'error': 'Clearance was Null. Please select different times and try again.'}
     return {"clearance": cl_ml_min, "clearance_data": pk_steady_state_data.to_dict('split')}
 
 
@@ -3973,10 +3975,12 @@ def pk_calc_clearance_continuous_infusion_matrix(with_no_cell_data,
         # Define all columns of intrinsic clearance analysis table
         steady_state_data = steady_state_data.reindex(columns=header_list)
         for i in range(steady_state_data.shape[0]):
-            steady_state_data.iloc[i, 2] = (influent_conc-steady_state_pivot.iloc[i, 1])/influent_conc
+            steady_state_data.iloc[i, 2] = (influent_conc-steady_state_data.iloc[i, 1])/influent_conc
             steady_state_data.iloc[i, 3] = steady_state_data.iloc[i, 2]*flow_rate
             steady_state_data.iloc[i, 4] = ((steady_state_data.iloc[i, 3]*(cells_per_tissue_g/total_cells_in_device)*total_organ_weight_g)/60*0.001)
-
+        df1 = steady_state_data.pop('Time')
+        steady_state_data['Time'] = df1
+        steady_state_data.insert(0, 'Compound Recovered From Device Without Cells (\u03BCM)', 'NA')
         steady_state_matrix = steady_state_data
     else:
         steady_state_matrix = np.nan
@@ -3984,9 +3988,9 @@ def pk_calc_clearance_continuous_infusion_matrix(with_no_cell_data,
 
 
 def pk_calc_clearance_steady_state(pk_steady_state_data, start_time, end_time):
-    clearance_start_matrix = pk_steady_state_data.loc[pk_steady_state_data['Time'] >= start_time*60]
+    clearance_start_matrix = pk_steady_state_data.loc[pk_steady_state_data['Time'] >= start_time]
     if not np.isnan(end_time):
-        clearance_start_matrix = clearance_start_matrix.loc[clearance_start_matrix['Time'] <= end_time*60]
+        clearance_start_matrix = clearance_start_matrix.loc[clearance_start_matrix['Time'] <= end_time]
     clearance = clearance_start_matrix['Predicted intrinsic clearance (\u03BCl/min)'].mean()
     return clearance
 
