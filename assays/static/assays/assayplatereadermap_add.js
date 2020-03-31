@@ -423,6 +423,7 @@ $(document).ready(function () {
     let global_floater_cell_count = "";
     let global_floater_molecular_weight = "";
     let global_floater_time_unit = "";
+    let global_showhide_samples = "hide_samples";
 
     // END SECTION TO SET GLOBAL VARIABLES plus some
 
@@ -785,6 +786,14 @@ $(document).ready(function () {
         buildTableOfStandardsDataPoints_ajax(list_of_dicts_of_each_standard_row_points);
         buildTableOfStandardsDataCurve_ajax(list_of_dicts_of_each_standard_row_curve);
 
+        // console.log("##in js back from ajax");
+        // console.log("##list_of_dicts_of_each_sample_row");
+        // console.log(list_of_dicts_of_each_sample_row);
+        // console.log("##list_of_dicts_of_each_standard_row_points");
+        // console.log(list_of_dicts_of_each_standard_row_points);
+        // console.log("##list_of_dicts_of_each_standard_row_curve");
+        // console.log(list_of_dicts_of_each_standard_row_curve);
+
         drawCalibrationCurve();
         $('#refresh_needed_indicator').text('done');
     };
@@ -890,14 +899,18 @@ $(document).ready(function () {
 
 
             var colcounter = 0;
+            let myCellContentWithCommas = "";
             $.each(row, function (ii, col) {
                 // console.log("colcounter ", colcounter)
                 // console.log("--col ", col)
                 var td = document.createElement('TD');
                 $(td).attr('col-index', colcounter);
                 let myCellContent = col;
-                if (ii == 24 || ii == 25){
+                if (ii == 7  || ii == 8  || ii == 9  ||
+                    ii == 15 || ii == 17 || ii == 18 || ii == 19 ||
+                    ii == 24 || ii == 25){
                     myCellContent = generalFormatNumber(parseFloat(col));
+                    myCellContent = thousands_separators(myCellContent);
                 }
 
                 td.appendChild(document.createTextNode(myCellContent));
@@ -1011,34 +1024,32 @@ $(document).ready(function () {
         });
     }
 
+
+    $("#showHideSamplesOnGraphButton").click(function () {
+        // console.log("sh ", global_showhide_samples)
+        if (global_showhide_samples == "hide_samples") {
+            global_showhide_samples = "show_samples";
+            drawCalibrationCurve();
+        } else {
+            global_showhide_samples = "hide_samples";
+            drawCalibrationCurve();
+        }
+    });
+
     function drawCalibrationCurve(){
-
-        // var chart = app.getElementById('chart_div');
-        // chart.clearChart();
-
-        // var elem = document.getElementById('chart_div');
-        // elem.removeChild(elem.childNodes[0]);
 
         google.charts.setOnLoadCallback(drawStandardCurve01);
 
         function drawStandardCurve01() {
 
-            var colHeaders =
-                [
-                ['Standard Concentration', 'Fitted Curve', 'Standard Response', 'Sample Response']
-                ];
-
             // global_lol_samples
+            var samples = global_lol_samples;
             // console.log("global_lol_samples: ")
-            //    console.log(global_lol_samples)
-            // var samples =
+            // console.log(global_lol_samples)
             //     [
             //     [0.0, null, null, .05],
             //     [0.0, null, null, .08]
             //     ];
-            //console.log("samples: ")
-            //    console.log(samples)
-            var samples = global_lol_samples;
 
             // global_lol_standards_points
             var standards = global_lol_standards_points;
@@ -1046,9 +1057,6 @@ $(document).ready(function () {
             // console.log(standards)
                 // [
                 // [0.0, null, 0.01, null],
-                // [0.1, null, 0.192, null],
-                // [0.2, null, 0.394, null],
-                // [0.3, null, 0.61, null],
                 // [0.4, null, 0.83, null]
                 // ];
 
@@ -1058,24 +1066,8 @@ $(document).ready(function () {
             // console.log(fitted)
                 // [
                 // [0.0, 0.0, null, null],
-                // [0.1, 0.2, null, null],
-                // [0.2, 0.4, null, null],
-                // [0.3, 0.6, null, null],
-                // [0.4, 0.8, null, null],
-                // [0.5, 1.0, null, null],
-                // [0.6, 1.2, null, null],
-                // [0.7, 1.4, null, null],
-                // [0.8, 1.6, null, null],
                 // [0.9, 1.8, null, null]
                 // ];
-
-
-            var preData = $.merge($.merge($.merge($.merge([],
-                colHeaders),
-                samples),
-                standards),
-                fitted);
-
 
             // var preData = [
             //     ['Standard Concentration', 'Fitted Curve', 'Standard Response', 'Sample Response'],
@@ -1099,33 +1091,101 @@ $(document).ready(function () {
             //     [0.4, null, 0.83, null]
             // ];
 
-            var data = google.visualization.arrayToDataTable(preData);
+            // 4th spot place holder
+            var placeHolder =
+                [
+                [0, null, null, 0],
+                ];
 
-            var view = new google.visualization.DataView(data);
+            var preData = {};
+            var colHeaders = {};
+            var options = {};
+
+            if (global_showhide_samples == "hide_samples") {
+                colHeaders =
+                    [
+                        ['Standard Concentration', 'Fitted Curve', 'Standard Response', '']
+                    ];
+
+                preData = preData = $.merge($.merge($.merge($.merge([],
+                    colHeaders),
+                    placeHolder),
+                    standards),
+                    fitted);
+
+
+
+                options = {
+                    title: global_floater_method,
+                    seriesType: 'scatter',
+                    series: {
+                        0: {pointShape: 'square'}, pointSize: 1,
+                        //0: {type: 'line'},
+                        2: {pointShape: {type: 'star', sides: 4, dent: 0.1}, pointSize: 1,
+                        },
+                    },
+                    legend: {position: 'bottom'},
+                    vAxis: {title: 'Signal'},
+                    hAxis: {title: global_floater_standard_unit},
+                    colors: ['LightCoral', 'DarkRed', 'white'],
+                };
+            } else {
+                colHeaders =
+                    [
+                        ['Standard Concentration', 'Fitted Curve', 'Standard Response', 'Sample Response']
+                    ];
+
+                preData = preData = $.merge($.merge($.merge($.merge([],
+                    colHeaders),
+                    samples),
+                    standards),
+                    fitted);
+
+                // https://developers.google.com/chart/interactive/docs/points
+
+                options = {
+                    title: global_floater_method,
+                    seriesType: 'scatter',
+                    series: {
+                        0: {pointShape: 'square'}, pointSize: 0.3,
+                        //0: {type: 'line'},
+                        2: {pointShape: {type: 'star', sides: 5, dent: 0.5}, pointSize: 13,
+                        },
+                    },
+                    legend: {position: 'bottom'},
+                    //vAxis: {title: global_floater_target},
+                    vAxis: {title: 'Signal'},
+                    hAxis: {title: global_floater_standard_unit},
+                    colors: ['LightCoral', 'DarkRed', 'blue'],
+                };
+            }
+
+            var data = google.visualization.arrayToDataTable(preData);
+            var dataView = new google.visualization.DataView(data);
+
+            // if want to compute the line, but I think I am going to send it over
+            // var yCol1 = {
+            //   calc: function (data, row) {
+            //     return (1.1 * data.getValue(row, 1));
+            //   },
+            //   type: 'number',
+            //   label: 'Y1'
+            // };
+
+            // use above object as Y1
+            //dataView.setColumns([0, yCol1]);
+            // dataView.setColumns([0, 1, 2, 3, yCol1]);
 
             // view.setColumns([0, 1, 2, 3 {
-            //   // label: 'y = 2x + 0',
+            //   label: 'y = 2x + 0',
             //   type: 'number',
-            //   // calc: function (dt, row) {
-            //   //   return dt.getValue(row, 0)
-            //   // }
+            //   calc: function (dt, row) {
+            //     return dt.getValue(row, 0)
+            //   }
             // }]);
 
-            var options = {
-                title: global_floater_method,
-                seriesType: 'scatter',
-                series: {
-                    0: {type: 'line'}
-                },
-                legend: {position: 'bottom'},
-                vAxis: {title: global_floater_target},
-                hAxis: {title: global_floater_standard_unit}
-            };
-
             var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
-            //chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
-
-            chart.draw(view, options);
+            chart.draw(dataView, options);
         }
     }
 
@@ -3567,22 +3627,47 @@ $(document).ready(function () {
         } else if (this_number <= 0.00001) {
             formatted_number = this_number.toExponential(4);
         } else if (this_number <= 0.0001) {
-            formatted_number = this_number.toFixed(6);
+            formatted_number = this_number.toFixed(5);
         } else if (this_number <= 0.001) {
             formatted_number = this_number.toFixed(5);
         } else if (this_number <= 0.01) {
-            formatted_number = this_number.toFixed(4);
+            formatted_number = this_number.toFixed(3);
         } else if (this_number <= 0.1) {
             formatted_number = this_number.toFixed(3);
-        } else if (this_number < 30) {
-            formatted_number = this_number.toFixed(2);
-        } else if (this_number < 100) {
+        } else if (this_number <= 1.0) {
             formatted_number = this_number.toFixed(1);
-        } else {
+        } else if (this_number <= 10) {
+            formatted_number = this_number.toFixed(1);
+        } else if (this_number <= 30) {
+            formatted_number = this_number.toFixed(1);
+        } else if (this_number <= 100) {
+            formatted_number = this_number.toFixed(1);
+        } else if (this_number <= 1000) {
             formatted_number = this_number.toFixed(0);
+        } else if (this_number <= 10000) {
+            formatted_number = this_number.toFixed(0);
+        } else if (this_number <= 100000) {
+            formatted_number = this_number.toFixed(0);
+        } else if (this_number <= 1000000) {
+            formatted_number = this_number.toFixed(0);
+        } else if (this_number <= 10000000) {
+            formatted_number = this_number.toFixed(0);
+        } else {
+            formatted_number = this_number.toExponential(2);
         }
+
         return formatted_number;
     }
+
+  //    https://www.wikitechy.com/tutorials/javascript/print-a-number-with-commas-as-thousands-separators-in-javascript
+    function thousands_separators(num)
+        {
+            var num_parts = num.toString().split(".");
+            num_parts[0] = num_parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return num_parts.join(".");
+        }
+
+
 
     // function to purge previous formsets before adding new ones when redrawing a assay plate map - keep
     function addPageRemoveFormsetsBeforeBuildPlate() {

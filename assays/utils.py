@@ -4206,8 +4206,10 @@ def plate_reader_data_file_process_data(set_dict):
     time_unit = set_dict.get('time_unit')
     volume_unit = set_dict.get('volume_unit')
 
-    # todo add some checks - if they borrow, are the units the same?
+    # todo-sck add some checks - if they borrow, are the units the same?
     # are any raw data value missing
+    # sample locations or any other inner join that will make data drop out....
+    # standards all at 0
 
     yes_to_continue = 'no'
 
@@ -4235,6 +4237,7 @@ def plate_reader_data_file_process_data(set_dict):
     if form_blank_handling in ['subtract', 'subtractstandard', 'subtractsample', 'ignore']:
         yes_to_continue = 'yes'
 
+    # print("*** check some content coming into the utils.py")
     # print("radio_replicate_handling_average_or_not_0 ", radio_replicate_handling_average_or_not_0)
     # print("radio_standard_option_use_or_not ", radio_standard_option_use_or_not)
     # print("form_calibration_curve ", form_calibration_curve)
@@ -4466,7 +4469,7 @@ def plate_reader_data_file_process_data(set_dict):
                     sqls = sqls + str(use_form_max) + " "
 
                     sqls = sqls + " GROUP BY assays_AssayPlateReaderMapItem.standard_value"
-                    # print("all standards sql: ", sqls)
+                    print("all standards sql: ", sqls)
                     cursor.execute(sqls)
                     mystandardsAvg = cursor.fetchall()
 
@@ -4492,7 +4495,9 @@ def plate_reader_data_file_process_data(set_dict):
             XX = np.array(X).reshape(-1, 1)
             YY = np.array(Y).reshape(-1, 1)
 
+            # print("XX")
             # print(XX)
+            # print("YY")
             # print(YY)
 
             # FUN IS HERE
@@ -4562,22 +4567,64 @@ def plate_reader_data_file_process_data(set_dict):
             # After the best fit has been used to determine WHAT FIT you want todo
             # if best fit, find higheset rsquared
 
+            # may and array of Xs so that there will be 100 fitted points on the graph
+            #  so that it will look like a dotted line
+
+            # print("use_form_min ", use_form_min)
+            # print("use_form_max ", use_form_max)
+
+            theTop = use_form_max-use_form_min
+
+            # print("theTop ",theTop)
+
+            step = theTop/100.0
+
+            # print("step ", step)
+
+            X100x = [None] * 100;
+            for i in range(0, 100):
+                X100x[i] = i*step
+                # print("i ", i , " step ",step)
+                i=i+1
+
+            X100 = np.array(X100x).reshape(-1, 1)
+            # print(X100)
+
+
             if form_calibration_curve == 'linear':
-                y_predStandards = regressor_linear.predict(XX)
+                y_predStandards = regressor_linear.predict(X100)
             elif form_calibration_curve == 'linear0':
-                y_predStandards = regressor_linear0.predict(XX)
+                y_predStandards = regressor_linear0.predict(X100)
             else:
-                y_predStandards = regressor_linear0.predict(XX)
+                y_predStandards = regressor_linear0.predict(X100)
 
             # FYI y_predStandards[i] returns an array of 1
-            i = 0
-            for each in X:
+            i = 0;
+            for each in X100:
                 this_row = {}
-                this_row.update({'Average Concentration': X[i]})
-                this_row.update({'Observed Response': Y[i]})
-                this_row.update({'Predicted Response': y_predStandards[i][0]})
+                this_row.update({'Average Concentration': X100[i]})
+                this_row.update({'Observed Response': None})
+                this_row.update({'Predicted Response':y_predStandards[i][0]})
                 list_of_dicts_of_each_standard_row_curve.append(this_row)
-                i = i + 1
+                i=i+1
+
+            # # replacing with an X that is 100 long
+            # if form_calibration_curve == 'linear':
+            #     y_predStandards = regressor_linear.predict(XX)
+            # elif form_calibration_curve == 'linear0':
+            #     y_predStandards = regressor_linear0.predict(XX)
+            # else:
+            #     y_predStandards = regressor_linear0.predict(XX)
+            #
+            # # FYI y_predStandards[i] returns an array of 1
+            # i = 0
+            # for each in X:
+            #     this_row = {}
+            #     this_row.update({'Average Concentration': X[i]})
+            #     this_row.update({'Observed Response': Y[i]})
+            #     this_row.update({'Predicted Response': y_predStandards[i][0]})
+            #     list_of_dicts_of_each_standard_row_curve.append(this_row)
+            #     i = i + 1
 
             i = 0
             for each in mystandardsAll:
@@ -4740,7 +4787,7 @@ def plate_reader_data_file_process_data(set_dict):
             # add the dictionary to the list
             list_of_dicts_of_each_sample_row.append(this_row)
 
-        # print('list_of_dicts_of_each_sample_row')
+        # print('***list_of_dicts_of_each_sample_row going back to ajax')
         # print(list_of_dicts_of_each_sample_row)
 
     else:
@@ -4763,18 +4810,30 @@ def sandrasGeneralFormatNumberFunction(this_number_in):
         elif x <= 0.00001:
             formatted_number = '{:.4e}'.format(x)
         elif x <= 0.0001:
-            formatted_number = '{:.6f}'.format(x)
+            formatted_number = '{:.5f}'.format(x)
         elif x <= 0.001:
             formatted_number = '{:.5f}'.format(x)
         elif x <= 0.01:
-            formatted_number = '{:.4f}'.format(x)
+            formatted_number = '{:.3f}'.format(x)
         elif x <= 0.1:
             formatted_number = '{:.3f}'.format(x)
-        elif x < 30:
-            formatted_number = '{:.2f}'.format(x)
-        elif x < 100:
+        elif x <= 1.0:
+            formatted_number = '{:.3f}'.format(x)
+        elif x <= 10:
             formatted_number = '{:.1f}'.format(x)
-        else:
+        elif x <= 30:
+            formatted_number = '{:.1f}'.format(x)
+        elif x <= 100:
             formatted_number = '{:.0f}'.format(x)
+        elif x <= 1000:
+            formatted_number = '{:,.0f}'.format(x)
+        elif x <= 10000:
+            formatted_number = '{:,.0f}'.format(x)
+        elif x <= 100000:
+            formatted_number = '{:,.0f}'.format(x)
+        elif x <= 1000000:
+            formatted_number = '{:,.0f}'.format(x)
+        else:
+            formatted_number = '{:.3e}'.format(x)
 
         return formatted_number
