@@ -563,6 +563,20 @@ $(document).ready(function () {
         if (end_time_dropdown.getValue() == "") {
             end_time_dropdown.setValue(chart_data[group_num][chart_data[group_num].length-1][0]);
         }
+        if (pk_type == "Bolus") {
+            if (end_time_dropdown.getValue() == start_time_dropdown.getValue()) {
+                $('#clearance-error-text').text('"Start Time" and "End Time" must differ for Bolus datasets.');
+                $('#clearance-error-container').show();
+                clear_clearance();
+                return;
+            }
+            if (end_time_dropdown.getValue() < start_time_dropdown.getValue()) {
+                $('#clearance-error-text').text('The Selected "Start Time" comes after the selected "End Time". Please adjust these parameters and run the calculation again.');
+                $('#clearance-error-container').show();
+                clear_clearance();
+                return;
+            }
+        }
 
         window.spinner.spin(
             document.getElementById("spinner")
@@ -610,8 +624,32 @@ $(document).ready(function () {
                 pbpk_intrinsic_clearance = data.clearance;
                 $('#input-icl').val(numberWithCommas(pbpk_intrinsic_clearance.toFixed(3)));
 
+                var chart_data_final = JSON.parse(JSON.stringify(chart_data[group_num]));
+
+                console.log(JSON.parse(JSON.stringify(chart_data_final)))
+                var first_row = chart_data_final[0]
+                for (var x=0; x<chart_data_final.length; x++) {
+                    console.log(chart_data_final[0])
+                    console.log(start_time_dropdown.getValue())
+                    if (chart_data_final[x][0].toString() === start_time_dropdown.getValue()) {
+                        chart_data_final.unshift(first_row);
+                        break;
+                    } else {
+                        chart_data_final.shift();
+                        x-=1;
+                    }
+                }
+                console.log(JSON.parse(JSON.stringify(chart_data_final)))
+                for (var x=chart_data_final.length-1; x>0; x--) {
+                    if (chart_data_final[x][0].toString() === end_time_dropdown.getValue()) {
+                        break;
+                    } else {
+                        chart_data_final.pop();
+                    }
+                }
+
                 if (pk_type == 'Bolus') {
-                    var bolus_data = JSON.parse(JSON.stringify(chart_data[group_num]));
+                    var bolus_data = JSON.parse(JSON.stringify(chart_data_final));
                     bolus_data[0][0] = "Time (Minutes)";
                     for (var x=1; x<bolus_data.length; x++) {
                         bolus_data[x][0] *= 60;
@@ -619,6 +657,28 @@ $(document).ready(function () {
                     make_chart("", 'Avg Recovered Compound (µM)', $('#pk-summary-graph')[0], JSON.parse(JSON.stringify(bolus_data)), 400);
                 } else {
                     var clearance_table_data = data.clearance_data.data;
+
+                    console.log(JSON.parse(JSON.stringify(clearance_table_data)))
+                    for (var x=0; x<clearance_table_data.length; x++) {
+                        console.log(clearance_table_data[x][clearance_table_data[0].length-1])
+                        console.log(start_time_dropdown.getValue())
+                        if (clearance_table_data[x][clearance_table_data[0].length-1].toString() === start_time_dropdown.getValue()) {
+                            break;
+                        } else {
+                            clearance_table_data.shift();
+                            x-=1;
+                        }
+                    }
+                    console.log(JSON.parse(JSON.stringify(clearance_table_data)))
+                    for (var x=clearance_table_data.length-1; x>0; x--) {
+                        if (clearance_table_data[x][clearance_table_data[0].length-1].toString() === end_time_dropdown.getValue()) {
+                            break;
+                        } else {
+                            clearance_table_data.pop();
+                        }
+                    }
+                    console.log(JSON.parse(JSON.stringify(clearance_table_data)))
+
                     clearance_table_data.unshift(data.clearance_data.columns);
                     var clearance_chart_data = JSON.parse(JSON.stringify(clearance_table_data));
                     remove_col(clearance_chart_data, 0);
@@ -630,6 +690,8 @@ $(document).ready(function () {
                         clearance_chart_data[x].unshift(clearance_chart_data[x][1])
                     }
                     remove_col(clearance_chart_data, 2);
+
+
 
                     var clearance_table_html = "";
                     if ($('#cell-free-checkbox').is(":checked")) {
@@ -646,7 +708,7 @@ $(document).ready(function () {
 
                     $('#continuous-infusion-table').html(clearance_table_html)
 
-                    make_chart("", 'Avg Recovered Compound (µM)', $('#pk-summary-graph')[0], JSON.parse(JSON.stringify(chart_data[group_num])), 250);
+                    make_chart("", 'Avg Recovered Compound (µM)', $('#pk-summary-graph')[0], JSON.parse(JSON.stringify(chart_data_final)), 250);
 
                     options = {
                         title: 'Predicted Intrinsic Clearance (ml/min) = ' + pbpk_intrinsic_clearance.toFixed(3),
@@ -721,6 +783,7 @@ $(document).ready(function () {
                             truncate_negative: ''
                         }
                     };
+
                     var data = google.visualization.arrayToDataTable(JSON.parse(JSON.stringify(clearance_chart_data)));
                     chart = new google.visualization.LineChart($('#pk-clearance-graph')[0]);
                     chart.draw(data, options);
@@ -1003,7 +1066,7 @@ $(document).ready(function () {
                 minValue: 0,
                 viewWindowMode: 'explicit'
             },
-            pointShape: {visible: false},
+            // pointShape: {visible: false},
             'chartArea': {
                 'width': '80%',
                 'height': '80%',
@@ -1166,7 +1229,8 @@ $(document).ready(function () {
                 },
                 // This doesn't seem to interfere with displaying negative values
                 minValue: 0,
-                viewWindowMode: 'explicit'
+                viewWindowMode: 'explicit',
+                format: 'decimal'
                 // baselineColor: 'none',
                 // ticks: []
             },
@@ -1235,15 +1299,15 @@ $(document).ready(function () {
             }
         });
 
-        if (global_max_y > 1000 || global_max_y < 0.001 && global_max_y !== 0) {
-            options.vAxis.format = '0.0E0';
-        }
-        else if (Math.abs(global_max_y - global_min_y) < 10 && Math.abs(global_max_y - global_min_y) > 0.1 && Math.abs(global_max_y - global_min_y) !== 0) {
-            options.vAxis.format = '0.0';
-        }
-        else if (Math.abs(global_max_y - global_min_y) < 0.1 && Math.abs(global_max_y - global_min_y) !== 0) {
-            options.vAxis.format = '0.0E0';
-        }
+        // if (global_max_y > 1000 || global_max_y < 0.001 && global_max_y !== 0) {
+        //     options.vAxis.format = '0.0E0';
+        // }
+        // else if (Math.abs(global_max_y - global_min_y) < 10 && Math.abs(global_max_y - global_min_y) > 0.1 && Math.abs(global_max_y - global_min_y) !== 0) {
+        //     options.vAxis.format = '0.0';
+        // }
+        // else if (Math.abs(global_max_y - global_min_y) < 0.1 && Math.abs(global_max_y - global_min_y) !== 0) {
+        //     options.vAxis.format = '0.0E0';
+        // }
 
         var current_min_x = assay_data[1][0];
         var current_max_x = assay_data[assay_data.length - 1][0];
