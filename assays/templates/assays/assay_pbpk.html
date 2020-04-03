@@ -130,6 +130,25 @@
                         <td><textarea id="experiment-number-cells" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
                     </tr>
                 </table>
+                <div class="row large-padding-top">
+                    <div class="col-sm-3">
+                    </div>
+                    <div class="col-sm-6 text-center">
+                        <h4>Start / End Times (Hours)</h4>
+                        <table class="display table-bordered" style="width: 100%">
+                            <tr>
+                                <th>Calculation Start Time</th>
+                                <td><select id="clearance-time-start" class="required"></td>
+                            </tr>
+                            <tr>
+                                <th>Calculation End Time</th>
+                                <td><select id="clearance-time-end" class="required"></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-sm-3">
+                    </div>
+                </div>
             </div>
             <div class="col-sm-12 col-lg-6">
                 <h4>Species Parameters</h4>
@@ -187,240 +206,209 @@
                 <label>Reference: </label><div id="species-reference"></div><br>
             </div>
         </div>
-        <hr>
-        <h3>Predict Intrinsic Clearance</h3>
+        <br>
         <div class="row large-padding-top">
-            <div class="col-sm-12 col-lg-4 text-center">
-                <h4>Start / End Times (Hours)</h4>
+            <div class="col-sm-12 col-lg-6">
+                <h4>Compound Physicochemical Parameters</h4>
                 <table class="display table-bordered" style="width: 100%">
                     <tr>
-                        <th>Calculation Start Time</th>
-                        <td><select id="clearance-time-start"></td>
+                        <th>Compound</th>
+                        <td><textarea id="compound-compound" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
                     </tr>
                     <tr>
-                        <th>Calculation End Time</th>
-                        <td><select id="clearance-time-end"></td>
+                        <th id="label-compound-mw">MW </th>
+                        <td><textarea id="compound-mw" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr>
+                    <tr>
+                        <th id="label-compound-logd">logD </th>
+                        <td><textarea id="compound-logd" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr>
+                    <tr>
+                        <th id="label-compound-pka">pKa </th>
+                        <td><textarea id="compound-pka" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr>
+                    <tr>
+                        <th id="label-compound-bioavailability">Bioavailability (F) </th>
+                        <td><textarea id="compound-bioavailability" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr>
+                    <tr>
+                        <th id="label-compound-fu" style="width: 135px; white-space: nowrap;">f<sub>u</sub> </th>
+                        <td><textarea id="compound-fu" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr>
+                    <tr>
+                        <th id="label-input-fa">F<sub>a</sub> </th>
+                        <td><textarea id="input-fa" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr>
+                    <tr>
+                        <th id="label-input-ka" style="width: 105px; white-space: nowrap;">K<sub>a</sub> (1/h) </th>
+                        <td><textarea id="input-ka" class="required" rows="1" style="resize: none; display: block; width: 100%">3.84</textarea></td>
                     </tr>
                 </table>
-                <button id="button-clearance" class="btn btn-lg btn-primary">Predict Intrinsic Clearance</button>
             </div>
-            <div class="col-sm-12 col-lg-8">
-                <div class="row">
-                    <div class="col-xs-12 no-padding">
-                        <div id="pk-summary-graph" style="display: block; margin: 0 auto; width: 100%;">
-
-                        </div>
-                    </div>
-                    <div class="col-xs-12 no-padding text-center">
-                        <div id="pk-clearance-graph" style="display: block; margin: 0 auto; width: 100%;">
-
-                        </div>
-                    </div>
-                </div>
+            <div class="col-sm-12 col-lg-6">
+                <h4>Input to Predict Plasma Levels</h4>
+                <table class="display table-bordered" style="width: 100%">
+                    <tr>
+                        <th>Dose (mg)</th>
+                        <td><textarea id="input-plasma-dose" class="required" rows="1" style="resize: none; display: block; width: 100%">40</textarea></td>
+                    </tr>
+                    <tr>
+                        <th style="width: 115px; white-space: nowrap;">Dose Interval (h)</th>
+                        <td><textarea id="input-plasma-dose-interval" class="required" rows="1" style="resize: none; display: block; width: 100%">12</textarea></td>
+                    </tr>
+                </table>
+                <br>
+                <h4>Input to Estimate Dosing</h4>
+                <table class="display table-bordered" style="width: 100%">
+                    <tr>
+                        <th>Desired Cp (&micro;M)</th>
+                        <td><textarea id="input-dosing-cp" class="required" rows="1" style="resize: none; display: block; width: 100%">0.25</textarea></td>
+                    </tr>
+                    <tr>
+                        <th>Desired Dose Interval (h)</th>
+                        <td><textarea id="input-dosing-interval" class="required" rows="1" style="resize: none; display: block; width: 100%">24</textarea></td>
+                    </tr>
+                    <tr>
+                        <th style="width: 200px; white-space: nowrap;">Estimated Fraction Absorbed</th>
+                        <td><textarea id="input-dosing-absorbed" class="required" rows="1" style="resize: none; display: block; width: 100%">0.7</textarea></td>
+                    </tr>
+                </table>
             </div>
         </div>
         <div class="row large-padding-top">
-            <div class="col-sm-12 col-lg-4">
-
-            </div>
-            <div id="continuous-table" class="col-sm-12 col-lg-8">
-                <table id="continuous-infusion-table" class="display table-bordered" style="width: 100%">
+            <div class="col-sm-12 col-lg-6">
+                <h4>Predicted MPS Model Physiological Parameter</h4>
+                <table class="display table-bordered" style="width: 100%">
+                    <tr>
+                        <th id="label-input-icl">CL<sub>H</sub> (mL/min) </th>
+                        <td><textarea id="input-icl" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
                 </table>
+            </div>
+            <div class="col-sm-12 col-lg-6 text-center">
+                <button id="button-dosing" class="btn btn-lg btn-primary">Run PBPK Analysis</button>
             </div>
         </div>
         <br>
         <div class="row">
             <div class="col-xl-12">
-                <div id='clearance-error-container' hidden>
+                <div id='pbpk-error-container' hidden>
                     <div class="alert alert-danger text-center" role="alert">
-                        <h1><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span><br><span id="clearance-error-text"></span></h1>
+                        <h1><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span><br><span id="pbpk-error-text"></span></h1>
                     </div>
                 </div>
             </div>
         </div>
-        <hr>
-        <div id="predict-dosing-container" hidden>
-            <h3>Predict Dosing</h3>
-            <div class="row large-padding-top">
-                <div class="col-sm-12 col-lg-6">
-                    <h4>Compound Physicochemical Parameters</h4>
-                    <table class="display table-bordered" style="width: 100%">
-                        <tr>
-                            <th>Compound</th>
-                            <td><textarea id="compound-compound" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th id="label-compound-mw">MW </th>
-                            <td><textarea id="compound-mw" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th id="label-compound-logd">logD </th>
-                            <td><textarea id="compound-logd" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th id="label-compound-pka">pKa </th>
-                            <td><textarea id="compound-pka" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th id="label-compound-bioavailability">Bioavailability (F) </th>
-                            <td><textarea id="compound-bioavailability" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th id="label-compound-fu" style="width: 135px; white-space: nowrap;">f<sub>u</sub> </th>
-                            <td><textarea id="compound-fu" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th id="label-input-fa">F<sub>a</sub> </th>
-                            <td><textarea id="input-fa" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
-                        </tr>
-                        <tr>
-                            <th id="label-input-ka" style="width: 105px; white-space: nowrap;">K<sub>a</sub> (1/h) </th>
-                            <td><textarea id="input-ka" class="required" rows="1" style="resize: none; display: block; width: 100%">3.84</textarea></td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="col-sm-12 col-lg-6">
-                    <h4>Input to Predict Plasma Levels</h4>
-                    <table class="display table-bordered" style="width: 100%">
-                        <tr>
-                            <th>Dose (mg)</th>
-                            <td><textarea id="input-plasma-dose" class="required" rows="1" style="resize: none; display: block; width: 100%">40</textarea></td>
-                        </tr>
-                        <tr>
-                            <th style="width: 115px; white-space: nowrap;">Dose Interval (h)</th>
-                            <td><textarea id="input-plasma-dose-interval" class="required" rows="1" style="resize: none; display: block; width: 100%">12</textarea></td>
-                        </tr>
-                    </table>
-                    <br>
-                    <h4>Input to Estimate Dosing</h4>
-                    <table class="display table-bordered" style="width: 100%">
-                        <tr>
-                            <th>Desired Cp (&micro;M)</th>
-                            <td><textarea id="input-dosing-cp" class="required" rows="1" style="resize: none; display: block; width: 100%">0.25</textarea></td>
-                        </tr>
-                        <tr>
-                            <th>Desired Dose Interval (h)</th>
-                            <td><textarea id="input-dosing-interval" class="required" rows="1" style="resize: none; display: block; width: 100%">24</textarea></td>
-                        </tr>
-                        <tr>
-                            <th style="width: 200px; white-space: nowrap;">Estimated Fraction Absorbed</th>
-                            <td><textarea id="input-dosing-absorbed" class="required" rows="1" style="resize: none; display: block; width: 100%">0.7</textarea></td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-            <div class="row large-padding-top">
-                <div class="col-sm-12 col-lg-6">
-                    <h4>Predicted MPS Model Physiological Parameter</h4>
-                    <table class="display table-bordered" style="width: 100%">
-                        <tr>
-                            <th id="label-input-icl">ICL (mL/min) </th>
-                            <td><textarea id="input-icl" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-            <div class="row large-padding-top">
-                <div class="col-lg-12">
-                    <button id="button-dosing" class="btn btn-lg btn-primary">Predict Dosing</button>
-                </div>
-            </div>
-            <br>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
             <div class="row">
-                <div class="col-xl-12">
-                    <div id='dosing-error-container' hidden>
-                        <div class="alert alert-danger text-center" role="alert">
-                            <h1><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span><br><span id="dosing-error-text"></span></h1>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="calculated-pk-container" hidden>
-            <div class="row large-padding-top">
-                <div class="col-sm-12 col-lg-4">
-                    <h4>Calculated PK Parameters</h4>
-                    <table class="display table-bordered" style="width: 100%">
-                        <tr>
-                            <th>VDss (L)</th>
-                            <td><textarea id="pk-param-vdss" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th>ke (1/h)</th>
-                            <td><textarea id="pk-param-ke" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th>Elimination Half-life (h)</th>
-                            <td><textarea id="pk-param-half-life-3-confirmed" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th>AUC (mg*h/L)</th>
-                            <td><textarea id="pk-param-auc" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th></th>
-                            <td>&nbsp;</td>
-                        </tr>
-                        <tr>
-                            <th>Single Oral Dose:</th>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <th>Mmax (mg)</th>
-                            <td><textarea id="pk-single-mmax" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th>Cmax (mg/L)</th>
-                            <td><textarea id="pk-single-cmax" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th>tmax (h)</th>
-                            <td><textarea id="pk-single-tmax" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th></th>
-                            <td>&nbsp;</td>
-                        </tr>
-                        <tr>
-                            <th>Multiple Oral Doses:</th>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <th>Mss (mg)</th>
-                            <td><textarea id="pk-multi-mss" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th>Css (mg/L)</th>
-                            <td><textarea id="pk-multi-css" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th style="width: 155px; white-space: nowrap;">tmax (h)</th>
-                            <td><textarea id="pk-multi-tmax" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                    </table>
-                    <h4>Dosing to Reach Desired Plasma Levels</h4>
-                    <table class="display table-bordered" style="width: 100%">
-                        <tr>
-                            <th>Dose<sub>calc</sub> (mg)</th>
-                            <td><textarea id="pk-desired-dose" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th>No. of Doses to Reach 50%</th>
-                            <td><textarea id="pk-desired-50" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                        <tr>
-                            <th style="width: 155px; white-space: nowrap;">No. of Doses to Reach 90%</th>
-                            <td><textarea id="pk-desired-90" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="col-sm-12 col-lg-8 text-center">
-                    <div id="dosing-graph">
+                <div class="col-xs-12 col-sm-6 no-padding">
+                    <div id="pk-summary-graph" style="display: block; margin: 0 auto; width: 100%;">
 
                     </div>
-                    <div id="dosing-slider" style="margin-right: 2em;">
-                        <div id="dosing-slider-handle" class="ui-slider-handle"></div>
+                </div>
+                <div class="col-xs-12 col-sm-6 no-padding text-center">
+                    <div id="pk-clearance-graph" style="display: block; margin: 0 auto; width: 100%;">
+
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row large-padding-top">
+        <div class="col-sm-12 col-lg-3">
+
+        </div>
+        <div id="continuous-table" class="col-xs-12 col-lg-6">
+            <table id="continuous-infusion-table" class="display table-bordered" style="width: 100%">
+            </table>
+        </div>
+    </div>
+    <div id="calculated-pk-container" hidden>
+        <div class="row large-padding-top">
+            <div class="col-sm-12 col-lg-4">
+                <h4>Calculated PK Parameters</h4>
+                <table class="display table-bordered" style="width: 100%">
+                    <tr>
+                        <th>VDss (L)</th>
+                        <td><textarea id="pk-param-vdss" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <th>ke (1/h)</th>
+                        <td><textarea id="pk-param-ke" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <th>Elimination Half-life (h)</th>
+                        <td><textarea id="pk-param-half-life-3-confirmed" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <th>AUC (mg*h/L)</th>
+                        <td><textarea id="pk-param-auc" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <th>Single Oral Dose:</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Mmax (mg)</th>
+                        <td><textarea id="pk-single-mmax" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <th>Cmax (mg/L)</th>
+                        <td><textarea id="pk-single-cmax" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <th>tmax (h)</th>
+                        <td><textarea id="pk-single-tmax" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <th>Multiple Oral Doses:</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Mss (mg)</th>
+                        <td><textarea id="pk-multi-mss" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <th>Css (mg/L)</th>
+                        <td><textarea id="pk-multi-css" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <th style="width: 155px; white-space: nowrap;">tmax (h)</th>
+                        <td><textarea id="pk-multi-tmax" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                </table>
+                <h4>Dosing to Reach Desired Plasma Levels</h4>
+                <table class="display table-bordered" style="width: 100%">
+                    <tr>
+                        <th>Dose<sub>calc</sub> (mg)</th>
+                        <td><textarea id="pk-desired-dose" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <th>No. of Doses to Reach 50%</th>
+                        <td><textarea id="pk-desired-50" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <th style="width: 155px; white-space: nowrap;">No. of Doses to Reach 90%</th>
+                        <td><textarea id="pk-desired-90" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-sm-12 col-lg-8 text-center">
+                <div id="dosing-graph">
+
+                </div>
+                <div id="dosing-slider" style="margin-right: 2em;">
+                    <div id="dosing-slider-handle" class="ui-slider-handle"></div>
                 </div>
             </div>
         </div>

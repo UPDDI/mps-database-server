@@ -4126,8 +4126,8 @@ def calculate_pk_parameters(cl_ml_min,
     par_col_names = ["Dosecalc (mg)", "No. of Doses to Reach 50%", "No. of Doses to Reach 90%"]
     calculate_pk_parameters_reach_desired_plasma_levels = pd.DataFrame(index=range(1), columns=par_col_names)
     Dosecalc = (((desired_Cp/1000000)*VDss*MW*1000)*Ke*desired_dose_interval)/estimated_fraction_absorbed
-    n_doses_reach_50_percent = np.int((3.323*np.log(1-0.5))/-(desired_dose_interval/elimination_half_life))
-    n_doses_reach_90_percent = np.int((3.323*np.log(1-0.9))/-(desired_dose_interval/elimination_half_life))
+    n_doses_reach_50_percent = (3.323*np.log10(1-0.5)/-(desired_dose_interval/elimination_half_life))
+    n_doses_reach_90_percent = (3.323*np.log10(1-0.9)/-(desired_dose_interval/elimination_half_life))
     calculate_pk_parameters_reach_desired_plasma_levels.iloc[0, 0] = Dosecalc
     calculate_pk_parameters_reach_desired_plasma_levels.iloc[0, 1] = n_doses_reach_50_percent
     calculate_pk_parameters_reach_desired_plasma_levels.iloc[0, 2] = n_doses_reach_90_percent
