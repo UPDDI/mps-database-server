@@ -2479,20 +2479,182 @@ class AbstractSetupSetting(models.Model):
 # Perhaps we should have everything have a series, if there is just the one it is one to one and many to one otherwise
 # If it is many to one (and as a contrivance otherwise) we ought to have an index number attached to the group
 # We would still have to do the somewhat deplorable prefetching, but the number of queries should be vastly reduced
-class AssayItemSeries(models.Model):
-    # We need a matrix because matrices are how we edit things
-    matrix = models.ForeignKey(
-        AssayMatrix,
+# class AssayItemSeries(models.Model):
+#     # We need a matrix because matrices are how we edit things
+#     matrix = models.ForeignKey(
+#         AssayMatrix,
+#         on_delete=models.CASCADE,
+#         verbose_name='Matrix'
+#     )
+
+#     # Will we tie a series to a study, or a matrix?
+#     # study = models.ForeignKey(
+#     #     AssayStudy,
+#     #     on_delete=models.CASCADE,
+#     #     verbose_name='Study'
+#     # )
+
+#     # Need to store test type here, acquiring it implicitly is unpleasant
+#     test_type = models.CharField(
+#         max_length=8,
+#         choices=TEST_TYPE_CHOICES,
+#         # default='control',
+#         verbose_name='Test Type'
+#     )
+
+#     # NOTE that I probably will not put device in here explicitly
+#     # We should, at least, store the organ model here
+#     organ_model = models.ForeignKey(
+#         OrganModel,
+#         verbose_name='MPS Model',
+#         null=True,
+#         blank=True,
+#         on_delete=models.CASCADE
+#     )
+
+#     # Will we also store the version?
+#     # To my understanding, no, as many items will lack a version
+#     # organ_model_protocol = models.ForeignKey(
+#     #     OrganModelProtocol,
+#     #     verbose_name='MPS Model Version',
+#     #     null=True,
+#     #     blank=True,
+#     #     on_delete=models.CASCADE
+#     # )
+
+# # Interstingly, there is some level of redundancy here to accommodate for dilutions
+# # NOTE that IMPORTANTLY THIS MEANS GROUPS NEED TO BE EDITED PROPERLY WHEN CHANGING A SERIES
+# # The only tricky one to deal with, a series compound needs to include dilution paramters
+# class AssaySeriesCompound(AbstractSetupCompound):
+#     class Meta(object):
+#         # Needs to include series
+#         unique_together = [
+#             (
+#                 'series',
+#                 'compound_instance',
+#                 'concentration',
+#                 'concentration_unit',
+#                 'addition_time',
+#                 'duration',
+#                 'addition_location'
+#             )
+#         ]
+
+#     series = models.ForeignKey(
+#         AssayItemSeries,
+#         on_delete=models.CASCADE,
+#         verbose_name='Series'
+#     )
+
+#     # TODO: Make sure that all of the dilution fields are present if a dilution is being used
+#     # We could try something fancy with custom constraints to make these required together, but we can just use be careful how we clean the form alternatively
+#     # The factor to use for division etc.
+#     dilution_factor = models.FloatField(blank=True, null=True)
+
+#     # TODO choices should be global to make them available to other files?
+#     # Doesn't really need to be a foreignkey field
+#     dilution_operator = models.CharField(
+#         # Just need to store the one character
+#         max_length=1,
+#         choices=(
+#             ('/', 'Divide'),
+#             ('*', 'Multiply'),
+#             ('+', 'Add'),
+#             ('-', 'Subtract')
+#         ),
+#         blank=True,
+#         # Divide by default
+#         default='/'
+#     )
+
+#     # TODO: The direction of the dilution
+#     dilution_direction = models.CharField(
+#         # Just need to store three characters
+#         max_length=3,
+#         choices=(
+#             ('lr', 'Left to Right'),
+#             ('d', 'Down'),
+#             ('rl', 'Right to Left'),
+#             ('u', 'Up'),
+#             ('lrd', 'Left to Right and Down'),
+#             ('rlu', 'Right to Left and Up')
+#         ),
+#         blank=True,
+#         # Default to Left to Right
+#         default='lr'
+#     )
+
+
+# class AssaySeriesCell(AbstractSetupCell):
+#     class Meta(object):
+#         # Needs to include series, otherwise would break constantly
+#         unique_together = [
+#             (
+#                 'series',
+#                 'cell_sample',
+#                 'biosensor',
+#                 # Skip density?
+#                 'density',
+#                 'density_unit',
+#                 'passage',
+#                 'addition_time',
+#                 'addition_location'
+#                 # Will we need addition time and location here?
+#             )
+#         ]
+
+#     series = models.ForeignKey(
+#         AssayItemSeries,
+#         on_delete=models.CASCADE,
+#         verbose_name='Series'
+#     )
+
+
+# class AssaySeriesSetting(AbstractSetupSetting):
+#     class Meta(object):
+#         # Default needs to be revised in models extending this, but for reference
+#         unique_together = [
+#             (
+#                 'series',
+#                 'setting',
+#                 'addition_location',
+#                 'unit',
+#                 'addition_time',
+#                 'duration',
+#             )
+#         ]
+
+#     series = models.ForeignKey(
+#         AssayItemSeries,
+#         on_delete=models.CASCADE,
+#         verbose_name='Series'
+#     )
+
+
+# Previously considered the name "AssayGroup"
+class AssayGroup(models.Model):
+    # We are not considering series at the moment
+    # series = models.ForeignKey(
+    #     AssayItemSeries,
+    #     on_delete=models.CASCADE,
+    #     verbose_name='Series'
+    # )
+
+    # Groups are bound to a study for the moment
+    study = models.ForeignKey(
+        AssayStudy,
         on_delete=models.CASCADE,
-        verbose_name='Matrix'
+        verbose_name='Study'
     )
 
-    # Will we tie a series to a study, or a matrix?
-    # study = models.ForeignKey(
-    #     AssayStudy,
-    #     on_delete=models.CASCADE,
-    #     verbose_name='Study'
-    # )
+    # For clarity, groups should have a name
+    # Should we require this? Or should it be optional?
+    name = models.CharField(
+        max_length=255,
+        verbose_name='Name',
+        blank=True,
+        default=''
+    )
 
     # Need to store test type here, acquiring it implicitly is unpleasant
     test_type = models.CharField(
@@ -2513,129 +2675,13 @@ class AssayItemSeries(models.Model):
     )
 
     # Will we also store the version?
-    # To my understanding, no, as many items will lack a version
-    # organ_model_protocol = models.ForeignKey(
-    #     OrganModelProtocol,
-    #     verbose_name='MPS Model Version',
-    #     null=True,
-    #     blank=True,
-    #     on_delete=models.CASCADE
-    # )
-
-# Interstingly, there is some level of redundancy here to accommodate for dilutions
-# NOTE that IMPORTANTLY THIS MEANS GROUPS NEED TO BE EDITED PROPERLY WHEN CHANGING A SERIES
-# The only tricky one to deal with, a series compound needs to include dilution paramters
-class AssaySeriesCompound(AbstractSetupCompound):
-    class Meta(object):
-        # Needs to include series
-        unique_together = [
-            (
-                'series',
-                'compound_instance',
-                'concentration',
-                'concentration_unit',
-                'addition_time',
-                'duration',
-                'addition_location'
-            )
-        ]
-
-    series = models.ForeignKey(
-        AssayItemSeries,
-        on_delete=models.CASCADE,
-        verbose_name='Series'
-    )
-
-    # TODO: Make sure that all of the dilution fields are present if a dilution is being used
-    # We could try something fancy with custom constraints to make these required together, but we can just use be careful how we clean the form alternatively
-    # The factor to use for division etc.
-    dilution_factor = models.FloatField(blank=True, null=True)
-
-    # TODO choices should be global to make them available to other files?
-    # Doesn't really need to be a foreignkey field
-    dilution_operator = models.CharField(
-        # Just need to store the one character
-        max_length=1,
-        choices=(
-            ('/', 'Divide'),
-            ('*', 'Multiply'),
-            ('+', 'Add'),
-            ('-', 'Subtract')
-        ),
+    # Yes, but it will not be required
+    organ_model_protocol = models.ForeignKey(
+        OrganModelProtocol,
+        verbose_name='MPS Model Version',
+        null=True,
         blank=True,
-        # Divide by default
-        default='/'
-    )
-
-    # TODO: The direction of the dilution
-    dilution_direction = models.CharField(
-        # Just need to store three characters
-        max_length=3,
-        choices=(
-            ('lr', 'Left to Right'),
-            ('d', 'Down'),
-            ('rl', 'Right to Left'),
-            ('u', 'Up'),
-            ('lrd', 'Left to Right and Down'),
-            ('rlu', 'Right to Left and Up')
-        ),
-        blank=True,
-        # Default to Left to Right
-        default='lr'
-    )
-
-
-class AssaySeriesCell(AbstractSetupCell):
-    class Meta(object):
-        # Needs to include series, otherwise would break constantly
-        unique_together = [
-            (
-                'series',
-                'cell_sample',
-                'biosensor',
-                # Skip density?
-                'density',
-                'density_unit',
-                'passage',
-                'addition_time',
-                'addition_location'
-                # Will we need addition time and location here?
-            )
-        ]
-
-    series = models.ForeignKey(
-        AssayItemSeries,
-        on_delete=models.CASCADE,
-        verbose_name='Series'
-    )
-
-
-class AssaySeriesSetting(AbstractSetupSetting):
-    class Meta(object):
-        # Default needs to be revised in models extending this, but for reference
-        unique_together = [
-            (
-                'series',
-                'setting',
-                'addition_location',
-                'unit',
-                'addition_time',
-                'duration',
-            )
-        ]
-
-    series = models.ForeignKey(
-        AssayItemSeries,
-        on_delete=models.CASCADE,
-        verbose_name='Series'
-    )
-
-
-class AssayItemGroup(models.Model):
-    series = models.ForeignKey(
-        AssayItemSeries,
-        on_delete=models.CASCADE,
-        verbose_name='Series'
+        on_delete=models.CASCADE
     )
 
 
@@ -2655,7 +2701,7 @@ class AssayGroupCompound(AbstractSetupCompound):
         ]
 
     group = models.ForeignKey(
-        AssayItemGroup,
+        AssayGroup,
         on_delete=models.CASCADE,
         verbose_name='Group'
     )
@@ -2679,7 +2725,7 @@ class AssayGroupCell(AbstractSetupCell):
         ]
 
     group = models.ForeignKey(
-        AssayItemGroup,
+        AssayGroup,
         on_delete=models.CASCADE,
         verbose_name='Group'
     )
@@ -2699,7 +2745,7 @@ class AssayGroupSetting(AbstractSetupSetting):
         ]
 
     group = models.ForeignKey(
-        AssayItemGroup,
+        AssayGroup,
         on_delete=models.CASCADE,
         verbose_name='Group'
     )
@@ -2846,14 +2892,15 @@ class AssayMatrixItem(FlaggableModel):
 
     # It is somewhat redundant, but for convenience we will tie to both a group and series
     # Note that both of which are required, everything is mediated through a series
-    series = models.ForeignKey(
-        AssayItemSeries,
-        on_delete=models.CASCADE,
-        verbose_name='Series'
-    )
+    # SERIES REMOVED FOR NOW
+    # series = models.ForeignKey(
+    #     AssayItemSeries,
+    #     on_delete=models.CASCADE,
+    #     verbose_name='Series'
+    # )
 
     group = models.ForeignKey(
-        AssayItemGroup,
+        AssayGroup,
         on_delete=models.CASCADE,
         verbose_name='Group'
     )
