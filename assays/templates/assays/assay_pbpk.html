@@ -317,10 +317,10 @@
         </div>
     </div>
     <div class="row large-padding-top">
-        <div class="col-sm-12 col-lg-3">
+        <!-- <div class="col-sm-12 col-lg-2">
 
-        </div>
-        <div id="continuous-table" class="col-xs-12 col-lg-6">
+        </div> -->
+        <div id="continuous-table" class="col-xs-12">
             <table id="continuous-infusion-table" class="display table-bordered" style="width: 100%">
             </table>
         </div>
@@ -347,13 +347,32 @@
                         <td><textarea id="pk-param-auc" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
                     </tr>
                     <tr>
-                        <th></th>
-                        <td>&nbsp;</td>
+                        <th>ELogD</th>
+                        <td><textarea id="pk-param-elogd" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
                     </tr>
                     <tr>
-                        <th>Single Oral Dose:</th>
-                        <td></td>
+                        <th>Vc (L)</th>
+                        <td><textarea id="pk-param-vc" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
                     </tr>
+                    <tr>
+                        <th>Log<sub>vo/w</sub></th>
+                        <td><textarea id="pk-param-logvow" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <th>CL (L/h)</th>
+                        <td><textarea id="pk-param-cl" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <th>f<sub>ut</sub></th>
+                        <td><textarea id="pk-param-fut" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <th>fi(7.4)</th>
+                        <td><textarea id="pk-param-fi" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                </table>
+                <h4>Single Oral Dose</h4>
+                <table class="display table-bordered" style="width: 100%">
                     <tr>
                         <th>Mmax (mg)</th>
                         <td><textarea id="pk-single-mmax" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
@@ -366,14 +385,9 @@
                         <th>tmax (h)</th>
                         <td><textarea id="pk-single-tmax" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
                     </tr>
-                    <tr>
-                        <th></th>
-                        <td>&nbsp;</td>
-                    </tr>
-                    <tr>
-                        <th>Multiple Oral Doses:</th>
-                        <td></td>
-                    </tr>
+                </table>
+                <h4>Multiple Oral Doses</h4>
+                <table class="display table-bordered" style="width: 100%">
                     <tr>
                         <th>Mss (mg)</th>
                         <td><textarea id="pk-multi-mss" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>

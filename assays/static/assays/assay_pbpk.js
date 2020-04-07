@@ -456,6 +456,12 @@ $(document).ready(function () {
             }
         });
 
+        if (cell_profiles.length === 1) {
+            $('#cell-profiles-table').hide();
+        } else {
+            $('#cell-profiles-table').show();
+        }
+
         if (!has_no_cells) {
             $('#cell-free-checkbox').attr("disabled", true);
             $('#cell-free-checkbox').attr("checked", false);
@@ -734,15 +740,13 @@ $(document).ready(function () {
                             clearance_table_data.pop();
                         }
                     }
-                    console.log(JSON.parse(JSON.stringify(clearance_table_data)))
 
                     clearance_table_data.unshift(data.clearance_data.columns);
                     var clearance_chart_data = JSON.parse(JSON.stringify(clearance_table_data));
+                    remove_col(clearance_chart_data, 3);
+                    remove_col(clearance_chart_data, 3);
                     remove_col(clearance_chart_data, 0);
                     remove_col(clearance_chart_data, 0);
-                    remove_col(clearance_chart_data, 0);
-                    remove_col(clearance_chart_data, 0);
-
                     for (var x=0; x<clearance_table_data.length; x++) {
                         clearance_chart_data[x].unshift(clearance_chart_data[x][1])
                     }
@@ -766,7 +770,7 @@ $(document).ready(function () {
                     make_chart("", 'Avg Recovered Compound (µM)', $('#pk-summary-graph')[0], JSON.parse(JSON.stringify(chart_data_final)), 250);
 
                     options = {
-                        title: 'Predicted Intrinsic Clearance (ml/min) = ' + pbpk_intrinsic_clearance.toFixed(3),
+                        title: 'Predicted Intrinsic Clearance (μl/min) = ' + pbpk_intrinsic_clearance.toFixed(3),
                         interpolateNulls: true,
                         tooltip: {
                             isHtml: true
@@ -873,7 +877,7 @@ $(document).ready(function () {
                             desired_Cp: $('#input-dosing-cp').val(),
                             desired_dose_interval: $('#input-dosing-interval').val(),
                             estimated_fraction_absorbed: $('#input-dosing-absorbed').val(),
-                            prediction_time_length: 1000
+                            prediction_time_length: 720
                         },
                         type: 'POST',
                     }
@@ -893,6 +897,12 @@ $(document).ready(function () {
                         $('#pk-param-ke').val(numberWithCommas(data.calculated_pk_parameters['Ke(1/h)'][0].toFixed(3)));
                         $('#pk-param-half-life-3-confirmed').val(numberWithCommas(data.calculated_pk_parameters['Elimination half-life'][0].toFixed(3)));
                         $('#pk-param-auc').val(numberWithCommas(data.calculated_pk_parameters['AUC'][0].toFixed(3)));
+                        $('#pk-param-elogd').val(numberWithCommas(data.calculated_pk_parameters['ELogD'][0].toFixed(3)));
+                        $('#pk-param-vc').val(numberWithCommas(data.calculated_pk_parameters['Vc (L)'][0].toFixed(3)));
+                        $('#pk-param-logvow').val(numberWithCommas(data.calculated_pk_parameters['Logvo/w'][0].toFixed(3)));
+                        $('#pk-param-cl').val(numberWithCommas(data.calculated_pk_parameters['CL (L/h)'][0].toFixed(3)));
+                        $('#pk-param-fut').val(numberWithCommas(data.calculated_pk_parameters['fut'][0].toFixed(3)));
+                        $('#pk-param-fi').val(numberWithCommas(data.calculated_pk_parameters['fi(7.4)'][0].toFixed(3)));
                         $('#pk-single-mmax').val(numberWithCommas(data.dosing_data[0].toFixed(3)));
                         $('#pk-single-cmax').val(numberWithCommas(data.dosing_data[1].toFixed(3)));
                         $('#pk-single-tmax').val(numberWithCommas(data.dosing_data[2].toFixed(3)));
@@ -1020,7 +1030,7 @@ $(document).ready(function () {
                 'width': '80%',
                 'height': '80%',
             },
-            'height': 500,
+            'height': 600,
             focusTarget: 'datum',
             intervals: {
                 'lineWidth': 0.75
@@ -1055,7 +1065,7 @@ $(document).ready(function () {
             range: "min",
             value: 300,
             min: 1,
-            max: 1000,
+            max: 720,
             create: function() {
                 handle.text($(this).slider("value"));
             },
@@ -1112,7 +1122,7 @@ $(document).ready(function () {
                     pointsVisible: false
                 }
             }
-            title = 'Predicted Intrinsic Clearance (ml/min) = ' + pbpk_intrinsic_clearance.toFixed(3);
+            title = 'Predicted Intrinsic Clearance (μl/min) = ' + pbpk_intrinsic_clearance.toFixed(3);
         }
 
         // Aliases
