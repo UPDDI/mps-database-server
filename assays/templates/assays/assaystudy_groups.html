@@ -7,6 +7,10 @@
     {# <script src="{% static "js/flag.js" %}"></script> #}
     <script src="{% static "assays/assaystudy_tabs.js" %}"></script>
     {# Respective page's script here #}
+    <script src="{% static "assays/cell_sample_selection.js" %}"></script>
+    <script src="{% static "js/split_time.js" %}"></script>
+    <script src="{% static "assays/organ_model_filter.js" %}"></script>
+    <script src="{% static "assays/assaystudy_groups.js" %}"></script>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -158,8 +162,9 @@
     </div>
 
     {# HIDDEN FOR Groups #}
-    <div hidden>
-        {# {{ form.setup_data }} #}
+    <div >
+        {# TODO: LIKELY TO BE REVISED #}
+        {{ form.series_data }}
         {{ form.number_of_items }}
         {{ form.test_type }}
         {{ form.organ_model_full }}
@@ -384,6 +389,6 @@
     </div>
 
     {# For displaying cells etc. #}
-    {% include 'component_displays.html' %}
+    {% include 'assays/component_displays.html' %}
 </form>
 {% endblock %}

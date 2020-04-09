@@ -591,6 +591,20 @@ class AssayStudyGroups(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     template_name = 'assays/assaystudy_groups.html'
     form_class = AssayStudyGroupForm
 
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyGroups, self).get_context_data(**kwargs)
+
+        # TODO SLATED FOR REMOVAL
+        context.update({
+            'cellsamples' : CellSample.objects.all().prefetch_related(
+                'cell_type__organ',
+                'supplier',
+                'cell_subtype__cell_type'
+            )
+        })
+
+        return context
+
 
 class AssayStudyChips(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     template_name = 'assays/assaystudy_chips.html'

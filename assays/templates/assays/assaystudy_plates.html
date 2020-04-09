@@ -7,6 +7,7 @@
     {# <script src="{% static "js/flag.js" %}"></script> #}
     <script src="{% static "assays/assaystudy_tabs.js" %}"></script>
     {# Respective page's script here #}
+    <script src="{% static "assays/assaystudy_plates.js" %}"></script>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -100,6 +101,6 @@
     </div>
 
     {# For displaying cells etc. #}
-    {% include 'component_displays.html' %}
+    {% include 'assays/component_displays.html' %}
 </form>
 {% endblock %}

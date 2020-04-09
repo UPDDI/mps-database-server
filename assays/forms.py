@@ -105,6 +105,140 @@ def get_dic_for_custom_choice_field(form, filters=None):
     return dic
 
 
+class SetupFormsMixin(BootstrapForm):
+    def __init__(self, *args, **kwargs):
+        super(SetupFormsMixin, self).__init__(*args, **kwargs)
+
+        sections_with_times = (
+            'compound',
+            'cell',
+            'setting'
+        )
+
+        for time_unit in list(TIME_CONVERSIONS.keys()):
+            for current_section in sections_with_times:
+                # Create fields for Days, Hours, Minutes
+                self.fields[current_section + '_addition_time_' + time_unit] = forms.FloatField(
+                    initial=0,
+                    required=False,
+                    widget=forms.NumberInput(attrs={
+                        'class': 'form-control required',
+                        'style': 'width:75px;'
+                    })
+                )
+                self.fields[current_section + '_duration_' + time_unit] = forms.FloatField(
+                    initial=0,
+                    required=False,
+                    widget=forms.NumberInput(attrs={
+                        'class': 'form-control required',
+                        'style': 'width:75px;'
+                    })
+                )
+
+        self.fields['cell_cell_sample'].widget.attrs['style'] = 'width:75px;'
+        self.fields['cell_passage'].widget.attrs['style'] = 'width:75px;'
+
+        # DUMB, BAD (can't have them be "actually" required or they prevent submission
+        add_required_to = [
+            'cell_cell_sample',
+            'cell_biosensor',
+            'cell_density',
+            'cell_density_unit',
+            'cell_addition_location',
+            'setting_setting',
+            'setting_unit',
+            'setting_value',
+            'setting_addition_location',
+            'compound_compound',
+            'compound_concentration_unit',
+            'compound_concentration',
+            'compound_addition_location',
+        ]
+
+        for current_field in add_required_to:
+            self.fields[current_field].widget.attrs['class'] += ' required'
+
+            # Sloppy
+            if hasattr(self.fields[current_field], '_queryset'):
+                if hasattr(self.fields[current_field]._queryset, 'model'):
+                    # Usually one would use a hyphen rather than an underscore
+                    # self.fields[field].widget.attrs['data-app'] = self.fields[field]._queryset.model._meta.app_label
+                    self.fields[current_field].widget.attrs['data_app'] = self.fields[current_field]._queryset.model._meta.app_label
+
+                    # self.fields[field].widget.attrs['data-model'] = self.fields[field]._queryset.model._meta.object_name
+                    self.fields[current_field].widget.attrs['data_model'] = self.fields[current_field]._queryset.model._meta.object_name
+
+                    self.fields[current_field].widget.attrs['data_verbose_name'] = self.fields[current_field]._queryset.model._meta.verbose_name
+
+                    # Possibly dumber
+                    if hasattr(self.fields[current_field]._queryset.model, 'get_add_url_manager'):
+                        self.fields[current_field].widget.attrs['data_add_url'] = self.fields[current_field]._queryset.model.get_add_url_manager()
+
+    ### ADDING SETUP CELLS
+    cell_cell_sample = forms.IntegerField(required=False)
+    cell_biosensor = forms.ModelChoiceField(
+        queryset=Biosensor.objects.all().prefetch_related('supplier'),
+        required=False,
+        # Default is naive
+        initial=2
+    )
+    cell_density = forms.FloatField(required=False)
+
+    # TODO THIS IS TO BE HAMMERED OUT
+    cell_density_unit = forms.ModelChoiceField(
+        queryset=PhysicalUnits.objects.filter(
+            availability__contains='cell'
+        ).order_by('unit'),
+        required=False
+    )
+
+    cell_passage = forms.CharField(required=False)
+
+    cell_addition_location = forms.ModelChoiceField(queryset=AssaySampleLocation.objects.all().order_by('name'), required=False)
+
+    ### ?ADDING SETUP SETTINGS
+    setting_setting = forms.ModelChoiceField(queryset=AssaySetting.objects.all().order_by('name'), required=False)
+    setting_unit = forms.ModelChoiceField(queryset=PhysicalUnits.objects.all().order_by('base_unit','scale_factor'), required=False)
+
+    setting_value = forms.CharField(required=False)
+
+    setting_addition_location = forms.ModelChoiceField(
+        queryset=AssaySampleLocation.objects.all().order_by('name'),
+        required=False
+    )
+
+    ### ADDING COMPOUNDS
+    compound_compound = forms.ModelChoiceField(queryset=Compound.objects.all().order_by('name'), required=False)
+    # Notice the special exception for %
+    compound_concentration_unit = forms.ModelChoiceField(
+        queryset=(PhysicalUnits.objects.filter(
+            unit_type__unit_type='Concentration'
+        ).order_by(
+            'base_unit__unit',
+            'scale_factor'
+        ) | PhysicalUnits.objects.filter(unit='%')),
+        required=False, initial=4
+    )
+    compound_concentration = forms.FloatField(required=False)
+
+    compound_addition_location = forms.ModelChoiceField(
+        queryset=AssaySampleLocation.objects.all().order_by('name'),
+        required=False
+    )
+    # Text field (un-saved) for supplier
+    compound_supplier_text = forms.CharField(
+        required=False,
+        initial=''
+    )
+    # Text field (un-saved) for lot
+    compound_lot_text = forms.CharField(
+        required=False,
+        initial=''
+    )
+    # Receipt date
+    compound_receipt_date = forms.DateField(required=False)
+
+
 # DEPRECATED NO LONGER NEEDED AS CHARFIELDS NOW STRIP AUTOMATICALLY
 class ModelFormStripWhiteSpace(BootstrapForm):
     """Strips the whitespace from char and text fields"""
@@ -522,11 +656,43 @@ class AssayStudyDetailForm(SignOffMixin, BootstrapForm):
         return data
 
 
-class AssayStudyGroupForm(SignOffMixin, BootstrapForm):
+class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
+    series_data = forms.CharField(initial='{}')
+
+    # CONTRIVANCES
+    test_type = forms.ChoiceField(
+        initial='control',
+        choices=TEST_TYPE_CHOICES,
+        required=False
+    )
+    organ_model = forms.ModelChoiceField(
+        queryset=OrganModel.objects.all().order_by('name'),
+        required=False,
+        label='Matrix Item MPS Model'
+    )
+    organ_model_full = forms.ModelChoiceField(
+        queryset=OrganModel.objects.all().order_by('name'),
+        required=False,
+        label='Matrix Item MPS Model'
+    )
+    organ_model_protocol_full = forms.ModelChoiceField(
+        queryset=OrganModelProtocol.objects.all().order_by('name'),
+        required=False,
+        label='Matrix Item MPS Model Version'
+    )
+
     class Meta(object):
         model = AssayStudy
         # Since we are splitting into multiple forms, includes are safer
-        exclude = '__all__'
+        # Only temporary, will change when finished
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super(AssayStudyGroupForm, self).__init__(*args, **kwargs)
+
+        # Contrivances
+        self.fields['test_type'].widget.attrs['class'] = 'no-selectize required form-control'
+        self.fields['organ_model_full'].widget.attrs['class'] = 'no-selectize'
 
 
 class AssayStudyChipForm(SignOffMixin, BootstrapForm):
@@ -638,140 +804,6 @@ AssayStudyAssayFormSetFactory = inlineformset_factory(
     extra=1,
     exclude=[]
 )
-
-
-class SetupFormsMixin(BootstrapForm):
-    def __init__(self, *args, **kwargs):
-        super(SetupFormsMixin, self).__init__(*args, **kwargs)
-
-        sections_with_times = (
-            'compound',
-            'cell',
-            'setting'
-        )
-
-        for time_unit in list(TIME_CONVERSIONS.keys()):
-            for current_section in sections_with_times:
-                # Create fields for Days, Hours, Minutes
-                self.fields[current_section + '_addition_time_' + time_unit] = forms.FloatField(
-                    initial=0,
-                    required=False,
-                    widget=forms.NumberInput(attrs={
-                        'class': 'form-control required',
-                        'style': 'width:75px;'
-                    })
-                )
-                self.fields[current_section + '_duration_' + time_unit] = forms.FloatField(
-                    initial=0,
-                    required=False,
-                    widget=forms.NumberInput(attrs={
-                        'class': 'form-control required',
-                        'style': 'width:75px;'
-                    })
-                )
-
-        self.fields['cell_cell_sample'].widget.attrs['style'] = 'width:75px;'
-        self.fields['cell_passage'].widget.attrs['style'] = 'width:75px;'
-
-        # DUMB, BAD (can't have them be "actually" required or they prevent submission
-        add_required_to = [
-            'cell_cell_sample',
-            'cell_biosensor',
-            'cell_density',
-            'cell_density_unit',
-            'cell_addition_location',
-            'setting_setting',
-            'setting_unit',
-            'setting_value',
-            'setting_addition_location',
-            'compound_compound',
-            'compound_concentration_unit',
-            'compound_concentration',
-            'compound_addition_location',
-        ]
-
-        for current_field in add_required_to:
-            self.fields[current_field].widget.attrs['class'] += ' required'
-
-            # Sloppy
-            if hasattr(self.fields[current_field], '_queryset'):
-                if hasattr(self.fields[current_field]._queryset, 'model'):
-                    # Usually one would use a hyphen rather than an underscore
-                    # self.fields[field].widget.attrs['data-app'] = self.fields[field]._queryset.model._meta.app_label
-                    self.fields[current_field].widget.attrs['data_app'] = self.fields[current_field]._queryset.model._meta.app_label
-
-                    # self.fields[field].widget.attrs['data-model'] = self.fields[field]._queryset.model._meta.object_name
-                    self.fields[current_field].widget.attrs['data_model'] = self.fields[current_field]._queryset.model._meta.object_name
-
-                    self.fields[current_field].widget.attrs['data_verbose_name'] = self.fields[current_field]._queryset.model._meta.verbose_name
-
-                    # Possibly dumber
-                    if hasattr(self.fields[current_field]._queryset.model, 'get_add_url_manager'):
-                        self.fields[current_field].widget.attrs['data_add_url'] = self.fields[current_field]._queryset.model.get_add_url_manager()
-
-    ### ADDING SETUP CELLS
-    cell_cell_sample = forms.IntegerField(required=False)
-    cell_biosensor = forms.ModelChoiceField(
-        queryset=Biosensor.objects.all().prefetch_related('supplier'),
-        required=False,
-        # Default is naive
-        initial=2
-    )
-    cell_density = forms.FloatField(required=False)
-
-    # TODO THIS IS TO BE HAMMERED OUT
-    cell_density_unit = forms.ModelChoiceField(
-        queryset=PhysicalUnits.objects.filter(
-            availability__contains='cell'
-        ).order_by('unit'),
-        required=False
-    )
-
-    cell_passage = forms.CharField(required=False)
-
-    cell_addition_location = forms.ModelChoiceField(queryset=AssaySampleLocation.objects.all().order_by('name'), required=False)
-
-    ### ?ADDING SETUP SETTINGS
-    setting_setting = forms.ModelChoiceField(queryset=AssaySetting.objects.all().order_by('name'), required=False)
-    setting_unit = forms.ModelChoiceField(queryset=PhysicalUnits.objects.all().order_by('base_unit','scale_factor'), required=False)
-
-    setting_value = forms.CharField(required=False)
-
-    setting_addition_location = forms.ModelChoiceField(
-        queryset=AssaySampleLocation.objects.all().order_by('name'),
-        required=False
-    )
-
-    ### ADDING COMPOUNDS
-    compound_compound = forms.ModelChoiceField(queryset=Compound.objects.all().order_by('name'), required=False)
-    # Notice the special exception for %
-    compound_concentration_unit = forms.ModelChoiceField(
-        queryset=(PhysicalUnits.objects.filter(
-            unit_type__unit_type='Concentration'
-        ).order_by(
-            'base_unit__unit',
-            'scale_factor'
-        ) | PhysicalUnits.objects.filter(unit='%')),
-        required=False, initial=4
-    )
-    compound_concentration = forms.FloatField(required=False)
-
-    compound_addition_location = forms.ModelChoiceField(
-        queryset=AssaySampleLocation.objects.all().order_by('name'),
-        required=False
-    )
-    # Text field (un-saved) for supplier
-    compound_supplier_text = forms.CharField(
-        required=False,
-        initial=''
-    )
-    # Text field (un-saved) for lot
-    compound_lot_text = forms.CharField(
-        required=False,
-        initial=''
-    )
-    # Receipt date
-    compound_receipt_date = forms.DateField(required=False)
 
 
 # TODO ADD STUDY
