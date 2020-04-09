@@ -564,7 +564,7 @@ class AssayStudyDetailsMixin(AssayStudyMixin):
     )
 
     def get_context_data(self, **kwargs):
-        context = super(AssayStudyMixin, self).get_context_data(**kwargs)
+        context = super(AssayStudyDetailsMixin, self).get_context_data(**kwargs)
 
         # TODO SLATED FOR REMOVAL
         context.update({
@@ -593,18 +593,18 @@ class AssayStudyGroups(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
 
 
 class AssayStudyChips(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
-    template_name = 'assays/assaystudy_details.html'
+    template_name = 'assays/assaystudy_chips.html'
     # Might actually be a formset or something?
     form_class = AssayStudyChipForm
 
 
 class AssayStudyPlates(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
-    template_name = 'assays/assaystudy_details.html'
+    template_name = 'assays/assaystudy_plates.html'
     form_class = AssayStudyPlateForm
 
 
 class AssayStudyAssays(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
-    template_name = 'assays/assaystudy_details.html'
+    template_name = 'assays/assaystudy_assays.html'
     # This will probably just be a contrived empty form
     form_class = AssayStudyAssayForm
 
@@ -1165,9 +1165,8 @@ class AssayStudySignOff(HistoryMixin, UpdateView):
             ))
 
 
-class AssayStudyDataUpload(HistoryMixin, ObjectGroupRequiredMixin, UpdateView):
+class AssayStudyDataUpload(AssayStudyMixin, ObjectGroupRequiredMixin, UpdateView):
     """Upload an Excel Sheet for storing multiple sets of Readout data at one"""
-    model = AssayStudy
     template_name = 'assays/assaystudy_upload.html'
     form_class = AssayStudyDataUploadForm
 

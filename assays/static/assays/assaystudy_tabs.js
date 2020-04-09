@@ -8,8 +8,6 @@ $(document).ready(function() {
         // Find the anchor and make it reference the current page
         .find('a').attr('href', '#');
 
-    console.log(current_interface);
-
     if (!current_interface || current_interface === '#')
     {
         $('li[data-interface="details"]')

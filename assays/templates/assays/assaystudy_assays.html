@@ -24,9 +24,7 @@
 {# Get the tabs #}
 {% include 'assays/assaystudy_tabs.html' %}
 
-{% if update %}
-    <form enctype="multipart/form-data" class="form-horizontal" method="post">
-
+<form enctype="multipart/form-data" class="form-horizontal" method="post">
     <h1>
         Edit <em>{{ object }}</em> Assays
     <br>
@@ -42,7 +40,6 @@
     <legend>Study Assays</legend>
 
     {{ study_assay_formset.management_form }}
-    <legend>Assays</legend>
 
     {% if study_assay_formset.non_form_errors %}
         <div class="alert alert-danger" role="alert">
