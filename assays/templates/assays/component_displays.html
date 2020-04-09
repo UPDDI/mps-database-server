@@ -1,0 +1,155 @@
+{# Needs to be refactored #}
+{# Hidden for Cells, Compounds, and Settings #}
+{# The classes are from a deprecated approach to hiding fields #}
+
+{# Need cell samples for names etc. #}
+{# Definitely a better way to do this #}
+{% include 'assays/cell_sample_dialog.html' %}
+
+{# DISPLAYS #}
+<div hidden>
+<div id="empty_cell_html">
+    {% if detail %}
+    <div data-prefix="{{ cell_prefix }}" class="alert alert-success force-off-black-text cell-display no-margins">
+    {% else %}
+    <div data-prefix="{{ cell_prefix }}" class="alert alert-success force-off-black-text cell-display">
+    {% endif %}
+        <div class="error-message-section error-display important-display">
+        </div>
+        {% if not detail %}
+        <div class="important-display no-wrap">
+            <a class="btn btn-xs subform-edit">
+                <span class="glyphicon glyphicon-pencil text-warning"></span>
+            </a>
+            <a class="btn btn-xs subform-delete">
+                <span class="glyphicon glyphicon-remove text-danger"></span>
+            </a>
+        </div>
+        {% endif %}
+        <div class="important-display">
+            <span class="cell-cell_sample"></span>
+        </div>
+        <div>Passage: <span class="cell-passage"></span></div>
+        <div>Biosensor: <span class="cell-biosensor"></span></div>
+        <div>
+            <span class="cell-density"></span>
+            <span class="cell-density_unit"></span>
+        </div>
+        <div class="cell-addition_time_section">
+            <span>Added on D</span>
+            <span class="cell-addition_time_day"></span>
+            <span>H</span>
+            <span class="cell-addition_time_hour"></span>
+            <span>M</span>
+            <span class="cell-addition_time_minute"></span>
+        </div>
+        <div>
+            <span class="cell-addition_location"></span>
+        </div>
+    </div>
+</div>
+
+{# TODO #}
+<div id="empty_compound_html">
+    {% if detail %}
+    <div data-prefix="{{ compound_prefix }}" class="alert alert-info force-off-black-text compound-display no-margins">
+    {% else %}
+    <div data-prefix="{{ compound_prefix }}" class="alert alert-info force-off-black-text compound-display">
+    {% endif %}
+        <div class="error-message-section error-display important-display">
+        </div>
+        {% if not detail %}
+        <div class="important-display no-wrap">
+            <a class="btn btn-xs subform-edit">
+                <span class="glyphicon glyphicon-pencil text-warning"></span>
+            </a>
+            <a class="btn btn-xs subform-delete">
+                <span class="glyphicon glyphicon-remove text-danger"></span>
+            </a>
+        </div>
+        {% endif %}
+        <div class="important-display">
+            <span class="compound-compound"></span>
+            <span class="compound-concentration"></span>
+            <span class="compound-concentration_unit"></span>
+            {# PLEASE NOTE: NEW #}
+            <span class="compound-concentration_dilution"></span>
+        </div>
+        <div>
+            <span class="compound-supplier_text"></span>
+            <span class="compound-lot_text"></span>
+        </div>
+        <div class="compound-receipt_date"></div>
+        <div class="compound-addition_time_section">
+            <span>Added on D</span>
+            <span class="compound-addition_time_day"></span>
+            <span>H</span>
+            <span class="compound-addition_time_hour"></span>
+            <span>M</span>
+            <span class="compound-addition_time_minute"></span>
+        </div>
+        <div class="compound-duration_section">
+            <span>Duration of D</span>
+            <span class="compound-duration_day"></span>
+            <span>H</span>
+            <span class="compound-duration_hour"></span>
+            <span>M</span>
+            <span class="compound-duration_minute"></span>
+        </div>
+        <div>
+            <span class="compound-addition_location"></span>
+        </div>
+    </div>
+</div>
+
+{# TODO TODO TODO #}
+<div id="empty_setting_html">
+    {% if detail %}
+    <div data-prefix="{{ setting_prefix }}" class="alert alert-warning force-off-black-text setting-display no-margins">
+    {% else %}
+    <div data-prefix="{{ setting_prefix }}" class="alert alert-warning force-off-black-text setting-display">
+    {% endif %}
+        <div class="error-message-section error-display important-display">
+        </div>
+        {% if not detail %}
+        <div class="important-display no-wrap">
+            <a class="btn btn-xs subform-edit">
+                <span class="glyphicon glyphicon-pencil text-warning"></span>
+            </a>
+            <a class="btn btn-xs subform-delete">
+                <span class="glyphicon glyphicon-remove text-danger"></span>
+            </a>
+        </div>
+        {% endif %}
+        <div class="important-display">
+            <span class="setting-setting"></span>
+            <span class="setting-value"></span>
+            <span class="setting-unit"></span>
+        </div>
+        <div class="setting-addition_time_section">
+            <span>Added on D</span>
+            <span class="setting-addition_time_day"></span>
+            <span>H</span>
+            <span class="setting-addition_time_hour"></span>
+            <span>M</span>
+            <span class="setting-addition_time_minute"></span>
+        </div>
+        <div class="setting-duration_section">
+            <span>Duration of D</span>
+            <span class="setting-duration_day"></span>
+            <span>H</span>
+            <span class="setting-duration_hour"></span>
+            <span>M</span>
+            <span class="setting-duration_minute"></span>
+        </div>
+        <div>
+            <span class="setting-addition_location"></span>
+        </div>
+    </div>
+</div>
+
+<div id="empty_error_html">
+    <div class="alert alert-danger force-off-black-text matrix_item-error-message-box">
+    </div>
+</div>
+</div>

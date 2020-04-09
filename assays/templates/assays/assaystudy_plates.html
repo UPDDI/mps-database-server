@@ -41,5 +41,65 @@
     <legend>Study Plates</legend>
 
     {# TODO #}
+
+    {# Hidden for plate interface #}
+    <div hidden id="selection_dialog" title="Choose a Series">
+        <div class="row" style="margin-bottom: 175px;">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-11">
+            <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+
+            <tr>
+                <th>Selected Items</th>
+            </tr>
+            <tr>
+                <td id="selection_dialog_selected_items">XXX</td>
+            </tr>
+
+            <tr>
+                <th>Choose a Series</th>
+            </tr>
+            <tr>
+                <td><select id="id_series_selector" class="form-control no-selectize required"></select></td>
+            </tr>
+
+            <tr class="selection_dialog_naming_section">
+                <th>Name/Rename Chips?</th>
+                <th>Initial Name</th>
+            </tr>
+            <tr class="selection_dialog_naming_section text-center">
+                <td><input id="id_use_chip_naming" class="big-checkbox" type="checkbox"></td>
+                <td><input id="id_chip_naming" class="form-control"></td>
+            </tr>
+
+            </table>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: none;">
+        <table>
+        <tr id="empty_matrix_item_html">
+        <td data-prefix="{{ item_prefix }}" class="matrix_item-td">
+            <div hidden class="matrix_item-name_section">
+                <span class="label label-default matrix_item-name"></span>
+            </div>
+            <span class="label label-warning matrix-item-hover">
+                X
+            </span>
+        </td>
+        </tr>
+        </table>
+    </div>
+
+    <div hidden id="matrix_contents_hover">
+        <table class="table table-bordered table-condensed bg-warning">
+            <tbody id="matrix_contents_hover_body">
+            </tbody>
+        </table>
+    </div>
+
+    {# For displaying cells etc. #}
+    {% include 'component_displays.html' %}
 </form>
 {% endblock %}
