@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block load_js %}
+    <script src="{% static "js/enter_override.js" %}"></script>
+    {# Should any page be flaggable? #}
+    {# <script src="{% static "js/flag.js" %}"></script> #}
+    <script src="{% static "assays/assaystudy_tabs.js" %}"></script>
+    {# Respective page's script here #}
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/editable_studies/">Editable Studies</a></li>
+    <li>
+        <a href="{{ object.get_absolute_url }}">{{ object }}</a>
+    </li>
+    <li class="active">
+            Edit <em>{{ object }}</em>
+    </li>
+{% endblock %}
+
+{% block content %}
+
+{# Get the tabs #}
+{% include 'assays/assaystudy_tabs.html' %}
+
+{% if update %}
+    <form enctype="multipart/form-data" class="form-horizontal" method="post">
+
+    <h1>
+        Edit <em>{{ object }}</em> Groups
+    <br>
+    {% csrf_token %}
+    </h1>
+
+    {% include "submit.html" with flag="y" group=form.instance.group.name %}
+
+    {% include 'errors.html' %}
+
+    {% include 'tracking.html' %}
+
+    <legend>Study Groups</legend>
+
+    {# TODO #}
+</form>
+{% endblock %}
