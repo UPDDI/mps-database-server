@@ -2895,6 +2895,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
 
         # HANDY - save problems, this is likely the cause (required fields!)
         self.fields['form_data_processing_multiplier_string'].required = False
+        self.fields['form_data_parsable_message'].required = False
         self.fields['form_calibration_curve_method_used'].required = False
         self.fields['form_calibration_equation'].required = False
         self.fields['form_calibration_rsquared'].required = False
@@ -2940,15 +2941,24 @@ class AssayPlateReaderMapForm(BootstrapForm):
     se_form_calibration_curve = forms.ChoiceField(
         choices=(
             ('select_one', 'Select One'),
-                 ('no_calibration', 'No Calibration'),
-                 ('best_fit', '(Not working yet - linear0) Best Fit'),
-                 ('linear', 'Linear w/fitted intercept'),
-                 ('linear0', 'Linear w/intercept = 0'),
-                 ('log', '(Not working yet - linear0) Logarithmic w/fitted intercept'),
-                 ('poly2', '(Not working yet - linear0) Polynomial (2) w/fitted intercept'),
-                 ('log4', '(Not working yet - linear0) Logistic (4 parameter)'),
-                 ('log5', '(Not working yet - linear0) Logistic (5 parameter)'),
-                 )
+            ('no_calibration', 'No Calibration'),
+            ('best_fit', 'Best Fit'),
+            ('logistic4', '4 Parameter Logistic'),
+            ('linear', 'Linear w/fitted intercept'),
+            ('linear0', 'Linear w/intercept = 0'),
+            ('log', 'Logarithmic'),
+            ('poly2', 'Polynomial'),
+
+            ('select_one', 'Select One (n = standard concentration, s = signal)'),
+            # ('no_calibration', 'No Calibration'),
+            # ('best_fit', 'Best Fit'),
+            # ('logistic4', '4 Parameter Logistic (s = ((A-D)/(1.0+((n/C)**B))) + D)'),
+            # ('linear', 'Linear w/fitted intercept (s = B*n + A)'),
+            # ('linear0', 'Linear w/intercept = 0 (s = B*n)'),
+            # ('log', 'Logarithmic (s = B*ln(n) + A)'),
+            # ('poly2', 'Polynomial (s = C*n**2 + B*n + A)'),
+
+            )
     )
 
     se_form_blank_handling = forms.ChoiceField(
@@ -2988,6 +2998,10 @@ class AssayPlateReaderMapForm(BootstrapForm):
     # HANDY - how to make an extra field a widget so can manipulate it eg readonly
     form_data_processing_multiplier_string = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 1, 'readonly': 'readonly', 'required': False})
+    )
+
+    form_data_parsable_message = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly', 'required': False})
     )
 
     form_calibration_curve_method_used = forms.CharField(

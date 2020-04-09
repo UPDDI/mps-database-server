@@ -457,7 +457,7 @@
                                             </tr>
                                             <tr>
                                                 <td> Calibrating and Normalizing </td>
-                                                <td> Processed Value = Multiplier * Fitted Value * Dilution Factor * 1/(Efflux Volume) * 1/(Duration of Collection) (not working yet...to be added)</td>
+                                                <td> Processed Value = Multiplier * Fitted Value * Dilution Factor * 1/(Efflux Volume) * 1/(Duration of Collection)</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -536,7 +536,7 @@
                                 <div class="sample-section hidden">
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <h3><em>Set value(s) and action, check boxes to change value(s), then drag or click an appropriate apply button to make change(s).</em></h3>
+                                            <h3><em>For SAMPLES, set value(s) and action, check boxes to change value(s), then drag or click an appropriate apply button to make change(s).</em></h3>
                                             <br>
                                         </div>
                                     </div>
@@ -692,7 +692,7 @@
                                 <div class="standard-section hidden">
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <h3><em>Set value and action, then drag or click an appropriate apply button to make change(s).</em></h3>
+                                            <h3><em>For STANDARDs, set value and action, then drag or click an appropriate apply button to make change(s).</em></h3>
                                             <br>
                                         </div>
                                     </div>
@@ -729,7 +729,7 @@
                                 <div class="blank-section hidden">
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <h3><em>Drag over blanks or click an appropriate apply button.</em></h3>
+                                            <h3><em>Drag over SAMPLE blanks or click an appropriate apply button.</em></h3>
                                             <br>
                                         </div>
                                     </div>
@@ -1400,15 +1400,19 @@
                         </div>
 
                         <div class="plate-calibration-curve-guts-yes hidden">
-                            <div class="plate-map-page-field-contents-medium">
-                                <button type="button" class="btn btn-primary" id="parameterDetailsButton">Show/Hide Parameter Details</button>
+                            <div class="col-md-3">
+                                <div class="plate-map-page-field-contents-medium">
+                                    <button type="button" class="btn btn-primary" id="parameterDetailsButton">Show/Hide Parameter Details</button>
+                                </div>
+                            </div>
+                            <div class="col-md-9">
                             </div>
                         </div>
 
                         <div class="plate-calibration-curve-guts-yes hidden">
                             <div class="plate-map-page-show-parameter-details">
                                 <div class="row">
-                                    <div class="col-md-12">
+                                    <div >
                                         <table class="table table-striped table-bordered">
                                             <thead>
     {#                                          <tr>#}
@@ -1417,43 +1421,6 @@
     {#                                          </tr>#}
                                             </thead>
                                             <tbody>
-                                                <div >
-                                                    <tr>
-                                                        <td>Standard Fitting Information</td>
-                                                        <td>
-                                                            <table class="table table-bordered">
-                                                                <thead>
-        {#                                                              <tr>#}
-        {#                                                                <th></th>#}
-        {#                                                                <th></th>#}
-        {#                                                              </tr>#}
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>Minimum</td>
-                                                                        <td>{{ form.form_calibration_standard_fitted_min_for_e }}
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>Maximum</td>
-                                                                        <td>{{ form.form_calibration_standard_fitted_max_for_e }}
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>Standard Blank (Concentration = 0) Average</td>
-                                                                        <td>{{ form.form_calibration_standard_standard0_average }}
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>Sample Blank Average</td>
-                                                                        <td>{{ form.form_calibration_standard_blank_average }}
-                                                                        </td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                        </td>
-                                                    </tr>
-                                                </div>
 
                                                 <div >
                                                     <tr>
@@ -1483,18 +1450,60 @@
                                                                         <td>{{ form.form_calibration_parameter_4_string }}</td>
                                                                         <td>{{ form.form_calibration_parameter_4_value }}</td>
                                                                     </tr>
+{#                                                                    Not using since did not do 5P logistic#}
+{#                                                                    <tr>#}
+{#                                                                        <td>{{ form.form_calibration_parameter_5_string }}</td>#}
+{#                                                                        <td>{{ form.form_calibration_parameter_5_value }}</td>#}
+{#                                                                    </tr>#}
+                                                                </tbody>
+                                                            </table>
+                                                        </td>
+                                                    </tr>
+                                                </div>
+
+                                                <div >
+                                                    <tr>
+                                                        <td>Standard Fitting Information</td>
+                                                        <td>
+                                                            <table class="table table-bordered">
+                                                                <thead>
+        {#                                                              <tr>#}
+        {#                                                                <th></th>#}
+        {#                                                                <th></th>#}
+        {#                                                              </tr>#}
+                                                                </thead>
+                                                                <tbody>
                                                                     <tr>
-                                                                        <td>{{ form.form_calibration_parameter_5_string }}</td>
-                                                                        <td>{{ form.form_calibration_parameter_5_value }}</td>
+                                                                        <td>Minimum</td>
+                                                                        <td>{{ form.form_calibration_standard_fitted_min_for_e }}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Maximum</td>
+                                                                        <td>{{ form.form_calibration_standard_fitted_max_for_e }}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Standard Blank Average (Concentration = 0) </td>
+                                                                        <td>{{ form.form_calibration_standard_standard0_average }}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Sample Blank Average</td>
+                                                                        <td>{{ form.form_calibration_standard_blank_average }}
+                                                                        </td>
                                                                     </tr>
                                                                 </tbody>
                                                             </table>
                                                         </td>
                                                     </tr>
                                                 </div>
+
                                             </tbody>
                                         </table>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="plate-map-page-field-contents-medium">
                                         <button type="button" class="btn btn-primary" id="showHideSamplesOnGraphButton">Show/Hide Samples On Graph (QC Check)</button>
                                     </div>
@@ -1525,6 +1534,8 @@
                                         </div>
                                         <br>
                                         <p><i>Caution Flag:</i> E - Out of Calibration Range</p>
+                                        <p>{{ form.form_data_parsable_message }} </p>
+                                        <p id="id_used_curve" class="hidden"></p>
                                     </div>
                                 </div>
                         </div>
@@ -1534,25 +1545,9 @@
                         <div class="plate-calibration-or-processing-yes hidden">
                             <br>
                             <h2>Sending Data to the Study Summary</h2>
+                            <p>Automated sending of data to the study summary is in development. For now, download the table above by clicking the 'CSV' button, then upload it as a MIF-C file. </p>
 
-{#                                <div class="plate-calibration-yes hidden">#}
-{#                                    <div class="row">#}
-{#                                        <div class="col-md-3">#}
-{#                                            <div class="plate-map-page-field-labels-small">#}
-{#                                                <div><p id="plate_mark_for_exclusion_tooltip"></p>#}
-{#                                                    <label for="plate_mark_for_exclusion_tooltip">Flag Out of Range Samples &nbsp;</label>#}
-{#                                                </div>#}
-{#                                            </div>#}
-{#                                        </div>#}
-{#                                        <div class="col-md-9">#}
-{#                                            <div class="plate-map-page-radio-contents">#}
-{#                                                <label><input type="radio" name="exclusions" value="yes_flag" checked>  <b class="plate-map-radio-spacing">Yes, flag for exclusion by default</b> </label>#}
-{#                                                <label><input type="radio" name="exclusions" value="no_flag">  <b class="plate-map-radio-spacing">No, do not flag</b> </label>#}
-{#                                            </div>#}
-{#                                        </div>#}
-{#                                    </div>#}
-{#                                </div>#}
-
+                            <div class="hidden">
                                 <div class="row">
                                     <div class="col-md-3">
                                         <div class="plate-map-page-field-labels-small">
@@ -1563,9 +1558,9 @@
                                     </div>
                                     <div class="col-md-9">
                                         <div class="plate-map-page-radio-contents">
-{#                                            {{ form.radio_replicate_handling_average_or_not }}#}
-{#                                            <label><input type="radio" name="replicates" value="average" checked>  <b class="plate-map-radio-spacing">Send the Average of the Replicates to the Study Summary</b> </label>#}
-{#                                            <label><input type="radio" name="replicates" value="each">  <b class="plate-map-radio-spacing">Send Each Replicate's Value to the Study Summary</b> </label>#}
+{#                                            comment{{ form.radio_replicate_handling_average_or_not }}#}
+{#                                            comment<label><input type="radio" name="replicates" value="average" checked>  <b class="plate-map-radio-spacing">Send the Average of the Replicates to the Study Summary</b> </label>#}
+{#                                            comment<label><input type="radio" name="replicates" value="each">  <b class="plate-map-radio-spacing">Send Each Replicate's Value to the Study Summary</b> </label>#}
                                             {% for radio in form.radio_replicate_handling_average_or_not %}
                                                 {{ radio.tag }}
                                                 <label for="value_{{ forloop.counter0 }}"><b class="plate-map-radio-spacing">{{ radio.choice_label }}</b></label>
@@ -1575,51 +1570,12 @@
                                     </div>
                                 </div>
 
-    {#                            <input id="checkbox_flag_exclude" class="big-checkbox plate-file-button-spacer" type="checkbox" name="checkbox_flag_exclude" value="checkbox_flag_exclude" >#}
-    {#                            <label for="checkbox_flag_exclude" class="plate-map-radio-spacing">Flag Out of Range Samples </label>#}
-    {#                            <div><p id="plate_mark_for_exclusion_tooltip"></p>#}
-    {#                                 <label for="plate_mark_for_exclusion_tooltip">&nbsp;</label>#}
-    {#                            </div>#}
-    {##}
-    {#                            <br>#}
-    {#                            <input id="checkbox_average_replicates" class="big-checkbox plate-file-button-spacer" type="checkbox" name="checkbox_average_replicates" value="checkbox_average_replicates" >#}
-    {#                            <label for="checkbox_average_replicates" class="plate-map-radio-spacing">Average Replicate Samples</label>#}
-    {#                            <br>#}
-
-
-    {#                            <div class="row">#}
-    {#                                <br><br>#}
-    {#                                <div class="col-md-5">#}
-    {#                                    <button type="button" class="btn btn-primary" id="drawMifcFileButton">Refresh Data Table</button>#}
-    {#                                </div>#}
-    {#                                <div class="col-md-7"></div>#}
-    {#                            </div>#}
-
-    {#                            <div class="plate-calibration-yes hidden">#}
-    {#                                <div class="row">#}
-    {#                                    <br><br>#}
-    {#                                    <h3 ><e>Calibration parameters are not saved for reuse on this page.#}
-    {#                                        The selected parameters are recorded in the data file that is generated when data are sent to the Study Summary.</e></h3>#}
-    {#                                </div>#}
-    {#                            </div>#}
-                                <br>
-
-{#                              <input id="checkbox_send_data" class="big-checkbox plate-file-button-spacer" type="checkbox" name="checkbox_send_data" value="checkbox_send_data" >#}
-
                                 <div>
                                     {{  form.form_make_mifc_on_submit }}
                                     <label for="form_make_mifc_on_submit" class="plate-map-radio-spacing">Send this Sample Data to Study Summary on Submit</label>
-                                    <p>This feature is not working yet, but you can download the table above to CSV and upload it as a MIF-C file. Note that replicates would EACH be included.</p>
                                 </div>
+                            </div>
 
-
-{#                            <label>Exporting Data to MIF-C</label>#}
-{#                            <p>Data for each block can be exported to a MIF-C file, then uploaded into the study following#}
-{#                            the same protocol used for data prepared outside of this plate reader tool.#}
-{#                            If desired, caution flags can be added and data points marked for exclusion in the MIF-C file#}
-{#                            prior to upload.</p>#}
-{#                        to work with luke, make a list of lists for each row with top the header#}
-{#                        put processing selections in extra column#}
                         </div>
 
                     {% endif %}

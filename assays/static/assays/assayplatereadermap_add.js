@@ -180,7 +180,7 @@ $(document).ready(function () {
         , "Check box to make change when drag/apply. Select the name of the matrix item (chip or well in a plate) associated to the sample. Use the backspace button to clear selection."
         , "Select the unit, target, and method associated to this assay plate map. Use the backspace button to clear selection. If the option needed is not here, it has likely not be added to the study during study set up. Note that, units that include time should be in 'day', 'minute', or 'hour' to convert properly (i.e. 'days', 'hr', 'min' may not work correctly when calculating a multiplier)."
         , "If a standard is used in the assay plate map, enter the unit of the standard, else, enter the measurement unit of the raw value. If this unit is different than the Reporting Unit, unit conversion will be performed if possible. There are limits to this conversion tool. "
-        , "The standard value should be in the unit given in the Standard Unit. "
+        , "The standard value should be in the unit given in the Standard Unit. The standard blank should be assigned a well use of 'standard' and a concentration of 0 (exactly, not 0.00001). "
         , "The dilution factor should be provided for each well in the assay plate map. "
 
         , "Changes made to the assay plate map (including sample location and standard concentration) will apply to all uses of the assay plate map."
@@ -193,7 +193,7 @@ $(document).ready(function () {
         , "Select how the blanks should be handled. Note that, to be considered a Standard Blank, the concentration of the standard in the plate map must be set to 0 (exactly). When fitting a standard curve, points at the same concentration are averaged prior to fitting."
         , "Select the calibration method to use."
         , "When the same sample is added to multiple wells in an assay plate, each value can be added to the main database, or an average can be added. Select the option that is appropriate for this assay."
-        , "Change these bounds to limit the range of the standard concentrations used to generate the calibration curve. These should be in the Measurement Unit. Samples with fitted results above or below the calibration curve at these bounds will receive a Caution Flag of E. If null, all standards will be used in fitting. All points will be shown on the graph."
+        , "Change these bounds to limit the range of the standard concentrations used to generate the calibration curve. These should be in the Measurement Unit. There must be points at a minimum of four concentrations to work correctly. Samples with fitted results above or below the calibration curve at these bounds will receive a Caution Flag of E. If null, all standards will be used in fitting. All points will be shown on the graph."
 
         , "The molecular weight of the standard is needed in cases were the standard unit is in moles and the unit in the target, method, unit is a mass unit."
         , "If the standard concentration a unit of moles per well, this value will be used to convert to a molar unit."
@@ -446,6 +446,7 @@ $(document).ready(function () {
     let global_counter_to_check_calibration_runs = 1;
     let global_lol_samples = [];
     let global_lol_standards_points = [];
+    let global_lol_standards_ave_points = [];
     let global_lol_standards_curve = [];
 
     $('input[name=radio_replicate_handling_average_or_not][value=average]').prop('checked',true);
@@ -751,9 +752,11 @@ $(document).ready(function () {
     let packProcessedDataSection = function (json, exist) {
         let sendmessage = json.sendmessage;
         // console.log(sendmessage)
+        $("#id_form_data_parsable_message").val(sendmessage);
 
         let list_of_dicts_of_each_sample_row = json.list_of_dicts_of_each_sample_row;
         let list_of_dicts_of_each_standard_row_points = json.list_of_dicts_of_each_standard_row_points;
+        let list_of_dicts_of_each_standard_row_ave_points = json.list_of_dicts_of_each_standard_row_ave_points;
         let list_of_dicts_of_each_standard_row_curve = json.list_of_dicts_of_each_standard_row_curve;
 
         let dict_of_curve_info = json.dict_of_curve_info;
@@ -762,6 +765,7 @@ $(document).ready(function () {
         $("#id_form_calibration_curve_method_used").val(dict_of_curve_info.method);
         $("#id_form_calibration_equation").val(dict_of_curve_info.equation);
         $("#id_form_calibration_rsquared").val(dict_of_curve_info.rsquared);
+        $("#id_used_curve").val(dict_of_curve_info.used_curve);
 
         let dict_of_standard_info = json.dict_of_standard_info;
         $("#id_form_calibration_standard_fitted_min_for_e").val(dict_of_standard_info.min);
@@ -784,11 +788,14 @@ $(document).ready(function () {
 
         buildTableOfProcessedData_ajax(list_of_dicts_of_each_sample_row);
         buildTableOfStandardsDataPoints_ajax(list_of_dicts_of_each_standard_row_points);
+        buildTableOfStandardsDataAvePoints_ajax(list_of_dicts_of_each_standard_row_ave_points);
         buildTableOfStandardsDataCurve_ajax(list_of_dicts_of_each_standard_row_curve);
 
         // console.log("##in js back from ajax");
         // console.log("##list_of_dicts_of_each_sample_row");
         // console.log(list_of_dicts_of_each_sample_row);
+        // console.log("##list_of_dicts_of_each_standard_row_ave_points");
+        // console.log(list_of_dicts_of_each_standard_row_ave_points);
         // console.log("##list_of_dicts_of_each_standard_row_points");
         // console.log(list_of_dicts_of_each_standard_row_points);
         // console.log("##list_of_dicts_of_each_standard_row_curve");
@@ -850,7 +857,7 @@ $(document).ready(function () {
             });
             lol_processed.push(thisline);
             //console.log("thisline ", thisline)
-            global_lol_samples.push([parseFloat(myconcentration), null, null, parseFloat(myresponse)]);
+            global_lol_samples.push([parseFloat(myconcentration), null, null, null, parseFloat(myresponse)]);
         });
         
         //todo get a different list to pack the graph...later
@@ -999,7 +1006,28 @@ $(document).ready(function () {
                 };
                 counterEachItemInThisRow = counterEachItemInThisRow + 1;
             });
-            global_lol_standards_points.push([parseFloat(myconcentration), parseFloat(mypredictedresponse), null, null]);
+            global_lol_standards_curve.push([parseFloat(myconcentration), parseFloat(mypredictedresponse), null, null, null]);
+        });
+    }
+
+    function buildTableOfStandardsDataAvePoints_ajax(list_of_dicts_of_each_standard_row_ave_points) {
+        global_lol_standards_ave_points = [];
+
+        $.each(list_of_dicts_of_each_standard_row_ave_points, function (index, each) {
+            let myconcentration = 0;
+            let myadjustedresponse = 0;
+            let myobservedresponse = 0;
+            let counterEachItemInThisRow = 0;
+            $.each(each, function (indexi, eachi) {
+                if (counterEachItemInThisRow == 0) {
+                    myconcentration = eachi;
+                };
+                if (counterEachItemInThisRow == 1) {
+                    myadjustedresponse = eachi;
+                };
+                counterEachItemInThisRow = counterEachItemInThisRow + 1;
+            });
+            global_lol_standards_ave_points.push([parseFloat(myconcentration), null, parseFloat(myadjustedresponse), null, null]);
         });
     }
 
@@ -1020,10 +1048,9 @@ $(document).ready(function () {
                 };
                 counterEachItemInThisRow = counterEachItemInThisRow + 1;
             });
-            global_lol_standards_points.push([parseFloat(myconcentration), null, parseFloat(myadjustedresponse), null]);
+            global_lol_standards_points.push([parseFloat(myconcentration), null, null, parseFloat(myadjustedresponse), null]);
         });
     }
-
 
     $("#showHideSamplesOnGraphButton").click(function () {
         // console.log("sh ", global_showhide_samples)
@@ -1038,154 +1065,177 @@ $(document).ready(function () {
 
     function drawCalibrationCurve(){
 
-        google.charts.setOnLoadCallback(drawStandardCurve01);
+        let testForError = $('#id_form_data_parsable_message').val();
 
-        function drawStandardCurve01() {
+        if (testForError.search('ERROR') >= 0) {
+            $('.plate-calibration-curve').addClass('hidden');
+            $('.plate-calibration-curve-yes').addClass('hidden');
+            $('.plate-calibration-curve-guts-yes').addClass('hidden');
+        } else {
 
-            // global_lol_samples
-            var samples = global_lol_samples;
-            // console.log("global_lol_samples: ")
-            // console.log(global_lol_samples)
-            //     [
-            //     [0.0, null, null, .05],
-            //     [0.0, null, null, .08]
-            //     ];
+            google.charts.setOnLoadCallback(drawStandardCurve01);
 
-            // global_lol_standards_points
-            var standards = global_lol_standards_points;
-            // console.log("standards")
-            // console.log(standards)
-                // [
-                // [0.0, null, 0.01, null],
-                // [0.4, null, 0.83, null]
+            function drawStandardCurve01() {
+
+                // global_fitted
+                var fitted = global_lol_standards_curve;
+                // console.log('fitted ', fitted)
+
+                // NOTE: ADDED a fifth column to all to accomodate this
+                var ave_standards = global_lol_standards_ave_points;
+                // console.log('ave_standards ', ave_standards)
+
+                // global_lol_standards_points
+                var standards = global_lol_standards_points;
+                // console.log('standards ', standards)
+
+                // global_lol_samples
+                var samples = global_lol_samples;
+
+                // var preData = [
+                //     ['Standard Concentration', 'Fitted Curve', 'Standard Response', 'Sample Response'  added a fifth],
+                //     [0.0, 0.0, null, null],
+                //     [0.1, 0.2, null, null],
+                //     [0.2, 0.4, null, null],
+                //     [0.3, 0.6, null, null],
+                //     [0.4, 0.8, null, null],
+                //     [0.5, 1.0, null, null],
+                //     [0.6, 1.2, null, null],
+                //     [0.7, 1.4, null, null],
+                //     [0.8, 1.6, null, null],
+                //     [0.9, 1.8, null, null],
+                //
+                //     [0.0, null, null, .05],
+                //
+                //     [0.0, null, 0.01, null],
+                //     [0.1, null, 0.192, null],
+                //     [0.2, null, 0.394, null],
+                //     [0.3, null, 0.61, null],
+                //     [0.4, null, 0.83, null]
                 // ];
 
-            // global_fitted
-            var fitted = global_lol_standards_curve;
-            // console.log("fitted")
-            // console.log(fitted)
-                // [
-                // [0.0, 0.0, null, null],
-                // [0.9, 1.8, null, null]
-                // ];
-
-            // var preData = [
-            //     ['Standard Concentration', 'Fitted Curve', 'Standard Response', 'Sample Response'],
-            //     [0.0, 0.0, null, null],
-            //     [0.1, 0.2, null, null],
-            //     [0.2, 0.4, null, null],
-            //     [0.3, 0.6, null, null],
-            //     [0.4, 0.8, null, null],
-            //     [0.5, 1.0, null, null],
-            //     [0.6, 1.2, null, null],
-            //     [0.7, 1.4, null, null],
-            //     [0.8, 1.6, null, null],
-            //     [0.9, 1.8, null, null],
-            //
-            //     [0.0, null, null, .05],
-            //
-            //     [0.0, null, 0.01, null],
-            //     [0.1, null, 0.192, null],
-            //     [0.2, null, 0.394, null],
-            //     [0.3, null, 0.61, null],
-            //     [0.4, null, 0.83, null]
-            // ];
-
-            // 4th spot place holder
-            var placeHolder =
-                [
-                [0, null, null, 0],
-                ];
-
-            var preData = {};
-            var colHeaders = {};
-            var options = {};
-
-            if (global_showhide_samples == "hide_samples") {
-                colHeaders =
+                // 5th spot place holder
+                var placeHolder =
                     [
-                        ['Standard Concentration', 'Fitted Curve', 'Standard Response', '']
+                        [0, null, null, null, 0],
                     ];
 
-                preData = preData = $.merge($.merge($.merge($.merge([],
-                    colHeaders),
-                    placeHolder),
-                    standards),
-                    fitted);
+                var preData = {};
+                var colHeaders = {};
+                var options = {};
 
+                if (global_showhide_samples == "hide_samples") {
+                    colHeaders =
+                        [
+                            ['Standard Concentration', 'Fitted Standard Curve', 'Standard (Average)', 'Standard (All Points)', '']
+                        ];
 
+                    preData = $.merge($.merge($.merge($.merge($.merge([],
+                        colHeaders),
+                        placeHolder),
+                        standards),
+                        fitted),
+                        ave_standards);
 
-                options = {
-                    title: global_floater_method,
-                    seriesType: 'scatter',
-                    series: {
-                        0: {pointShape: 'square'}, pointSize: 1,
-                        //0: {type: 'line'},
-                        2: {pointShape: {type: 'star', sides: 4, dent: 0.1}, pointSize: 1,
+                    options = {
+                        title: global_floater_method,
+                        seriesType: 'scatter',
+                        series: {
+                            // 0: {pointShape: 'square'}, pointSize: 1,
+                            0: {type: 'line'},
+                            1: {
+                                pointShape: 'diamond', pointSize: 10,
+                            },
+                            2: { pointShape: 'circle', pointSize: 3,
+                                 // pointShape: {type: 'star', sides: 8, dent: 0.05}, pointSize: 8,
+                            },
+                            3: {
+                                pointShape: {type: 'star', sides: 4, dent: 0.1}, pointSize: 1,
+                            },
                         },
-                    },
-                    legend: {position: 'bottom'},
-                    vAxis: {title: 'Signal'},
-                    hAxis: {title: global_floater_standard_unit},
-                    colors: ['LightCoral', 'DarkRed', 'white'],
-                };
-            } else {
-                colHeaders =
-                    [
-                        ['Standard Concentration', 'Fitted Curve', 'Standard Response', 'Sample Response']
-                    ];
+                        legend: {position: 'bottom'},
+                        vAxis: {title: 'Signal'},
+                        hAxis: {title: global_floater_standard_unit},
+                        colors: ['MidnightBlue', 'MediumBlue', 'SteelBlue', 'White'],
+                    };
+                } else {
+                    colHeaders =
+                        [
+                            ['Standard Concentration', 'Fitted Standard Curve', 'Standard (Average)', 'Standard (All Points)', 'Samples']
+                        ];
 
-                preData = preData = $.merge($.merge($.merge($.merge([],
-                    colHeaders),
-                    samples),
-                    standards),
-                    fitted);
+                    preData = $.merge($.merge($.merge($.merge($.merge([],
+                        colHeaders),
+                        samples),
+                        standards),
+                        fitted),
+                        ave_standards);
 
-                // https://developers.google.com/chart/interactive/docs/points
+                    // https://developers.google.com/chart/interactive/docs/points
 
-                options = {
-                    title: global_floater_method,
-                    seriesType: 'scatter',
-                    series: {
-                        0: {pointShape: 'square'}, pointSize: 0.3,
-                        //0: {type: 'line'},
-                        2: {pointShape: {type: 'star', sides: 5, dent: 0.5}, pointSize: 13,
+                    options = {
+                        title: global_floater_method,
+                        seriesType: 'scatter',
+                        series: {
+                            // 0: {pointShape: 'square'}, pointSize: 0.3,
+                            0: {type: 'line'},
+                            1: {
+                                pointShape: 'diamond', pointSize: 10,
+                            },
+                            2: { pointShape: 'circle', pointSize: 3,
+                                // pointShape: {type: 'star', sides: 8, dent: 0.05}, pointSize: 8,
+                            },
+                            3: {
+                                pointShape: {type: 'star', sides: 5, dent: 0.5}, pointSize: 13,
+                            },
                         },
-                    },
-                    legend: {position: 'bottom'},
-                    //vAxis: {title: global_floater_target},
-                    vAxis: {title: 'Signal'},
-                    hAxis: {title: global_floater_standard_unit},
-                    colors: ['LightCoral', 'DarkRed', 'blue'],
-                };
+                        legend: {position: 'bottom'},
+                        //vAxis: {title: global_floater_target},
+                        vAxis: {title: 'Signal'},
+                        hAxis: {title: global_floater_standard_unit},
+                        colors: ['MidnightBlue', 'MediumBlue', 'SteelBlue', 'Tomato'],
+                    };
+
+                }
+
+                var data = google.visualization.arrayToDataTable(preData);
+                var dataView = new google.visualization.DataView(data);
+
+                // console.log(global_calibrate_calibration_curve_method)
+                let thisCurveMethod = $("#id_used_curve").val();
+
+                // have to use the curve method brought back due to best fit
+                if (thisCurveMethod == 'logistic4') {
+                    options.hAxis.scaleType = 'mirrorLog';
+                    //options.hAxis.scaleType = 'log';
+                } else {
+                    options.hAxis.scaleType = 'linear';
+                }
+
+                // if want to compute the line, but I think I am going to send it over
+                // var yCol1 = {
+                //   calc: function (data, row) {
+                //     return (1.1 * data.getValue(row, 1));
+                //   },
+                //   type: 'number',
+                //   label: 'Y1'
+                // };
+
+                // use above object as Y1
+                //dataView.setColumns([0, yCol1]);
+                // dataView.setColumns([0, 1, 2, 3, yCol1]);
+
+                // view.setColumns([0, 1, 2, 3 {
+                //   label: 'y = 2x + 0',
+                //   type: 'number',
+                //   calc: function (dt, row) {
+                //     return dt.getValue(row, 0)
+                //   }
+                // }]);
+
+                var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+                chart.draw(dataView, options);
             }
-
-            var data = google.visualization.arrayToDataTable(preData);
-            var dataView = new google.visualization.DataView(data);
-
-            // if want to compute the line, but I think I am going to send it over
-            // var yCol1 = {
-            //   calc: function (data, row) {
-            //     return (1.1 * data.getValue(row, 1));
-            //   },
-            //   type: 'number',
-            //   label: 'Y1'
-            // };
-
-            // use above object as Y1
-            //dataView.setColumns([0, yCol1]);
-            // dataView.setColumns([0, 1, 2, 3, yCol1]);
-
-            // view.setColumns([0, 1, 2, 3 {
-            //   label: 'y = 2x + 0',
-            //   type: 'number',
-            //   calc: function (dt, row) {
-            //     return dt.getValue(row, 0)
-            //   }
-            // }]);
-
-            var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
-            chart.draw(dataView, options);
         }
     }
 
@@ -3228,8 +3278,10 @@ $(document).ready(function () {
         global_plate_copys_plate_index = [];
         global_plate_copys_well_use = [];
         global_plate_copys_matrix_item = [];
+        global_plate_copys_matrix_item_text = [];
         global_plate_copys_default_time = [];
         global_plate_copys_location = [];
+        global_plate_copys_location_text = [];
         global_plate_copys_standard_value = [];
         global_plate_copys_dilution_factor = [];
         global_plate_copys_collection_volume = [];
@@ -3256,6 +3308,7 @@ $(document).ready(function () {
             global_plate_copys_setting.push($('#setting-' + idx).text());
         });
 
+        // console.log("storeCurrentWellInfoForCopysFeature")
         // console.log(global_plate_copys_matrix_item)
         // console.log(global_plate_copys_matrix_item_text)
         // console.log(global_plate_copys_location)
@@ -3624,33 +3677,33 @@ $(document).ready(function () {
         let this_number = parseFloat(this_number_in);
         if (this_number == 0) {
             formatted_number = this_number.toFixed(0);
-        } else if (this_number <= 0.00001) {
+        } else if (this_number < 0.00001) {
             formatted_number = this_number.toExponential(4);
-        } else if (this_number <= 0.0001) {
+        } else if (this_number < 0.0001) {
             formatted_number = this_number.toFixed(5);
-        } else if (this_number <= 0.001) {
+        } else if (this_number < 0.001) {
             formatted_number = this_number.toFixed(5);
-        } else if (this_number <= 0.01) {
+        } else if (this_number < 0.01) {
             formatted_number = this_number.toFixed(3);
-        } else if (this_number <= 0.1) {
+        } else if (this_number < 0.1) {
             formatted_number = this_number.toFixed(3);
-        } else if (this_number <= 1.0) {
+        } else if (this_number < 1.0) {
+            formatted_number = this_number.toFixed(3);
+        } else if (this_number < 10) {
+            formatted_number = this_number.toFixed(2);
+        } else if (this_number < 30) {
+            formatted_number = this_number.toFixed(2);
+        } else if (this_number < 100) {
             formatted_number = this_number.toFixed(1);
-        } else if (this_number <= 10) {
-            formatted_number = this_number.toFixed(1);
-        } else if (this_number <= 30) {
-            formatted_number = this_number.toFixed(1);
-        } else if (this_number <= 100) {
-            formatted_number = this_number.toFixed(1);
-        } else if (this_number <= 1000) {
+        } else if (this_number < 1000) {
             formatted_number = this_number.toFixed(0);
-        } else if (this_number <= 10000) {
+        } else if (this_number < 10000) {
             formatted_number = this_number.toFixed(0);
-        } else if (this_number <= 100000) {
+        } else if (this_number < 100000) {
             formatted_number = this_number.toFixed(0);
-        } else if (this_number <= 1000000) {
+        } else if (this_number < 1000000) {
             formatted_number = this_number.toFixed(0);
-        } else if (this_number <= 10000000) {
+        } else if (this_number < 10000000) {
             formatted_number = this_number.toFixed(0);
         } else {
             formatted_number = this_number.toExponential(2);

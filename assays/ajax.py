@@ -6150,11 +6150,12 @@ def fetch_data_processing_for_plate_map_integration(request):
         'sendmessage':                        data_mover[0],
         'list_of_dicts_of_each_sample_row':   data_mover[1],
         'list_of_dicts_of_each_standard_row_points': data_mover[2],
-        'list_of_dicts_of_each_standard_row_curve':  data_mover[3],
-        'dict_of_parameter_labels':  data_mover[4],
-        'dict_of_parameter_values':  data_mover[5],
-        'dict_of_curve_info':        data_mover[6],
-        'dict_of_standard_info':     data_mover[7],
+        'list_of_dicts_of_each_standard_row_ave_points': data_mover[3],
+        'list_of_dicts_of_each_standard_row_curve':  data_mover[4],
+        'dict_of_parameter_labels':  data_mover[5],
+        'dict_of_parameter_values':  data_mover[6],
+        'dict_of_curve_info':        data_mover[7],
+        'dict_of_standard_info':     data_mover[8],
         })
     return HttpResponse(json.dumps(data), content_type="application/json")
 
