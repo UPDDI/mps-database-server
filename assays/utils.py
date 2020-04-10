@@ -4015,7 +4015,9 @@ def calculate_pk_parameters(cl_ml_min,
                             desired_Cp,
                             desired_dose_interval,
                             estimated_fraction_absorbed,
-                            prediction_time_length):
+                            prediction_time_length,
+                            missing_plasma_values,
+                            missing_dosing_values):
 
     ElogD = (logD*0.9638)+0.0417
     Log_vo_w = (1.099*logD)-1.31
@@ -4034,18 +4036,6 @@ def calculate_pk_parameters(cl_ml_min,
         vol_df.iloc[i, 1] = pk_volume_data.iloc[i, 1]*vol_df.iloc[i, 0]
         vol_df.iloc[i, 2] = vol_df.iloc[i, 1]*fup_fut
 
-    Vc = np.sum(vol_df.iloc[:, 2])
-    fi = 1/(1+(10**((7.4-pKa)*1)))
-    fut = 10**(0.008-(0.2294*ElogD)-(0.9311*fi)+(0.8885*(np.log10(fu))))
-    Vp_L = body_mass*Vp
-    VE_L = body_mass*VE
-    VR_L = body_mass*VR
-    CL_L = (cl_ml_min/1000)*60
-    VDss = (Vp_L*(1+REI))+(fu*Vp_L*((VE_L/Vp_L)-REI)+((VR_L*fu)/fut))
-    Ke = CL_L/VDss
-    AUC = Fa*dose_mg/VDss/Ke
-    EHL = ((0.693*VDss)/CL_L)
-
     par_col_names = [
         "fi(7.4)",
         "fut",
@@ -4063,6 +4053,22 @@ def calculate_pk_parameters(cl_ml_min,
         "Fa",
         "AUC"
     ]
+
+    Vc = np.sum(vol_df.iloc[:, 2])
+    fi = 1/(1+(10**((7.4-pKa)*1)))
+    fut = 10**(0.008-(0.2294*ElogD)-(0.9311*fi)+(0.8885*(np.log10(fu))))
+    Vp_L = body_mass*Vp
+    VE_L = body_mass*VE
+    VR_L = body_mass*VR
+    CL_L = (cl_ml_min/1000)*60
+    VDss = (Vp_L*(1+REI))+(fu*Vp_L*((VE_L/Vp_L)-REI)+((VR_L*fu)/fut))
+    Ke = CL_L/VDss
+    if not missing_plasma_values:
+        AUC = Fa*dose_mg/VDss/Ke
+    else:
+        AUC = np.nan
+    EHL = ((0.693*VDss)/CL_L)
+
     calculate_pk_parameters_df = pd.DataFrame(index=range(1), columns=par_col_names)
     calculate_pk_parameters_df.iloc[0, 0] = fi
     calculate_pk_parameters_df.iloc[0, 1] = fut
@@ -4080,102 +4086,121 @@ def calculate_pk_parameters(cl_ml_min,
     calculate_pk_parameters_df.iloc[0, 13] = Fa
     calculate_pk_parameters_df.iloc[0, 14] = AUC
 
-    # Single Oral Dose: Calculated PK Parameters
-    par_col_names = ["AUC (mg*min/L)", "Mmax (mg)", "Cmax (mg/L)", "tmax (h)"]
-    calculate_pk_parameters_single_oral_dose = pd.DataFrame(index=range(1), columns=par_col_names)
+    if not missing_plasma_values:
+        # Single Oral Dose: Calculated PK Parameters
+        par_col_names = ["AUC (mg*min/L)", "Mmax (mg)", "Cmax (mg/L)", "tmax (h)"]
+        calculate_pk_parameters_single_oral_dose = pd.DataFrame(index=range(1), columns=par_col_names)
 
-    VDss = calculate_pk_parameters_df.iloc[0, 9]
-    Ke = calculate_pk_parameters_df.iloc[0, 10]
-    Ka = calculate_pk_parameters_df.iloc[0, 12]
-    Fa = calculate_pk_parameters_df.iloc[0, 13]
-    calculate_pk_parameters_single_oral_dose.iloc[0, 0] = (Fa*dose_mg)/(VDss*Ke)  # AUC (mg*min/L)
-    Mmax = (Fa*dose_mg)*((Ke/Ka)**(Ke/(Ka-Ke)))  # Mmax (mg)
-    calculate_pk_parameters_single_oral_dose.iloc[0, 1] = Mmax
-    calculate_pk_parameters_single_oral_dose.iloc[0, 2] = Mmax/VDss  # Cmax (mg/L)
-    calculate_pk_parameters_single_oral_dose.iloc[0, 3] = (np.log(Ka)-np.log(Ke))/(Ka-Ke)  # tmax (hour)
+        VDss = calculate_pk_parameters_df.iloc[0, 9]
+        Ke = calculate_pk_parameters_df.iloc[0, 10]
+        Ka = calculate_pk_parameters_df.iloc[0, 12]
+        Fa = calculate_pk_parameters_df.iloc[0, 13]
+        calculate_pk_parameters_single_oral_dose.iloc[0, 0] = (Fa*dose_mg)/(VDss*Ke)  # AUC (mg*min/L)
+        Mmax = (Fa*dose_mg)*((Ke/Ka)**(Ke/(Ka-Ke)))  # Mmax (mg)
+        calculate_pk_parameters_single_oral_dose.iloc[0, 1] = Mmax
+        calculate_pk_parameters_single_oral_dose.iloc[0, 2] = Mmax/VDss  # Cmax (mg/L)
+        calculate_pk_parameters_single_oral_dose.iloc[0, 3] = (np.log(Ka)-np.log(Ke))/(Ka-Ke)  # tmax (hour)
 
-    # Multiple Oral Dose: Calculated PK Parameters
-    par_col_names = ["Mss (mg)", "Css (mg/L)", "tmax (h)"]
-    calculate_pk_parameters_multiple_oral_dose = pd.DataFrame(index=range(1), columns=par_col_names)
+        # Multiple Oral Dose: Calculated PK Parameters
+        par_col_names = ["Mss (mg)", "Css (mg/L)", "tmax (h)"]
+        calculate_pk_parameters_multiple_oral_dose = pd.DataFrame(index=range(1), columns=par_col_names)
 
-    VDss = calculate_pk_parameters_df.iloc[0, 9]
-    Ke = calculate_pk_parameters_df.iloc[0, 10]
-    Ka = calculate_pk_parameters_df.iloc[0, 12]
-    Fa = calculate_pk_parameters_df.iloc[0, 13]
-    CL_L = calculate_pk_parameters_df.iloc[0, 5]
-    elimination_half_life = calculate_pk_parameters_df.iloc[0, 11]
-    AUC = Fa*dose_mg/VDss/Ke
-    Mss = (Fa*dose_mg)/(Ke*dose_interval)
-    Css = (Fa*dose_mg)/(CL_L*dose_interval)
-    tmax = np.log((Ka*(1-np.exp(-Ke*dose_interval)))/(Ke*(1-np.exp(-Ka*dose_interval))))/(Ka-Ke)
-    calculate_pk_parameters_multiple_oral_dose.iloc[0, 0] = Mss
-    calculate_pk_parameters_multiple_oral_dose.iloc[0, 1] = Css
-    calculate_pk_parameters_multiple_oral_dose.iloc[0, 2] = tmax
+        CL_L = calculate_pk_parameters_df.iloc[0, 5]
+        elimination_half_life = calculate_pk_parameters_df.iloc[0, 11]
+        AUC = Fa*dose_mg/VDss/Ke
+        Mss = (Fa*dose_mg)/(Ke*dose_interval)
+        Css = (Fa*dose_mg)/(CL_L*dose_interval)
+        tmax = np.log((Ka*(1-np.exp(-Ke*dose_interval)))/(Ke*(1-np.exp(-Ka*dose_interval))))/(Ka-Ke)
+        calculate_pk_parameters_multiple_oral_dose.iloc[0, 0] = Mss
+        calculate_pk_parameters_multiple_oral_dose.iloc[0, 1] = Css
+        calculate_pk_parameters_multiple_oral_dose.iloc[0, 2] = tmax
 
-    # Single oral dose prediction
-    single_dose_Mmax = (Fa*dose_mg)*((Ke/Ka)**(Ke/(Ka-Ke)))  # Mmax (mg)
-    single_dose_Cmax = Mmax/VDss  # Cmax (mg/L)
-    single_dose_tmax = (np.log(Ka)-np.log(Ke))/(Ka-Ke)  # tmax (hour)
+        # Single oral dose prediction
+        single_dose_Mmax = (Fa*dose_mg)*((Ke/Ka)**(Ke/(Ka-Ke)))  # Mmax (mg)
+        single_dose_Cmax = Mmax/VDss  # Cmax (mg/L)
+        single_dose_tmax = (np.log(Ka)-np.log(Ke))/(Ka-Ke)  # tmax (hour)
 
-    # Multiple oral dose prediction
-    multiple_dose_Mss = (Fa*dose_mg)/(Ke*dose_interval)  # Mss (mg)
-    multiple_dose_Css = (Fa*dose_mg)/(CL_L*dose_interval)  # Css (mg/L)
-    multiple_dose_tmax = np.log((Ka*(1-np.exp(-Ke*dose_interval)))/(Ke*(1-np.exp(-Ka*dose_interval))))/(Ka-Ke)  # tmax (h)
+        # Multiple oral dose prediction
+        multiple_dose_Mss = (Fa*dose_mg)/(Ke*dose_interval)  # Mss (mg)
+        multiple_dose_Css = (Fa*dose_mg)/(CL_L*dose_interval)  # Css (mg/L)
+        multiple_dose_tmax = np.log((Ka*(1-np.exp(-Ke*dose_interval)))/(Ke*(1-np.exp(-Ka*dose_interval))))/(Ka-Ke)  # tmax (h)
+    else:
+        elimination_half_life = calculate_pk_parameters_df.iloc[0, 11]
+        single_dose_Mmax = 0
+        single_dose_Cmax = 0
+        single_dose_tmax = 0
+        multiple_dose_Mss = 0
+        multiple_dose_Css = 0
+        multiple_dose_tmax = 0
 
     # To Reach Desired Plasma Levels:
-    par_col_names = ["Dosecalc (mg)", "No. of Doses to Reach 50%", "No. of Doses to Reach 90%"]
-    calculate_pk_parameters_reach_desired_plasma_levels = pd.DataFrame(index=range(1), columns=par_col_names)
-    Dosecalc = (((desired_Cp/1000000)*VDss*MW*1000)*Ke*desired_dose_interval)/estimated_fraction_absorbed
-    n_doses_reach_50_percent = (3.323*np.log10(1-0.5)/-(desired_dose_interval/elimination_half_life))
-    n_doses_reach_90_percent = (3.323*np.log10(1-0.9)/-(desired_dose_interval/elimination_half_life))
-    calculate_pk_parameters_reach_desired_plasma_levels.iloc[0, 0] = Dosecalc
-    calculate_pk_parameters_reach_desired_plasma_levels.iloc[0, 1] = n_doses_reach_50_percent
-    calculate_pk_parameters_reach_desired_plasma_levels.iloc[0, 2] = n_doses_reach_90_percent
+    if not missing_dosing_values:
+        par_col_names = ["Dosecalc (mg)", "No. of Doses to Reach 50%", "No. of Doses to Reach 90%"]
+        calculate_pk_parameters_reach_desired_plasma_levels = pd.DataFrame(index=range(1), columns=par_col_names)
+        Dosecalc = (((desired_Cp/1000000)*VDss*MW*1000)*Ke*desired_dose_interval)/estimated_fraction_absorbed
+        n_doses_reach_50_percent = (3.323*np.log10(1-0.5)/-(desired_dose_interval/elimination_half_life))
+        n_doses_reach_90_percent = (3.323*np.log10(1-0.9)/-(desired_dose_interval/elimination_half_life))
+        calculate_pk_parameters_reach_desired_plasma_levels.iloc[0, 0] = Dosecalc
+        calculate_pk_parameters_reach_desired_plasma_levels.iloc[0, 1] = n_doses_reach_50_percent
+        calculate_pk_parameters_reach_desired_plasma_levels.iloc[0, 2] = n_doses_reach_90_percent
+    else:
+        Dosecalc = 0
+        n_doses_reach_50_percent = 0
+        n_doses_reach_90_percent = 0
 
     dosage_data = [single_dose_Mmax, single_dose_Cmax, single_dose_tmax, multiple_dose_Mss, multiple_dose_Css, multiple_dose_tmax, Dosecalc, n_doses_reach_50_percent, n_doses_reach_90_percent]
 
-    par_col_names = ["Time (hr)", "Time Interval (hr)", "Dose Number", "Single Dose (mg/L)", "Single Dose", "Elimination Coefficient", "Multiple Dose (mg/L)", "Multiple Dose (mg)"]
-    prediction_dose_plot_table = pd.DataFrame(index=range(prediction_time_length+1), columns=par_col_names)
-    FDK = (Fa*dose_mg*Ka)/(Ka-Ke)
+    if not missing_plasma_values and not missing_dosing_values:
+        par_col_names = ["Time (hr)", "Time Interval (hr)", "Dose Number", "Single Dose (mg/L)", "Single Dose", "Elimination Coefficient", "Multiple Dose (mg/L)", "Multiple Dose (mg)"]
+        prediction_dose_plot_table = pd.DataFrame(index=range(prediction_time_length+1), columns=par_col_names)
+        FDK = (Fa*dose_mg*Ka)/(Ka-Ke)
 
-    for i in range(prediction_time_length+1):
-        if i == 0:
-            prediction_dose_plot_table.iloc[i, 0] = i
-            prediction_dose_plot_table.iloc[i, 1] = i
-            prediction_dose_plot_table.iloc[i, 2] = 1
-        else:
-            prediction_dose_plot_table.iloc[i, 0] = (i-1)+1
-            if prediction_dose_plot_table.iloc[i-1, 1] < dose_interval:
-                prediction_dose_plot_table.iloc[i, 1] = prediction_dose_plot_table.iloc[i-1, 1]+1
+        for i in range(prediction_time_length+1):
+            if i == 0:
+                prediction_dose_plot_table.iloc[i, 0] = i
+                prediction_dose_plot_table.iloc[i, 1] = i
+                prediction_dose_plot_table.iloc[i, 2] = 1
             else:
-                prediction_dose_plot_table.iloc[i, 1] = 1
-            if prediction_dose_plot_table.iloc[i, 0] % dose_interval == 0:
-                prediction_dose_plot_table.iloc[i, 2] = prediction_dose_plot_table.iloc[i-1, 2]+1
-            else:
-                prediction_dose_plot_table.iloc[i, 2] = prediction_dose_plot_table.iloc[i-1, 2]
-        time = prediction_dose_plot_table.iloc[i, 0]
-        time_interval = prediction_dose_plot_table.iloc[i, 1]
-        dose_no = prediction_dose_plot_table.iloc[i, 2]
-        single_dose_calc = ((Fa*dose_mg*Ka)/(VDss*(Ka-Ke)))*(np.exp(-(Ke*time))-np.exp(-(Ka*time)))
-        single_dose_mg = single_dose_calc*VDss
-        ec1 = (1-np.exp(-dose_no*Ke*dose_interval))
-        ec2 = ((ec1/(1-np.exp(-Ke*dose_interval)))*np.exp(-Ke*time_interval))
-        ec3 = ((1-np.exp(-dose_no*Ka*dose_interval))/(1-np.exp(-Ka*dose_interval)))
-        EC = ec2-(ec3*np.exp(-Ka*time_interval))
-        mult_dose_mg = FDK*EC
-        mult_dose_calc = mult_dose_mg/VDss
-        prediction_dose_plot_table.iloc[i, 3] = single_dose_calc
-        prediction_dose_plot_table.iloc[i, 4] = single_dose_mg
-        prediction_dose_plot_table.iloc[i, 5] = EC
-        prediction_dose_plot_table.iloc[i, 6] = mult_dose_calc
-        prediction_dose_plot_table.iloc[i, 7] = mult_dose_mg
-    prediction_plot_table = prediction_dose_plot_table[prediction_dose_plot_table["Time (hr)"] <= prediction_time_length]
-    x = prediction_plot_table["Time (hr)"]
-    y_single = prediction_plot_table["Single Dose (mg/L)"]
-    y_multiple = prediction_plot_table["Multiple Dose (mg/L)"]
-    max_y = y_multiple.max()
+                prediction_dose_plot_table.iloc[i, 0] = (i-1)+1
+                if prediction_dose_plot_table.iloc[i-1, 1] < dose_interval:
+                    prediction_dose_plot_table.iloc[i, 1] = prediction_dose_plot_table.iloc[i-1, 1]+1
+                else:
+                    prediction_dose_plot_table.iloc[i, 1] = 1
+                if prediction_dose_plot_table.iloc[i, 0] % dose_interval == 0:
+                    prediction_dose_plot_table.iloc[i, 2] = prediction_dose_plot_table.iloc[i-1, 2]+1
+                else:
+                    prediction_dose_plot_table.iloc[i, 2] = prediction_dose_plot_table.iloc[i-1, 2]
+            time = prediction_dose_plot_table.iloc[i, 0]
+            time_interval = prediction_dose_plot_table.iloc[i, 1]
+            dose_no = prediction_dose_plot_table.iloc[i, 2]
+            single_dose_calc = ((Fa*dose_mg*Ka)/(VDss*(Ka-Ke)))*(np.exp(-(Ke*time))-np.exp(-(Ka*time)))
+            single_dose_mg = single_dose_calc*VDss
+            ec1 = (1-np.exp(-dose_no*Ke*dose_interval))
+            ec2 = ((ec1/(1-np.exp(-Ke*dose_interval)))*np.exp(-Ke*time_interval))
+            ec3 = ((1-np.exp(-dose_no*Ka*dose_interval))/(1-np.exp(-Ka*dose_interval)))
+            EC = ec2-(ec3*np.exp(-Ka*time_interval))
+            mult_dose_mg = FDK*EC
+            mult_dose_calc = mult_dose_mg/VDss
+            prediction_dose_plot_table.iloc[i, 3] = single_dose_calc
+            prediction_dose_plot_table.iloc[i, 4] = single_dose_mg
+            prediction_dose_plot_table.iloc[i, 5] = EC
+            prediction_dose_plot_table.iloc[i, 6] = mult_dose_calc
+            prediction_dose_plot_table.iloc[i, 7] = mult_dose_mg
+        prediction_plot_table = prediction_dose_plot_table[prediction_dose_plot_table["Time (hr)"] <= prediction_time_length]
+        x = prediction_plot_table["Time (hr)"]
+        y_single = prediction_plot_table["Single Dose (mg/L)"]
+        y_multiple = prediction_plot_table["Multiple Dose (mg/L)"]
+        max_y = y_multiple.max()
+        prediction_plot_table.dropna()
 
-    return {'calculated_pk_parameters': calculate_pk_parameters_df.to_dict('list'), 'prediction_plot_table': prediction_plot_table.to_dict('list'), 'dosing_data': dosage_data}
+    if not missing_plasma_values and not missing_dosing_values:
+        return {'calculated_pk_parameters': calculate_pk_parameters_df.to_dict('list'), 'prediction_plot_table': prediction_plot_table.to_dict('list'), 'dosing_data': dosage_data}
+    elif not missing_plasma_values and missing_dosing_values:
+        return {'calculated_pk_parameters': calculate_pk_parameters_df.to_dict('list'), 'dosing_data': dosage_data}
+    elif missing_plasma_values and not missing_dosing_values:
+        return {'dosing_data': dosage_data}
+    else:
+        return {'error': 'Invalid input provided. Please fill out more fields and try again.'}
 
 
 # sck - assay plate reader analysis of data when calibrating/processing
@@ -4542,7 +4567,7 @@ def plate_reader_data_file_process_data(set_dict):
 
             # FUN IS HERE
 
-            # CALIBRATION OPTIONS ALL STARTING FROM 
+            # CALIBRATION OPTIONS ALL STARTING FROM
             r2 = {}
 
             if form_calibration_curve in ['linear', 'best_fit']:

@@ -5576,10 +5576,10 @@ def fetch_compound_physicochemical_parameters(request):
     else:
         fu = compound.protein_binding
 
-    if compound.bioavailability:
-        bioavailability = float(re.findall(r"[-+]?\d*\.\d+|\d+", compound.bioavailability)[0])/100
-    else:
-        bioavailability = compound.bioavailability
+    # if compound.bioavailability:
+    #     bioavailability = float(re.findall(r"[-+]?\d*\.\d+|\d+", compound.bioavailability)[0])/100
+    # else:
+    #     bioavailability = compound.bioavailability
 
     data = {
         'compound': pk_compound,
@@ -5587,7 +5587,7 @@ def fetch_compound_physicochemical_parameters(request):
         'logd': compound.logd,
         # TODO TODO ACIDIC OR BASIC?
         'pka': compound.acidic_pka,
-        'bioavailability': bioavailability,
+        # 'bioavailability': bioavailability,
         'fu': fu
     }
 
@@ -5664,6 +5664,30 @@ def fetch_pbpk_dosing_results(request):
         ['Plasma', 2.968, 0.945, 0.0035, 0.00225]
     ]
 
+    # Plasma Values
+    if request.POST.get('dose_mg'):
+        dose_mg = float(request.POST.get('dose_mg'))
+    else:
+        dose_mg = ''
+    if request.POST.get('dose_interval'):
+        dose_interval = float(request.POST.get('dose_interval'))
+    else:
+        dose_interval = ''
+
+    # Dosing Values
+    if request.POST.get('desired_Cp'):
+        desired_Cp = float(request.POST.get('desired_Cp'))
+    else:
+        desired_Cp = ''
+    if request.POST.get('desired_dose_interval'):
+        desired_dose_interval = float(request.POST.get('desired_dose_interval'))
+    else:
+        desired_dose_interval = ''
+    if request.POST.get('estimated_fraction_absorbed'):
+        estimated_fraction_absorbed = float(request.POST.get('estimated_fraction_absorbed'))
+    else:
+        estimated_fraction_absorbed = ''
+
     dosing_results = calculate_pk_parameters(
         float(request.POST.get('cl_ml_min')),
         usansky_sinko_volume_data,
@@ -5680,12 +5704,14 @@ def fetch_pbpk_dosing_results(request):
         float(request.POST.get('Ki')),
         float(request.POST.get('Ka')),
         float(request.POST.get('Fa')),
-        float(request.POST.get('dose_mg')),
-        float(request.POST.get('dose_interval')),
-        float(request.POST.get('desired_Cp')),
-        float(request.POST.get('desired_dose_interval')),
-        float(request.POST.get('estimated_fraction_absorbed')),
-        round(float(request.POST.get('prediction_time_length')))
+        dose_mg,
+        dose_interval,
+        desired_Cp,
+        desired_dose_interval,
+        estimated_fraction_absorbed,
+        round(float(request.POST.get('prediction_time_length'))),
+        request.POST.get('missing_plasma_values') == "true",
+        request.POST.get('missing_dosing_values') == "true"
     )
 
     # TODO TEMP
