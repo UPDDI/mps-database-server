@@ -226,6 +226,7 @@
                     {% include 'generic_popup_link.html' with field=form.compound_concentration_unit %}
                 </td>
             </tr>
+            {% comment %}
             <tr>
                 <th>Use a Dilution Series</th>
                 <th>Dilution Factor</th>
@@ -239,6 +240,7 @@
             <tr>
                 <td colspan="3">{{ form.compound_concentration_increment_direction }}</td>
             </tr>
+            {% endcomment %}
         </table>
         <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
             <tr>
