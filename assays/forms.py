@@ -692,7 +692,9 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
         # Contrivances
         self.fields['test_type'].widget.attrs['class'] = 'no-selectize required form-control'
+
         self.fields['organ_model_full'].widget.attrs['class'] = 'no-selectize'
+        self.fields['organ_model_protocol_full'].widget.attrs['class'] = 'no-selectize'
 
 
 class AssayStudyChipForm(SignOffMixin, BootstrapForm):

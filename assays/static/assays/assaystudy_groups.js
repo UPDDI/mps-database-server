@@ -35,6 +35,9 @@ $(document).ready(function () {
     var organ_model = $('#id_organ_model');
     var protocol = $('#id_organ_model_protocol');
 
+    var organ_model_full = $('#id_organ_model_full');
+    var organ_model_protocol_full = $('#id_organ_model_protocol_full');
+
     // var current_protocol = protocol.val();
 
     window.organ_model = organ_model;
@@ -472,16 +475,26 @@ $(document).ready(function () {
         //     new_td
         // );
 
+        // Let's just have text instead, saves space among other things
         // SLOPPY
-        var organ_model_input = $('#id_organ_model_full')
-            .clone()
-            .removeAttr('id')
-            .attr('name', 'organ_model')
-            .attr('data-row', row_index)
-            .addClass('organ-model');
+        // var organ_model_input = $('#id_organ_model_full')
+        //     .clone()
+        //     .removeAttr('id')
+        //     .attr('name', 'organ_model')
+        //     .attr('data-row', row_index)
+        //     .addClass('organ-model');
 
         // SLOPPY
-        organ_model_input.attr('required', 'required');
+        // organ_model_input.attr('required', 'required');
+
+        var organ_model_input = $('<div>')
+            .append($('<div>')
+                .attr('data-row', row_index)
+                .addClass('organ-model')
+            ).append($('<div>')
+                .attr('data-row', row_index)
+                .addClass('organ-model-protocol')
+            )
 
         new_row.append(
             $('<td>').append(organ_model_input).append(
@@ -496,7 +509,7 @@ $(document).ready(function () {
             )
         );
 
-        organ_model_input.selectize();
+        // organ_model_input.selectize();
 
         // SLOPPY
         var test_type_input = $('#id_test_type')
@@ -551,7 +564,16 @@ $(document).ready(function () {
             }
         });
 
-        new_row.find('.organ-model')[0].selectize.setValue(setup_to_use['organ_model_id']);
+        // new_row.find('.organ-model')[0].selectize.setValue(setup_to_use['organ_model_id']);
+
+        // Set the organ model and porotocol
+        new_row.find('.organ-model').text(
+            organ_model_full.find('option[value="' + setup_to_use['organ_model_id'] + '"]').text()
+        );
+        new_row.find('.organ-model-protocol').text(
+            organ_model_protocol_full.find('option[value="' + setup_to_use['organ_model_protocol_id'] + '"]').text()
+        );
+
         new_row.find('.test-type').val(setup_to_use['test_type']);
 
         study_setup_body.append(new_row);
@@ -576,9 +598,9 @@ $(document).ready(function () {
         modify_series_data('test_type', $(this).val(), $(this).attr('data-row'));
     });
 
-    $(document).on('change', '.organ-model', function() {
-        modify_series_data('organ_model_id', $(this).val(), $(this).attr('data-row'));
-    });
+    // $(document).on('change', '.organ-model', function() {
+    //     modify_series_data('organ_model_id', $(this).val(), $(this).attr('data-row'));
+    // });
 
     $(document).on('click', 'a[data-edit-button="true"]', function() {
         current_prefix = $(this).attr('data-prefix');
@@ -715,6 +737,7 @@ $(document).ready(function () {
         if (is_new) {
             // Set organ_model_id
             series_data[current_setup_index]['organ_model_id'] = organ_model.val();
+            series_data[current_setup_index]['organ_model_protocol_id'] = protocol.val();
         }
 
         // if (protocol.val() && protocol.val() != current_protocol || protocol.val() && !Object.keys(current_setup).length) {
