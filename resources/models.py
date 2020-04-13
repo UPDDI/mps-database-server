@@ -73,3 +73,12 @@ class Definition(LockableModel):
 
     show_url.short_description = "Ref URL"
     show_url.allow_tags = True
+
+
+class ComingSoonEntry(LockableModel):
+    """An entry for the About Page's "Coming Soon" Section"""
+    class Meta(object):
+        verbose_name = 'Coming Soon Entry'
+        verbose_name_plural = 'Coming Soon Entries'
+
+    contents = models.TextField(default='')

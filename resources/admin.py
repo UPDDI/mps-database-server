@@ -8,13 +8,14 @@ from resources.models import (
     Resource,
     ResourceType,
     ResourceSubtype,
-    Definition
+    Definition,
+    ComingSoonEntry
 )
 from resources.forms import (
     ResourceForm,
     ResourceTypeForm,
     ResourceSubtypeForm,
-    DefinitionForm
+    DefinitionForm,
 )
 
 from django.utils.safestring import mark_safe
@@ -169,3 +170,13 @@ class DefinitionAdmin(LockableAdmin):
 
 
 admin.site.register(Definition, DefinitionAdmin)
+
+
+# Just register the ComingSoonEntry
+class ComingSoonEntryAdmin(LockableAdmin):
+    model = ComingSoonEntry
+
+    list_display = ['id', 'contents', 'modified_on']
+    list_editable = ['contents']
+
+admin.site.register(ComingSoonEntry, ComingSoonEntryAdmin)

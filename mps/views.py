@@ -22,7 +22,7 @@ import os
 
 from mps.settings import MEDIA_ROOT
 
-from resources.models import Definition
+from resources.models import Definition, ComingSoonEntry
 from django.views.generic.base import TemplateView
 
 from microdevices.models import MicrophysiologyCenter
@@ -136,7 +136,7 @@ def mps_help(request):
 #added sck
 # TODO NOT DRY
 def mps_about(request):
-    number_of_days = 90
+    number_of_days = 120
 
     # Needed to make minimum timezone aware
     minimum_datetime = datetime.min.replace(tzinfo=pytz.UTC)
@@ -244,7 +244,8 @@ def mps_about(request):
         'number_of_days': number_of_days,
         'about_studies': signed_off_restricted_studies,
         'about_models_distinct': reduce_distinct_to_list,
-        'recently_released_studies': recently_released_studies
+        'recently_released_studies': recently_released_studies,
+        'coming_soon_entries': ComingSoonEntry.objects.all().order_by('-modified_on')
     }
 
     return render(request, 'about.html', full_context)

@@ -562,9 +562,7 @@ class AssayStudyAssayInline(admin.TabularInline):
             method_queryset = AssayMethod.objects.all().order_by('name')
             kwargs["queryset"] = method_queryset
         elif db_field.name == 'unit':
-            unit_queryset = PhysicalUnits.objects.filter(
-                availability__icontains='readout'
-            ).order_by('unit_type__unit_type', 'base_unit__unit', 'scale_factor')
+            unit_queryset = PhysicalUnits.objects.all().order_by('unit_type__unit_type', 'base_unit__unit', 'scale_factor')
             kwargs["queryset"] = unit_queryset
         return super(AssayStudyAssayInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 

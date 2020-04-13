@@ -334,13 +334,13 @@ about/global_search.jpg
         <div id="about_coming_soon" class="well padded-bottom large-padding-top">
             <h1 class="sub1-bars">
                 Coming Soon
-                <small>Last updated January 13, 2020</small>
+                <small>Last updated {{ coming_soon_entries.0.modified_on }}</small>
             </h1>
 
             <ul style="font-size: 125%;">
-                <li>An upgrade to the study Power Analysis interface to include <strong>single-sample power analysis</strong>.</li>
-                <li>A comprehensive <strong>audit trail</strong> to aid in the tracking of changes within the database.</li>
-                <li>An updated <strong>plate format interface</strong> to compliment the new study creation workflow.</li>
+                {% for entry in coming_soon_entries %}
+                    <li>{{ entry.contents|safe }}</li>
+                {% endfor %}
             </ul>
         </div>
 
