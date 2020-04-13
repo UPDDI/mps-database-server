@@ -262,7 +262,7 @@ $(document).ready(function () {
                 },
                 type: 'POST',
                 dataSrc: function(json) {
-                    console.log(json);
+                    // console.log(json);
                     header_keys = json.header_keys;
                     chart_data = json.chart_data;
                     data_groups = json.data_groups;
@@ -293,11 +293,8 @@ $(document).ready(function () {
             },
             columns: group_table_columns,
             columnDefs: [
-                { "responsivePriority": 1, "targets": [0,1,2,3] },
-                { "responsivePriority": 2, "targets": [4, 13, 14] },
-                { "responsivePriority": 3, "targets": [5, 6] },
-                { "responsivePriority": 4, "targets": [7, 8, 9] },
-                { "responsivePriority": 5, "targets": [10, 11, 12] }
+                { "responsivePriority": 1, "targets": [0, 1, 2, 3, 4, 5, 6, 7, 8, 13, 14] },
+                { "responsivePriority": 2, "targets": [9, 10, 11, 12] }
             ],
             order: [1, 'asc'],
             responsive: true,
@@ -362,6 +359,7 @@ $(document).ready(function () {
         $('#pk-summary-graph').empty();
         $('#pk-clearance-graph').empty();
         $('#continuous-infusion-table').empty();
+        $("#toggle-continuous-infusion-table").hide();
     }
 
     function generate_pbpk(pk_type) {
@@ -373,10 +371,12 @@ $(document).ready(function () {
             $("#experiment-total-vol").parent().parent().show();
             $("#experiment-flow-rate").parent().parent().hide();
             $('#continuous-infusion-table').hide();
+            $("#toggle-continuous-infusion-table").hide();
         } else {
             $("#experiment-total-vol").parent().parent().hide();
             $("#experiment-flow-rate").parent().parent().show();
             $('#continuous-infusion-table').show();
+            $("#toggle-continuous-infusion-table").show();
         }
 
         // Populate Experiment Parameters Table.
@@ -452,7 +452,7 @@ $(document).ready(function () {
             alert('Error retrieving Species Parameters table.');
             console.log(xhr.status + ": " + xhr.responseText);
         });
-        console.log("Done with Species Parameters.")
+        // console.log("Done with Species Parameters.")
 
         // Start/End Time Dropdowns
         $.each(chart_data[group_num].slice(1), function() {
@@ -534,7 +534,7 @@ $(document).ready(function () {
             alert('Error retrieving Compound Physicochemical Parameters table.');
             console.log(xhr.status + ": " + xhr.responseText);
         });
-        console.log("Done with Compound Parameters.")
+        // console.log("Done with Compound Parameters.")
     }
 
     $('#cell-free').change(function() {
@@ -656,12 +656,11 @@ $(document).ready(function () {
         }
         $('#input-dosing-cp').css('background-color', '#fffabb');
         $('#input-dosing-interval').css('background-color', '#fffabb');
-        $('#input-dosing-absorbed').css('background-color', '#fffabb');
         $('#input-plasma-dose').css('background-color', '#fffabb');
         $('#input-plasma-dose-interval').css('background-color', '#fffabb');
 
         if ($('#input-plasma-dose').val() != '' && $('#input-plasma-dose-interval').val() != '') {
-            if ($('#input-dosing-cp').val() != '' && $('#input-dosing-interval').val() != '' && $('#input-dosing-absorbed').val() != '') {
+            if ($('#input-dosing-cp').val() != '' && $('#input-dosing-interval').val() != '') {
                 // BOTH ARE GOOD
             } else {
                 // ONLY PLASMA VALUES ARE GOOD
@@ -675,16 +674,13 @@ $(document).ready(function () {
             }
         } else {
             missing_plasma_values = true;
-            if ($('#input-dosing-cp').val() != '' && $('#input-dosing-interval').val() != '' && $('#input-dosing-absorbed').val() != '') {
+            if ($('#input-dosing-cp').val() != '' && $('#input-dosing-interval').val() != '') {
                 // ONLY DOSING VALUES ARE GOOD
                 if ($('#input-dosing-cp').val() == '') {
                     $('#input-dosing-cp').css('background-color', '#f2dede');
                 }
                 if ($('#input-dosing-interval').val() == '') {
                     $('#input-dosing-interval').css('background-color', '#f2dede');
-                }
-                if ($('#input-dosing-absorbed').val() == '') {
-                    $('#input-dosing-absorbed').css('background-color', '#f2dede');
                 }
             } else {
                 // NEITHER ARE GOOD
@@ -694,9 +690,6 @@ $(document).ready(function () {
                 }
                 if ($('#input-dosing-interval').val() == '') {
                     $('#input-dosing-interval').css('background-color', '#f2dede');
-                }
-                if ($('#input-dosing-absorbed').val() == '') {
-                    $('#input-dosing-absorbed').css('background-color', '#f2dede');
                 }
                 if ($('#input-plasma-dose').val() == '') {
                     $('#input-plasma-dose').css('background-color', '#f2dede');
@@ -746,7 +739,7 @@ $(document).ready(function () {
             }
         )
         .done(function(data) {
-            console.log(data);
+            // console.log(data);
             // Stop spinner
             window.spinner.stop();
 
@@ -786,6 +779,7 @@ $(document).ready(function () {
                     for (var x=1; x<bolus_data.length; x++) {
                         bolus_data[x][0] *= 60;
                     }
+                    $("#toggle-continuous-infusion-table").hide();
                     make_chart("", 'Avg Recovered Compound (µM)', $('#pk-summary-graph')[0], JSON.parse(JSON.stringify(bolus_data)), 400);
                 } else {
                     var clearance_table_data = data.clearance_data.data;
@@ -831,6 +825,7 @@ $(document).ready(function () {
                     }
 
                     $('#continuous-infusion-table').html(clearance_table_html)
+                    $("#toggle-continuous-infusion-table").show();
 
                     make_chart("", 'Avg Recovered Compound (µM)', $('#pk-summary-graph')[0], JSON.parse(JSON.stringify(chart_data_final)), 250);
 
@@ -941,7 +936,7 @@ $(document).ready(function () {
                             dose_interval: $('#input-plasma-dose-interval').val(),
                             desired_Cp: $('#input-dosing-cp').val(),
                             desired_dose_interval: $('#input-dosing-interval').val(),
-                            estimated_fraction_absorbed: $('#input-dosing-absorbed').val(),
+                            estimated_fraction_absorbed: $('#input-fa').val(),
                             prediction_time_length: 720,
                             missing_plasma_values: missing_plasma_values,
                             missing_dosing_values: missing_dosing_values
@@ -950,7 +945,7 @@ $(document).ready(function () {
                     }
                 )
                 .done(function(data) {
-                    console.log(data);
+                    // console.log(data);
                     // Stop spinner
                     window.spinner.stop();
 
@@ -966,6 +961,7 @@ $(document).ready(function () {
                         } else {
                             $('#plasma-container').show();
                             $('#plasma-dose-container').show()
+                            $('#dosing-chart-container').show();
                             $('#pk-param-vdss').val(numberWithCommas(data.calculated_pk_parameters['VDss (L)'][0].toFixed(3)));
                             $('#pk-param-ke').val(numberWithCommas(data.calculated_pk_parameters['Ke(1/h)'][0].toFixed(3)));
                             $('#pk-param-half-life-3-confirmed').val(numberWithCommas(data.calculated_pk_parameters['Elimination half-life'][0].toFixed(3)));
@@ -976,29 +972,27 @@ $(document).ready(function () {
                             $('#pk-param-cl').val(numberWithCommas(data.calculated_pk_parameters['CL (L/h)'][0].toFixed(3)));
                             $('#pk-param-fut').val(numberWithCommas(data.calculated_pk_parameters['fut'][0].toFixed(3)));
                             $('#pk-param-fi').val(numberWithCommas(data.calculated_pk_parameters['fi(7.4)'][0].toFixed(3)));
-                        }
-                        if (missing_dosing_values) {
-                            $('#dosing-container').hide();
-                            $('#dosing-chart-container').hide();
-                        } else {
-                            $('#dosing-container').show();
                             $('#pk-single-mmax').val(numberWithCommas(data.dosing_data[0].toFixed(3)));
                             $('#pk-single-cmax').val(numberWithCommas(data.dosing_data[1].toFixed(3)));
                             $('#pk-single-tmax').val(numberWithCommas(data.dosing_data[2].toFixed(3)));
                             $('#pk-multi-mss').val(numberWithCommas(data.dosing_data[3].toFixed(3)));
                             $('#pk-multi-css').val(numberWithCommas(data.dosing_data[4].toFixed(3)));
                             $('#pk-multi-tmax').val(numberWithCommas(data.dosing_data[5].toFixed(3)));
-                            $('#pk-desired-dose').val(numberWithCommas(data.dosing_data[6].toFixed(3)));
-                            $('#pk-desired-50').val(numberWithCommas(data.dosing_data[7].toFixed(3)));
-                            $('#pk-desired-90').val(numberWithCommas(data.dosing_data[8].toFixed(3)));
-                        }
-                        if (!missing_plasma_values && !missing_dosing_values) {
-                            $('#dosing-chart-container').show();
+
                             prediction_plot_data = JSON.parse(JSON.stringify(data.prediction_plot_table));
                             make_dosing_plot(prediction_plot_data, 300)
                             $('#dosing-slider').slider("value", 300);
                             $('#dosing-slider-handle').text("300");
                         }
+                        if (missing_dosing_values) {
+                            $('#dosing-container').hide();
+                        } else {
+                            $('#dosing-container').show();
+                            $('#pk-desired-dose').val(numberWithCommas(data.dosing_data[6].toFixed(3)));
+                            $('#pk-desired-50').val(numberWithCommas(data.dosing_data[7].toFixed(3)));
+                            $('#pk-desired-90').val(numberWithCommas(data.dosing_data[8].toFixed(3)));
+                        }
+
                     }
                 })
                 .fail(function(xhr, errmsg, err) {
@@ -1008,7 +1002,7 @@ $(document).ready(function () {
                     alert('Error retrieving Dosing Prediction.');
                     console.log(xhr.status + ": " + xhr.responseText);
                 });
-                console.log("Done with Dosing Prediction.")
+                // console.log("Done with Dosing Prediction.")
             }
         })
         .fail(function(xhr, errmsg, err) {
@@ -1018,7 +1012,7 @@ $(document).ready(function () {
             alert('Error retrieving Intrinsic Clearance.');
             console.log(xhr.status + ": " + xhr.responseText);
         });
-        console.log("Done with Clearance Prediction.")
+        // console.log("Done with Clearance Prediction.")
     })
 
     function isNumber(obj) {
@@ -1043,6 +1037,12 @@ $(document).ready(function () {
         $("#intro-text").toggle();
     });
 
+    $("#toggle-continuous-infusion-table").parent().show();
+    $("#toggle-continuous-infusion-table").hide();
+    $("#toggle-continuous-infusion-table").click(function() {
+        $("#continuous-infusion-table").toggle();
+    });
+
     $('#clearance-time-start-selectized').parent().css("display", "block");
     $('#clearance-time-end-selectized').parent().css("display", "block");
 
@@ -1056,6 +1056,7 @@ $(document).ready(function () {
     function update_chart() {
         // Summary Graph
         clear_clearance();
+        $('#calculated-pk-container').hide();
         make_chart(row_info[3], 'Avg Recovered Compound (μM)', $('#summary-graph')[0], JSON.parse(JSON.stringify(chart_data[group_num])), 400);
     }
 

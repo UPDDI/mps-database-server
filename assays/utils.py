@@ -4150,7 +4150,7 @@ def calculate_pk_parameters(cl_ml_min,
 
     dosage_data = [single_dose_Mmax, single_dose_Cmax, single_dose_tmax, multiple_dose_Mss, multiple_dose_Css, multiple_dose_tmax, Dosecalc, n_doses_reach_50_percent, n_doses_reach_90_percent]
 
-    if not missing_plasma_values and not missing_dosing_values:
+    if not missing_plasma_values:
         par_col_names = ["Time (hr)", "Time Interval (hr)", "Dose Number", "Single Dose (mg/L)", "Single Dose", "Elimination Coefficient", "Multiple Dose (mg/L)", "Multiple Dose (mg)"]
         prediction_dose_plot_table = pd.DataFrame(index=range(prediction_time_length+1), columns=par_col_names)
         FDK = (Fa*dose_mg*Ka)/(Ka-Ke)
@@ -4196,7 +4196,7 @@ def calculate_pk_parameters(cl_ml_min,
     if not missing_plasma_values and not missing_dosing_values:
         return {'calculated_pk_parameters': calculate_pk_parameters_df.to_dict('list'), 'prediction_plot_table': prediction_plot_table.to_dict('list'), 'dosing_data': dosage_data}
     elif not missing_plasma_values and missing_dosing_values:
-        return {'calculated_pk_parameters': calculate_pk_parameters_df.to_dict('list'), 'dosing_data': dosage_data}
+        return {'calculated_pk_parameters': calculate_pk_parameters_df.to_dict('list'), 'prediction_plot_table': prediction_plot_table.to_dict('list'), 'dosing_data': dosage_data}
     elif missing_plasma_values and not missing_dosing_values:
         return {'dosing_data': dosage_data}
     else:

@@ -72,13 +72,6 @@
                     <label>&nbsp;&nbsp;Include Cell-free Data</label>
                 </div>
                 <br>
-                <table class="display table-bordered" style="width: 100%">
-                    <tr>
-                        <th style="width: 1px; white-space: nowrap;">No. of Cells in Chip (for Calculations)</th>
-                        <td><textarea id="number-of-cells-calc" class="required" rows="1" style="resize: none; display: block; width: 100%" ></textarea></td>
-                    </tr>
-                </table>
-                <br>
                 <div class="row large-padding-top">
                     <div class="col-sm-3">
                     </div>
@@ -86,11 +79,11 @@
                         <h4>Start / End Times (Hours)</h4>
                         <table class="display table-bordered" style="width: 100%">
                             <tr>
-                                <th>Calculation Start Time</th>
+                                <th>Steady State Start Time</th>
                                 <td><select id="clearance-time-start" class="required"></td>
                             </tr>
                             <tr>
-                                <th>Calculation End Time</th>
+                                <th>Steady State End Time</th>
                                 <td><select id="clearance-time-end" class="required"></td>
                             </tr>
                         </table>
@@ -147,6 +140,13 @@
                     <tr>
                         <th style="width: 1px; white-space: nowrap;">No. of Cells in MPS Model</th>
                         <td><textarea id="experiment-number-cells" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                </table>
+                <br>
+                <table class="display table-bordered" style="width: 100%">
+                    <tr>
+                        <th style="width: 1px; white-space: nowrap;">No. of Cells in Chip (for Calculations)</th>
+                        <td><textarea id="number-of-cells-calc" class="required" rows="1" style="resize: none; display: block; width: 100%" ></textarea></td>
                     </tr>
                 </table>
             </div>
@@ -265,13 +265,13 @@
                         <td><textarea id="input-dosing-cp" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
                     </tr>
                     <tr>
-                        <th>Desired Dose Interval (h)</th>
+                        <th style="width: 200px; white-space: nowrap;">Desired Dose Interval (h)</th>
                         <td><textarea id="input-dosing-interval" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
                     </tr>
-                    <tr>
+                    <!-- <tr>
                         <th style="width: 200px; white-space: nowrap;">Estimated Fraction Absorbed</th>
                         <td><textarea id="input-dosing-absorbed" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
-                    </tr>
+                    </tr> -->
                 </table>
             </div>
         </div>
@@ -320,8 +320,12 @@
         <!-- <div class="col-sm-12 col-lg-2">
 
         </div> -->
-        <div id="continuous-table" class="col-xs-12">
+        <div class="col-xs-12">
+            <div class="text-center" hidden>
+                <button id="toggle-continuous-infusion-table" class="btn btn-lg btn-primary">Toggle Continous Infusion Table</button>
+            </div>
             <table id="continuous-infusion-table" class="display table-bordered" style="width: 100%">
+
             </table>
         </div>
     </div>
@@ -336,7 +340,7 @@
                             <td><textarea id="pk-param-vdss" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
                         </tr>
                         <tr>
-                            <th id="label-pk-param-ke">k<sub>e</sub> (1/h )</th>
+                            <th id="label-pk-param-ke">k<sub>e</sub> (1/h) </th>
                             <td><textarea id="pk-param-ke" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
                         </tr>
                         <tr>

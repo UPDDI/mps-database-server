@@ -5628,7 +5628,7 @@ def fetch_pbpk_intrinsic_clearance_results(request):
 
     clearance_results = pk_clearance_results(
         request.POST.get('pk_type', ''),
-        request.POST.get('with_no_cell_data', '') == True,
+        request.POST.get('with_no_cell_data', '') == 'true',
         cell_name,
         float(request.POST.get('start_time', '')),
         float(request.POST.get('end_time', '')),
