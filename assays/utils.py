@@ -5022,6 +5022,7 @@ def plate_reader_data_file_process_data(set_dict):
             sqls = sqls + ", assays_AssayMatrixItem.name"
 
             # 12 adjusted value(sample_blank_average will be 0 if not adjusting by sample blank
+            # could also be overwritten with the standard blank average depending on selected blank handling
             # so do not need an if conditions
             sqls = sqls + ", (assays_AssayPlateReaderMapItemValue.raw_value"
             sqls = sqls + "-" + str(sample_blank_average) + ")"
@@ -5070,6 +5071,7 @@ def plate_reader_data_file_process_data(set_dict):
             raw = each[9]
             locn = each[10]
             mxin = each[11]
+            # adjusted raw value
             araw = each[12]
 
             # print("araw, A, B, C, D ", str(araw), " ", str(A4), " ", str(B4), " ", str(C4), " ", str(D4), " ")
@@ -5080,35 +5082,40 @@ def plate_reader_data_file_process_data(set_dict):
 
             caution_flag = ''
             exclude_flag = ''
+            notes = ''
 
             if yes_to_calibrate == 'no' or use_calibration_curve == 'no_calibration':
                 ftv = araw
 
             elif use_calibration_curve == 'linear':
                 if slope_linear == 0:
-                    ftv = None
+                    ftv = ''
                     exclude_flag = 'X'
+                    notes = notes + "Slope is 0. Cannot calculate fitted value."
                 else:
                     ftv = (araw - icept_linear) / slope_linear
 
             elif use_calibration_curve == 'logistic4':
                 if araw-D4 == 0 or B4 == 0:
-                    ftv = None
+                    ftv = ''
                     exclude_flag = 'X'
+                    notes = notes + "A denominator is 0. Cannot calculate fitted value."
                 else:
                     ftv = C4 * (((A4 - D4) / (araw - D4)) - 1) ** (1 / B4)
 
             elif use_calibration_curve == 'log':
                 if B_log == 0:
-                    ftv = None
+                    ftv = ''
                     exclude_flag = 'X'
+                    notes = notes + "A denominator is 0. Cannot calculate fitted value."
                 else:
                     ftv = math.exp((araw-A_log)/B_log)
 
             elif use_calibration_curve == 'poly2':
                 if C_poly2 == 0:
-                    ftv = None
+                    ftv = ''
                     exclude_flag = 'X'
+                    notes = notes + "A denominator is 0. Cannot calculate fitted value."
                 else:
                     ftv1 = ( (-1*B_poly2) + ( (B_poly2**2) - (4*C_poly2*(A_poly2-araw)) )**(1/2) ) / (2*C_poly2)
                     ftv2 = ( (-1*B_poly2) - ( (B_poly2**2) - (4*C_poly2*(A_poly2-araw)) )**(1/2) ) / (2*C_poly2)
@@ -5120,12 +5127,13 @@ def plate_reader_data_file_process_data(set_dict):
             else:
                 # elif use_calibration_curve == 'linear0':
                 if slope_linear0 == 0:
-                    ftv = None
+                    ftv = ''
                     exclude_flag = 'X'
+                    notes = notes + "Slope is 0. Cannot calculate fitted value."
                 else:
                     ftv = araw / slope_linear0
 
-            if ftv != None:
+            if ftv != '':
                 # adjust by normalization
                 if standardunitCellsStart == None and unitCellsStart != None:
                     pdv = ftv * multiplier * df / cv / ct
@@ -5140,6 +5148,8 @@ def plate_reader_data_file_process_data(set_dict):
             else:
                 ftv = ""
                 pdv = ""
+                exclude_flag = 'X'
+                notes = notes + "Null Value."
 
             this_row.update({'plate_index'              : pi                    })
             this_row.update({'matrix_item_name'         : mxin                  })
@@ -5187,7 +5197,7 @@ def plate_reader_data_file_process_data(set_dict):
             this_row.update({'replicate'                : ' '                   })
             this_row.update({'caution_flag'             : caution_flag          })
             this_row.update({'exclude'                  : exclude_flag          })
-            this_row.update({'notes'                    : ' '                   })
+            this_row.update({'notes'                    : notes                 })
             this_row.update({'sendmessage'              : sendmessage           })
 
             # add the dictionary to the list

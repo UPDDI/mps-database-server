@@ -3676,7 +3676,7 @@ $(document).ready(function () {
     function generalFormatNumber(this_number_in) {
         let formatted_number = 0;
         // console.log("function format ", this_number_in)
-        let this_number = parseFloat(this_number_in);
+        let this_number = Math.abs(parseFloat(this_number_in));
         if (this_number == 0) {
             formatted_number = this_number.toFixed(0);
         } else if (this_number < 0.00001) {
