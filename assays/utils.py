@@ -4257,12 +4257,13 @@ def plate_reader_data_file_process_data(set_dict):
     if form_calibration_curve not in ['no_calibration', 'best_fit', 'linear', 'linear0', 'log', 'poly2', 'logistic4', 'log5']:
         form_calibration_curve = 'no_calibration'
         sendmessage = "Invalid entry - defaults used;  "
-    if form_blank_handling not in ['subtract', 'subtractstandard', 'subtractsample', 'ignore']:
+    if form_blank_handling not in ['subtract', 'subtractstandard', 'subtractsample', 'subtractstandardfromall', 'ignore']:
         form_blank_handling = 'ignore'
         sendmessage = "Invalid entry - defaults used;  "
 
     # set defaults
     yes_to_continue = 'yes'
+    yes_to_calibrate = 'yes'
     sample_blank_average = 0
     standard_blank_average = 0
     use_calibration_curve = form_calibration_curve
@@ -4276,9 +4277,9 @@ def plate_reader_data_file_process_data(set_dict):
     list_of_dicts_of_each_standard_row_ave_points = []
     list_of_dicts_of_each_standard_row_curve = []
     list_of_dicts_of_each_sample_row = []
-    badMessage = "To deal with this, go to the file block that uses this plate map and remove the plate map and save the file block, then, return to this plate map and add the required information and save. Go back to the file block and re-add this plate map. Return to this plate map and continue.; "
-    yes_to_calibrate = 'yes'
-
+    goBackToFileBlockRemovePlateMapToFixMessage = "To deal with this, go to the file block that uses this plate map and remove the plate map and save the file block, then, return to this plate map and add the required information and save. Go back to the file block and re-add this plate map. Return to this plate map and continue.; "
+    goBackToFileBlockToFixFileBlockMessage = "A possible cause is that the file block was parsed correctly during file upload. Another possible cause is incorrect plate map setup. All wells designated as something other than empty should have a raw value.; "
+   
     # Prelim QC SECTION Some QC that will cause errors if not detected up front
 
     # deal with the reporting unit containing /cells
@@ -4291,26 +4292,46 @@ def plate_reader_data_file_process_data(set_dict):
     standardunitCellsStart = re.search(r'cells', standard_unit.lower())
     unitCellsStart = re.search(r'cells', unit.lower())
 
+    # are there samples on this plate?
+    with connection.cursor() as cursor:
+        sqls = "SELECT COUNT(*)"
+        sqls = sqls + " FROM assays_AssayPlateReaderMapItem "
+        sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.well_use = 'sample' "
+        sqls = sqls + " and assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(pk_platemap)
+        # print("0: ", sqls)
+        cursor.execute(sqls)
+        results = cursor.fetchall()
+        # print(results)
+        results00 = results[0][0]
+        # print("missing samples if == 0? ", results00)
+
+        if results00 == 0:
+            sendmessage = sendmessage + "ERROR: There are no samples on this plate - no data to process. "
+            sendmessage = sendmessage + goBackToFileBlockRemovePlateMapToFixMessage
+            yes_to_continue = 'no'
+
+    # Check if results are to be normalized (no cells in standard unit but cells in processed unit)
+    # if so, is the collection time and collection volume provided?
     if standardunitCellsStart == None and unitCellsStart != None:
         with connection.cursor() as cursor:
             sqls = "SELECT COUNT(*)"
             sqls = sqls + " FROM assays_AssayPlateReaderMapItem "
             sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.well_use = 'sample' "
             sqls = sqls + " and assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(pk_platemap)
-            sqls = sqls + " and (assays_AssayPlateReaderMapItem.collection_volume = Null "
+            sqls = sqls + " and ( concat(trim(assays_AssayPlateReaderMapItem.collection_volume::varchar(255)),'zz') = 'zz' "
             sqls = sqls + " or   assays_AssayPlateReaderMapItem.collection_volume = 0 "
-            sqls = sqls + " or   assays_AssayPlateReaderMapItem.collection_time = Null "
+            sqls = sqls + " or    concat(trim(assays_AssayPlateReaderMapItem.collection_time::varchar(255)),'zz') = 'zz' "
             sqls = sqls + " or   assays_AssayPlateReaderMapItem.collection_time = 0 )"
-            # print("look for null or 0 sql: ", sqls)
+            # print("1: ", sqls)
             cursor.execute(sqls)
             results = cursor.fetchall()
             # print(results)
             results00 = results[0][0]
-            # print(results00)
+            # print("missing normalization information? ", results00)
 
             if results00 > 0:
-                sendmessage = sendmessage + "ERROR: Sample to be normalized, but one or more collection time or collection volume is Null or 0. "
-                sendmessage = sendmessage + badMessage
+                sendmessage = sendmessage + "ERROR: Samples are to be normalized, but one or more collection time or collection volume is Null or 0. "
+                sendmessage = sendmessage + goBackToFileBlockRemovePlateMapToFixMessage
                 yes_to_continue = 'no'
 
     # look for samples with missing matrix items
@@ -4319,17 +4340,18 @@ def plate_reader_data_file_process_data(set_dict):
         sqls = sqls + " FROM assays_AssayPlateReaderMapItem "
         sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.well_use = 'sample' "
         sqls = sqls + " and assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(pk_platemap)
-        sqls = sqls + " and (assays_AssayPlateReaderMapItem.matrix_item_id = Null or assays_AssayPlateReaderMapItem.matrix_item_id = 0)"
-        # print("look for null: ", sqls)
+        sqls = sqls + " and ( concat(trim(assays_AssayPlateReaderMapItem.matrix_item_id::varchar(255)),'zz') = 'zz' "
+        sqls = sqls + " or assays_AssayPlateReaderMapItem.matrix_item_id = 0)"
+        # print("2: ", sqls)
         cursor.execute(sqls)
         results = cursor.fetchall()
         # print(results)
         results00 = results[0][0]
-        # print(results00)
+        # print("missing matrix items? ", results00)
 
         if results00 > 0:
-            sendmessage = sendmessage + "ERROR: One or more samples are missing a matrix item label. "
-            sendmessage = sendmessage + badMessage
+            sendmessage = sendmessage + "ERROR: One or more samples are missing a matrix item label. This will cause them to omitted from data processing. "
+            sendmessage = sendmessage + goBackToFileBlockRemovePlateMapToFixMessage
             yes_to_continue = 'no'
 
     # look for samples with missing sample locations
@@ -4338,20 +4360,21 @@ def plate_reader_data_file_process_data(set_dict):
         sqls = sqls + " FROM assays_AssayPlateReaderMapItem "
         sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.well_use = 'sample' "
         sqls = sqls + " and assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(pk_platemap)
-        sqls = sqls + " and (assays_AssayPlateReaderMapItem.location_id = Null or assays_AssayPlateReaderMapItem.location_id = 0)"
-        # print("look for null: ", sqls)
+        sqls = sqls + " and ( concat(trim(assays_AssayPlateReaderMapItem.location_id::varchar(255)),'zz') = 'zz' "
+        sqls = sqls + " or assays_AssayPlateReaderMapItem.location_id = 0)"
+        # print("3: ", sqls)
         cursor.execute(sqls)
         results = cursor.fetchall()
         # print(results)
         results00 = results[0][0]
-        # print(results00)
+        # print("missing sample locations? ", results00)
 
         if results00 > 0:
-            sendmessage = sendmessage + "ERROR: One or more samples are missing a matrix item label. "
-            sendmessage = sendmessage + badMessage
+            sendmessage = sendmessage + "ERROR: One or more samples are missing a matrix item label. This will cause them to be omitted from data processing. "
+            sendmessage = sendmessage + goBackToFileBlockRemovePlateMapToFixMessage
             yes_to_continue = 'no'
 
-    # look for samples with missing raw values (null)
+    # look for samples, standards, or blanks with missing raw values (null)
     with connection.cursor() as cursor:
         sqls = "SELECT COUNT(*)"
         sqls = sqls + " FROM ( assays_AssayPlateReaderMapItem "
@@ -4365,33 +4388,84 @@ def plate_reader_data_file_process_data(set_dict):
         sqls = sqls + " or assays_AssayPlateReaderMapItem.well_use = 'blank') "
         sqls = sqls + " and assays_AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock_id = " + str(
             pk_data_block) + " "
-        sqls = sqls + " and assays_AssayPlateReaderMapItemValue.raw_value = Null "
+        sqls = sqls + " and concat(trim(assays_AssayPlateReaderMapItemValue.raw_value::varchar(255)),'zz') = 'zz' "
         # print("look for null raws: ", sqls)
         cursor.execute(sqls)
         results = cursor.fetchall()
         # print(results)
         results00 = results[0][0]
-        # print(results00)
+        # print("missing sample raw values? ", results00)
 
         if results00 > 0:
-            sendmessage = sendmessage + "Potential Problem: One or more samples, standards, or blanks (on this plate) have a null raw value in the file. You may want to make sure the file block was parsed correctly during file upload. "
+            sendmessage = sendmessage + "ERROR: One or more samples, standards, or blanks have a null raw value in the file. "
+            sendmessage = sendmessage + goBackToFileBlockToFixFileBlockMessage
+            yes_to_continue = 'no'
+
+    # need to know what plate has standards for next QC check
+    if form_calibration_curve == 'no_calibration':
+        yes_to_calibrate = 'no'
+    elif count_standards_current_plate == 0 and borrowed_block_pk < 1:
+        yes_to_calibrate = 'no'
+    elif count_standards_current_plate == 0:
+        use_file_pk_for_standards = borrowed_block_pk
+        use_platemap_pk_for_standards = borrowed_platemap_pk
+    else:
+        use_file_pk_for_standards = pk_data_block
+        use_platemap_pk_for_standards = pk_platemap
+
+    if yes_to_calibrate == 'yes':
+        # look for missing standard concentrations from the plate selected to use for standards
+        with connection.cursor() as cursor:
+            sqls = "SELECT COUNT(*)"
+            sqls = sqls + " FROM assays_AssayPlateReaderMapItem "
+            sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.well_use = 'standard' "
+            sqls = sqls + " and assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(use_platemap_pk_for_standards)
+            sqls = sqls + " and concat(trim(assays_AssayPlateReaderMapItem.standard_value::varchar(255)),'zz') = 'zz' "
+            # print("5: ", sqls)
+            cursor.execute(sqls)
+            results = cursor.fetchall()
+            # print(results)
+            results00 = results[0][0]
+            # print("missing standard concentrations for well use == standard on selected plate? ",results00)
+
+            if results00 > 0:
+                sendmessage = sendmessage + "ERROR: One or more of the wells in the plate map selected for standards are missing a standard concentration. "
+                sendmessage = sendmessage + goBackToFileBlockRemovePlateMapToFixMessage
+                yes_to_continue = 'no'
+
+        # look for missing standard raw values from the plate selected to use for standards
+        with connection.cursor() as cursor:
+            sqls = "SELECT COUNT(*)"
+            sqls = sqls + " FROM ( assays_AssayPlateReaderMapItem "
+            sqls = sqls + " INNER JOIN assays_AssayPlateReaderMapItemValue ON "
+            sqls = sqls + " assays_AssayPlateReaderMapItem.plate_index=assays_AssayPlateReaderMapItemValue.plate_index) "
+
+            # get this plate map, the samples, the selected (at the top) File/Block
+            sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(use_platemap_pk_for_standards) + " "
+            sqls = sqls + " and assays_AssayPlateReaderMapItem.well_use = 'standard' "
+            sqls = sqls + " and assays_AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock_id = " + str(
+                use_file_pk_for_standards) + " "
+            sqls = sqls + " and concat(trim(assays_AssayPlateReaderMapItemValue.raw_value::varchar(255)),'zz') = 'zz' "
+            # print("look for null raws: ", sqls)
+            cursor.execute(sqls)
+            results = cursor.fetchall()
+            # print(results)
+            results00 = results[0][0]
+            # print("missing raw standard values? ", results00)
+
+            if results00 > 0:
+                sendmessage = sendmessage + "ERROR: One or more of the wells in the plate selected for standards have a null raw value in the file. "
+                sendmessage = sendmessage + goBackToFileBlockRemovePlateMapToFixMessage
+                yes_to_continue = 'no'
 
     # Prelim QC SECTION end
 
+    # if passed the preliminary QC, keep going, else, just send back the error message
+    # all the other defaults (including the dictionaries) were set to empty above
+
+    # print("cont ", yes_to_continue)
+
     if yes_to_continue == 'yes':
-
-        if form_calibration_curve == 'no_calibration':
-            yes_to_calibrate = 'no'
-        elif count_standards_current_plate == 0 and borrowed_block_pk < 1:
-            yes_to_calibrate = 'no'
-        elif count_standards_current_plate == 0:
-            use_file_pk_for_standards = borrowed_block_pk
-            use_platemap_pk_for_standards = borrowed_platemap_pk
-        else:
-            use_file_pk_for_standards = pk_data_block
-            use_platemap_pk_for_standards = pk_platemap
-
-        # print("yes_to_calibrate ", yes_to_calibrate)
 
         # need and use several times to get info for standards and standard blanks
         sqlsFrom = " FROM ( assays_AssayPlateReaderMapItem "
@@ -4409,6 +4483,8 @@ def plate_reader_data_file_process_data(set_dict):
             # need to deal with sample blanks
 
             # if subtracting by average sample blank, get average, else, set it = 0 and then can always subtract
+            # note: 4/14/2020 - will overwrite sample_blank_average with standard_blank_average later on
+            # if user selection for blank handling was 'subtractstandardfromall'
             if form_blank_handling in ['subtract', 'subtractsample']:
                 # get the average of the sample blanks
                 with connection.cursor() as cursor:
@@ -4460,7 +4536,7 @@ def plate_reader_data_file_process_data(set_dict):
             # print("use_form_max ", use_form_max)
 
             # if subtracting by average standard blank, get average, else, set it = 0 and then can always subtract
-            if form_blank_handling in ['subtract', 'subtractstandard']:
+            if form_blank_handling in ['subtract', 'subtractstandard', 'subtractstandardfromall']:
                 # these are to use for 1) graphing and 2) curve fitting
 
                 # get the standard blank average
@@ -4483,6 +4559,12 @@ def plate_reader_data_file_process_data(set_dict):
                 standard_blank_average = 0
             # print("sample_blank_average: ", sample_blank_average)
             # print("standard_blank_average: ", standard_blank_average)
+
+            # 4/14/2020 added an option to subtract average standard from samples
+            # this option is accommodate here - assumes that sample_blank_average was computed above
+            # we will overwrite it here, if needed
+            if form_blank_handling == 'subtractstandardfromall':
+                sample_blank_average = standard_blank_average
 
             # for graphing - get all adjusted standards (POINTS) (will subtract 0 in not adjusting, so okay to treat all the same)
             with connection.cursor() as cursor:
@@ -4676,6 +4758,7 @@ def plate_reader_data_file_process_data(set_dict):
                 use_calibration_curve = form_calibration_curve
 
             # do not move this into a place that it happens for best_fit
+
             if use_calibration_curve == 'log':
                 use_form_min = Nno0[0]
 
@@ -5034,6 +5117,9 @@ def plate_reader_data_file_process_data(set_dict):
                         caution_flag = 'E'
                     if ftv < use_form_min:
                         caution_flag = 'e'
+            else:
+                ftv = ""
+                pdv = ""
 
             this_row.update({'plate_index'              : pi                    })
             this_row.update({'matrix_item_name'         : mxin                  })
@@ -5092,6 +5178,7 @@ def plate_reader_data_file_process_data(set_dict):
 
     # regardless of errors, return the sendmessage
 
+    # if failed one or more of QC, only the sendmessage should be populated
     return [sendmessage,
             list_of_dicts_of_each_sample_row,
             list_of_dicts_of_each_standard_row_points,

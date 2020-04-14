@@ -1400,19 +1400,21 @@
                         </div>
 
                         <div class="plate-calibration-curve-guts-yes hidden">
-                            <div class="col-md-3">
-                                <div class="plate-map-page-field-contents-medium">
-                                    <button type="button" class="btn btn-primary" id="parameterDetailsButton">Show/Hide Parameter Details</button>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="plate-map-page-field-contents-medium">
+                                        <button type="button" class="btn btn-primary" id="parameterDetailsButton">Show/Hide Parameter Details</button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-md-9">
+                                <div class="col-md-9">
+                                </div>
                             </div>
                         </div>
 
                         <div class="plate-calibration-curve-guts-yes hidden">
                             <div class="plate-map-page-show-parameter-details">
                                 <div class="row">
-                                    <div >
+                                    <div class="col-md-12">
                                         <table class="table table-striped table-bordered">
                                             <thead>
     {#                                          <tr>#}
@@ -1483,14 +1485,16 @@
                                                                         <td>{{ form.form_calibration_standard_fitted_max_for_e }}
                                                                         </td>
                                                                     </tr>
+{#                                                                    Note to self: these are loosely the standard and sample blank average#}
+{#                                                                    however, they get overwritt#}
                                                                     <tr>
-                                                                        <td>Standard Blank Average (Concentration = 0) </td>
+                                                                        <td>Subtracting from Standards </td>
                                                                         <td>{{ form.form_calibration_standard_standard0_average }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td>Sample Blank Average</td>
-                                                                        <td>{{ form.form_calibration_standard_blank_average }}
+                                                                        <td>Subtracting from Samples</td>
+                                                                        <td>{{ form.form_calibration_sample_blank_average }}
                                                                         </td>
                                                                     </tr>
                                                                 </tbody>
@@ -1504,8 +1508,10 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="plate-map-page-field-contents-medium">
-                                        <button type="button" class="btn btn-primary" id="showHideSamplesOnGraphButton">Show/Hide Samples On Graph (QC Check)</button>
+                                    <div class="col-md-12">
+                                        <div class="plate-map-page-field-contents-medium">
+                                            <button type="button" class="btn btn-primary" id="showHideSamplesOnGraphButton">Show/Hide Samples On Graph (QC Check)</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1533,11 +1539,16 @@
 {#                                        </table>#}
                                         </div>
                                         <br>
-                                        <p><i>Caution Flag:</i> E - Out of Calibration Range</p>
-                                        <p>{{ form.form_data_parsable_message }} </p>
-                                        <p id="id_used_curve" class="hidden"></p>
+                                        <p><i>Caution Flag:</i> E - Above Calibration Range; e - Below Calibration Range;</p>
                                     </div>
                                 </div>
+                        </div>
+
+                        <div class="data-processing-errors hidden">
+                            <br>
+                            <h2>Data Processing Errors</h2>
+                            <p>{{ form.form_data_parsable_message }} </p>
+                            <p id="id_used_curve" class="hidden"></p>
                         </div>
 
 

@@ -771,7 +771,7 @@ $(document).ready(function () {
         $("#id_form_calibration_standard_fitted_min_for_e").val(dict_of_standard_info.min);
         $("#id_form_calibration_standard_fitted_max_for_e").val(dict_of_standard_info.max);
         $("#id_form_calibration_standard_standard0_average").val(dict_of_standard_info.standard0average);
-        $("#id_form_calibration_standard_blank_average").val(dict_of_standard_info.blankaverage);
+        $("#id_form_calibration_sample_blank_average").val(dict_of_standard_info.blankaverage);
 
         let dict_of_parameter_labels = json.dict_of_parameter_labels;
         let dict_of_parameter_values = json.dict_of_parameter_values;
@@ -1071,7 +1071,9 @@ $(document).ready(function () {
             $('.plate-calibration-curve').addClass('hidden');
             $('.plate-calibration-curve-yes').addClass('hidden');
             $('.plate-calibration-curve-guts-yes').addClass('hidden');
+            $('.data-processing-errors').removeClass('hidden');
         } else {
+            $('.data-processing-errors').addClass('hidden');
 
             google.charts.setOnLoadCallback(drawStandardCurve01);
 
@@ -1193,7 +1195,7 @@ $(document).ready(function () {
                         //vAxis: {title: global_floater_target},
                         vAxis: {title: 'Signal'},
                         hAxis: {title: global_floater_standard_unit},
-                        colors: ['MidnightBlue', 'MediumBlue', 'SteelBlue', 'Tomato'],
+                        colors: ['MidnightBlue', 'MediumBlue', 'SteelBlue', 'FireBrick'],
                     };
 
                 }
@@ -3678,11 +3680,11 @@ $(document).ready(function () {
         if (this_number == 0) {
             formatted_number = this_number.toFixed(0);
         } else if (this_number < 0.00001) {
-            formatted_number = this_number.toExponential(4);
+            formatted_number = this_number.toExponential(2);
         } else if (this_number < 0.0001) {
-            formatted_number = this_number.toFixed(5);
+            formatted_number = this_number.toExponential(2);
         } else if (this_number < 0.001) {
-            formatted_number = this_number.toFixed(5);
+            formatted_number = this_number.toFixed(4);
         } else if (this_number < 0.01) {
             formatted_number = this_number.toFixed(3);
         } else if (this_number < 0.1) {

@@ -2912,7 +2912,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
         self.fields['form_calibration_parameter_5_value'].required = False
         self.fields['form_calibration_standard_fitted_min_for_e'].required = False
         self.fields['form_calibration_standard_fitted_max_for_e'].required = False
-        self.fields['form_calibration_standard_blank_average'].required = False
+        self.fields['form_calibration_sample_blank_average'].required = False
         self.fields['form_calibration_standard_standard0_average'].required = False
 
     # these raw data
@@ -2965,6 +2965,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
         choices=(('subtract', 'Subtract Average Standard Blanks from Standards and Average Sample Blanks from Samples'),
                  ('subtractstandard', 'Subtract Average Standard Blanks from Standards (ignore sample blanks)'),
                  ('subtractsample', 'Subtract Average Sample Blanks from Samples (ignore standard blanks)'),
+                 ('subtractstandardfromall', 'Subtract Average Standard Blanks from all (standards and samples)'),
                  ('ignore', 'Ignore the Blanks'))
     )
 
@@ -3001,7 +3002,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
     )
 
     form_data_parsable_message = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly', 'required': False})
+        widget=forms.Textarea(attrs={'rows': 6, 'readonly': 'readonly', 'required': False})
     )
 
     form_calibration_curve_method_used = forms.CharField(
@@ -3072,7 +3073,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
     form_calibration_standard_fitted_max_for_e = forms.DecimalField(
         widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
     )
-    form_calibration_standard_blank_average = forms.DecimalField(
+    form_calibration_sample_blank_average = forms.DecimalField(
         widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
     )
     form_calibration_standard_standard0_average = forms.DecimalField(
