@@ -4702,13 +4702,22 @@ def plate_reader_data_file_process_data(set_dict):
                 D = Smax
                 # print("## A, B, C, D ", A, " ", B, " ", C, " ", D, " ")
                 p0 = [A, B, C, D]
-                Sfitted, cost, info, msg, success = leastsq(plateMapResidualsLogistic4, p0, args=(S, N), full_output=1)
+
+                # need to do some work to prep for logistic4 1) n cannot be 0 in fitting
+                if N[0] == 0:
+                    Nno0 = np.delete(N, 0)
+                    Sno0 = np.delete(S, 0)
+                else:
+                    Nno0 = N
+                    Sno0 = S
+
+                Sfitted, cost, info, msg, success = leastsq(plateMapResidualsLogistic4, p0, args=(Sno0, Nno0), full_output=1)
                 A4 = Sfitted[0]
                 B4 = Sfitted[1]
                 C4 = Sfitted[2]
                 D4 = Sfitted[3]
-                y_predStandards = plateMapLogistic4(N, A4, B4, C4, D4)
-                rsquared_logistic4 = plateMapRsquared(N, S, y_predStandards)
+                y_predStandards = plateMapLogistic4(Nno0, A4, B4, C4, D4)
+                rsquared_logistic4 = plateMapRsquared(Nno0, Sno0, y_predStandards)
                 r2['logistic4'] = rsquared_logistic4
 
             if form_calibration_curve in ['log', 'best_fit']:
@@ -4759,7 +4768,7 @@ def plate_reader_data_file_process_data(set_dict):
 
             # do not move this into a place that it happens for best_fit
 
-            if use_calibration_curve == 'log':
+            if use_calibration_curve == 'log' or use_calibration_curve == 'logistic4':
                 use_form_min = Nno0[0]
 
             # make an array of Ns so that there will be 100 fitted points on the graph
@@ -4809,7 +4818,12 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_standard_info = dict_of_standard_info_linear
 
             elif use_calibration_curve == 'logistic4':
-                y_predStandards100 = plateMapLogistic4(N100, A4, B4, C4, D4)
+                if N100[0] == 0:
+                    N100no0 = np.delete(N100, 0)
+                else:
+                    N100no0 = N100
+
+                y_predStandards100 = plateMapLogistic4(N100no0, A4, B4, C4, D4)
 
                 A_logistic4 = sandrasGeneralFormatNumberFunction(A4)
                 B_logistic4 = sandrasGeneralFormatNumberFunction(B4)
@@ -4934,7 +4948,7 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_standard_info = dict_of_standard_info_linear0
 
             # since the log case had the 0s removed, may not have the same number of points in the 100 array, deal with
-            if use_calibration_curve == 'log':
+            if use_calibration_curve == 'log' or use_calibration_curve == 'logistic4':
                 i = 0
                 for each in N100no0:
                     this_row = {}
@@ -5057,6 +5071,12 @@ def plate_reader_data_file_process_data(set_dict):
             locn = each[10]
             mxin = each[11]
             araw = each[12]
+
+            # print("araw, A, B, C, D ", str(araw), " ", str(A4), " ", str(B4), " ", str(C4), " ", str(D4), " ")
+            # print("(A4 - D4) ", str(A4 - D4))
+            # print("(araw - D4) ", str(araw - D4))
+            # print("(1 / B4) ", str(1 / B4))
+            # print("(((A4 - D4) / (araw - D4)) - 1) ", str(((A4 - D4) / (araw - D4)) - 1))
 
             caution_flag = ''
             exclude_flag = ''
@@ -5234,6 +5254,12 @@ def plateMapRsquared(N, S, y_predStandards):
 #  n is concentration, returns Signal
 def plateMapLogistic4(n, A, B, C, D):
     """4PL logistic equation."""
+    # print("A, B, C, D ", str(A), " ", str(B), " ", str(C), " ", str(D), " ")
+    # print("(A - D) ", str(A - D) )
+    # print("(1 / B) ", str(1 / B) )
+    # print("(n / C) ", str( (n / C) ) )
+    # print("(1.0+((n/C)**B))) ", str(1.0+((n/C)**B)) )
+
     # print("n, A, B, C, D ", str(n), " ", str(A)," " , str(B)," ", str(C)," ", str(D)," ")
     # print("logistic4 n ", n)
     signal = ((A-D)/(1.0+((n/C)**B))) + D
