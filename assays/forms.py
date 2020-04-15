@@ -2965,7 +2965,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
         choices=(('subtract', 'Subtract Average Standard Blanks from Standards and Average Sample Blanks from Samples'),
                  ('subtractstandard', 'Subtract Average Standard Blanks from Standards (ignore sample blanks)'),
                  ('subtractsample', 'Subtract Average Sample Blanks from Samples (ignore standard blanks)'),
-                 ('subtractstandardfromall', 'Subtract Average Standard Blanks from all (standards and samples)'),
+                 ('subtractstandardfromall', 'Subtract Average Standard Blanks from the Standards and Samples)'),
                  ('ignore', 'Ignore the Blanks'))
     )
 

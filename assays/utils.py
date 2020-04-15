@@ -5089,7 +5089,7 @@ def plate_reader_data_file_process_data(set_dict):
 
             elif use_calibration_curve == 'linear':
                 if slope_linear == 0:
-                    ftv = ''
+                    ftv = " "
                     exclude_flag = 'X'
                     notes = notes + "Slope is 0. Cannot calculate fitted value."
                 else:
@@ -5097,23 +5097,45 @@ def plate_reader_data_file_process_data(set_dict):
 
             elif use_calibration_curve == 'logistic4':
                 if araw-D4 == 0 or B4 == 0:
-                    ftv = ''
+                    ftv = " "
                     exclude_flag = 'X'
                     notes = notes + "A denominator is 0. Cannot calculate fitted value."
                 else:
-                    ftv = C4 * (((A4 - D4) / (araw - D4)) - 1) ** (1 / B4)
+                    try:
+                        ftv = C4 * (((A4 - D4) / (araw - D4)) - 1) ** (1 / B4)
+                        if str(ftv).lower().strip() == 'nan':
+
+                            if araw < A4:
+                                ftv = A4
+                                caution_flag = 'e'
+                                notes = notes + "Sample value too small to calculate; set to theoretical response at zero concentration (A)."
+                            else:
+                                # print("araw,    A,    B,    C,    D ")
+                                # print(str(araw), " ", str(A4), " ", str(B4), " ", str(C4), " ", str(D4))
+                                ftv = " "
+                                exclude_flag = 'X'
+                                notes = notes + "Cannot calculate fitted value."
+                    except:
+                        ftv = " "
+                        exclude_flag = 'X'
+                        notes = notes + "Cannot calculate fitted value. Likely due to very large exponent."
 
             elif use_calibration_curve == 'log':
                 if B_log == 0:
-                    ftv = ''
+                    ftv = " "
                     exclude_flag = 'X'
                     notes = notes + "A denominator is 0. Cannot calculate fitted value."
                 else:
-                    ftv = math.exp((araw-A_log)/B_log)
+                    try:
+                        ftv = math.exp((araw-A_log)/B_log)
+                    except:
+                        ftv = " "
+                        exclude_flag = 'X'
+                        notes = notes + "Cannot calculate fitted value. Likely due to very large exponent."
 
             elif use_calibration_curve == 'poly2':
                 if C_poly2 == 0:
-                    ftv = ''
+                    ftv = " "
                     exclude_flag = 'X'
                     notes = notes + "A denominator is 0. Cannot calculate fitted value."
                 else:
@@ -5127,13 +5149,14 @@ def plate_reader_data_file_process_data(set_dict):
             else:
                 # elif use_calibration_curve == 'linear0':
                 if slope_linear0 == 0:
-                    ftv = ''
+                    ftv = " "
                     exclude_flag = 'X'
                     notes = notes + "Slope is 0. Cannot calculate fitted value."
                 else:
                     ftv = araw / slope_linear0
 
-            if ftv != '':
+            # WATCH if change this above, will not work here!! Be careful.
+            if ftv != " ":
                 # adjust by normalization
                 if standardunitCellsStart == None and unitCellsStart != None:
                     pdv = ftv * multiplier * df / cv / ct
@@ -5146,10 +5169,24 @@ def plate_reader_data_file_process_data(set_dict):
                     if ftv < use_form_min:
                         caution_flag = 'e'
             else:
-                ftv = ""
-                pdv = ""
-                exclude_flag = 'X'
-                notes = notes + "Null Value."
+                pdv = " "
+
+            pi = str(each[0])
+            df = str(each[1])
+            loci = str(each[2])
+            mxii = str(each[3])
+            cv = str(each[4])
+            ct = str(each[5])
+            welln = str(each[6])
+            wellu = str(each[7])
+            st = str(each[8])
+            raw = str(each[9])
+            locn = str(each[10])
+            mxin = str(each[11])
+            # adjusted raw value
+            araw = str(each[12])
+            ftv = str(ftv)
+            pdv = str(pdv)
 
             this_row.update({'plate_index'              : pi                    })
             this_row.update({'matrix_item_name'         : mxin                  })

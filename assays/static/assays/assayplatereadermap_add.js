@@ -909,16 +909,20 @@ $(document).ready(function () {
             let myCellContentWithCommas = "";
             $.each(row, function (ii, col) {
                 // console.log("colcounter ", colcounter)
-                // console.log("--col ", col)
+                console.log("--col ", col)
                 var td = document.createElement('TD');
                 $(td).attr('col-index', colcounter);
-                let myCellContent = col;
-                if (ii == 7  || ii == 8  || ii == 9  ||
-                    ii == 15 || ii == 17 || ii == 18 || ii == 19 ||
-                    ii == 24 || ii == 25){
+                let myCellContent = col.toString().trim();
+                if (myCellContent.length == 0) {
+                    myCellContent = " ";
+                } else if (ii == 7  || ii == 8  || ii == 9  ||
+                        ii == 15 || ii == 17 || ii == 18 || ii == 19 ||
+                        ii == 24 || ii == 25)
+                {
                     myCellContent = generalFormatNumber(parseFloat(col));
                     myCellContent = thousands_separators(myCellContent);
                 }
+                //else leave the myCellContent as it was
 
                 td.appendChild(document.createTextNode(myCellContent));
                 tr.appendChild(td);
@@ -954,7 +958,7 @@ $(document).ready(function () {
 
                 //{"targets": [   7], "visible": false, },
                 //{"targets": [   8], "visible": false, },
-                //{"targets": [   9], "visible": false, },
+                {"targets": [   9], "visible": false, },
 
                 {"targets": [  10], "visible": false, },
                 {"targets": [  11], "visible": false, },
@@ -979,7 +983,7 @@ $(document).ready(function () {
 
                 {"targets": [  27], "visible": false, },
                 //{"targets": [  28], "visible": false, },
-                {"targets": [  29], "visible": false, },
+                //{"targets": [  29], "visible": false, },
                 {"targets": [  30], "visible": false, },
                 {"targets": [  31], "visible": false, }
             ]
