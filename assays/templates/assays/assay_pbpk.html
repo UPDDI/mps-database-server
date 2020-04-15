@@ -73,9 +73,9 @@
                 </div>
                 <br>
                 <div class="row large-padding-top">
-                    <div class="col-sm-3">
-                    </div>
-                    <div class="col-sm-6 text-center">
+                    <!-- <div class="col-sm-3">
+                    </div> -->
+                    <div class="col-sm-6">
                         <h4>Start / End Times (Hours)</h4>
                         <table class="display table-bordered" style="width: 100%">
                             <tr>
@@ -95,8 +95,8 @@
         </div>
         <div class="row large-padding-top">
             <div class="col-sm-12 col-lg-6">
-                <h4>MPS Model PK Experiment Parameters</h4>
-                <table class="display table-bordered" style="width: 100%;">
+                <h4 hidden>MPS Model PK Experiment Parameters</h4>
+                <table class="display table-bordered" style="width: 100%;" hidden>
                     <tr>
                         <th>PK Type</th>
                         <td><textarea id="experiment-pk-type" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
@@ -142,13 +142,51 @@
                         <td><textarea id="experiment-number-cells" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
                     </tr>
                 </table>
-                <br>
+                <h4>Model Parameters</h4>
                 <table class="display table-bordered" style="width: 100%">
                     <tr>
                         <th style="width: 1px; white-space: nowrap;">No. of Cells in Chip (for Calculations)</th>
-                        <td><textarea id="number-of-cells-calc" class="required" rows="1" style="resize: none; display: block; width: 100%" ></textarea></td>
+                        <td><textarea id="number-of-cells-calc" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
                     </tr>
                 </table>
+                <br>
+                <h4>Compound Physicochemical Parameters</h4>
+                <table class="display table-bordered" style="width: 100%">
+                    <tr>
+                        <th>Compound</th>
+                        <td><textarea id="compound-compound" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <th id="label-compound-mw">MW </th>
+                        <td><textarea id="compound-mw" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr>
+                    <tr>
+                        <th id="label-compound-logd">logD </th>
+                        <td><textarea id="compound-logd" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr>
+                    <tr>
+                        <th id="label-compound-pka">pKa </th>
+                        <td><textarea id="compound-pka" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr>
+                    <!-- <tr>
+                        <th id="label-compound-bioavailability">Bioavailability (F) </th>
+                        <td><textarea id="compound-bioavailability" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr> -->
+                    <tr>
+                        <th id="label-compound-fu" style="width: 135px; white-space: nowrap;">f<sub>u</sub> </th>
+                        <td><textarea id="compound-fu" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr>
+                    <tr>
+                        <th id="label-input-fa">F<sub>a</sub> </th>
+                        <td><textarea id="input-fa" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr>
+                    <tr>
+                        <th id="label-input-ka" style="width: 105px; white-space: nowrap;">K<sub>a</sub> (1/h) </th>
+                        <td><textarea id="input-ka" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr>
+                </table>
+                <br>
+
             </div>
             <div class="col-sm-12 col-lg-6">
                 <h4>Species Parameters</h4>
@@ -209,55 +247,6 @@
         <br>
         <div class="row large-padding-top">
             <div class="col-sm-12 col-lg-6">
-                <h4>Compound Physicochemical Parameters</h4>
-                <table class="display table-bordered" style="width: 100%">
-                    <tr>
-                        <th>Compound</th>
-                        <td><textarea id="compound-compound" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                    </tr>
-                    <tr>
-                        <th id="label-compound-mw">MW </th>
-                        <td><textarea id="compound-mw" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
-                    </tr>
-                    <tr>
-                        <th id="label-compound-logd">logD </th>
-                        <td><textarea id="compound-logd" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
-                    </tr>
-                    <tr>
-                        <th id="label-compound-pka">pKa </th>
-                        <td><textarea id="compound-pka" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
-                    </tr>
-                    <!-- <tr>
-                        <th id="label-compound-bioavailability">Bioavailability (F) </th>
-                        <td><textarea id="compound-bioavailability" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
-                    </tr> -->
-                    <tr>
-                        <th id="label-compound-fu" style="width: 135px; white-space: nowrap;">f<sub>u</sub> </th>
-                        <td><textarea id="compound-fu" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
-                    </tr>
-                    <tr>
-                        <th id="label-input-fa">F<sub>a</sub> </th>
-                        <td><textarea id="input-fa" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
-                    </tr>
-                    <tr>
-                        <th id="label-input-ka" style="width: 105px; white-space: nowrap;">K<sub>a</sub> (1/h) </th>
-                        <td><textarea id="input-ka" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
-                    </tr>
-                </table>
-            </div>
-            <div class="col-sm-12 col-lg-6">
-                <h4>Input to Predict Plasma Levels</h4>
-                <table class="display table-bordered" style="width: 100%">
-                    <tr>
-                        <th>Dose (mg)</th>
-                        <td><textarea id="input-plasma-dose" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
-                    </tr>
-                    <tr>
-                        <th style="width: 115px; white-space: nowrap;">Dose Interval (h)</th>
-                        <td><textarea id="input-plasma-dose-interval" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
-                    </tr>
-                </table>
-                <br>
                 <h4>Input to Estimate Dosing</h4>
                 <table class="display table-bordered" style="width: 100%">
                     <tr>
@@ -272,6 +261,19 @@
                         <th style="width: 200px; white-space: nowrap;">Estimated Fraction Absorbed</th>
                         <td><textarea id="input-dosing-absorbed" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
                     </tr> -->
+                </table>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+                <h4>Input to Predict Plasma Levels</h4>
+                <table class="display table-bordered" style="width: 100%">
+                    <tr>
+                        <th>Dose (mg)</th>
+                        <td><textarea id="input-plasma-dose" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr>
+                    <tr>
+                        <th style="width: 115px; white-space: nowrap;">Dose Interval (h)</th>
+                        <td><textarea id="input-plasma-dose-interval" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr>
                 </table>
             </div>
         </div>
@@ -322,7 +324,7 @@
         </div> -->
         <div class="col-xs-12">
             <div class="text-center" hidden>
-                <button id="toggle-continuous-infusion-table" class="btn btn-lg btn-primary">Toggle Continous Infusion Table</button>
+                <button id="toggle-continuous-infusion-table" class="btn btn-lg btn-primary">Toggle Experimental Results Table</button>
             </div>
             <table id="continuous-infusion-table" class="display table-bordered" style="width: 100%">
 
