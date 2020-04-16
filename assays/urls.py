@@ -2,7 +2,7 @@ from django.conf.urls import url
 from assays.views import (
     AssayStudyEditableList,
     AssayStudyIndex,
-    # AssayStudyUpdate,
+    AssayStudyUpdate,
     AssayStudyDelete,
     AssayStudySummary,
     AssayStudyData,
@@ -13,6 +13,8 @@ from assays.views import (
     AssayStudyGroups,
     AssayStudyChips,
     AssayStudyPlates,
+    AssayStudyPlateAdd,
+    AssayStudyPlateUpdate,
     AssayStudyAssays,
     AssayMatrixItemDetail,
     AssayMatrixItemUpdate,
@@ -44,7 +46,7 @@ from assays.views import (
     AssayReferenceUpdate,
     AssayReferenceDetail,
     AssayReferenceDelete,
-    # AssayStudyAddNew,
+    AssayStudyAddNew,
     AssayMatrixNew,
     AssayTargetAdd,
     AssayTargetList,
@@ -86,7 +88,8 @@ urlpatterns = [
     # TODO TO BE DEPRECATED
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/$', AssayStudyIndex.as_view(), name='assays-assaystudy-index'),
     # Update page for studies
-    # url(r'^assays/assaystudy/(?P<pk>[0-9]+)/update/$', AssayStudyUpdate.as_view(), name='assays-assaystudy-update'),
+    # TO BE DEPRECATED
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/update/$', AssayStudyUpdate.as_view(), name='assays-assaystudy-update'),
     # Delete view for studies
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/delete/$', AssayStudyDelete.as_view(), name='assays-assaystudy-delete'),
     # Summary view for studies
@@ -109,6 +112,9 @@ urlpatterns = [
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/chips/$', AssayStudyChips.as_view(), name='assays-assaystudy-update-chips'),
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/plates/$', AssayStudyPlates.as_view(), name='assays-assaystudy-update-plates'),
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/assays/$', AssayStudyAssays.as_view(), name='assays-assaystudy-update-assays'),
+
+    url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assaymatrix/add/$', AssayStudyPlateAdd.as_view(), name='assays-assaymatrix-plate-add'),
+    url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/plate/$', AssayStudyPlateUpdate.as_view(), name='assays-assaymatrix-plate-update'),
 
     # NEW_TO_BE_REVISED
     url(r'^assays/assaystudy/$', AssayStudyList.as_view(), name='assays-assaystudy-list'),

@@ -26,7 +26,7 @@
 {% block content %}
 
 {# Get the tabs #}
-{% include 'assays/assaystudy_tabs.html' %}
+{% include 'assays/assaystudy_tabs.html' with study=object %}
 
 <form enctype="multipart/form-data" class="form-horizontal" method="post">
     <h1>
@@ -43,122 +43,34 @@
 
     <legend>Study Groups</legend>
 
-    {# TODO #}
-    {# This section is a setup table similar to the new study page #}
-    {# TODO PUT THE TABLE THING HERE #}
-    {# TODO TODO VERY MUCH NOT DRY #}
-    {# TODO PUT THE TABLE THING HERE #}
-    <div id="study_setup_table_section">
-            {# Section for visibility checkboxes #}
-            {# A little awkward #}
-            <div class="row large-padding-top">
-            <div class="col-md-4 col-lg-3">
-                <div class="fancy-checkbox table-filter padded-bottom" align="left">
-                    <input class="visibility-checkbox" type="checkbox" name="show_cells" id="show_cells" value=".cell_start" checked/>
-                    <div class="btn-group">
-                        <label for="show_cells" class="btn btn-success">
-                            <span class="glyphicon glyphicon-ok"></span>
-                            <span> </span>
-                        </label>
-                        <label for="show_cells" class="btn btn-default active">
-                            Show Cells
-                        </label>
-                    </div>
-                </div>
-            </div>
+    {% include 'assays/group_visibility_section.html' %}
 
-            <div class="col-md-4 col-lg-3">
-                <div class="fancy-checkbox table-filter padded-bottom" align="left">
-                    <input class="visibility-checkbox" type="checkbox" name="show_compounds" id="show_compounds" value=".compound_start" checked/>
-                    <div class="btn-group">
-                        <label for="show_compounds" class="btn btn-info">
-                            <span class="glyphicon glyphicon-ok"></span>
-                            <span> </span>
-                        </label>
-                        <label for="show_compounds" class="btn btn-default active">
-                            Show Compounds
-                        </label>
-                    </div>
-                </div>
-            </div>
+    {# Set of buttons for adding cells, compounds, settings etc. #}
+    <div class="padded-bottom">
+    <a role="button" class="btn btn-success" id="add_series_button"><span class="glyphicon glyphicon-plus-sign"></span>Add Series</a>
+    </div>
 
-            <div class="col-md-4 col-lg-3">
-                <div class="fancy-checkbox table-filter padded-bottom" align="left">
-                    <input class="visibility-checkbox" type="checkbox" name="show_settings" id="show_settings" value=".setting_start" checked/>
-                    <div class="btn-group">
-                        <label for="show_settings" class="btn btn-warning">
-                            <span class="glyphicon glyphicon-ok"></span>
-                            <span> </span>
-                        </label>
-                        <label for="show_settings" class="btn btn-default active">
-                            Show Settings
-                        </label>
-                    </div>
-                </div>
-            </div>
-            </div>
+    <div class="padded-bottom">
+    <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="cell">Add Cell</a>
+    <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="compound">Add Compound</a>
+    {# Probably will be renamed #}
+    <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="setting">Add Setting</a>
+    </div>
 
-            <div class="row">
-                <div class="col-md-4 col-lg-3">
-                    <div class="fancy-checkbox table-filter padded-bottom" align="left">
-                        {# useless value #}
-                        <input type="checkbox" name="show_details" id="show_details" value=".full_details" />
-                        <div class="btn-group">
-                            <label for="show_details" class="btn btn-default">
-                                <span class="glyphicon glyphicon-ok"></span>
-                                <span> </span>
-                            </label>
-                            <label for="show_details" class="btn btn-default active">
-                                Show Full Details
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 col-lg-3" hidden>
-                    <div class="fancy-checkbox table-filter padded-bottom" align="left">
-                        <input class="visibility-checkbox" type="checkbox" name="show_errors" id="show_errors" value=".error-display" checked/>
-                        <div class="btn-group">
-                            <label for="show_settings" class="btn btn-warning">
-                                <span class="glyphicon glyphicon-ok"></span>
-                                <span> </span>
-                            </label>
-                            <label for="show_errors" class="btn btn-danger active">
-                                Show Errors
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                {# Spacer, contrived #}
-                <div class="col-md-4 col-lg-3"></div>
-            </div>
-
-        {# Set of buttons for adding cells, compounds, settings etc. #}
-        <div class="padded-bottom">
-        <a role="button" class="btn btn-success" id="add_series_button"><span class="glyphicon glyphicon-plus-sign"></span>Add Series</a>
-        </div>
-
-        <div class="padded-bottom">
-        <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="cell">Add Cell</a>
-        <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="compound">Add Compound</a>
-        {# Probably will be renamed #}
-        <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="setting">Add Setting</a>
-        </div>
-
-        {# Avoid inline styles #}
-        <div class="overflow-auto" style="margin-bottom: 100px;">
-        {# Contrived inline style #}
-        <table style="min-width: 1000px; margin-bottom: 0px;" class="table table-striped table-bordered table-nonfluid" id="study_setup_table">
-            <thead>
-                <th>Series</th>
-                <th>MPS Model</th>
-                <th>Test Type</th>
-                <th hidden class="cell_start"></th>
-                <th hidden class="compound_start"></th>
-                <th hidden class="setting_start"></th>
-            </thead>
-            <tbody></tbody>
-        </table>
-        </div>
+    {# Avoid inline styles #}
+    <div class="overflow-auto" style="margin-bottom: 100px;">
+    {# Contrived inline style #}
+    <table style="min-width: 1000px; margin-bottom: 0px;" class="table table-striped table-bordered table-nonfluid" id="study_setup_table">
+        <thead>
+            <th>Series</th>
+            <th>MPS Model</th>
+            <th>Test Type</th>
+            <th hidden class="cell_start"></th>
+            <th hidden class="compound_start"></th>
+            <th hidden class="setting_start"></th>
+        </thead>
+        <tbody></tbody>
+    </table>
     </div>
 
     {# HIDDEN FOR Groups #}

@@ -30,7 +30,7 @@
 {% block content %}
 
 {# Get the tabs #}
-{% include 'assays/assaystudy_tabs.html' %}
+{% include 'assays/assaystudy_tabs.html' with study=object %}
 
 {% if update %}
     <form enctype="multipart/form-data" class="form-horizontal" method="post" >

@@ -657,8 +657,6 @@ class AssayStudyDetailForm(SignOffMixin, BootstrapForm):
 
 
 class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
-    series_data = forms.CharField(initial='{}')
-
     # CONTRIVANCES
     test_type = forms.ChoiceField(
         initial='control',
@@ -685,7 +683,34 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
         model = AssayStudy
         # Since we are splitting into multiple forms, includes are safer
         # Only temporary, will change when finished
-        fields = '__all__'
+        fields = (
+            # TEMPORARY ->
+            'series_data',
+            # <- TEMPORARY
+            'test_type',
+            'organ_model',
+            'organ_model_full',
+            # TEMP!
+            'organ_model_protocol',
+            'organ_model_protocol_full',
+            'cell_cell_sample',
+            'cell_biosensor',
+            'cell_density',
+            'cell_density_unit',
+            'cell_passage',
+            'cell_addition_location',
+            'setting_setting',
+            'setting_unit',
+            'setting_value',
+            'setting_addition_location',
+            'compound_compound',
+            'compound_concentration_unit',
+            'compound_concentration',
+            'compound_addition_location',
+            'compound_supplier_text',
+            'compound_lot_text',
+            'compound_receipt_date',
+        )
 
     def __init__(self, *args, **kwargs):
         super(AssayStudyGroupForm, self).__init__(*args, **kwargs)
@@ -704,11 +729,65 @@ class AssayStudyChipForm(SignOffMixin, BootstrapForm):
         exclude = '__all__'
 
 
+# OLD TO BE REMOVED
+# class AssayStudyPlateForm(SignOffMixin, BootstrapForm):
+#     plate_name = forms.CharField(
+#         required=False,
+#         widget=forms.Textarea(attrs={'rows': 1}),
+#         label='Plate Name'
+#     )
+#     plate_notes = forms.CharField(
+#         required=False,
+#         widget=forms.Textarea(attrs={'rows': 5}),
+#         label='Plate Notes'
+#     )
+#     device = forms.ModelChoiceField(
+#         # Filter to plates only
+#         queryset=Microdevice.objects.filter(device_type='plate').order_by('name'),
+#         required=False,
+#         label='Plate Device'
+#     )
+
+#     class Meta(object):
+#         model = AssayStudy
+#         fields = (
+#             'plate_name',
+#             'plate_notes',
+#             'device',
+#             'series_data',
+#         )
+
+
 class AssayStudyPlateForm(SignOffMixin, BootstrapForm):
+    series_data = forms.CharField(required=False)
+
     class Meta(object):
-        model = AssayStudy
-        # Since we are splitting into multiple forms, includes are safer
-        exclude = '__all__'
+        model = AssayMatrix
+        fields = (
+            'name',
+            'notes',
+            'device',
+            # TODO
+            'series_data',
+        )
+        widgets = {
+            'name': forms.Textarea(attrs={'rows': 1}),
+            'notes': forms.Textarea(attrs={'rows': 10}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.study = kwargs.pop('study', None)
+        self.user = kwargs.pop('user', None)
+
+        super(AssayStudyPlateForm, self).__init__(*args, **kwargs)
+
+        if self.study:
+            self.instance.study = self.study
+        else:
+            self.study = self.instance.study
+
+        # Crude! TEMPORARY
+        self.fields['series_data'].initial = json.dumps(self.study.series_data)
 
 
 class AssayStudyAssayForm(SignOffMixin, BootstrapForm):

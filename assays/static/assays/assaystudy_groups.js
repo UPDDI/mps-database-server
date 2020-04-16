@@ -1,8 +1,10 @@
 // TODO WE ARE NOW CALLING THEM GROUPS AGAIN, I GUESS
 $(document).ready(function () {
+    // TEMPORARY
     var series_data_selector = $('#id_series_data');
 
     // FULL DATA
+    // TEMPORARY
     var full_series_data = JSON.parse(series_data_selector.val());
 
     if (series_data_selector.val() === '{}') {
@@ -93,16 +95,16 @@ $(document).ready(function () {
     empty_html[setting_prefix] = empty_setting_html;
 
     // Specific to compounds, this checkbox will indicate whether to use the increment
-    var use_compound_concentration_increment = $('#id_use_compound_concentration_increment');
-    var compound_compound_increment = $('#id_compound_compound_increment');
-    var compound_compound_increment_type = $('#id_compound_compound_increment_type');
-    var compound_concentration_increment_direction = $('#id_compound_concentration_increment_direction');
+    // var use_compound_concentration_increment = $('#id_use_compound_concentration_increment');
+    // var compound_compound_increment = $('#id_compound_compound_increment');
+    // var compound_compound_increment_type = $('#id_compound_compound_increment_type');
+    // var compound_concentration_increment_direction = $('#id_compound_concentration_increment_direction');
 
-    var selection_dialog_selected_items = $('#selection_dialog_selected_items');
-    var series_selector = $('#id_series_selector');
-    var selection_dialog_naming_section = $('.selection_dialog_naming_section');
-    var use_chip_naming = $('#id_use_chip_naming');
-    var chip_naming = $('#id_chip_naming');
+    // var selection_dialog_selected_items = $('#selection_dialog_selected_items');
+    // var series_selector = $('#id_series_selector');
+    // var selection_dialog_naming_section = $('.selection_dialog_naming_section');
+    // var use_chip_naming = $('#id_use_chip_naming');
+    // var chip_naming = $('#id_chip_naming');
 
     // Default values
     var default_values = {};
@@ -587,7 +589,7 @@ $(document).ready(function () {
         replace_series_data();
 
         // Add group to selectors
-        series_selector.append(new Option('Series ' + (row_index + 1), row_index + 1));
+        // series_selector.append(new Option('Series ' + (row_index + 1), row_index + 1));
     }
 
     $(document).on('change', '.test-type', function() {
@@ -831,7 +833,7 @@ $(document).ready(function () {
         };
 
         // Empty series selector
-        series_selector.empty();
+        // series_selector.empty();
 
         console.log(series_data);
 

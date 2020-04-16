@@ -186,6 +186,8 @@ class StudyGroupMixin(object):
         if self.kwargs.get('study_id', ''):
             study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
 
+            print(study)
+
             if not is_group_editor(self.request.user, study.group.name):
                 return PermissionDenied(self.request, 'You must be a member of the group ' + str(study.group))
 
