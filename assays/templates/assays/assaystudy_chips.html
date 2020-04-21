@@ -41,6 +41,36 @@
 
     <legend>Study Chips</legend>
 
+    {# Temporary #}
+    <table id="chips" class="display table table-striped table-hover" cellspacing="0" width="100%">
+    <thead>
+        <tr>
+            <th>Index</th>
+            <th>Name</th>
+            <th>Group</th>
+            <th>Cells</th>
+            <th>Compounds</th>
+            <th>Settings</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for chip in chips %}
+        {# CONTRIVED FOR NOW #}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><input value="CHIP-{{ forloop.counter }}"></td>
+            <td>
+                <select>
+                <option selected>Group 1</option>
+                </select>
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    </table>
     {# TODO #}
     {# Do we want a popup for editing individual chips? #}
 

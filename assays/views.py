@@ -548,7 +548,9 @@ class AssayStudyMixin(FormHandlerMixin):
         # Contrived at the moment
         context.update({
             'has_chips': True,
-            'has_plates': True
+            'has_plates': True,
+            'has_next_button': True,
+            'has_previous_button': True
         })
 
         return context
@@ -568,7 +570,9 @@ class AssayStudyDetailsMixin(AssayStudyMixin):
 
         # TODO SLATED FOR REMOVAL
         context.update({
-            'reference_queryset': AssayReference.objects.all()
+            'reference_queryset': AssayReference.objects.all(),
+            'has_next_button': True,
+            'has_previous_button': False
         })
 
         return context
@@ -626,8 +630,23 @@ class AssayStudyGroups(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
 
 class AssayStudyChips(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     template_name = 'assays/assaystudy_chips.html'
-    # Might actually be a formset or something?
+    # Might end up being a formset?
     form_class = AssayStudyChipForm
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyChips, self).get_context_data(**kwargs)
+
+        # TODO SLATED FOR REMOVAL
+        context.update({
+            'update': True,
+            # TODO REVISE
+            'chips': AssayMatrixItem.objects.filter(
+                device__device_type='chip',
+                study_id=self.object.id
+            )
+        })
+
+        return context
 
 
 # This is now really just a list page
@@ -1274,7 +1293,7 @@ class AssayStudyDataUpload(AssayStudyMixin, ObjectGroupRequiredMixin, UpdateView
         # TODO TODO TODO
         # context['version'] = len(os.listdir(MEDIA_ROOT + '/excel_templates/'))
 
-        context['data_file_uploads'] = get_data_file_uploads(study=self.object)
+        # context['data_file_uploads'] = get_data_file_uploads(study=self.object)
 
         if self.request.POST:
             if 'supporting_data_formset' not in context:
@@ -1282,7 +1301,13 @@ class AssayStudyDataUpload(AssayStudyMixin, ObjectGroupRequiredMixin, UpdateView
         else:
             context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(instance=self.object)
 
-        context['update'] = True
+        # context['update'] = True
+
+        context.update({
+            'data_file_uploads': get_data_file_uploads(study=self.object),
+            'update': True,
+            'has_next_button': False
+        })
 
         return context
 

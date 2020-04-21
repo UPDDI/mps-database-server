@@ -47,7 +47,7 @@
 
     {# Set of buttons for adding cells, compounds, settings etc. #}
     <div class="padded-bottom">
-    <a role="button" class="btn btn-success" id="add_series_button"><span class="glyphicon glyphicon-plus-sign"></span>Add Series</a>
+    <a role="button" class="btn btn-success" id="add_series_button"><span class="glyphicon glyphicon-plus-sign"></span>Add Group</a>
     </div>
 
     <div class="padded-bottom">
@@ -64,6 +64,7 @@
         <thead>
             <th>Series</th>
             <th>MPS Model</th>
+            <th>Number of Chips</th>
             <th>Test Type</th>
             <th hidden class="cell_start"></th>
             <th hidden class="compound_start"></th>
@@ -74,7 +75,7 @@
     </div>
 
     {# HIDDEN FOR Groups #}
-    <div >
+    <div hidden>
         {# TODO: LIKELY TO BE REVISED #}
         {{ form.series_data }}
         {{ form.number_of_items }}

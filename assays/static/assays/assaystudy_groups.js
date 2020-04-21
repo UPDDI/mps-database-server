@@ -513,6 +513,18 @@ $(document).ready(function () {
 
         // organ_model_input.selectize();
 
+        // TODO: ONLY SHOW FOR CHIPS
+        // TODO: MAKE FUNCTIONAL
+        var number_of_items_input = $('#id_number_of_items')
+                .clone()
+                .removeAttr('id')
+                .addClass('number-of-items')
+                .attr('data-row', row_index);
+
+        new_row.append(
+            $('<td>').append(number_of_items_input)
+        );
+
         // SLOPPY
         var test_type_input = $('#id_test_type')
             .clone()
@@ -576,6 +588,7 @@ $(document).ready(function () {
             organ_model_protocol_full.find('option[value="' + setup_to_use['organ_model_protocol_id'] + '"]').text()
         );
 
+        new_row.find('.number-of-items').val(setup_to_use['number_of_items']);
         new_row.find('.test-type').val(setup_to_use['test_type']);
 
         study_setup_body.append(new_row);
@@ -598,6 +611,10 @@ $(document).ready(function () {
             .attr('selected', true).siblings()
             .removeAttr('selected')
         modify_series_data('test_type', $(this).val(), $(this).attr('data-row'));
+    });
+
+    $(document).on('change', '.number-of-items', function() {
+        modify_series_data('number_of_items', $(this).val(), $(this).attr('data-row'));
     });
 
     // $(document).on('change', '.organ-model', function() {

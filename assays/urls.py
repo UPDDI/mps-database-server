@@ -113,8 +113,8 @@ urlpatterns = [
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/plates/$', AssayStudyPlates.as_view(), name='assays-assaystudy-update-plates'),
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/assays/$', AssayStudyAssays.as_view(), name='assays-assaystudy-update-assays'),
 
-    url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assaymatrix/add/$', AssayStudyPlateAdd.as_view(), name='assays-assaymatrix-plate-add'),
-    url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/plate/$', AssayStudyPlateUpdate.as_view(), name='assays-assaymatrix-plate-update'),
+    url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assayplate/add/$', AssayStudyPlateAdd.as_view(), name='assays-assaymatrix-plate-add'),
+    url(r'^assays/assayplate/(?P<pk>[0-9]+)/plate/$', AssayStudyPlateUpdate.as_view(), name='assays-assaymatrix-plate-update'),
 
     # NEW_TO_BE_REVISED
     url(r'^assays/assaystudy/$', AssayStudyList.as_view(), name='assays-assaystudy-list'),

@@ -663,6 +663,10 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
         choices=TEST_TYPE_CHOICES,
         required=False
     )
+    number_of_items = forms.CharField(
+        initial='',
+        required=False
+    )
     organ_model = forms.ModelChoiceField(
         queryset=OrganModel.objects.all().order_by('name'),
         required=False,
