@@ -799,11 +799,13 @@ class AssayStudyPlateForm(SignOffMixin, BootstrapForm):
         self.fields['series_data'].initial = json.dumps(self.study.series_data)
 
 
-class AssayStudyAssayForm(SignOffMixin, BootstrapForm):
+# Need to make plural to distinguish
+# CONTRIVED ANYWAY
+class AssayStudyAssaysForm(BootstrapForm):
     class Meta(object):
         model = AssayStudy
         # Since we are splitting into multiple forms, includes are safer
-        exclude = '__all__'
+        fields = []
 
 
 class AssayStudyFormAdmin(BootstrapForm):

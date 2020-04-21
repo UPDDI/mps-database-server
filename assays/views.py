@@ -46,7 +46,7 @@ from assays.forms import (
     AssayStudyGroupForm,
     AssayStudyChipForm,
     AssayStudyPlateForm,
-    AssayStudyAssayForm,
+    AssayStudyAssaysForm,
     AssayStudySupportingDataFormSetFactory,
     AssayStudyAssayFormSetFactory,
     AssayStudyReferenceFormSetFactory,
@@ -718,7 +718,7 @@ class AssayStudyPlateUpdate(StudyGroupMixin, AssayStudyPlateMixin, UpdateView):
 class AssayStudyAssays(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     template_name = 'assays/assaystudy_assays.html'
     # This will probably just be a contrived empty form
-    form_class = AssayStudyAssayForm
+    form_class = AssayStudyAssaysForm
 
     formsets = (
         ('study_assay_formset', AssayStudyAssayFormSetFactory),
