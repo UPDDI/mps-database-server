@@ -511,6 +511,16 @@ $(document).ready(function () {
             )
         );
 
+        var name_input = $('#id_group_name')
+            .clone()
+            .removeAttr('id')
+            .addClass('group-name')
+            .attr('data-row', row_index);
+
+        new_row.append(
+            $('<td>').append(name_input)
+        );
+
         // organ_model_input.selectize();
 
         // TODO: ONLY SHOW FOR CHIPS
@@ -589,6 +599,7 @@ $(document).ready(function () {
         );
 
         new_row.find('.number-of-items').val(setup_to_use['number_of_items']);
+        new_row.find('.group-name').val(setup_to_use['group_name']);
         new_row.find('.test-type').val(setup_to_use['test_type']);
 
         study_setup_body.append(new_row);
@@ -615,6 +626,10 @@ $(document).ready(function () {
 
     $(document).on('change', '.number-of-items', function() {
         modify_series_data('number_of_items', $(this).val(), $(this).attr('data-row'));
+    });
+
+    $(document).on('change', '.group-name', function() {
+        modify_series_data('group_name', $(this).val(), $(this).attr('data-row'));
     });
 
     // $(document).on('change', '.organ-model', function() {
