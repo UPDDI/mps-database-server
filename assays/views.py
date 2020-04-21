@@ -103,6 +103,7 @@ from mps.templatetags.custom_filters import (
 
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.urls import reverse
 
 from mps.mixins import (
     LoginRequiredMixin,
@@ -579,7 +580,11 @@ class AssayStudyDetailsMixin(AssayStudyMixin):
 
 
 class AssayStudyAdd(OneGroupRequiredMixin, AssayStudyDetailsMixin, CreateView):
-    pass
+    # Special handling for handling next button
+    def extra_form_processing(self, form):
+        if self.request.POST.get('post_submission_url_override') == '#':
+            self.post_submission_url_override = reverse('assays-assaystudy-update-groups', args=[form.instance.pk])
+        return super(AssayStudyAdd, self).extra_form_processing(form)
 
 
 # TO BE DEPRECATED

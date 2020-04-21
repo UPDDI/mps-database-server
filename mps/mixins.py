@@ -618,7 +618,7 @@ class FormHandlerMixin(HistoryMixin):
         is_popup = self.request.GET.get('popup', 0) == '1'
 
         # Basically, next/previous set a form field to the next url to visit
-        if self.request.POST.get('post_submission_url_override'):
+        if not self.post_submission_url_override and self.request.POST.get('post_submission_url_override'):
             self.post_submission_url_override = self.request.POST.get('post_submission_url_override')
 
         all_formsets = []

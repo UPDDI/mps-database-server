@@ -72,5 +72,9 @@ $(document).ready(function() {
         if (redirect_url.val() !== '#') {
             redirect_confirm.dialog('open');
         }
+        // CONTRIVANCE FOR STUDY ADD
+        else {
+            $('#submit').trigger('click');
+        }
     });
 });
