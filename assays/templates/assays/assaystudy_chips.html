@@ -54,6 +54,9 @@
         </tr>
     </thead>
     <tbody>
+    {# It may be ideal to edit a formset #}
+    {# On the other hand, it makes the DataTable somewhat odd #}
+    {% comment %}
     {% for chip in chips %}
         {# CONTRIVED FOR NOW #}
         <tr>
@@ -69,6 +72,7 @@
             <td></td>
         </tr>
     {% endfor %}
+    {% endcomment %}
     </tbody>
     </table>
     {# TODO #}

@@ -3532,6 +3532,22 @@ def fetch_organ_model_protocol_setup(request):
     )
 
 
+def fetch_organ_model_type(request):
+    organ_model_id = request.POST.get('organ_model_id', 0)
+
+    data = ''
+
+    organ_model = OrganModel.objects.filter(id=organ_model_id)
+
+    if organ_model:
+        data = organ_model[0].device.device_type
+
+    return HttpResponse(
+        json.dumps(data),
+        content_type='application/json'
+    )
+
+
 def fetch_matrix_setup(request):
     matrix_id = request.POST.get('matrix_id', 0)
     matrix = get_object_or_404(AssayMatrix, pk=matrix_id)
@@ -4293,6 +4309,9 @@ switch = {
     },
     'fetch_organ_model_protocol_setup': {
         'call': fetch_organ_model_protocol_setup
+    },
+    'fetch_organ_model_type': {
+        'call': fetch_organ_model_type
     },
     'fetch_matrix_setup': {
         'call': fetch_matrix_setup

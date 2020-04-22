@@ -10,7 +10,10 @@ $(document).ready(function () {
     if (series_data_selector.val() === '{}') {
         full_series_data = {
             series_data: [],
-            matrix_item_data: {}
+            // Match plate data to the plate id
+            plates: {},
+            // The ID needs to be in individual chip objects, they don't exist initially (unlike plates!)
+            chips: []
         };
     }
 
@@ -18,7 +21,7 @@ $(document).ready(function () {
 
     // SERIES DATA
     var series_data = full_series_data.series_data;
-    var matrix_item_data = full_series_data.matrix_item_data;
+    // var matrix_item_data = full_series_data.matrix_item_data;
 
     // FOR ADD INTERFACE ONLY
     // ERRORS
@@ -594,11 +597,24 @@ $(document).ready(function () {
         new_row.find('.organ-model').text(
             organ_model_full.find('option[value="' + setup_to_use['organ_model_id'] + '"]').text()
         );
-        new_row.find('.organ-model-protocol').text(
-            organ_model_protocol_full.find('option[value="' + setup_to_use['organ_model_protocol_id'] + '"]').text()
-        );
+        if (setup_to_use['organ_model_protocol_id']) {
+            new_row.find('.organ-model-protocol').text(
+                'Version: ' +
+                organ_model_protocol_full.find('option[value="' + setup_to_use['organ_model_protocol_id'] + '"]').text()
+            );
+        }
 
-        new_row.find('.number-of-items').val(setup_to_use['number_of_items']);
+        if (setup_to_use['device_type'] === 'plate') {
+            new_row.find('.number-of-items')
+                .val('')
+                .attr('disabled', 'disabled');
+        }
+        else {
+            new_row.find('.number-of-items')
+                .val(setup_to_use['number_of_items'])
+                .removeAttr('disabled');
+        }
+
         new_row.find('.group-name').val(setup_to_use['group_name']);
         new_row.find('.test-type').val(setup_to_use['test_type']);
 
@@ -670,25 +686,26 @@ $(document).ready(function () {
     $(document).on('click', 'a[data-delete-row-button="true"]', function() {
         current_row_index = Math.floor($(this).attr('data-row'));
 
+        // TODO: WE NEED TO DEAL WITH THE CONSEQUENCES OF DELETION!
         // Iterate over matrix_item and reset the current series
-        var all_keys = Object.keys(matrix_item_data);
-        $.each(all_keys, function(index, item_row_column) {
-            var contents = matrix_item_data[item_row_column];
-            // Delete if this is associated with the series to be removed
-            if (contents.series - 1 === current_row_index) {
-                delete matrix_item_data[item_row_column];
+        // var all_keys = Object.keys(matrix_item_data);
+        // $.each(all_keys, function(index, item_row_column) {
+        //     var contents = matrix_item_data[item_row_column];
+        //     // Delete if this is associated with the series to be removed
+        //     if (contents.series - 1 === current_row_index) {
+        //         delete matrix_item_data[item_row_column];
 
-                // Unset the label
-                unset_label($(item_display_class + '[data-row-column="' + item_row_column + '"]'));
-            }
-            // Decrement if this comes after the series to be removed
-            else if (contents.series - 1 > current_row_index) {
-                contents.series = contents.series - 1;
+        //         // Unset the label
+        //         unset_label($(item_display_class + '[data-row-column="' + item_row_column + '"]'));
+        //     }
+        //     // Decrement if this comes after the series to be removed
+        //     else if (contents.series - 1 > current_row_index) {
+        //         contents.series = contents.series - 1;
 
-                // Reset the label
-                set_label($(item_display_class + '[data-row-column="' + item_row_column + '"]'), contents.series);
-            }
-        });
+        //         // Reset the label
+        //         set_label($(item_display_class + '[data-row-column="' + item_row_column + '"]'), contents.series);
+        //     }
+        // });
 
         // JUST FLAT OUT DELETE THE ROW
         series_data.splice(current_row_index, 1);
@@ -767,7 +784,44 @@ $(document).ready(function () {
     $('#show_details').change(show_hide_full_details);
     show_hide_full_details();
 
-    function set_new_protocol(is_new) {
+    function get_device_type(is_new) {
+        if (organ_model.val()) {
+            // Get the organ_model type
+            // Start SPINNING
+            window.spinner.spin(
+                document.getElementById("spinner")
+            );
+            $.ajax({
+                url: "/assays_ajax/",
+                type: "POST",
+                dataType: "json",
+                data: {
+                    call: 'fetch_organ_model_type',
+                    organ_model_id: organ_model.val(),
+                    csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
+                },
+                success: function (json) {
+                    // Stop spinner
+                    window.spinner.stop();
+
+                    series_data[current_setup_index]['device_type'] = json;
+
+                    get_protocol(is_new);
+                },
+                error: function (xhr, errmsg, err) {
+                    // Stop spinner
+                    window.spinner.stop();
+
+                    console.log(xhr.status + ": " + xhr.responseText);
+                }
+            });
+        }
+        else {
+            get_protocol(is_new);
+        }
+    }
+
+    function get_protocol(is_new) {
         if (is_new) {
             // Set organ_model_id
             series_data[current_setup_index]['organ_model_id'] = organ_model.val();
@@ -811,7 +865,7 @@ $(document).ready(function () {
                         // FORCE INITIAL TO BE CONTROL
                         // series_data[current_setup_index]['test_type'] = 'control';
 
-                        console.log(series_data);
+                        // console.log(series_data);
 
                         rebuild_table();
                     }
@@ -851,6 +905,10 @@ $(document).ready(function () {
                 series_table_preview.empty();
             }
         }
+    }
+
+    function set_new_protocol(is_new) {
+        get_device_type(is_new);
     }
 
     function rebuild_table() {
