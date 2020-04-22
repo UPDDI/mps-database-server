@@ -29,6 +29,8 @@
                         <th>Edit</th>
                         <th>Unit</th>
                         <th>Unit Type</th>
+                        <th>Base Unit</th>
+                        <th>Scale Factor</th>
                         <th>Description</th>
                     </tr>
                 </thead>
@@ -40,6 +42,8 @@
                         <td><a class="btn btn-primary" href="{{ unit.get_update_url }}">Edit</a></td>
                         <td>{{ unit.unit }}</td>
                         <td>{{ unit.unit_type }}</td>
+                        <td>{{ unit.base_unit }}</td>
+                        <td>{{ unit.scale_factor|stringformat:"g" }}</td>
                         <td>{{ unit.description }}</td>
                     </tr>
                 {% endfor %}
