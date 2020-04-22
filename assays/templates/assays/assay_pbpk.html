@@ -53,7 +53,6 @@
                 </div>
             </div>
             <div class="col-sm-12 col-lg-6">
-                <h4>Cell Parameters</h4>
                 <table id="cell-profiles-table" class="display table-bordered">
                     <tr>
                         <th>Select</th>
@@ -79,11 +78,11 @@
                         <h4>Start / End Times (Hours)</h4>
                         <table class="display table-bordered" style="width: 100%">
                             <tr>
-                                <th>Steady State Start Time</th>
+                                <th id="start-time-label">Steady State Start Time</th>
                                 <td><select id="clearance-time-start" class="required"></td>
                             </tr>
                             <tr>
-                                <th>Steady State End Time</th>
+                                <th id="end-time-label">Steady State End Time</th>
                                 <td><select id="clearance-time-end" class="required"></td>
                             </tr>
                         </table>
@@ -182,11 +181,17 @@
                     </tr>
                     <tr>
                         <th id="label-input-ka" style="width: 105px; white-space: nowrap;">K<sub>a</sub> (1/h) </th>
-                        <td><textarea id="input-ka" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                        <td><textarea id="input-ka" class="required" rows="1" style="resize: none; display: block; width: 100%">3.84</textarea></td>
                     </tr>
                 </table>
                 <br>
-
+                <!-- <div id="acid-base">
+                    &nbsp;&nbsp;<input type="checkbox" id="acidic-checkbox" class="big-checkbox">
+                    <label>&nbsp;&nbsp;Acidic</label>
+                    <br><br>
+                    &nbsp;&nbsp;<input type="checkbox" id="basic-checkbox" class="big-checkbox">
+                    <label>&nbsp;&nbsp;Basic</label>
+                </div> -->
             </div>
             <div class="col-sm-12 col-lg-6">
                 <h4>Species Parameters</h4>
@@ -212,7 +217,7 @@
                         <td><textarea id="species-organ-tissue" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
                     </tr>
                     <tr>
-                        <th id="label-species-plasma-vol">Plasma Volume (L) </th>
+                        <th id="label-species-plasma-vol">Blood Volume (L) </th>
                         <td><textarea id="species-plasma-vol" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
                     </tr>
                     <tr>
@@ -236,12 +241,12 @@
                         <td><textarea id="species-asr" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
                     </tr>
                     <tr>
-                        <th id="label-species-ki" style="width: 215px; white-space: nowrap;">K<sub>i</sub> (1/min) </th>
+                        <th id="label-species-ki" style="width: 215px; white-space: nowrap;">K<sub>i</sub> (1/h) </th>
                         <td><textarea id="species-ki" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
                     </tr>
                 </table>
                 <br>
-                <label>Reference: </label><div id="species-reference"></div><br>
+                <label>References: </label><div id="species-reference"></div><br>
             </div>
         </div>
         <br>
@@ -326,12 +331,14 @@
             <div class="text-center" hidden>
                 <button id="toggle-continuous-infusion-table" class="btn btn-lg btn-primary">Toggle Experimental Results Table</button>
             </div>
-            <table id="continuous-infusion-table" class="display table-bordered" style="width: 100%">
+            <table id="continuous-infusion-table" class="display table-bordered" style="width: 100%" hidden>
 
             </table>
         </div>
     </div>
     <div id="calculated-pk-container" hidden>
+        <hr>
+        <h3>Predicted Results</h3>
         <div class="row large-padding-top">
             <div class="col-sm-12 col-lg-4">
                 <div id="plasma-container">

@@ -182,8 +182,6 @@ $(document).ready(function () {
                     window.GROUPING.filters[current_filter][current_id] = 'true';
                 });
             });
-
-            console.log(window.GROUPING.filters);
         }
 
         // TODO
@@ -374,7 +372,6 @@ $(document).ready(function () {
     };
 
     window.GROUPING.modify_filters_param = function() {
-        console.log(window.GROUPING.filters, window.GROUPING.ordered_filters);
         // DESTROY POST FILTER
         window.GROUPING.post_filter_param = '';
         window.GROUPING.post_filter = {};

@@ -372,11 +372,15 @@ $(document).ready(function () {
             $("#experiment-flow-rate").parent().parent().hide();
             $('#continuous-infusion-table').hide();
             $("#toggle-continuous-infusion-table").hide();
+            $("#start-time-label").text("Calculation Start Time");
+            $("#end-time-label").text("Calculation End Time");
         } else {
             $("#experiment-total-vol").parent().parent().hide();
             $("#experiment-flow-rate").parent().parent().show();
-            $('#continuous-infusion-table').show();
+            $('#continuous-infusion-table').hide();
             $("#toggle-continuous-infusion-table").show();
+            $("#start-time-label").text("Steady State Start Time");
+            $("#end-time-label").text("Steady State End Time");
         }
 
         // Populate Experiment Parameters Table.
@@ -443,7 +447,7 @@ $(document).ready(function () {
             $("#species-vr").val(data.vr);
             $("#species-asr").val(data.asr);
             $("#species-ki").val(data.ki);
-            $("#species-reference").html('<a href="'+data.reference_url+'" target="_blank">'+data.reference+'</a>');
+            $("#species-reference").html('<a href="'+data.reference_url+'" target="_blank">'+data.reference+'</a><br><br><a href="'+data.additional_reference_url+'" target="_blank">'+data.additional_reference+'</a>');
         })
         .fail(function(xhr, errmsg, err) {
             // Stop spinner
@@ -526,6 +530,7 @@ $(document).ready(function () {
             $("#compound-pka").val(data.pka);
             // $("#compound-bioavailability").val(data.bioavailability);
             $("#compound-fu").val(data.fu);
+            $("#input-fa").val((parseFloat($("#input-ka").val()) / (parseFloat($("#species-ki").val()) + parseFloat($("#input-ka").val()))).toFixed(3));
         })
         .fail(function(xhr, errmsg, err) {
             // Stop spinner
@@ -813,12 +818,12 @@ $(document).ready(function () {
 
                     var clearance_table_html = "";
                     if ($('#cell-free-checkbox').is(":checked")) {
-                        clearance_table_html = "<tr><th>Compound Recovered From Device Without Cells (&micro;M)</th><th>Compound Recovered From Device With Cells (&micro;M)</th><th>Extraction Ratio</th><th>Clearance from MPS Model (&micro;L/hr)</th><th>Predicted Intrinsic Clearance (&micro;L/min)</th><th>Time (Hours)</th></tr>"
+                        clearance_table_html = "<tr><th>Compound Recovered From Device Without Cells (&micro;M)</th><th>Compound Recovered From Device With Cells (&micro;M)</th><th>Extraction Ratio</th><th>Clearance from MPS Model (&micro;L/h)</th><th>Predicted Intrinsic Clearance (&micro;L/min)</th><th>Time (Hours)</th></tr>"
                         for (var x=1; x<clearance_table_data.length; x++) {
                             clearance_table_html += "<tr><td>"+clearance_table_data[x][0].toFixed(3)+"</td><td>"+clearance_table_data[x][1].toFixed(3)+"</td><td>"+clearance_table_data[x][2].toFixed(3)+"</td><td>"+clearance_table_data[x][3].toFixed(3)+"</td><td>"+clearance_table_data[x][4].toFixed(3)+"</td><td>"+clearance_table_data[x][5]+"</td></tr>"
                         }
                     } else {
-                        clearance_table_html = "<tr><th>Compound Recovered From Device With Cells (&micro;M)</th><th>Extraction Ratio</th><th>Clearance from MPS Model (&micro;L/hr)</th><th>Predicted Intrinsic Clearance (&micro;L/min)</th><th>Time (Hours)</th></tr>"
+                        clearance_table_html = "<tr><th>Compound Recovered From Device With Cells (&micro;M)</th><th>Extraction Ratio</th><th>Clearance from MPS Model (&micro;L/h)</th><th>Predicted Intrinsic Clearance (&micro;L/min)</th><th>Time (Hours)</th></tr>"
                         for (var x=1; x<clearance_table_data.length; x++) {
                             clearance_table_html += "<tr><td>"+clearance_table_data[x][1].toFixed(3)+"</td><td>"+clearance_table_data[x][2].toFixed(3)+"</td><td>"+clearance_table_data[x][3].toFixed(3)+"</td><td>"+clearance_table_data[x][4].toFixed(3)+"</td><td>"+clearance_table_data[x][5]+"</td></tr>"
                         }
@@ -830,7 +835,7 @@ $(document).ready(function () {
                     make_chart("", 'Avg Recovered Compound (µM)', $('#pk-summary-graph')[0], JSON.parse(JSON.stringify(chart_data_final)), 250);
 
                     options = {
-                        title: 'Predicted Intrinsic Clearance (μl/min) = ' + pbpk_intrinsic_clearance.toFixed(3),
+                        title: '',
                         interpolateNulls: true,
                         tooltip: {
                             isHtml: true
@@ -918,7 +923,7 @@ $(document).ready(function () {
                         data: {
                             call: 'fetch_pbpk_dosing_results',
                             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
-                            cl_ml_min: pbpk_intrinsic_clearance,
+                            cl_ml_min: $('#input-icl').val().replace(/\,/g,''),
                             body_mass: $('#species-body-mass').val(),
                             MW: $('#compound-mw').val(),
                             logD: $('#compound-logd').val(),
@@ -980,9 +985,9 @@ $(document).ready(function () {
                             $('#pk-multi-tmax').val(numberWithCommas(data.dosing_data[5].toFixed(3)));
 
                             prediction_plot_data = JSON.parse(JSON.stringify(data.prediction_plot_table));
-                            make_dosing_plot(prediction_plot_data, 300)
-                            $('#dosing-slider').slider("value", 300);
-                            $('#dosing-slider-handle').text("300");
+                            make_dosing_plot(prediction_plot_data, 48)
+                            $('#dosing-slider').slider("value", 48);
+                            $('#dosing-slider-handle').text("48");
                         }
                         if (missing_dosing_values) {
                             $('#dosing-container').hide();
@@ -1061,7 +1066,7 @@ $(document).ready(function () {
     }
 
     function make_dosing_plot(data, time) {
-        var dosing_data = [["Time (hr)", "Multiple Dose (mg/L)", "Single Dose (mg/L)"]];
+        var dosing_data = [["Time (h)", "Multiple Dose (mg/L)", "Single Dose (mg/L)"]];
         for (var x=0; x<=time; x++) {
             dosing_data.push([data["Time (hr)"][x], data["Multiple Dose (mg/L)"][x], data["Single Dose (mg/L)"][x]]);
         }
@@ -1146,7 +1151,7 @@ $(document).ready(function () {
         var handle = $('#dosing-slider-handle');
         $('#dosing-slider').slider({
             range: "min",
-            value: 300,
+            value: 48,
             min: 1,
             max: 720,
             create: function() {
@@ -1205,7 +1210,7 @@ $(document).ready(function () {
                     pointsVisible: false
                 }
             }
-            title = 'Predicted Intrinsic Clearance (μl/min) = ' + pbpk_intrinsic_clearance.toFixed(3);
+            // title = 'Predicted Intrinsic Clearance (μl/min) = ' + pbpk_intrinsic_clearance.toFixed(3);
         }
 
         // Aliases

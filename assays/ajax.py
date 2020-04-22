@@ -23,6 +23,7 @@ from .models import (
     AssayStudySet,
     AssayCategory,
     AssayTarget,
+    AssayReference,
     SpeciesParameters,
     DEFAULT_SETUP_CRITERIA,
     DEFAULT_SETTING_CRITERIA,
@@ -5539,11 +5540,21 @@ def fetch_species_parameters(request):
     # STOPGAP for now. Select off of stringified version where organ+species match in future?
     species_params = SpeciesParameters.objects.get(id=1)
 
+    # Sloppy, get Usansky reference. Always needed? Just for liver? I have no idea.
+    additional_reference = AssayReference.objects.get(pubmed_id="15833900")
+    if (additional_reference):
+        additional_reference_url = additional_reference.get_absolute_url()
+    else:
+        additional_reference = ''
+        additional_reference_url = ''
+
     data = {
         'species': species_params.species.species_name,
         'organ': species_params.organ.organ_name,
         'reference': str(species_params.reference),
         'reference_url': str(species_params.reference.get_absolute_url()),
+        'additional_reference': str(additional_reference),
+        'additional_reference_url': str(additional_reference_url),
         'body_mass': species_params.body_mass,
         'total_organ_weight': species_params.total_organ_weight,
         'organ_tissue': species_params.organ_tissue,
