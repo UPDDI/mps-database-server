@@ -54,10 +54,10 @@ $(document).ready(function () {
         var new_option = null;
         if (series_data[index].device_type === 'plate') {
             if (series_data[index].name) {
-                new_option = new Option(series_data[index].name, index + 1)
+                new_option = new Option(series_data[index].name, index)
             }
             else {
-                new_option = new Option('Group ' + (index + 1), index + 1)
+                new_option = new Option('Group ' + (index + 1), index)
             }
             $('#id_series_selector').append(
                 new_option

@@ -18,7 +18,7 @@ $(document).ready(function () {
     }
 
     // TODO WE NEED TO SPLIT OUT MATRIX ITEM DATA
-    var chip_data = full_series_data.chips;
+    var chips = full_series_data.chips;
 
     // SERIES DATA
     var series_data = full_series_data.series_data;
@@ -432,10 +432,10 @@ $(document).ready(function () {
 
     // TODO REVISE FOR TRUE ID
     function remove_chip(setup_index) {
-        $.each(chip_data, function(index, chip) {
+        $.each(chips, function(index, chip) {
             // NOTE: group_id is just an index for the moment
             // Really, it needs to be changed to an actual ID
-            if (chip.group_id) {
+            if (chip.group_id === setup_index) {
                 chips.splice(index, 1);
                 // Break after removal
                 return false;
@@ -446,23 +446,25 @@ $(document).ready(function () {
     function modify_chip_data(number_of_chips, setup_index) {
         var current_number_of_chips = 0;
 
-        $.each(chip_data, function(index, chip) {
+        $.each(chips, function(index, chip) {
             // NOTE: group_id is just an index for the moment
             // Really, it needs to be changed to an actual ID
-            if (chip.group_id) {
+            if (chip.group_id === setup_index) {
                 current_number_of_chips += 1;
             }
         });
 
         while (current_number_of_chips > number_of_chips) {
-            remove_chip();
+            remove_chip(setup_index);
             current_number_of_chips -= 1;
         }
 
         while (current_number_of_chips < number_of_chips) {
-            add_chip();
+            add_chip(setup_index);
             current_number_of_chips += 1;
         }
+
+        console.log(chips);
 
         replace_series_data();
     }
@@ -670,6 +672,9 @@ $(document).ready(function () {
             series_data.push(
                 $.extend(true, {}, setup_to_use)
             );
+
+            // Crude way to make sure the chips get generated
+            new_row.find('.number-of-items').trigger('change');
         }
 
         replace_series_data();
@@ -733,6 +738,10 @@ $(document).ready(function () {
     // NOT ALLOWED IN EDIT?
     $(document).on('click', 'a[data-delete-row-button="true"]', function() {
         current_row_index = Math.floor($(this).attr('data-row'));
+
+        // A somewhat odd way to kill the chips
+        // Set the number of items to zero and trigger it
+        $('.number-of-items[data-row="' + $(this).attr('data-row') + '"]').val(0).trigger('change');
 
         // TODO: WE NEED TO DEAL WITH THE CONSEQUENCES OF DELETION!
         // Iterate over matrix_item and reset the current series

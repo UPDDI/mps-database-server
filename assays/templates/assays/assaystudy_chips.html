@@ -39,10 +39,12 @@
 
     {% include 'tracking.html' %}
 
+    {{form.errors }}
+
     <legend>Study Chips</legend>
 
     {# Temporary #}
-    <table id="chips" class="display table table-striped table-hover" cellspacing="0" width="100%">
+    <table id="chips_table" class="display table table-striped table-hover" cellspacing="0" width="100%">
     <thead>
         <tr>
             <th>Index</th>
@@ -80,8 +82,14 @@
 
     {# Hidden for chips #}
     <div hidden>
-        {{ form.chip_name }}
-        {{ form.chip_group }}
+        {{ form.series_data }}
+
+        {# contrived #}
+        <textarea type="text" id="id_chip_name" name="chip_name" class="form-control name" data-default="" data-index="0" rows="1"></textarea>
+        <select id="id_chip_group" name="chip_group" class="no-selectize group" data-default="" data-index="0"></select>
+
+        {# {{ form.chip_name }} #}
+        {# {{ form.chip_group }} #}
     </div>
 
     {# For displaying cells etc. #}
