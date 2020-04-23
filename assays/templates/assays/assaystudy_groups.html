@@ -79,7 +79,11 @@
     <div hidden>
         {# TODO: LIKELY TO BE REVISED #}
         {{ form.series_data }}
-        {{ form.group_name }}
+
+        {# contrived #}
+        <textarea type="text" id="id_group_name" name="group_name" class="form-control name" data-default="" data-index="0" rows="1" style="min-width: 100px;"></textarea>
+
+        {# {{ form.group_name }} #}
         {{ form.number_of_items }}
         {{ form.test_type }}
         {{ form.organ_model_full }}
