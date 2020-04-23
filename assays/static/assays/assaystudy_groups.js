@@ -10,14 +10,15 @@ $(document).ready(function () {
     if (series_data_selector.val() === '{}') {
         full_series_data = {
             series_data: [],
-            // Match plate data to the plate id
-            plates: {},
+            // Plates is an array, kind of ugly, but for the moment one has to search for the current plate on the plate page
+            plates: [],
             // The ID needs to be in individual chip objects, they don't exist initially (unlike plates!)
             chips: []
         };
     }
 
     // TODO WE NEED TO SPLIT OUT MATRIX ITEM DATA
+    var chip_data = full_series_data.chips;
 
     // SERIES DATA
     var series_data = full_series_data.series_data;
@@ -421,6 +422,51 @@ $(document).ready(function () {
         series_data_selector.val(JSON.stringify(full_series_data));
     }
 
+    // TODO REVISE FOR TRUE ID
+    function add_chip(setup_index) {
+        chips.push({
+            'name': chips.length + 1,
+            'group_id': setup_index
+        });
+    }
+
+    // TODO REVISE FOR TRUE ID
+    function remove_chip(setup_index) {
+        $.each(chip_data, function(index, chip) {
+            // NOTE: group_id is just an index for the moment
+            // Really, it needs to be changed to an actual ID
+            if (chip.group_id) {
+                chips.splice(index, 1);
+                // Break after removal
+                return false;
+            }
+        });
+    }
+
+    function modify_chip_data(number_of_chips, setup_index) {
+        var current_number_of_chips = 0;
+
+        $.each(chip_data, function(index, chip) {
+            // NOTE: group_id is just an index for the moment
+            // Really, it needs to be changed to an actual ID
+            if (chip.group_id) {
+                current_number_of_chips += 1;
+            }
+        });
+
+        while (current_number_of_chips > number_of_chips) {
+            remove_chip();
+            current_number_of_chips -= 1;
+        }
+
+        while (current_number_of_chips < number_of_chips) {
+            add_chip();
+            current_number_of_chips += 1;
+        }
+
+        replace_series_data();
+    }
+
     // Modify the setup data for the given contents
     function modify_series_data(prefix, content, setup_index, object_index) {
         if (object_index) {
@@ -615,7 +661,7 @@ $(document).ready(function () {
                 .removeAttr('disabled');
         }
 
-        new_row.find('.group-name').val(setup_to_use['group_name']);
+        new_row.find('.group-name').val(setup_to_use['name']);
         new_row.find('.test-type').val(setup_to_use['test_type']);
 
         study_setup_body.append(new_row);
@@ -642,10 +688,12 @@ $(document).ready(function () {
 
     $(document).on('change', '.number-of-items', function() {
         modify_series_data('number_of_items', $(this).val(), $(this).attr('data-row'));
+
+        modify_chip_data($(this).val(), $(this).attr('data-row'));
     });
 
     $(document).on('change', '.group-name', function() {
-        modify_series_data('group_name', $(this).val(), $(this).attr('data-row'));
+        modify_series_data('name', $(this).val(), $(this).attr('data-row'));
     });
 
     // $(document).on('change', '.organ-model', function() {

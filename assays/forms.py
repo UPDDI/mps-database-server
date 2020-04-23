@@ -1254,6 +1254,38 @@ class AssayStudyPlateForm(SignOffMixin, BootstrapForm):
         # Crude! TEMPORARY
         self.fields['series_data'].initial = json.dumps(self.study.series_data)
 
+    # FORCE UNIQUENESS CHECK
+    def clean(self):
+        super(AssayStudyPlateForm, self).clean()
+
+        if AssayMatrix.objects.filter(
+                study_id=self.instance.study.id,
+                name=self.cleaned_data.get('name', '')
+        ).exclude(pk=self.instance.pk).count():
+            raise forms.ValidationError({'name': ['Matrix name must be unique within study.']})
+
+    # CRUDE, TEMPORARY
+    # TODO REVISE ASAP
+    def save(self, commit=True):
+        matrix = super(AssayStudyPlateForm, self).save(commit)
+
+        if commit:
+            # Add the plate ID to the new plate in the series data
+            series_data = json.loads(self.cleaned_data.get('series_data'))
+
+            for plate in series_data.get('plates'):
+                if plate.get('id') == '':
+                    plate.update({
+                        'id': matrix.id
+                    })
+
+            # Remember, for the moment, this is a JSON FIELD
+            # We will change this ASAP
+            self.study.series_data = series_data
+            self.study.save()
+
+        return matrix
+
 
 # Need to make plural to distinguish
 # CONTRIVED ANYWAY
@@ -1287,7 +1319,6 @@ class AssayStudyFormAdmin(BootstrapForm):
         )
 
         self.fields['group'].queryset = groups_with_center_full
-
         groups_without_repeat = groups_with_center_full
 
         if self.instance and getattr(self.instance, 'group', ''):

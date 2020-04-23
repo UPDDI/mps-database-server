@@ -41,6 +41,10 @@
 
     <legend>Study Plates</legend>
 
+    <div class="padded-bottom">
+        <a href="{% url 'assays-assaymatrix-plate-add' object.id %}" class="btn btn-success" role="button">Add Plate</a>
+    </div>
+
     <table hidden id="plates" class="display table table-striped table-hover" cellspacing="0" width="100%">
         <thead>
             <tr>

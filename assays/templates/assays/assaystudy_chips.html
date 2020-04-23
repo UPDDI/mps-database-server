@@ -78,6 +78,12 @@
     {# TODO #}
     {# Do we want a popup for editing individual chips? #}
 
+    {# Hidden for chips #}
+    <div hidden>
+        {{ form.chip_name }}
+        {{ form.chip_group }}
+    </div>
+
     {# For displaying cells etc. #}
     {% include 'assays/component_displays.html' %}
 </form>

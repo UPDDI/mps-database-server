@@ -15,7 +15,7 @@
     <li><a href="/assays/assaystudy/editable_studies/">Editable Studies</a></li>
     {# TODO REVISE #}
     <li>
-        <a href="{{ object.get_absolute_url }}">{{ object }}</a>
+        <a href="{{ form.instance.study.get_absolute_url }}">{{ form.instance.study }}</a>
     </li>
     <li class="active">
         {% if update %}

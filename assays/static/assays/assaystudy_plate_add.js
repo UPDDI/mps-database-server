@@ -1,4 +1,11 @@
 $(document).ready(function () {
+    var plate_id = Math.floor(window.location.href.split('/')[5]);
+
+    // Crude differentiation for new plates
+    if (window.location.href.split('/')[4] === 'assaystudy') {
+        plate_id = '';
+    }
+
     // TEMPORARY ->
     var series_data_selector = $('#id_series_data');
     // TEMPORARY
@@ -11,22 +18,52 @@ $(document).ready(function () {
     if (series_data_selector.val() === '{}') {
         full_series_data = {
             series_data: [],
-            matrix_item_data: {}
+            // Plates is an array, kind of ugly, but for the moment one has to search for the current plate on the plate page
+            // On the other hand, might we not have another "fake schema" contrivance for matrices?
+            plates: [],
+            // The ID needs to be in individual chip objects, they don't exist initially (unlike plates!)
+            chips: []
         };
     }
 
     // SERIES DATA
     var series_data = full_series_data.series_data;
-    var matrix_item_data = full_series_data.matrix_item_data;
+
+    // TODO: USE THIS CONTRIVED FIELD FOR PLATES FOR NOW?
+    // var matrix_item_data = full_series_data.matrix_item_data;
+    // var matrix_item_data = $('#id_matrix_item_data').val();
+
+    var matrix_item_data = null;
+
+    console.log(plate_id);
+    // Try to get the plate
+    $.each(full_series_data.plates, function(index, plate) {
+        if (plate.id === plate_id) {
+            matrix_item_data = full_series_data.plates[index];
+        }
+    });
+    if (!matrix_item_data) {
+        full_series_data.plates.push({id: ''});
+        console.log(full_series_data);
+        matrix_item_data = full_series_data.plates[full_series_data.plates.length-1];
+    }
 
     // TEMPORARY ACQUISITION OF GROUPS
+    // THIS NEEDS TO BE REPLACED ASAP
     $.each(series_data, function(index) {
-        $('#id_series_selector').append(
-            new Option('Group ' + (index + 1), index + 1)
-        )
+        var new_option = null;
+        if (series_data[index].device_type === 'plate') {
+            if (series_data[index].name) {
+                new_option = new Option(series_data[index].name, index + 1)
+            }
+            else {
+                new_option = new Option('Group ' + (index + 1), index + 1)
+            }
+            $('#id_series_selector').append(
+                new_option
+            );
+        }
     });
-
-
 
     // <- END TEMPORARY
 
