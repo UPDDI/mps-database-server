@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block load_js %}
+    <script src="{% static "js/enter_override.js" %}"></script>
+    {# Should any page be flaggable? #}
+    {# <script src="{% static "js/flag.js" %}"></script> #}
+    <script src="{% static "assays/assaystudy_tabs.js" %}"></script>
+    {# Respective page's script here #}
+    <script src="{% static "assays/assaystudy_plate_add.js" %}"></script>
+{% endblock %}
+
+{# TODO REVISE #}
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/editable_studies/">Editable Studies</a></li>
+    {# TODO REVISE #}
+    <li>
+        <a href="{{ form.instance.study.get_absolute_url }}">{{ form.instance.study }}</a>
+    </li>
+    <li class="active">
+        {% if update %}
+        Edit Plate <em>{{ object }}</em>
+        {% else %}
+        Add Plate
+        {% endif %}
+    </li>
+{% endblock %}
+
+{% block content %}
+
+{# Get the tabs #}
+{% include 'assays/assaystudy_tabs.html' with study=form.instance.study %}
+
+<form enctype="multipart/form-data" class="form-horizontal" method="post">
+
+    <h1>
+        {% if update %}
+        Edit Plate <em>{{ object }}</em>
+        {% else %}
+        Add Plate
+        {% endif %}
+    <br>
+    {% csrf_token %}
+    </h1>
+
+    {% include "submit.html" with flag="y" group=form.instance.group.name %}
+
+    {% include 'errors.html' %}
+
+    {% include 'tracking.html' %}
+
+    <legend>Plate Details</legend>
+
+    {# TODO #}
+
+    {# This section is to select a plate #}
+    {# There a number of reasons that having a dropdown for this is tricky #}
+
+    {# This assumes that these matrices are always plates #}
+    {# This section is for the plate's parameters #}
+    {% include 'generic_field.html' with field=form.name %}
+
+    {% include 'generic_field.html' with field=form.notes %}
+
+    {% include 'generic_field.html' with field=form.device %}
+
+    {% include 'assays/group_visibility_section.html' %}
+
+    <div class="well padded-bottom">
+        {# For now, let's just set a min-width of 1000px #}
+        <div id="matrix_wrapper" class="overflow-scroll" style="max-height:950px;">
+            <table id="matrix_table" class="table" style="min-width:1000px;">
+                <tbody id="matrix_body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    {# TODO CHANGE #}
+    <div>
+        {# OLD #}
+        {# {{ form.setup_data }} #}
+        {{ form.series_data }}
+    </div>
+
+    {# Hidden for plate interface #}
+    <div hidden id="selection_dialog" title="Choose a Series">
+        <div class="row" style="margin-bottom: 175px;">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-11">
+            <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+
+            <tr>
+                <th>Selected Items</th>
+            </tr>
+            <tr>
+                <td id="selection_dialog_selected_items">XXX</td>
+            </tr>
+
+            <tr>
+                <th>Choose a Series</th>
+            </tr>
+            <tr>
+                <td><select id="id_series_selector" class="form-control no-selectize required"></select></td>
+            </tr>
+
+            {% comment %}
+            <tr class="selection_dialog_naming_section">
+                <th>Name/Rename Chips?</th>
+                <th>Initial Name</th>
+            </tr>
+            <tr class="selection_dialog_naming_section text-center">
+                <td><input id="id_use_chip_naming" class="big-checkbox" type="checkbox"></td>
+                <td><input id="id_chip_naming" class="form-control"></td>
+            </tr>
+            {% endcomment %}
+
+            </table>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: none;">
+        <table>
+        <tr id="empty_matrix_item_html">
+        <td data-prefix="{{ item_prefix }}" class="matrix_item-td">
+            <div hidden class="matrix_item-name_section">
+                <span class="label label-default matrix_item-name"></span>
+            </div>
+            <span class="label label-warning matrix-item-hover">
+                X
+            </span>
+        </td>
+        </tr>
+        </table>
+    </div>
+
+    <div hidden id="matrix_contents_hover">
+        <table class="table table-bordered table-condensed bg-warning">
+            <tbody id="matrix_contents_hover_body">
+            </tbody>
+        </table>
+    </div>
+
+    {# For displaying cells etc. #}
+    {% include 'assays/component_displays.html' %}
+</form>
+{% endblock %}

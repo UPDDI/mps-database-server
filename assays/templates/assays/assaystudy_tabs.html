@@ -1,0 +1,46 @@
+<ul id="study_tabs_section" class="nav nav-tabs nav-justified">
+    {% if update %}
+    {# TODO SCRIPT TO DISABLE ACTIVE TAB #}
+    <li role="presentation" data-interface="details">
+        <a href="{% url 'assays-assaystudy-update-details' study.id %}">Details</a>
+    </li>
+    <li role="presentation" data-interface="groups">
+        <a href="{% url 'assays-assaystudy-update-groups' study.id %}">Groups</a>
+    </li>
+    {# Needs to be defined in context #}
+    {% if has_chips %}
+    <li role="presentation" data-interface="chips">
+        <a href="{% url 'assays-assaystudy-update-chips' study.id %}">Chips</a>
+    </li>
+    {% endif %}
+    {% if has_plates %}
+    <li role="presentation" data-interface="plates">
+        <a href="{% url 'assays-assaystudy-update-plates' study.id %}">Plates</a>
+    </li>
+    {% if specific_plate %}
+    <li role="presentation" data-interface="plate">
+        <a href="#">Plate</a>
+    </li>
+    {% endif %}
+    {% endif %}
+    <li role="presentation" data-interface="assays">
+        <a href="{% url 'assays-assaystudy-update-assays' study.id %}">Assays</a>
+    </li>
+    <li role="presentation" data-interface="upload">
+        <a href="{% url 'assays-assaystudy-upload' study.id %}">Upload Data</a>
+    </li>
+    {% else %}
+    <li role="presentation" data-interface="details">
+        <a href="#">Details</a>
+    </li>
+    <li role="presentation" data-interface="groups" class="disabled" title="Please submit the details page before continuing.">
+        <a href="#">Groups</a>
+    </li>
+    <li role="presentation" data-interface="assays" class="disabled" title="Please submit the details page before continuing.">
+        <a href="#">Assays</a>
+    </li>
+    <li role="presentation" data-interface="upload" class="disabled" title="Please submit the details page before continuing.">
+        <a href="#">Upload Data</a>
+    </li>
+    {% endif %}
+</ul>

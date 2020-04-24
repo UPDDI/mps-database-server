@@ -9,6 +9,13 @@ from assays.views import (
     AssayStudyDataUpload,
     AssayStudyList,
     AssayStudyAdd,
+    AssayStudyDetails,
+    AssayStudyGroups,
+    AssayStudyChips,
+    AssayStudyPlates,
+    AssayStudyPlateAdd,
+    AssayStudyPlateUpdate,
+    AssayStudyAssays,
     AssayMatrixItemDetail,
     AssayMatrixItemUpdate,
     AssayMatrixItemDelete,
@@ -95,8 +102,10 @@ urlpatterns = [
     # User can view all Editable Studies
     url(r'^assays/assaystudy/editable_studies/$', AssayStudyEditableList.as_view(), name='assays-editable-study-list'),
     # The main page for a study
+    # TODO TO BE DEPRECATED
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/$', AssayStudyIndex.as_view(), name='assays-assaystudy-index'),
     # Update page for studies
+    # TO BE DEPRECATED
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/update/$', AssayStudyUpdate.as_view(), name='assays-assaystudy-update'),
     # Delete view for studies
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/delete/$', AssayStudyDelete.as_view(), name='assays-assaystudy-delete'),
@@ -117,9 +126,19 @@ urlpatterns = [
     # Images
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/images/$', AssayStudyImages.as_view(), name='assays-assaystudy-images'),
 
+    # The multiple study forms
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/details/$', AssayStudyDetails.as_view(), name='assays-assaystudy-update-details'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/groups/$', AssayStudyGroups.as_view(), name='assays-assaystudy-update-groups'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/chips/$', AssayStudyChips.as_view(), name='assays-assaystudy-update-chips'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/plates/$', AssayStudyPlates.as_view(), name='assays-assaystudy-update-plates'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/assays/$', AssayStudyAssays.as_view(), name='assays-assaystudy-update-assays'),
+
+    url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assayplate/add/$', AssayStudyPlateAdd.as_view(), name='assays-assaymatrix-plate-add'),
+    url(r'^assays/assayplate/(?P<pk>[0-9]+)/plate/$', AssayStudyPlateUpdate.as_view(), name='assays-assaymatrix-plate-update'),
+
     # NEW_TO_BE_REVISED
     url(r'^assays/assaystudy/$', AssayStudyList.as_view(), name='assays-assaystudy-list'),
-    url(r'^assays/assaystudy/add/$', AssayStudyAddNew.as_view(), name='assays-assaystudy-add'),
+    url(r'^assays/assaystudy/add/$', AssayStudyAdd.as_view(), name='assays-assaystudy-add'),
 
     url(r'^assays/assaymatrixitem/(?P<pk>[0-9]+)/$', AssayMatrixItemDetail.as_view(), name='assays-assaymatrixitem-detail'),
     url(r'^assays/assaymatrixitem/(?P<pk>[0-9]+)/update/$', AssayMatrixItemUpdate.as_view(), name='assays-assaymatrixitem-update'),
@@ -129,6 +148,7 @@ urlpatterns = [
     url(r'^assays/studyconfiguration/add/$', AssayStudyConfigurationAdd.as_view(), name='assays-assaystudyconfiguration-add'),
     url(r'^assays/studyconfiguration/(?P<pk>[0-9]+)/$', AssayStudyConfigurationUpdate.as_view(), name='assays-assaystudyconfiguration-update'),
 
+    # TO BE DEPRECATED
     # Add a matrix
     url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assaymatrix/add/$', AssayMatrixAdd.as_view(), name='assays-assaymatrix-add'),
     url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/$', AssayMatrixDetail.as_view(), name='assays-assaymatrix-detail'),

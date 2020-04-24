@@ -1,0 +1,89 @@
+{# The current matrix #}
+{# This section is a setup table similar to the new study page #}
+{# TODO PUT THE TABLE THING HERE #}
+{# TODO TODO VERY MUCH NOT DRY #}
+{# TODO PUT THE TABLE THING HERE #}
+<div id="group_visibility_section">
+    {# Section for visibility checkboxes #}
+    {# A little awkward #}
+    <div class="row large-padding-top">
+    <div class="col-md-4 col-lg-3">
+        <div class="fancy-checkbox table-filter padded-bottom" align="left">
+            <input class="visibility-checkbox" type="checkbox" name="show_cells" id="show_cells" value=".cell_start" checked/>
+            <div class="btn-group">
+                <label for="show_cells" class="btn btn-success">
+                    <span class="glyphicon glyphicon-ok"></span>
+                    <span> </span>
+                </label>
+                <label for="show_cells" class="btn btn-default active">
+                    Show Cells
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 col-lg-3">
+        <div class="fancy-checkbox table-filter padded-bottom" align="left">
+            <input class="visibility-checkbox" type="checkbox" name="show_compounds" id="show_compounds" value=".compound_start" checked/>
+            <div class="btn-group">
+                <label for="show_compounds" class="btn btn-info">
+                    <span class="glyphicon glyphicon-ok"></span>
+                    <span> </span>
+                </label>
+                <label for="show_compounds" class="btn btn-default active">
+                    Show Compounds
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 col-lg-3">
+        <div class="fancy-checkbox table-filter padded-bottom" align="left">
+            <input class="visibility-checkbox" type="checkbox" name="show_settings" id="show_settings" value=".setting_start" checked/>
+            <div class="btn-group">
+                <label for="show_settings" class="btn btn-warning">
+                    <span class="glyphicon glyphicon-ok"></span>
+                    <span> </span>
+                </label>
+                <label for="show_settings" class="btn btn-default active">
+                    Show Settings
+                </label>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 col-lg-3">
+            <div class="fancy-checkbox table-filter padded-bottom" align="left">
+                {# useless value #}
+                <input type="checkbox" name="show_details" id="show_details" value=".full_details" />
+                <div class="btn-group">
+                    <label for="show_details" class="btn btn-default">
+                        <span class="glyphicon glyphicon-ok"></span>
+                        <span> </span>
+                    </label>
+                    <label for="show_details" class="btn btn-default active">
+                        Show Full Details
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-3" hidden>
+            <div class="fancy-checkbox table-filter padded-bottom" align="left">
+                <input class="visibility-checkbox" type="checkbox" name="show_errors" id="show_errors" value=".error-display" checked/>
+                <div class="btn-group">
+                    <label for="show_settings" class="btn btn-warning">
+                        <span class="glyphicon glyphicon-ok"></span>
+                        <span> </span>
+                    </label>
+                    <label for="show_errors" class="btn btn-danger active">
+                        Show Errors
+                    </label>
+                </div>
+            </div>
+        </div>
+        {# Spacer, contrived #}
+        <div class="col-md-4 col-lg-3"></div>
+    </div>
+</div>

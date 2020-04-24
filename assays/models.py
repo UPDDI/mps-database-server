@@ -29,6 +29,9 @@ import reversion
 
 import datetime
 
+# THIS WILL ONLY BE USED FOR PROTOTYPE
+from django.contrib.postgres.fields import JSONField
+
 # These are here to avoid potentially messy imports, may change later
 def attr_getter(item, attributes):
     """attribute getter for individual items"""
@@ -1895,6 +1898,9 @@ class AssayStudy(FlaggableModel):
     #     )
     #     return study_types
 
+    # THIS IS ONLY FOR THE PROTOTYPE
+    series_data = JSONField(default=dict, blank=True)
+
     # TODO INEFFICIENT BUT SHOULD WORK
     def stakeholder_approval_needed(self):
         return AssayStudyStakeholder.objects.filter(
@@ -2101,6 +2107,10 @@ class AssayMatrix(FlaggableModel):
     # NOTE: Additionally, this is just for testing purposes
     # Once the reset of the schema has been made, it must be removed
     series_data = JSONField(default=dict, blank=True)
+
+    # TEMPORARY: FOR PROTOTYPE SCHEMA
+    # REMOVE ASAP
+    # plate_data = JSONField(default=dict, blank=True)
 
     def __str__(self):
         return '{0}'.format(self.name)

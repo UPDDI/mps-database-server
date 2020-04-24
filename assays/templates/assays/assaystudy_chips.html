@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block load_js %}
+    <script src="{% static "js/enter_override.js" %}"></script>
+    {# Should any page be flaggable? #}
+    {# <script src="{% static "js/flag.js" %}"></script> #}
+    <script src="{% static "assays/assaystudy_tabs.js" %}"></script>
+    {# Respective page's script here #}
+    <script src="{% static "assays/assaystudy_chips.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/editable_studies/">Editable Studies</a></li>
+    <li>
+        <a href="{{ object.get_absolute_url }}">{{ object }}</a>
+    </li>
+    <li class="active">
+            Edit <em>{{ object }}</em>
+    </li>
+{% endblock %}
+
+{% block content %}
+
+{# Get the tabs #}
+{% include 'assays/assaystudy_tabs.html' with study=object %}
+
+<form enctype="multipart/form-data" class="form-horizontal" method="post">
+
+    <h1>
+        Edit <em>{{ object }}</em> Chips
+    <br>
+    {% csrf_token %}
+    </h1>
+
+    {% include "submit.html" with flag="y" group=form.instance.group.name %}
+
+    {% include 'errors.html' %}
+
+    {% include 'tracking.html' %}
+
+    {{form.errors }}
+
+    <legend>Study Chips</legend>
+
+    {# Temporary #}
+    <table id="chips_table" class="display table table-striped table-hover" cellspacing="0" width="100%">
+    <thead>
+        <tr>
+            <th>Index</th>
+            <th>Name</th>
+            <th>Group</th>
+            <th>Cells</th>
+            <th>Compounds</th>
+            <th>Settings</th>
+        </tr>
+    </thead>
+    <tbody>
+    {# It may be ideal to edit a formset #}
+    {# On the other hand, it makes the DataTable somewhat odd #}
+    {% comment %}
+    {% for chip in chips %}
+        {# CONTRIVED FOR NOW #}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><input value="CHIP-{{ forloop.counter }}"></td>
+            <td>
+                <select>
+                <option selected>Group 1</option>
+                </select>
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    {% endfor %}
+    {% endcomment %}
+    </tbody>
+    </table>
+    {# TODO #}
+    {# Do we want a popup for editing individual chips? #}
+
+    {# Hidden for chips #}
+    <div hidden>
+        {{ form.series_data }}
+
+        {# contrived #}
+        <textarea type="text" id="id_chip_name" name="chip_name" class="form-control name" data-default="" data-index="0" rows="1"></textarea>
+        <select id="id_chip_group" name="chip_group" class="no-selectize group" data-default="" data-index="0"></select>
+
+        {# {{ form.chip_name }} #}
+        {# {{ form.chip_group }} #}
+    </div>
+
+    {# For displaying cells etc. #}
+    {% include 'assays/component_displays.html' %}
+</form>
+{% endblock %}

@@ -57,7 +57,13 @@
         {# Only show options if this entry is not locked due to being reviewed #}
         {% else %}
 
+        {% if form %}
         <button id="submit" type="submit" class="btn btn-primary">Submit</button>
+        {% else %}
+        {# VERY CONTRIVED, ONLY FOR PLATES TAB AT THE MOMENT #}
+        <a class="btn btn-primary" href="{% url 'assays-assaystudy-index' object.id %}">Submit</a>
+        {% endif %}
+        {# Mostly pointless #}
         {# <a class="btn btn-warning" role="button" onclick="window.location.reload(false);">Clear all Changes</a> #}
 
         {% if update and object.get_delete_url %}
@@ -66,6 +72,33 @@
 
         {% if history.count %}
             <a id="open_history_dialog" role="button" class="btn btn-info pull-right"  style="margin-right: 15px;" href="javascript:;">History</a>
+        {% endif %}
+
+        {% if has_next_button or has_previous_button %}
+            <input hidden id="id_post_submission_url_override" name="post_submission_url_override" value="">
+
+            {# Prompt user about redirection #}
+            <div hidden id="post_submission_override_confirm" title="Save Before Redirect?">
+                <div class="alert alert-warning" role="alert">
+                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                    <span class="sr-only">Warning:</span>
+                    <span>Do you want to save this page before being redirected?</span>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if has_next_button %}
+            <a id="submit_next_button" role="button" class="btn btn-primary pull-right"  style="margin-right: 15px;" href="javascript:;">
+                Next
+                <span class="glyphicon glyphicon-arrow-right"></span>
+            </a>
+        {% endif %}
+
+        {% if has_previous_button %}
+            <a id="submit_previous_button" role="button" class="btn btn-primary pull-right"  style="margin-right: 15px;" href="javascript:;">
+                <span class="glyphicon glyphicon-arrow-left"></span>
+                Previous
+            </a>
         {% endif %}
 
         {% if flag %}
@@ -78,7 +111,7 @@
                 <a role='button' id="notes_for_flag" class="btn btn-sm btn-warning" title="Reason for Flag">
                     Notes
                 </a>
-            {% else %}
+            {% elif form %}
                 {# If the model is not flagged display a blue flag and no notes #}
                 <a role='button' id="flag" class="btn btn-sm" title="Flag for review">
                     <span class="glyphicon glyphicon-flag" aria-hidden="true"></span>

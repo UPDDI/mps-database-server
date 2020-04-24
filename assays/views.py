@@ -54,6 +54,11 @@ from assays.forms import (
     ReadyForSignOffForm,
     AssayStudyForm,
     AssayStudyFormNew,
+    AssayStudyDetailForm,
+    AssayStudyGroupForm,
+    AssayStudyChipForm,
+    AssayStudyPlateForm,
+    AssayStudyAssaysForm,
     AssayStudySupportingDataFormSetFactory,
     AssayStudyAssayFormSetFactory,
     AssayStudyReferenceFormSetFactory,
@@ -120,6 +125,7 @@ from mps.templatetags.custom_filters import (
 
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.urls import reverse
 
 from mps.mixins import (
     LoginRequiredMixin,
@@ -552,6 +558,74 @@ class AssayStudyList(ListView):
 
 class AssayStudyMixin(FormHandlerMixin):
     model = AssayStudy
+    # Study is now split into many pages, probably best to list them explicitly
+    # template_name = 'assays/assaystudy_add.html'
+    # form_class = AssayStudyForm
+
+    # formsets = (
+    #     ('study_assay_formset', AssayStudyAssayFormSetFactory),
+    #     ('supporting_data_formset', AssayStudySupportingDataFormSetFactory),
+    #     ('reference_formset', AssayStudyReferenceFormSetFactory),
+    # )
+
+    # def get_context_data(self, **kwargs):
+    #     context = super(AssayStudyMixin, self).get_context_data(**kwargs)
+
+    #     # TODO SLATED FOR REMOVAL
+    #     context.update({
+    #         'reference_queryset': AssayReference.objects.all()
+    #     })
+
+    #     return context
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyMixin, self).get_context_data(**kwargs)
+
+        # TODO: Check whether this Study has Chips or Plates
+        # Contrived at the moment
+        context.update({
+            'has_chips': True,
+            'has_plates': True,
+            'has_next_button': True,
+            'has_previous_button': True
+        })
+
+        return context
+
+
+class AssayStudyDetailsMixin(AssayStudyMixin):
+    template_name = 'assays/assaystudy_details.html'
+    form_class = AssayStudyDetailForm
+
+    # Do we want references here?
+    formsets = (
+        ('reference_formset', AssayStudyReferenceFormSetFactory),
+    )
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyDetailsMixin, self).get_context_data(**kwargs)
+
+        # TODO SLATED FOR REMOVAL
+        context.update({
+            'reference_queryset': AssayReference.objects.all(),
+            'has_next_button': True,
+            'has_previous_button': False
+        })
+
+        return context
+
+
+class AssayStudyAdd(OneGroupRequiredMixin, AssayStudyDetailsMixin, CreateView):
+    # Special handling for handling next button
+    def extra_form_processing(self, form):
+        if self.request.POST.get('post_submission_url_override') == '#':
+            self.post_submission_url_override = reverse('assays-assaystudy-update-groups', args=[form.instance.pk])
+        return super(AssayStudyAdd, self).extra_form_processing(form)
+
+
+# TO BE DEPRECATED
+# Update is not sufficiently descriptive of any of the pages
+class AssayStudyUpdate(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     template_name = 'assays/assaystudy_add.html'
     form_class = AssayStudyForm
 
@@ -572,12 +646,119 @@ class AssayStudyMixin(FormHandlerMixin):
         return context
 
 
-class AssayStudyAdd(OneGroupRequiredMixin, AssayStudyMixin, CreateView):
+class AssayStudyDetails(ObjectGroupRequiredMixin, AssayStudyDetailsMixin, UpdateView):
     pass
 
 
-class AssayStudyUpdate(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
+class AssayStudyGroups(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
+    template_name = 'assays/assaystudy_groups.html'
+    form_class = AssayStudyGroupForm
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyGroups, self).get_context_data(**kwargs)
+
+        # TODO SLATED FOR REMOVAL
+        context.update({
+            'cellsamples' : CellSample.objects.all().prefetch_related(
+                'cell_type__organ',
+                'supplier',
+                'cell_subtype__cell_type'
+            )
+        })
+
+        return context
+
+
+class AssayStudyChips(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
+    template_name = 'assays/assaystudy_chips.html'
+    # Might end up being a formset?
+    form_class = AssayStudyChipForm
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyChips, self).get_context_data(**kwargs)
+
+        # TODO SLATED FOR REMOVAL
+        context.update({
+            'update': True,
+            # TODO REVISE
+            'chips': AssayMatrixItem.objects.filter(
+                device__device_type='chip',
+                study_id=self.object.id
+            )
+        })
+
+        return context
+
+
+# This is now really just a list page
+class AssayStudyPlates(ObjectGroupRequiredMixin, AssayStudyMixin, DetailView):
+    template_name = 'assays/assaystudy_plates.html'
+    form_class = AssayStudyPlateForm
+
+    # Contrived
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyPlates, self).get_context_data(**kwargs)
+
+        # TODO SLATED FOR REMOVAL
+        context.update({
+            'update': True,
+            # TODO REVISE
+            'plates': AssayMatrix.objects.filter(
+                device__isnull=False,
+                study_id=self.object.id
+            )
+        })
+
+        return context
+
+
+class AssayStudyPlateMixin(FormHandlerMixin):
+    model = AssayMatrix
+    template_name = 'assays/assaystudy_plate_add.html'
+    # Might actually be a formset or something?
+    form_class = AssayStudyPlateForm
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyPlateMixin, self).get_context_data(**kwargs)
+
+        # TODO: Check whether this Study has Chips or Plates
+        # Contrived at the moment
+        context.update({
+            'has_chips': True,
+            # Necessarily True!
+            'has_plates': True,
+            'specific_plate': True
+        })
+
+        return context
+
+
+class AssayStudyPlateAdd(StudyGroupMixin, AssayStudyPlateMixin, CreateView):
+    def get_form(self, form_class=None):
+        form_class = self.get_form_class()
+        # Get the study
+        study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
+
+        # If POST
+        if self.request.method == 'POST':
+            return form_class(self.request.POST, self.request.FILES, study=study, user=self.request.user)
+        # If GET
+        else:
+            return form_class(study=study, user=self.request.user)
+
+
+class AssayStudyPlateUpdate(StudyGroupMixin, AssayStudyPlateMixin, UpdateView):
     pass
+
+
+class AssayStudyAssays(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
+    template_name = 'assays/assaystudy_assays.html'
+    # This will probably just be a contrived empty form
+    form_class = AssayStudyAssaysForm
+
+    formsets = (
+        ('study_assay_formset', AssayStudyAssayFormSetFactory),
+    )
 
 
 # class AssayStudyAdd(OneGroupRequiredMixin, CreateView):
@@ -715,6 +896,7 @@ class AssayStudyUpdate(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
 #             )
 
 
+# TODO: TO BE REVISED
 class AssayStudyIndex(StudyViewerMixin, DetailView):
     """Show all chip and plate models associated with the given study"""
     model = AssayStudy
@@ -1131,9 +1313,8 @@ class AssayStudySignOff(HistoryMixin, UpdateView):
             ))
 
 
-class AssayStudyDataUpload(HistoryMixin, ObjectGroupRequiredMixin, UpdateView):
+class AssayStudyDataUpload(AssayStudyMixin, ObjectGroupRequiredMixin, UpdateView):
     """Upload an Excel Sheet for storing multiple sets of Readout data at one"""
-    model = AssayStudy
     template_name = 'assays/assaystudy_upload.html'
     form_class = AssayStudyDataUploadForm
 
@@ -1153,7 +1334,7 @@ class AssayStudyDataUpload(HistoryMixin, ObjectGroupRequiredMixin, UpdateView):
         # TODO TODO TODO
         # context['version'] = len(os.listdir(MEDIA_ROOT + '/excel_templates/'))
 
-        context['data_file_uploads'] = get_data_file_uploads(study=self.object)
+        # context['data_file_uploads'] = get_data_file_uploads(study=self.object)
 
         if self.request.POST:
             if 'supporting_data_formset' not in context:
@@ -1161,7 +1342,13 @@ class AssayStudyDataUpload(HistoryMixin, ObjectGroupRequiredMixin, UpdateView):
         else:
             context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(instance=self.object)
 
-        context['update'] = True
+        # context['update'] = True
+
+        context.update({
+            'data_file_uploads': get_data_file_uploads(study=self.object),
+            'update': True,
+            'has_next_button': False
+        })
 
         return context
 
@@ -2399,9 +2586,19 @@ class AssayStudySetUpdate(CreatorOrSuperuserRequiredMixin, AssayStudySetMixin, U
 #             )
 
 
+# TODO TO BE DEPRECATED
 class AssayStudyAddNew(OneGroupRequiredMixin, AssayStudyMixin, CreateView):
     template_name = 'assays/assaystudy_add_new.html'
     form_class = AssayStudyFormNew
+
+    template_name = 'assays/assaystudy_add.html'
+    form_class = AssayStudyForm
+
+    formsets = (
+        ('study_assay_formset', AssayStudyAssayFormSetFactory),
+        ('supporting_data_formset', AssayStudySupportingDataFormSetFactory),
+        ('reference_formset', AssayStudyReferenceFormSetFactory),
+    )
 
     # TODO TO BE REMOVED
     def get_context_data(self, **kwargs):
@@ -2421,6 +2618,7 @@ class AssayStudyAddNew(OneGroupRequiredMixin, AssayStudyMixin, CreateView):
         })
 
         return context
+
 
 # class AssayStudyAddNew(OneGroupRequiredMixin, CreateView):
 #     """Add a study"""

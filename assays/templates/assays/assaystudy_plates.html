@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block load_js %}
+    <script src="{% static "js/enter_override.js" %}"></script>
+    {# Should any page be flaggable? #}
+    {# <script src="{% static "js/flag.js" %}"></script> #}
+    <script src="{% static "assays/assaystudy_tabs.js" %}"></script>
+    {# Respective page's script here #}
+    <script src="{% static "assays/assaystudy_plates.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/editable_studies/">Editable Studies</a></li>
+    <li>
+        <a href="{{ object.get_absolute_url }}">{{ object }}</a>
+    </li>
+    <li class="active">
+            Edit <em>{{ object }}</em>
+    </li>
+{% endblock %}
+
+{% block content %}
+
+{# Get the tabs #}
+{% include 'assays/assaystudy_tabs.html' with study=object %}
+
+{# This doesn't actually need to be a form for the moment #}
+{# <form enctype="multipart/form-data" class="form-horizontal" method="post"> #}
+    <h1>
+        Edit <em>{{ object }}</em> Plates
+    <br>
+    {% csrf_token %}
+    </h1>
+
+    {% include "submit.html" with flag="y" group=form.instance.group.name %}
+
+    {% include 'errors.html' %}
+
+    {% include 'tracking.html' %}
+
+    <legend>Study Plates</legend>
+
+    <div class="padded-bottom">
+        <a href="{% url 'assays-assaymatrix-plate-add' object.id %}" class="btn btn-success" role="button">Add Plate</a>
+    </div>
+
+    <table hidden id="plates" class="display table table-striped table-hover" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>View/Edit</th>
+                <th>Name</th>
+                <th>Device</th>
+                <th>Wells in Use</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {# Temporary #}
+        {% for plate in plates %}
+            <tr>
+                <td>
+                    <a class="btn btn-primary"
+                       href="{% url 'assays-assaymatrix-plate-update' plate.id %}">
+                        View/Edit
+                    </a>
+                </td>
+                <td>
+                    {{ plate.name }}
+                </td>
+                <td>
+                    {{ plate.device }}
+                </td>
+                <td>
+                    {{ plate.assaymatrixitem_set.count }}
+                </td>
+                {% comment %}
+                <td>
+                    {% if plate.signed_off_by %}
+                        <span hidden>1</span>
+                        <span title="This entry was validated by {{ plate.full_reviewer }} on {{ plate.signed_off_date }}" class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+                    {% endif %}
+                    {% if plate.flagged %}
+                        <span hidden>0</span>
+                        <span title="This entry is flagged for review: '{{ plate.reason_for_flag }}'" class="glyphicon glyphicon-flag text-danger" aria-hidden="true"></span>
+                    {% endif %}
+                </td>
+                {% endcomment %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{# </form> #}
+{% endblock %}

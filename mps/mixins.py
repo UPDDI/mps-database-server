@@ -188,6 +188,8 @@ class StudyGroupMixin(object):
         if self.kwargs.get('study_id', ''):
             study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
 
+            print(study)
+
             if not is_group_editor(self.request.user, study.group.name):
                 return PermissionDenied(self.request, 'You must be a member of the group ' + str(study.group))
 
@@ -533,6 +535,11 @@ class FormHandlerMixin(HistoryMixin):
     # Default to generic_form template
     template_name = 'generic_form.html'
 
+    # This attribute overrides the objects post_submission_url
+    # It is primarily used for moving between study tabs at the moment
+    # The default is the empty string to avoid an override
+    post_submission_url_override = ''
+
     def __init__(self, *args, **kwargs):
         super(FormHandlerMixin, self).__init__(*args, **kwargs)
 
@@ -643,6 +650,10 @@ class FormHandlerMixin(HistoryMixin):
     def form_valid(self, form):
         is_popup = self.request.GET.get('popup', 0) == '1'
 
+        # Basically, next/previous set a form field to the next url to visit
+        if not self.post_submission_url_override and self.request.POST.get('post_submission_url_override'):
+            self.post_submission_url_override = self.request.POST.get('post_submission_url_override')
+
         all_formsets = []
         self.all_forms = {
             'form': form
@@ -690,6 +701,8 @@ class FormHandlerMixin(HistoryMixin):
             else:
                 self.log_change(self.request, self.object, change_message)
 
+            # Popups only use post_submission_url
+            # Mostly because it doesn't matter, it should just be the confirmation page after a success
             if is_popup:
                 if self.object.id:
                     if hasattr(self.object, 'get_string_for_processing'):
@@ -719,9 +732,14 @@ class FormHandlerMixin(HistoryMixin):
                         )
                     )
             else:
-                return redirect(
-                    self.object.get_post_submission_url()
-                )
+                if self.post_submission_url_override:
+                    return redirect(
+                        self.post_submission_url_override
+                    )
+                else:
+                    return redirect(
+                        self.object.get_post_submission_url()
+                    )
         else:
             # Need to have the forms processed so that they have errors
             return self.render_to_response(

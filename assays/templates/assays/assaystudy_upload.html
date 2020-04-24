@@ -10,6 +10,7 @@
     <script src="{% static "js/enter_override.js" %}"></script>
     <script src="{% static "assays/assaystudy_upload.js" %}"></script>
     <script src="{% static "assays/chart_display.js" %}"></script>
+    <script src="{% static "assays/assaystudy_tabs.js" %}"></script>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -23,6 +24,9 @@
 {% endblock %}
 
 {% block fluid-content %}
+    {# Get the tabs #}
+    {% include 'assays/assaystudy_tabs.html' with study=object %}
+
     <form enctype="multipart/form-data" class="form-horizontal" method="post" >
 
     <h1>
