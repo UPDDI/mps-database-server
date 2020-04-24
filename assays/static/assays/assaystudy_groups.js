@@ -654,8 +654,9 @@ $(document).ready(function () {
 
         if (setup_to_use['device_type'] === 'plate') {
             new_row.find('.number-of-items')
-                .val('')
-                .attr('disabled', 'disabled');
+                .val(0)
+                .attr('disabled', 'disabled')
+                .attr('title', 'The Group is for Plates Only')
         }
         else {
             new_row.find('.number-of-items')
@@ -674,6 +675,9 @@ $(document).ready(function () {
             );
 
             // Crude way to make sure the chips get generated
+            new_row.find('.number-of-items').trigger('change');
+        }
+        else if (setup_to_use['device_type'] === 'plate') {
             new_row.find('.number-of-items').trigger('change');
         }
 
