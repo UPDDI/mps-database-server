@@ -4017,7 +4017,8 @@ def calculate_pk_parameters(cl_ml_min,
                             estimated_fraction_absorbed,
                             prediction_time_length,
                             missing_plasma_values,
-                            missing_dosing_values):
+                            missing_dosing_values,
+                            acidic):
 
     ElogD = (logD*0.9638)+0.0417
     Log_vo_w = (1.099*logD)-1.31
@@ -4055,7 +4056,10 @@ def calculate_pk_parameters(cl_ml_min,
     ]
 
     Vc = np.sum(vol_df.iloc[:, 2])
-    fi = 1/(1+(10**((7.4-pKa)*1)))
+    if acidic:
+        fi = 1/(1+(10**((7.4-pKa)*-1)))
+    else:
+        fi = 1/(1+(10**((7.4-pKa)*1)))
     fut = 10**(0.008-(0.2294*ElogD)-(0.9311*fi)+(0.8885*(np.log10(fu))))
     Vp_L = body_mass*Vp
     VE_L = body_mass*VE

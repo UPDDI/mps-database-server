@@ -50,7 +50,7 @@ $(document).ready(function () {
     // var compound_bioavailability_tooltip = "The proportion of a drug or other substance which enters the circulation when introduced into the body and so is able to have an active effect.";
     var compound_fu_tooltip = "Fraction of unbound tissue in plasma.";
     var input_icl_tooltip = "Predicted intrinsic clearance.";
-    var input_fa_tooltip = "Fraction absorbed.";
+    var input_fa_tooltip = "Fraction absorbed. Default = ka / (ki + ka)";
     var input_ka_tooltip = "Absorption rate constant (range from 0.6 - 4.2).";
     var pk_param_vdss_tooltip = "Volume of distribution at steady state.";
     var pk_param_ke_tooltip = "Elimination rate constant.";
@@ -555,32 +555,21 @@ $(document).ready(function () {
     }
 
     $('#button-dosing').click(function() {
-        if (start_time_dropdown.getValue() == "") {
-            start_time_dropdown.setValue(chart_data[group_num][1][0]);
-        }
-        if (end_time_dropdown.getValue() == "") {
-            end_time_dropdown.setValue(chart_data[group_num][chart_data[group_num].length-1][0]);
-        }
-        if (pk_type == "Bolus") {
-            if (end_time_dropdown.getValue() == start_time_dropdown.getValue()) {
-                $('#pbpk-error-text').text('"Start Time" and "End Time" must differ for Bolus datasets.');
-                $('#pbpk-error-container').show();
-                clear_clearance();
-                return;
-            }
-            if (end_time_dropdown.getValue() < start_time_dropdown.getValue()) {
-                $('#pbpk-error-text').text('The Selected "Start Time" comes after the selected "End Time". Please adjust these parameters and run the calculation again.');
-                $('#pbpk-error-container').show();
-                clear_clearance();
-                return;
-            }
-        }
-
         $('#pbpk-error-container').hide();
+
+        window.spinner.spin(
+            document.getElementById("spinner")
+        );
 
         var missing_required_values = false;
         var missing_plasma_values = false;
         var missing_dosing_values = false;
+        if ($('#input-icl').val() == '') {
+            $('#input-icl').css('background-color', '#f2dede');
+            missing_required_values = true;
+        } else {
+            $('#input-icl').css('background-color', '#fffabb');
+        }
         if ($('#species-body-mass').val() == '') {
             $('#species-body-mass').css('background-color', '#f2dede');
             missing_required_values = true;
@@ -706,12 +695,158 @@ $(document).ready(function () {
         }
 
         if (missing_required_values || (missing_plasma_values && missing_dosing_values)) {
-            clear_clearance();
+            window.spinner.stop();
             $('#calculated-pk-container').hide();
             $('#pbpk-error-container').show();
             $('#pbpk-error-text').text('There are required values missing to perform PBPK analysis. Please fill them out and try again.');
             return;
         }
+
+        $.ajax(
+            "/assays_ajax/",
+            {
+                data: {
+                    call: 'fetch_pbpk_dosing_results',
+                    csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
+                    cl_ml_min: $('#input-icl').val().replace(/\,/g,''),
+                    body_mass: $('#species-body-mass').val(),
+                    MW: $('#compound-mw').val(),
+                    logD: $('#compound-logd').val(),
+                    pKa: $('#compound-pka').val(),
+                    fu: $('#compound-fu').val(),
+                    Vp: $('#species-vp').val(),
+                    VE: $('#species-ve').val(),
+                    REI: $('#species-rei').val(),
+                    VR: $('#species-vr').val(),
+                    ASR: $('#species-asr').val(),
+                    Ki: $('#species-ki').val(),
+                    Ka: $('#input-ka').val(),
+                    Fa: $('#input-fa').val(),
+                    dose_mg: $('#input-plasma-dose').val(),
+                    dose_interval: $('#input-plasma-dose-interval').val(),
+                    desired_Cp: $('#input-dosing-cp').val(),
+                    desired_dose_interval: $('#input-dosing-interval').val(),
+                    estimated_fraction_absorbed: $('#input-fa').val(),
+                    prediction_time_length: 720,
+                    missing_plasma_values: missing_plasma_values,
+                    missing_dosing_values: missing_dosing_values,
+                    acidic_basic: $("input[name='acid-base']:checked").val()
+                },
+                type: 'POST',
+            }
+        )
+        .done(function(data) {
+            // console.log(data);
+            // Stop spinner
+            window.spinner.stop();
+
+            if ("error" in data) {
+                $('#pbpk-error-text').text(data.error);
+                $('#pbpk-error-container').show();
+            } else {
+                $('#calculated-pk-container').show();
+                if (missing_plasma_values) {
+                    $('#plasma-container').hide();
+                    $('#plasma-dose-container').hide()
+                    $('#dosing-chart-container').hide();
+                } else {
+                    $('#plasma-container').show();
+                    $('#plasma-dose-container').show()
+                    $('#dosing-chart-container').show();
+                    $('#pk-param-vdss').val(numberWithCommas(data.calculated_pk_parameters['VDss (L)'][0].toFixed(3)));
+                    $('#pk-param-ke').val(numberWithCommas(data.calculated_pk_parameters['Ke(1/h)'][0].toFixed(3)));
+                    $('#pk-param-half-life-3-confirmed').val(numberWithCommas(data.calculated_pk_parameters['Elimination half-life'][0].toFixed(3)));
+                    $('#pk-param-auc').val(numberWithCommas(data.calculated_pk_parameters['AUC'][0].toFixed(3)));
+                    $('#pk-param-elogd').val(numberWithCommas(data.calculated_pk_parameters['ELogD'][0].toFixed(3)));
+                    $('#pk-param-vc').val(numberWithCommas(data.calculated_pk_parameters['Vc (L)'][0].toFixed(3)));
+                    $('#pk-param-logvow').val(numberWithCommas(data.calculated_pk_parameters['Logvo/w'][0].toFixed(3)));
+                    $('#pk-param-cl').val(numberWithCommas(data.calculated_pk_parameters['CL (L/h)'][0].toFixed(3)));
+                    $('#pk-param-fut').val(numberWithCommas(data.calculated_pk_parameters['fut'][0].toFixed(3)));
+                    $('#pk-param-fi').val(numberWithCommas(data.calculated_pk_parameters['fi(7.4)'][0].toFixed(3)));
+                    $('#pk-single-mmax').val(numberWithCommas(data.dosing_data[0].toFixed(3)));
+                    $('#pk-single-cmax').val(numberWithCommas(data.dosing_data[1].toFixed(3)));
+                    $('#pk-single-tmax').val(numberWithCommas(data.dosing_data[2].toFixed(3)));
+                    $('#pk-multi-mss').val(numberWithCommas(data.dosing_data[3].toFixed(3)));
+                    $('#pk-multi-css').val(numberWithCommas(data.dosing_data[4].toFixed(3)));
+                    $('#pk-multi-tmax').val(numberWithCommas(data.dosing_data[5].toFixed(3)));
+
+                    prediction_plot_data = JSON.parse(JSON.stringify(data.prediction_plot_table));
+                    make_dosing_plot(prediction_plot_data, 48)
+                    $('#dosing-slider').slider("value", 48);
+                    $('#dosing-slider-handle').text("48");
+                }
+                if (missing_dosing_values) {
+                    $('#dosing-container').hide();
+                } else {
+                    $('#dosing-container').show();
+                    $('#pk-desired-dose').val(numberWithCommas(data.dosing_data[6].toFixed(3)));
+                    $('#pk-desired-50').val(numberWithCommas(data.dosing_data[7].toFixed(3)));
+                    $('#pk-desired-90').val(numberWithCommas(data.dosing_data[8].toFixed(3)));
+                }
+            }
+        })
+        .fail(function(xhr, errmsg, err) {
+            // Stop spinner
+            window.spinner.stop();
+
+            alert('Error retrieving Dosing Prediction.');
+            console.log(xhr.status + ": " + xhr.responseText);
+        });
+        // console.log("Done with Dosing Prediction.")
+    })
+
+    $('#button-clearance').click(function() {
+        if (start_time_dropdown.getValue() == "") {
+            start_time_dropdown.setValue(chart_data[group_num][1][0]);
+        }
+        if (end_time_dropdown.getValue() == "") {
+            end_time_dropdown.setValue(chart_data[group_num][chart_data[group_num].length-1][0]);
+        }
+        if (pk_type == "Bolus") {
+            if (end_time_dropdown.getValue() == start_time_dropdown.getValue()) {
+                $('#clearance-error-text').text('"Start Time" and "End Time" must differ for Bolus datasets.');
+                $('#clearance-error-container').show();
+                clear_clearance();
+                return;
+            }
+            if (end_time_dropdown.getValue() < start_time_dropdown.getValue()) {
+                $('#clearance-error-text').text('The Selected "Start Time" comes after the selected "End Time". Please adjust these parameters and run the calculation again.');
+                $('#clearance-error-container').show();
+                clear_clearance();
+                return;
+            }
+        }
+
+        var missing_required_values = false;
+        if ($('#number-of-cells-calc').val() == '') {
+            $('#number-of-cells-calc').css('background-color', '#f2dede');
+            missing_required_values = true;
+        } else {
+            $('#number-of-cells-calc').css('background-color', '#fffabb');
+        }
+        if ($('#species-organ-tissue').val() == '') {
+            $('#species-organ-tissue').css('background-color', '#f2dede');
+            missing_required_values = true;
+        } else {
+            $('#species-organ-tissue').css('background-color', '#fffabb');
+        }
+        if ($('#species-total-organ-weight').val() == '') {
+            $('#species-total-organ-weight').css('background-color', '#f2dede');
+            missing_required_values = true;
+        } else {
+            $('#species-total-organ-weight').css('background-color', '#fffabb');
+        }
+
+        if (missing_required_values) {
+            window.spinner.stop();
+            $('#calculated-pk-container').hide();
+            $('#clearance-error-container').show();
+            $('#clearance-error-text').text('There are required values missing to perform PBPK clearance calculations. Please fill them out and try again.');
+            clear_clearance();
+            return;
+        }
+
+        $('#clearance-error-container').hide();
 
         window.spinner.spin(
             document.getElementById("spinner")
@@ -912,102 +1047,6 @@ $(document).ready(function () {
                     chart = new google.visualization.LineChart($('#pk-clearance-graph')[0]);
                     chart.draw(data, options);
                 }
-
-                window.spinner.spin(
-                    document.getElementById("spinner")
-                );
-
-                $.ajax(
-                    "/assays_ajax/",
-                    {
-                        data: {
-                            call: 'fetch_pbpk_dosing_results',
-                            csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
-                            cl_ml_min: $('#input-icl').val().replace(/\,/g,''),
-                            body_mass: $('#species-body-mass').val(),
-                            MW: $('#compound-mw').val(),
-                            logD: $('#compound-logd').val(),
-                            pKa: $('#compound-pka').val(),
-                            fu: $('#compound-fu').val(),
-                            Vp: $('#species-vp').val(),
-                            VE: $('#species-ve').val(),
-                            REI: $('#species-rei').val(),
-                            VR: $('#species-vr').val(),
-                            ASR: $('#species-asr').val(),
-                            Ki: $('#species-ki').val(),
-                            Ka: $('#input-ka').val(),
-                            Fa: $('#input-fa').val(),
-                            dose_mg: $('#input-plasma-dose').val(),
-                            dose_interval: $('#input-plasma-dose-interval').val(),
-                            desired_Cp: $('#input-dosing-cp').val(),
-                            desired_dose_interval: $('#input-dosing-interval').val(),
-                            estimated_fraction_absorbed: $('#input-fa').val(),
-                            prediction_time_length: 720,
-                            missing_plasma_values: missing_plasma_values,
-                            missing_dosing_values: missing_dosing_values
-                        },
-                        type: 'POST',
-                    }
-                )
-                .done(function(data) {
-                    // console.log(data);
-                    // Stop spinner
-                    window.spinner.stop();
-
-                    if ("error" in data) {
-                        $('#pbpk-error-text').text(data.error);
-                        $('#pbpk-error-container').show();
-                    } else {
-                        $('#calculated-pk-container').show();
-                        if (missing_plasma_values) {
-                            $('#plasma-container').hide();
-                            $('#plasma-dose-container').hide()
-                            $('#dosing-chart-container').hide();
-                        } else {
-                            $('#plasma-container').show();
-                            $('#plasma-dose-container').show()
-                            $('#dosing-chart-container').show();
-                            $('#pk-param-vdss').val(numberWithCommas(data.calculated_pk_parameters['VDss (L)'][0].toFixed(3)));
-                            $('#pk-param-ke').val(numberWithCommas(data.calculated_pk_parameters['Ke(1/h)'][0].toFixed(3)));
-                            $('#pk-param-half-life-3-confirmed').val(numberWithCommas(data.calculated_pk_parameters['Elimination half-life'][0].toFixed(3)));
-                            $('#pk-param-auc').val(numberWithCommas(data.calculated_pk_parameters['AUC'][0].toFixed(3)));
-                            $('#pk-param-elogd').val(numberWithCommas(data.calculated_pk_parameters['ELogD'][0].toFixed(3)));
-                            $('#pk-param-vc').val(numberWithCommas(data.calculated_pk_parameters['Vc (L)'][0].toFixed(3)));
-                            $('#pk-param-logvow').val(numberWithCommas(data.calculated_pk_parameters['Logvo/w'][0].toFixed(3)));
-                            $('#pk-param-cl').val(numberWithCommas(data.calculated_pk_parameters['CL (L/h)'][0].toFixed(3)));
-                            $('#pk-param-fut').val(numberWithCommas(data.calculated_pk_parameters['fut'][0].toFixed(3)));
-                            $('#pk-param-fi').val(numberWithCommas(data.calculated_pk_parameters['fi(7.4)'][0].toFixed(3)));
-                            $('#pk-single-mmax').val(numberWithCommas(data.dosing_data[0].toFixed(3)));
-                            $('#pk-single-cmax').val(numberWithCommas(data.dosing_data[1].toFixed(3)));
-                            $('#pk-single-tmax').val(numberWithCommas(data.dosing_data[2].toFixed(3)));
-                            $('#pk-multi-mss').val(numberWithCommas(data.dosing_data[3].toFixed(3)));
-                            $('#pk-multi-css').val(numberWithCommas(data.dosing_data[4].toFixed(3)));
-                            $('#pk-multi-tmax').val(numberWithCommas(data.dosing_data[5].toFixed(3)));
-
-                            prediction_plot_data = JSON.parse(JSON.stringify(data.prediction_plot_table));
-                            make_dosing_plot(prediction_plot_data, 48)
-                            $('#dosing-slider').slider("value", 48);
-                            $('#dosing-slider-handle').text("48");
-                        }
-                        if (missing_dosing_values) {
-                            $('#dosing-container').hide();
-                        } else {
-                            $('#dosing-container').show();
-                            $('#pk-desired-dose').val(numberWithCommas(data.dosing_data[6].toFixed(3)));
-                            $('#pk-desired-50').val(numberWithCommas(data.dosing_data[7].toFixed(3)));
-                            $('#pk-desired-90').val(numberWithCommas(data.dosing_data[8].toFixed(3)));
-                        }
-
-                    }
-                })
-                .fail(function(xhr, errmsg, err) {
-                    // Stop spinner
-                    window.spinner.stop();
-
-                    alert('Error retrieving Dosing Prediction.');
-                    console.log(xhr.status + ": " + xhr.responseText);
-                });
-                // console.log("Done with Dosing Prediction.")
             }
         })
         .fail(function(xhr, errmsg, err) {
@@ -1018,7 +1057,7 @@ $(document).ready(function () {
             console.log(xhr.status + ": " + xhr.responseText);
         });
         // console.log("Done with Clearance Prediction.")
-    })
+    });
 
     function isNumber(obj) {
         return obj !== undefined && typeof(obj) === 'number' && !isNaN(obj);

@@ -5738,7 +5738,8 @@ def fetch_pbpk_dosing_results(request):
         estimated_fraction_absorbed,
         round(float(request.POST.get('prediction_time_length'))),
         request.POST.get('missing_plasma_values') == "true",
-        request.POST.get('missing_dosing_values') == "true"
+        request.POST.get('missing_dosing_values') == "true",
+        request.POST.get('acidic_basic') == "acidic"
     )
 
     # TODO TEMP

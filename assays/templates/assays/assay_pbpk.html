@@ -185,13 +185,26 @@
                     </tr>
                 </table>
                 <br>
-                <!-- <div id="acid-base">
-                    &nbsp;&nbsp;<input type="checkbox" id="acidic-checkbox" class="big-checkbox">
-                    <label>&nbsp;&nbsp;Acidic</label>
-                    <br><br>
-                    &nbsp;&nbsp;<input type="checkbox" id="basic-checkbox" class="big-checkbox">
-                    <label>&nbsp;&nbsp;Basic</label>
-                </div> -->
+                <div class="row">
+                    <div class="col-xs-6 text-center">
+                        <br>
+                        &nbsp;&nbsp;<input type="radio" id="acidic-checkbox" class="big-checkbox" name="acid-base" value="acidic" checked>
+                        <label>&nbsp;&nbsp;Acidic</label>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;<input type="radio" id="basic-checkbox" class="big-checkbox" name="acid-base" value="basic">
+                        <label>&nbsp;&nbsp;Basic</label>
+                    </div>
+                    <div class="col-xs-6">
+                        <button id="button-clearance" class="btn btn-lg btn-primary">Calculate Clearance</button>
+                    </div>
+                </div>
+                <h4>Predicted MPS Model Physiological Parameter</h4>
+                <table class="display table-bordered" style="width: 100%">
+                    <tr>
+                        <th id="label-input-icl">CL<sub>H</sub> (mL/min) </th>
+                        <td><textarea id="input-icl" class="required" rows="1" style="resize: none; display: block; width: 100%"></textarea></td>
+                    </tr>
+                </table>
             </div>
             <div class="col-sm-12 col-lg-6">
                 <h4>Species Parameters</h4>
@@ -249,6 +262,44 @@
                 <label>References: </label><div id="species-reference"></div><br>
             </div>
         </div>
+        <div class="row">
+            <div class="col-xl-12">
+                <div id='clearance-error-container' hidden>
+                    <div class="alert alert-danger text-center" role="alert">
+                        <h1><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span><br><span id="clearance-error-text"></span></h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-6 no-padding">
+                        <div id="pk-summary-graph" style="display: block; margin: 0 auto; width: 100%;">
+
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-sm-6 no-padding text-center">
+                        <div id="pk-clearance-graph" style="display: block; margin: 0 auto; width: 100%;">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row large-padding-top">
+            <!-- <div class="col-sm-12 col-lg-2">
+
+            </div> -->
+            <div class="col-xs-12">
+                <div class="text-center" hidden>
+                    <button id="toggle-continuous-infusion-table" class="btn btn-lg btn-primary">Toggle Experimental Results Table</button>
+                </div>
+                <table id="continuous-infusion-table" class="display table-bordered" style="width: 100%" hidden>
+
+                </table>
+            </div>
+        </div>
         <br>
         <div class="row large-padding-top">
             <div class="col-sm-12 col-lg-6">
@@ -284,16 +335,10 @@
         </div>
         <div class="row large-padding-top">
             <div class="col-sm-12 col-lg-6">
-                <h4>Predicted MPS Model Physiological Parameter</h4>
-                <table class="display table-bordered" style="width: 100%">
-                    <tr>
-                        <th id="label-input-icl">CL<sub>H</sub> (mL/min) </th>
-                        <td><textarea id="input-icl" rows="1" style="resize: none; display: block; width: 100%" disabled></textarea></td>
-                    </tr>
-                </table>
+
             </div>
             <div class="col-sm-12 col-lg-6 text-center">
-                <button id="button-dosing" class="btn btn-lg btn-primary">Run PBPK Analysis</button>
+                <button id="button-dosing" class="btn btn-lg btn-primary">Run PBPK Predictions</button>
             </div>
         </div>
         <br>
@@ -305,35 +350,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-12">
-            <div class="row">
-                <div class="col-xs-12 col-sm-6 no-padding">
-                    <div id="pk-summary-graph" style="display: block; margin: 0 auto; width: 100%;">
-
-                    </div>
-                </div>
-                <div class="col-xs-12 col-sm-6 no-padding text-center">
-                    <div id="pk-clearance-graph" style="display: block; margin: 0 auto; width: 100%;">
-
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row large-padding-top">
-        <!-- <div class="col-sm-12 col-lg-2">
-
-        </div> -->
-        <div class="col-xs-12">
-            <div class="text-center" hidden>
-                <button id="toggle-continuous-infusion-table" class="btn btn-lg btn-primary">Toggle Experimental Results Table</button>
-            </div>
-            <table id="continuous-infusion-table" class="display table-bordered" style="width: 100%" hidden>
-
-            </table>
         </div>
     </div>
     <div id="calculated-pk-container" hidden>
