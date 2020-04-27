@@ -4389,6 +4389,9 @@ def plate_reader_data_file_process_data(set_dict):
         sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(pk_platemap) + " "
         sqls = sqls + " and (assays_AssayPlateReaderMapItem.well_use = 'sample' "
         sqls = sqls + " or assays_AssayPlateReaderMapItem.well_use = 'standard' "
+        # adding other blank options 20200427 - to keep previous functionality 'blank' = 'sample_blank'
+        sqls = sqls + " or assays_AssayPlateReaderMapItem.well_use = 'sample_blank' "
+        sqls = sqls + " or assays_AssayPlateReaderMapItem.well_use = 'standard_blank' "
         sqls = sqls + " or assays_AssayPlateReaderMapItem.well_use = 'blank') "
         sqls = sqls + " and assays_AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock_id = " + str(
             pk_data_block) + " "
@@ -4422,7 +4425,9 @@ def plate_reader_data_file_process_data(set_dict):
         with connection.cursor() as cursor:
             sqls = "SELECT COUNT(*)"
             sqls = sqls + " FROM assays_AssayPlateReaderMapItem "
-            sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.well_use = 'standard' "
+            sqls = sqls + " WHERE (assays_AssayPlateReaderMapItem.well_use = 'standard' "
+            # added 20200227
+            sqls = sqls + "  or assays_AssayPlateReaderMapItem.well_use = 'standard_blank') "
             sqls = sqls + " and assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(use_platemap_pk_for_standards)
             sqls = sqls + " and concat(trim(assays_AssayPlateReaderMapItem.standard_value::varchar(255)),'zz') = 'zz' "
             # print("5: ", sqls)
@@ -4446,7 +4451,9 @@ def plate_reader_data_file_process_data(set_dict):
 
             # get this plate map, the samples, the selected (at the top) File/Block
             sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(use_platemap_pk_for_standards) + " "
-            sqls = sqls + " and assays_AssayPlateReaderMapItem.well_use = 'standard' "
+            sqls = sqls + " and (assays_AssayPlateReaderMapItem.well_use = 'standard' "
+            # added 20200227
+            sqls = sqls + "  or assays_AssayPlateReaderMapItem.well_use = 'standard_blank') "
             sqls = sqls + " and assays_AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock_id = " + str(
                 use_file_pk_for_standards) + " "
             sqls = sqls + " and concat(trim(assays_AssayPlateReaderMapItemValue.raw_value::varchar(255)),'zz') = 'zz' "
@@ -4478,7 +4485,9 @@ def plate_reader_data_file_process_data(set_dict):
 
         sqlsWhere = " WHERE assays_AssayPlateReaderMapItem.assayplatereadermap_id = "
         sqlsWhere = sqlsWhere + str(use_platemap_pk_for_standards)
-        sqlsWhere = sqlsWhere + " and assays_AssayPlateReaderMapItem.well_use = 'standard' "
+        sqlsWhere = sqlsWhere + " and (assays_AssayPlateReaderMapItem.well_use = 'standard' "
+        # added 20200227
+        sqlsWhere = sqlsWhere + "  or assays_AssayPlateReaderMapItem.well_use = 'standard_blank') "
         sqlsWhere = sqlsWhere + " and assays_AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock_id = "
         sqlsWhere = sqlsWhere + str(use_file_pk_for_standards) + " "
 
@@ -4495,8 +4504,11 @@ def plate_reader_data_file_process_data(set_dict):
                     sqls = "SELECT AVG(raw_value)"
                     sqls = sqls + " FROM assays_AssayPlateReaderMapItemValue "
                     sqls = sqls + " WHERE assayplatereadermapdatafileblock_id = "
+                    # NOTE: the sample blanks MUST be on the same plate as the standards or this code needs to change!!
+                    # this is the plate we are using for standards, if the assumption is that sample blanks
+                    # would be on the sample plate, we could change this, but need to QC ALL if do that!
                     sqls = sqls + str(use_file_pk_for_standards)
-                    sqls = sqls + " and well_use = 'blank' "
+                    sqls = sqls + " and (well_use = 'blank' or well_use = 'sample_blank') "
                     # print("blank average sql: ", sqls)
                     cursor.execute(sqls)
                     results = cursor.fetchall()
@@ -4517,7 +4529,7 @@ def plate_reader_data_file_process_data(set_dict):
                     sqls = sqls + "  MIN(assays_AssayPlateReaderMapItem.standard_value) "
                     sqls = sqls + sqlsFrom
                     sqls = sqls + sqlsWhere
-                    # print("all standards sql: ", sqls)
+                    print("all standards sql: ", sqls)
                     cursor.execute(sqls)
                     results = cursor.fetchall()
                     use_form_min = results[0][0]

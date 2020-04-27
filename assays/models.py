@@ -3521,12 +3521,27 @@ assay_plate_reader_time_unit_choices = [
     ('hour', 'Hour')
 
 ]
-assay_plate_reader_well_use_choices = [
+assay_plate_reader_main_well_use_choices = [
     ('sample', 'Sample'),
     ('standard', 'Standard'),
     ('blank', 'Blank'),
     ('empty', 'Empty/Unused')
 ]
+assay_plate_reader_blank_well_use_choices = [
+    ('sample_blank', 'Sample Blank'),
+    ('standard_blank', 'Standard Blank')
+]
+# in some places, need specific lists, but ultimately, each well in a plate gets only ONE
+# well use assigned to it that will be used in logic downstream that will be this cumulative list
+assay_plate_reader_cumulative_well_use_choices = [
+    ('sample', 'Sample'),
+    ('standard', 'Standard'),
+    ('blank', 'Blank'),
+    ('empty', 'Empty/Unused'),
+    ('sample_blank', 'Sample Blank'),
+    ('standard_blank', 'Standard Blank')
+]
+
 assay_plate_reader_volume_unit_choices = [
     ('mL', 'mL'),
     ('µL', 'µL'),
@@ -3738,85 +3753,6 @@ class AssayPlateReaderMapDataFile(models.Model):
     def get_delete_url(self):
         return '{}delete/'.format(self.get_absolute_url())
 
-# TODO-sck build this in phase 3
-# This table was planned for use with processing BATCHES. May need it later if decide to store info in tables
-# this table was added, but was removed 20200220 when decided not doing it this way
-# class AssayPlateReaderMapDataProcessing(models.Model):
-#     """Main data processing status and tracking for plate reader data processing."""
-#
-#     class Meta(object):
-#         verbose_name = 'Assay Plate Reader Processing'
-#         unique_together = [
-#             ('study', 'name'),
-#         ]
-#
-#     study = models.ForeignKey(
-#         AssayStudy,
-#         blank=True,
-#         on_delete=models.CASCADE
-#     )
-#     name = models.CharField(
-#         max_length=255,
-#         blank=True
-#     )
-#     description = models.CharField(
-#         max_length=2000,
-#         blank=True,
-#         default=''
-#     )
-
-    # NEVER ADDED
-    # plate_reader_unit = models.ForeignKey(
-    #     'assays.PhysicalUnits',
-    #     null=True,
-    #     blank=True,
-    #     on_delete=models.CASCADE
-    # )
-    # need all the metadata about processing -> still have to build this piece
-    # blank = models.CharField(
-    #     max_length=20,
-    #     default='subtract', blank=True,
-    #     choices=( ('subtract', 'Subtract Average'), ('ignore', 'Ignore Blanks') )
-    # )
-    # calibration = models.CharField(
-    #     max_length=20,
-    #     default='calibrate', blank=True,
-    #     choices=( ('calibrate', ''), ('skip', 'Skip Calibration') )
-    # )
-    # flag = models.CharField(
-    #     max_length=20,
-    #     default='subtract', blank=True,
-    #     choices=( ('subtract', 'Subtract Average'), ('ignore', 'Ignore Blanks') )
-    # )
-
-    # status_calibration
-    # status_annotate
-    # status_submit
-
-    # All processing options specified
-    # calibration done or not needed
-    # file/block assigned a plate map
-    # file/block assigned a processing group
-    # all data in a processing set are processed together (standards and blanks apply to all)
-    # is data complete (unit to unit, calibration done, whats R-sqared, calibration curve, max and min...there will be more here lots to QC)
-    # Submitted to Main Study
-    #     Automatically add an "E" Caution Flag when sample is outside of calibration range?
-    #     Automatically add a "J" Caution Flag when predicted sample is > 0 and < minimum non - zero standard?
-    #     Automatically add an "F" Caution Flag and an "X" Exclude when, due to the selection of the fitting equation,
-    #     a sample 's fitted response could not be calculated?
-
-    # def __str__(self):
-    #     return '{0}'.format(self.name)
-    #
-    # def get_absolute_url(self):
-    #     return '/assays/assayplatereaderdataprocessing/{}/'.format(self.id)
-    #
-    # def get_post_submission_url(self):
-    #     return '/assays/assaystudy/{}/assayplatereaderdataprocessing/'.format(self.study_id)
-    #
-    # def get_delete_url(self):
-    #     return '{}delete/'.format(self.get_absolute_url())
-
 
 class AssayPlateReaderMapDataFileBlock(models.Model):
     """Information about each block of data in an assay plate reader imported data file."""
@@ -3942,12 +3878,14 @@ class AssayPlateReaderMapItem(models.Model):
         default=999,
         blank=True
     )
+    # each well on the plate will have a specific well use (only one) from the cumulative list
+    # in some of the GUI, the list is separated logically for easier entry by user
     well_use = models.CharField(
         verbose_name='Well Use',
         max_length=8,
         default='empty',
         blank=True,
-        choices=assay_plate_reader_well_use_choices
+        choices=assay_plate_reader_cumulative_well_use_choices
     )
     # should be the standard concentration input (associated unit should be in the plate map model)
     standard_value = models.FloatField(
@@ -4035,7 +3973,7 @@ class AssayPlateReaderMapItemValue(models.Model):
         max_length=8,
         default='empty',
         blank=True,
-        choices=assay_plate_reader_well_use_choices
+        choices=assay_plate_reader_cumulative_well_use_choices
     )
     # raw value read from the plate for all wells in this plate
     raw_value = models.FloatField(
@@ -4048,46 +3986,10 @@ class AssayPlateReaderMapItemValue(models.Model):
         blank=True
     )
 
-
-    # not using these right now - only sending calculated values to MIF-C
-    # # adjusted input value (ie input_value - average of blanks)
-    # adjusted_value = models.FloatField(
-    #     null=True,
-    #     blank=True
-    # )
-    # # calibrated value
-    # fitted_value = models.FloatField(
-    #     null=True,
-    #     blank=True
-    # )
-    #
-    # caution_flag = models.CharField(
-    #     max_length=255,
-    #     default='',
-    #     null=True,
-    #     blank=True
-    # )
-    # excluded = models.BooleanField(
-    #     default=False,
-    #     null=True,
-    #     blank=True
-    # )
     # when commented this out, got a save error. Must have a reference somewhere I didn't find....
     replaced = models.BooleanField(
         default=False
     )
-    # notes = models.CharField(
-    #     max_length=255,
-    #     default='',
-    #     null=True,
-    #     blank=True
-    # )
-    # replicate = models.CharField(
-    #     max_length=255,
-    #     default='',
-    #     null=True,
-    #     blank=True
-    # )
 
     def __str__(self):
         return '{0}'.format(self.id)
