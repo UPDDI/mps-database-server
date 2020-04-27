@@ -62,7 +62,7 @@
     {# Contrived inline style #}
     <table style="min-width: 1000px; margin-bottom: 0px;" class="table table-striped table-bordered table-nonfluid" id="study_setup_table">
         <thead>
-            <th>Series</th>
+            <th>Group</th>
             <th>MPS Model</th>
             <th>Group Name</th>
             <th>Number of Chips</th>
@@ -81,10 +81,12 @@
         {{ form.series_data }}
 
         {# contrived #}
-        <textarea type="text" id="id_group_name" name="group_name" class="form-control name" data-default="" data-index="0" rows="1" style="min-width: 100px;"></textarea>
+        <textarea type="text" id="id_group_name" name="group_name" class="form-control name" data-default="" rows="1" style="min-width: 100px;"></textarea>
+
+        <input type="number" id="id_number_of_items" name="number_of_items" class="form-control number-of-items" data-default="">
 
         {# {{ form.group_name }} #}
-        {{ form.number_of_items }}
+        {# {{ form.number_of_items }} #}
         {{ form.test_type }}
         {{ form.organ_model_full }}
         {{ form.organ_model_protocol_full }}
