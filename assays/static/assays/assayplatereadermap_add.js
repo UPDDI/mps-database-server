@@ -163,45 +163,48 @@ $(document).ready(function () {
         , '#plate_map_has_no_standards_tooltip'
 
         , '#plate_map_multiplier_for_processing'
+        , '#copys_pastes_tooltip'
         ,];
     let global_plate_tooltip_text = [
-        "Starting from an existing study matrix is helpful if the experiment was conducted in a plate based model and that same plate was used to perform a plate reader assay."
-        , "Build the assay plate map by selecting study matrix items and placing them in the plate."
-        , "When starting from an existing assay plate map, if the assay plate map selected has been assigned to a file/block, values from uploaded files will not be obtained."
+        "Starting from an Existing Study Matrix is helpful if the experiment was conducted in a plate based model and that same plate was used to perform a plate reader assay. Another popular use of this method is to start here and select Starting Study Matrix, then copy the matrix items from that plate (using the Copy feature), then change to Start From a Blank Assay Plate Map, select the desired plate size, then paste that matrix items on to the plate."
+        , "Build the assay plate map starting from a blank assay plate. Select study matrix items and place them in the plate using the tools provided. Recommended shortcut: start from an Existing Study Matrix instead, then copy the matrix items from that plate (using the Copy feature), then change to Start From a Blank Assay Plate Map, select the desired plate size, then paste that matrix items on to the plate."
+        , "When starting from an Existing Assay Plate Map, plate reader data uploaded and associated to the selected plate map will NOT be copied to the new plate map (i.e. if the assay plate map selected has been attached to a file/block, values from uploaded files will not be copied to the new plate map)."
         , "This time unit applies to all sample times and sample collection times (efflux collection duration times) for the whole assay plate map."
-        , "This unit applies to the sample collection volume. It is required when normalizing. It is also required if the measurement unit is /well. Note that, this unit will apply to both data types."
+        , "This unit applies to the sample collection volume. It is required when normalizing. This unit is also required if the measurement unit is /well. If normalizing and using a /well measurement unit, this unit will apply to both data types."
 
-        , "For blank and empty wells, select the well use and drag on plate. For samples and standards, make requested selections then drag on plate. Use Copy to copy sections of the assay plate map to other wells in the plate."
-        , "Count of cells that are relevant to the assay."
-        , "Currently cannot be edited here. Was obtained during file upload."
-        , "Check box to make change when drag/apply. Plate with mixed sample times must be added in the assay plate map. This sample time will be used if no over-writing sample time is provided during file upload."
+        , "Select a well use and follow the additional instructions provided for wells of that use."
+        , "Count of cells that are relevant to this assay."
+        , "This sample time cannot be edited here; it was obtained during file upload."
+        , "Check box to make a change when drag/apply. When plate has mixed sample times, the default sample time must be added during plate map setup. This is the sample time that will be used if no over-writing sample time is provided during file upload."
         , "Check box to make change when drag/apply. Select the sample location in the model, if applicable, from which the effluent was collected. Use the backspace button to clear selection."
 
         , "Check box to make change when drag/apply. Select the name of the matrix item (chip or well in a plate) associated to the sample. Use the backspace button to clear selection."
-        , "Select the unit, target, and method associated to this assay plate map. Use the backspace button to clear selection. If the option needed is not here, it has likely not be added to the study during study set up. Note that, units that include time should be in 'day', 'minute', or 'hour' to convert properly (i.e. 'days', 'hr', 'min' may not work correctly when calculating a multiplier)."
-        , "If a standard is used in the assay plate map, enter the unit of the standard, else, enter the measurement unit of the raw value. If this unit is different than the Reporting Unit, unit conversion will be performed if possible. There are limits to this conversion tool. "
-        , "The standard value should be in the unit given in the Standard Unit. The standard blank should be assigned a well use of 'standard' and a concentration of 0 (exactly, not 0.00001). "
+        , "Select the unit, target, and method associated to this assay plate map. Use the backspace button to clear selection. If the option needed is not here, it has likely not been added to the study during study setup. Note that, units of time should be provided in 'day', 'minute', or 'hour' to convert properly (i.e. 'days', 'hr', 'min' may not work correctly when calculating a multiplier)."
+        , "If a standard is used in the assay plate map, enter the unit of the standard, else, enter the measurement unit of the raw value. If this unit is different than the Reporting Unit, unit conversion will be performed during data processing, if possible. There are limits to the unit conversion tool. "
+        , "The standard value should be in the unit given in the Measurement Unit."
         , "The dilution factor should be provided for each well in the assay plate map. "
 
-        , "Changes made to the assay plate map (including sample location and standard concentration) will apply to all uses of the assay plate map."
+        , "Select the block of data to process/calibrate. Changes made to the assay plate map (including Measurement Unit and Time Unit) will apply to all uses of the assay plate map."
         , "The number of data blocks this assay plate map has been assigned to."
         , "Date and time are the default. The map name may be updated by the data provider."
         , "Volume of sample efflux collected. Required for normalization."
         , "Time over which the sample efflux was collected. Required for normalization."
 
-        , "The assay plate map information above can be edited, but not the well information. If there is an error in the well information, make a new assay plate map. Start with this assay plate map and make the correction. Then, go to the file and replace the assay plate map with the new one and submit. Then, delete this assay plate map."
-        , "Select how the blanks should be handled. Note that, to be considered a Standard Blank, the concentration of the standard in the plate map must be set to 0 (exactly). When fitting a standard curve, points at the same concentration are averaged prior to fitting."
-        , "Select the calibration method to use."
-        , "When the same sample is added to multiple wells in an assay plate, each value can be added to the main database, or an average can be added. Select the option that is appropriate for this assay."
-        , "Change these bounds to limit the range of the standard concentrations used to generate the calibration curve. These should be in the Measurement Unit. There must be points at a minimum of four concentrations to work correctly. Samples with fitted results above or below the calibration curve at these bounds will receive a Caution Flag of E. If null, all standards will be used in fitting. All points will be shown on the graph."
+        , "The assay plate map information above can be edited, but not the information specific to each well. If there is an error in the well information, there are two ways to fix it. Option 1 is to make a new assay plate map starting from this assay plate map, then make the corrections, then, go to the file and replace the erroneous assay plate map with the new one and submit. Then, delete the erroneous assay plate map. Option 2 is to go to the data blocks that use this plate map, remove the plate map assignment, and submit the file. Then, go to the plate map and make the corrections. Then, return to the file block(s) and re-add the plate map."
+        , "Select how the blanks should used when processing the data."
+        , "Select the calibration method to use. Note that, when fitting a standard curve, points at the same concentration are averaged prior to fitting."
+        , "When the same sample is added to multiple wells in an assay plate, each value can be added to the study summary, or an average can be added. Select the option that is appropriate for this assay."
+        , "Change these bounds to limit the range of the standard concentrations used to fit the calibration curve. Bounds should be provided in the Measurement Unit. Samples with fitted results above or below the bounds of the calibration curve will receive a Caution Flag of e (below) or E (above). If null, all standards will be used in fitting. There must be a minimum of four concentrations of standards within the bounds to work correctly. All standard points will be shown on the graph."
 
-        , "The molecular weight of the standard is needed in cases were the standard unit is in moles and the unit in the target, method, unit is a mass unit."
-        , "If the standard concentration a unit of moles per well, this value will be used to convert to a molar unit."
-        , "In cases where no calibration is being performed or when standards to be used for calibration are in a different block of data, the appropriate selection should be made here. When standards are taken from another data block, the raw values are taken from selected data block. The units and other associated values must be specified in THIS plate map (at the top of the page). "
+        , "The molecular weight of the standard is needed in cases were the Measurement Unit is a molar unit and the unit in the target, method, unit is a mass unit."
+        , "If the Measurement Unit is provided in moles per well, this value will be used to convert to a molar unit."
+        , "In cases where calibration is being performed using standards (and standard blanks) from a different block of data, the data block must be selected here. Note that, when standards (and standard blanks) are 'borrowed' from another data block, it is assumed that their raw values are in the same units as specified for THIS plate map (at the top of this page). "
         , "Points that are marked for exclusion are available for use in the study summary if the appropriate selections are made by the user, but they are hidden by default."
-        , "This plate map has no standards. To calibrate, a block of data with the standards must be selected."
+        , "This plate map has no standards. To calibrate, a block of data with standards must be selected. Note that, it is assumed that standards and their associated standard blanks will be on the same plate. Thus, if standards are 'borrowed', standard blanks are also borrowed."
 
-        , "If calibrating, this is the multiplier that will be applied to the calibrated values. If not calibrating, this is the multiplier that will be applied to the raw values. Click to show the details for more information. Not all conversions are possible with this tool. Some tips: Reporting units that include per cell should include 10^, measurement units that include /well must be molar not mass, and reporting units with /time/10^# cells should have the time in 'day', 'hour', or 'minute', NOT other representations of time (i.e. 'days'). If necessary, the multiplier can be editted manually, but do so with care."
+        , "If calibrating, this is the multiplier that will be applied to the calibrated values. If not calibrating, this is the multiplier that will be applied to the raw values. Click to show the details for more information about how this multiplier was obtained."
+        , "Use Copy to copy sections of the assay plate map to other wells in the plate. A popular method of using this feature is to start from an Existing Study Matrix, then copy the matrix items from that plate, change to Start From a Blank Assay Plate Map, select the desired plate size, then paste that matrix items on the plate. "
+
         ,];
     // load-function
     // set the tooltips
@@ -448,6 +451,10 @@ $(document).ready(function () {
     let global_lol_standards_points = [];
     let global_lol_standards_ave_points = [];
     let global_lol_standards_curve = [];
+    let global_lol_standards_points_for_table = [];
+    let global_lol_standards_average_points_for_table = [];
+
+    let global_blank_handling_option = $("#id_se_form_blank_handling").selectize()[0].selectize.items[0];
 
     $('input[name=radio_replicate_handling_average_or_not][value=average]').prop('checked',true);
     $('input[name=radio_standard_option_use_or_not][value=no_calibration]').prop('checked',true);
@@ -516,6 +523,58 @@ $(document).ready(function () {
 
 
     // on CHANGE calibration on change events
+    // blank handling, based on selections, change what shows in the box
+    $("input[type='radio'][name='radio_standards_blank_handling']").click(function () {
+        setBlankHandling();
+    });
+    $("input[type='radio'][name='radio_samples_blank_handling']").click(function () {
+        setBlankHandling();
+    });
+
+    function setBlankHandling() {
+        let blankOption = 'ignore';
+        let standards = $('input[name=radio_standards_blank_handling]:checked').val();
+        let samples = $('input[name=radio_samples_blank_handling]:checked').val();
+
+        if (standards === 'standards_ave_standard_blanks') {
+            if (samples === 'samples_ave_standard_blanks') {
+                blankOption = 'subtractstandardfromall' ;
+            } else if (samples === 'samples_ave_sample_blanks') {
+                blankOption = 'subtracteachfromeach' ;
+            } else {
+                blankOption = 'subtractstandardfromstandard';
+            }
+        } else if (standards === 'standards_ave_sample_blanks') {
+            if (samples === 'samples_ave_standard_blanks') {
+                alert("Not Programmed for this combination. Please select another combination.\n");
+                $('input[name=radio_standards_blank_handling][value=standards_ave_standard_blanks]').prop('checked',true);
+                $('input[name=radio_samples_blank_handling][value=samples_ave_sample_blanks]').prop('checked',true);
+                blankOption = 'subtracteachfromeach';
+            } else if (samples === 'samples_ave_sample_blanks') {
+                blankOption = 'subtractsamplefromall' ;
+            } else {
+                alert("Not Programmed for this combination. Please select another combination.\n");
+                $('input[name=radio_standards_blank_handling][value=standards_ave_standard_blanks]').prop('checked',true);
+                $('input[name=radio_samples_blank_handling][value=samples_ave_sample_blanks]').prop('checked',true);
+                blankOption = 'subtracteachfromeach';            }
+        } else if (standards === 'standards_nothing') {
+            if (samples === 'samples_ave_standard_blanks') {
+                alert("Not Programmed for this combination. Please select another combination.\n");
+                $('input[name=radio_standards_blank_handling][value=standards_ave_standard_blanks]').prop('checked',true);
+                $('input[name=radio_samples_blank_handling][value=samples_ave_sample_blanks]').prop('checked',true);
+                blankOption = 'subtracteachfromeach';
+            } else if (samples === 'samples_ave_sample_blanks') {
+                blankOption = 'subtractsamplefromsample' ;
+            } else { // subtract nothing
+                blankOption = 'ignore';
+            }
+        } else {
+            blankOption = 'ignore';
+        }
+        global_blank_handling_option = blankOption;
+        $("#id_se_form_blank_handling").selectize()[0].selectize.setValue(global_blank_handling_option);
+    }
+
     $("input[type='radio'][name='radio_replicate_handling_average_or_not']").click(function () {
         global_calibrate_radio_replicate_handling_average_or_not_0 = $(this).val();
     });
@@ -577,6 +636,15 @@ $(document).ready(function () {
         changedTheCalibrationCurveAndOtherChangesThatMightCauseRunCalibrate('change_standard_pk_and_string');
     });
 
+    // if the user changes the multiplier, make the change to no_calibration
+    // every change above this on the page that will affect this turns it back to Select One so the user HAS to select
+    $("#id_form_data_processing_multiplier").change(function () {
+        global_calibrate_calibration_curve_method = 'select_one';
+        //this will trigger the change event for recalibrating
+        $("#id_se_form_calibration_curve").selectize()[0].selectize.setValue(global_calibrate_calibration_curve_method);
+        global_calibration_multiplier = $("#id_form_data_processing_multiplier").val();
+        console.log(global_calibration_multiplier)
+    });
 
     // change the calibration method
     // every change above this on the page that will affect this turns it back to Select One so the user HAS to select
@@ -743,8 +811,11 @@ $(document).ready(function () {
             // error callback
             error: function (xhr, errmsg, err) {
                 window.spinner.stop();
-                alert('An error has occurred (finding processed data). Could be caused by many errors or by injection of invalid values.');
+                alert('An error has occurred (finding processed data). Could be caused by many errors or by injection of invalid values. Try a different calibration method. If the problem persists, contact the database admins.');
                 console.log(xhr.status + ": " + xhr.responseText);
+                global_calibrate_calibration_curve_method = 'select_one';
+                //this will trigger the change event for recalibrating
+                $("#id_se_form_calibration_curve").selectize()[0].selectize.setValue(global_calibrate_calibration_curve_method);
             }
         });
     }
@@ -758,6 +829,8 @@ $(document).ready(function () {
         let list_of_dicts_of_each_standard_row_points = json.list_of_dicts_of_each_standard_row_points;
         let list_of_dicts_of_each_standard_row_ave_points = json.list_of_dicts_of_each_standard_row_ave_points;
         let list_of_dicts_of_each_standard_row_curve = json.list_of_dicts_of_each_standard_row_curve;
+
+        //console.log(list_of_dicts_of_each_standard_row_points);
 
         let dict_of_curve_info = json.dict_of_curve_info;
         // console.log('dict_of_curve_info ', dict_of_curve_info)
@@ -826,10 +899,10 @@ $(document).ready(function () {
             let myconcentration = 0;
             let myresponse = 0;
             let counterEachItemInThisRow = 0;
-            //console.log("each ", each)
+            // console.log("each ", each)
             $.each(each, function (indexi, eachi) {
                 thisline.push(eachi);
-
+                //console.log("each ", eachi)
                 // console.log("counterEachItemInThisRow ", counterEachItemInThisRow)
 
                 // CAREFUL WATCH if change order, these will be wrong...
@@ -843,7 +916,7 @@ $(document).ready(function () {
                     }
                     // console.log(myconcentration)
                 };
-                if (counterEachItemInThisRow == 15) {
+                if (counterEachItemInThisRow == 18) {
                     myresponse = eachi;
                     // console.log(myresponse)
                 };
@@ -909,7 +982,7 @@ $(document).ready(function () {
             let myCellContentWithCommas = "";
             $.each(row, function (ii, col) {
                 // console.log("colcounter ", colcounter)
-                console.log("--col ", col)
+                // console.log("--col ", col)
                 var td = document.createElement('TD');
                 $(td).attr('col-index', colcounter);
                 let myCellContent = col.toString().trim();
@@ -934,6 +1007,66 @@ $(document).ready(function () {
         myTable.appendChild(tableBody);
         myTableDiv.appendChild(myTable);
 
+        let table_column_defs = [
+                // target is the column number starting from 0
+                // true is default, could just comment out these lines, but that makes harder to edit them
+                // NOTE: these numbers rely on the order of the arrays
+                {"targets": [   0], "visible": false, },
+            {"targets": [   1], "visible": true, },
+                {"targets": [   2], "visible": false, },
+                {"targets": [   3], "visible": false, },
+
+                {"targets": [   4], "visible": false, },
+            {"targets": [   5], "visible": true, },
+                {"targets": [   6], "visible": false, },
+
+            {"targets": [   7], "visible": true, },
+            {"targets": [   8], "visible": true, },
+                {"targets": [   9], "visible": false, },
+
+                {"targets": [  10], "visible": false, },
+                {"targets": [  11], "visible": false, },
+                {"targets": [  12], "visible": false, },
+                {"targets": [  13], "visible": false, },
+                {"targets": [  14], "visible": false, },
+
+            {"targets": [  15], "visible": true, },
+                {"targets": [  16], "visible": false, },
+                {"targets": [  17], "visible": false, },
+            {"targets": [  18], "visible": true, },
+            {"targets": [  19], "visible": true, },
+
+                {"targets": [  20], "visible": false, },
+                {"targets": [  21], "visible": false, },
+                {"targets": [  22], "visible": false, },
+                {"targets": [  23], "visible": false, },
+
+            {"targets": [  24], "visible": true, },
+            {"targets": [  25], "visible": true, },
+            {"targets": [  26], "visible": true, },
+
+                {"targets": [  27], "visible": false, },
+            {"targets": [  28], "visible": true, },
+            {"targets": [  29], "visible": true, },
+                {"targets": [  30], "visible": false, },
+                {"targets": [  31], "visible": false, }
+            ];
+        // console.log("Before " , table_column_defs)
+        // console.log("global_calibrate_radio_standard_option_use_or_not " , global_calibrate_radio_standard_option_use_or_not)
+            // let dict18 = {"targets": [  18], "visible": false, };
+            // let dict19 = {"targets": [  19], "visible": false, };
+
+        if (global_calibrate_calibration_curve_method == 'no_calibration') {
+            // console.log("here   ")
+            table_column_defs[18]['visible'] = false;
+            table_column_defs[19]['visible'] = false;
+        } else {
+            // console.log("there  ")
+            table_column_defs[18]['visible'] = true;
+            table_column_defs[19]['visible'] = true;
+        }
+        // console.log("After " , table_column_defs)
+
         // to format the table - after creating it
         // these column number are in the table cell tags - use them to keep everything straight
         $('#processed_samples_table').DataTable({
@@ -944,49 +1077,7 @@ $(document).ready(function () {
             responsive: true,
             "order": [[2, "asc"]],
 
-            "columnDefs": [
-                // target is the column number starting from 0
-                // NOTE: these numbers rely on the order of the arrays
-                {"targets": [   0], "visible": false, },
-                //{"targets": [   1], "visible": false, },
-                {"targets": [   2], "visible": false, },
-                {"targets": [   3], "visible": false, },
-
-                {"targets": [   4], "visible": false, },
-                //{"targets": [   5], "visible": false, },
-                {"targets": [   6], "visible": false, },
-
-                //{"targets": [   7], "visible": false, },
-                //{"targets": [   8], "visible": false, },
-                {"targets": [   9], "visible": false, },
-
-                {"targets": [  10], "visible": false, },
-                {"targets": [  11], "visible": false, },
-                {"targets": [  12], "visible": false, },
-                {"targets": [  13], "visible": false, },
-                {"targets": [  14], "visible": false, },
-
-                //{"targets": [  15], "visible": false, },
-                {"targets": [  16], "visible": false, },
-                {"targets": [  17], "visible": false, },
-                //{"targets": [  18], "visible": false, },
-                //{"targets": [  19], "visible": false, },
-
-                {"targets": [  20], "visible": false, },
-                {"targets": [  21], "visible": false, },
-                {"targets": [  22], "visible": false, },
-                {"targets": [  23], "visible": false, },
-
-                //{"targets": [  24], "visible": false, },
-                //{"targets": [  25], "visible": false, },
-                //{"targets": [  26], "visible": false, },
-
-                {"targets": [  27], "visible": false, },
-                //{"targets": [  28], "visible": false, },
-                //{"targets": [  29], "visible": false, },
-                {"targets": [  30], "visible": false, },
-                {"targets": [  31], "visible": false, }
-            ]
+            "columnDefs": table_column_defs
 
         });
 
@@ -1016,11 +1107,13 @@ $(document).ready(function () {
 
     function buildTableOfStandardsDataAvePoints_ajax(list_of_dicts_of_each_standard_row_ave_points) {
         global_lol_standards_ave_points = [];
+        global_lol_standards_average_points_for_table = [];
 
         $.each(list_of_dicts_of_each_standard_row_ave_points, function (index, each) {
             let myconcentration = 0;
             let myadjustedresponse = 0;
             let myobservedresponse = 0;
+            let myfitted = 0;
             let counterEachItemInThisRow = 0;
             $.each(each, function (indexi, eachi) {
                 if (counterEachItemInThisRow == 0) {
@@ -1029,32 +1122,250 @@ $(document).ready(function () {
                 if (counterEachItemInThisRow == 1) {
                     myadjustedresponse = eachi;
                 };
+                if (counterEachItemInThisRow == 2) {
+                    myobservedresponse = eachi;
+                }
+                if (counterEachItemInThisRow == 3) {
+                    myfitted = eachi;
+                }
                 counterEachItemInThisRow = counterEachItemInThisRow + 1;
             });
             global_lol_standards_ave_points.push([parseFloat(myconcentration), null, parseFloat(myadjustedresponse), null, null]);
+            global_lol_standards_average_points_for_table.push([parseFloat(myconcentration), parseFloat(myobservedresponse), parseFloat(myadjustedresponse), parseFloat(myfitted)]);
+
         });
+
+        buildTheStandardAveragesTable_ajax();
+    }
+
+    function buildTheStandardAveragesTable_ajax() {
+        // HANDY delete child node
+        var standardTableHeaders = ["Concentration (Added)", "Signal", "Signal (Adjusted)", "Signal (Fitted)"];
+        var elem = document.getElementById('div_for_standard_averages_table');
+        elem.removeChild(elem.childNodes[0]);
+
+        var myTableDiv = document.getElementById("div_for_standard_averages_table");
+        var myTable = document.createElement('TABLE');
+        $(myTable).attr('id', 'standard_averages_table');
+        $(myTable).attr('cellspacing', '0');
+        $(myTable).attr('width', '100%');
+        $(myTable).addClass('display table table-striped table-hover');
+
+        var tableHead = document.createElement("THEAD");
+        var tr = document.createElement('TR');
+        $(tr).attr('hrow-index', 0);
+
+        tableHead.appendChild(tr);
+        var hcolcounter = 0;
+        $.each(standardTableHeaders, function (index, header) {
+            //console.log("header ", header)
+            var th = document.createElement('TH');
+            $(th).attr('hcol-index', hcolcounter);
+            th.appendChild(document.createTextNode(header));
+            tr.appendChild(th);
+            hcolcounter = hcolcounter+1;
+        });
+        myTable.appendChild(tableHead);
+
+        var tableBody = document.createElement('TBODY');
+        var rowcounter = 0;
+        $.each(global_lol_standards_average_points_for_table, function (ir, row) {
+            //console.log("rowcounter ", rowcounter)
+            //console.log("--row ", row)
+            var tr = document.createElement('TR');
+            $(tr).attr('row-index', rowcounter);
+            tableBody.appendChild(tr);
+
+            var colcounter = 0;
+            let myCellContentWithCommas = "";
+            $.each(row, function (ii, col) {
+                //console.log("colcounter ", colcounter)
+                //console.log("--col ", col)
+                var td = document.createElement('TD');
+                $(td).attr('col-index', colcounter);
+                let myCellContent = col.toString().trim();
+                if (myCellContent.length == 0 || myCellContent == 'NaN') {
+                    myCellContent = " ";
+                } else
+                {
+                    myCellContent = generalFormatNumber(parseFloat(col));
+                    myCellContent = thousands_separators(myCellContent);
+                }
+                //else leave the myCellContent as it was
+
+                td.appendChild(document.createTextNode(myCellContent));
+                tr.appendChild(td);
+                //console.log(td)
+                colcounter = colcounter+1;
+            });
+            rowcounter = rowcounter+1
+        });
+        myTable.appendChild(tableBody);
+        myTableDiv.appendChild(myTable);
+
+        // to format the table - after creating it
+        // these column number are in the table cell tags - use them to keep everything straight
+        $('#standard_averages_table').DataTable({
+            //     $(myTable).DataTable({
+            "iDisplayLength": 25,
+            "sDom": '<B<"row">lfrtip>',
+            fixedHeader: {headerOffset: 50},
+            responsive: true,
+            "order": [[0, "asc"]],
+
+            "columnDefs": [
+                // target is the column number starting from 0
+                // NOTE: these numbers rely on the order of the arrays
+                //{"targets": [   0], "visible": false, },
+                //{"targets": [   1], "visible": false, },
+                //{"targets": [   2], "visible": false, }
+            ]
+
+        });
+        return myTable;
     }
 
     function buildTableOfStandardsDataPoints_ajax(list_of_dicts_of_each_standard_row_points) {
         global_lol_standards_points = [];
-
+        global_lol_standards_points_for_table = [];
+        var k = 0;
         $.each(list_of_dicts_of_each_standard_row_points, function (index, each) {
             let myconcentration = 0;
             let myadjustedresponse = 0;
             let myobservedresponse = 0;
+            let myfittedconcentration = 0;
             let counterEachItemInThisRow = 0;
             $.each(each, function (indexi, eachi) {
+                //console.log(indexi)
+                //console.log(eachi)
                 if (counterEachItemInThisRow == 0) {
                     myconcentration = eachi;
-                };
+                }
                 if (counterEachItemInThisRow == 1) {
                     myadjustedresponse = eachi;
-                };
+                }
+                if (counterEachItemInThisRow == 2) {
+                    myobservedresponse = eachi;
+                }
+                if (counterEachItemInThisRow == 3) {
+                    myfittedconcentration = eachi;
+                }
                 counterEachItemInThisRow = counterEachItemInThisRow + 1;
             });
+
             global_lol_standards_points.push([parseFloat(myconcentration), null, null, parseFloat(myadjustedresponse), null]);
+            global_lol_standards_points_for_table.push([parseFloat(myconcentration), parseFloat(myobservedresponse), parseFloat(myadjustedresponse), parseFloat(myfittedconcentration)]);
+            //console.log(global_lol_standards_points_for_table[k])
+            k++;
         });
+
+        buildTheStandardsTable_ajax();
+
     }
+
+    function buildTheStandardsTable_ajax() {
+        // HANDY delete child node
+        var standardTableHeaders = ["Concentration (Added)", "Signal", "Signal (Adjusted)","Concentration (Fitted)"];
+        var elem = document.getElementById('div_for_standards_table');
+        elem.removeChild(elem.childNodes[0]);
+
+        var myTableDiv = document.getElementById("div_for_standards_table");
+        var myTable = document.createElement('TABLE');
+        $(myTable).attr('id', 'standards_table');
+        $(myTable).attr('cellspacing', '0');
+        $(myTable).attr('width', '100%');
+        $(myTable).addClass('display table table-striped table-hover');
+
+        var tableHead = document.createElement("THEAD");
+        var tr = document.createElement('TR');
+        $(tr).attr('hrow-index', 0);
+
+        tableHead.appendChild(tr);
+        var hcolcounter = 0;
+        $.each(standardTableHeaders, function (index, header) {
+            //console.log("header ", header)
+            var th = document.createElement('TH');
+            $(th).attr('hcol-index', hcolcounter);
+            th.appendChild(document.createTextNode(header));
+            tr.appendChild(th);
+            hcolcounter = hcolcounter+1;
+        });
+        myTable.appendChild(tableHead);
+
+        var tableBody = document.createElement('TBODY');
+        var rowcounter = 0;
+        $.each(global_lol_standards_points_for_table, function (ir, row) {
+            //console.log("rowcounter ", rowcounter)
+            //console.log("--row ", row)
+            var tr = document.createElement('TR');
+            $(tr).attr('row-index', rowcounter);
+            tableBody.appendChild(tr);
+
+            var colcounter = 0;
+            let myCellContentWithCommas = "";
+            $.each(row, function (ii, col) {
+                // console.log("colcounter ", colcounter)
+                // console.log("--col ", col)
+                // order as this: global_lol_standards_points_for_table.push([parseFloat(myconcentration), parseFloat(myobservedresponse), parseFloat(myadjustedresponse)]);
+                var td = document.createElement('TD');
+                $(td).attr('col-index', colcounter);
+                let myCellContent = col.toString().trim();
+                if (myCellContent.length == 0 || myCellContent == 'NaN') {
+                    myCellContent = " ";
+                } else
+                {
+                    myCellContent = generalFormatNumber(parseFloat(col));
+                    myCellContent = thousands_separators(myCellContent);
+                }
+                //else leave the myCellContent as it was
+
+                td.appendChild(document.createTextNode(myCellContent));
+                tr.appendChild(td);
+                //console.log(td)
+                colcounter = colcounter+1;
+            });
+            rowcounter = rowcounter+1
+        });
+        myTable.appendChild(tableBody);
+        myTableDiv.appendChild(myTable);
+
+        // to format the table - after creating it
+        // these column number are in the table cell tags - use them to keep everything straight
+        $('#standards_table').DataTable({
+            //     $(myTable).DataTable({
+            "iDisplayLength": 25,
+            "sDom": '<B<"row">lfrtip>',
+            fixedHeader: {headerOffset: 50},
+            responsive: true,
+            "order": [[0, "asc"], [1, "asc"] ],
+
+            "columnDefs": [
+                // target is the column number starting from 0
+                // NOTE: these numbers rely on the order of the arrays
+                {"targets": [   0], "visible": true, },
+                {"targets": [   1], "visible": true, },
+                {"targets": [   2], "visible": true, },
+                {"targets": [   3], "visible": true, }
+            ]
+
+        });
+        return myTable;
+    }
+
+    $("#showHideStandardsTableButton").click(function () {
+        // console.log("sh ", global_showhide_samples)
+        if ($('#div_for_standards_table').hasClass('hidden')) {
+            $('#div_for_standards_table').removeClass('hidden');
+            $('#div_for_standard_averages_table').removeClass('hidden');
+            $('#all_standard_points_table_title').removeClass('hidden');
+            $('#ave_standard_points_table_title').removeClass('hidden');
+        } else {
+            $('#div_for_standards_table').addClass('hidden');
+            $('#div_for_standard_averages_table').addClass('hidden');
+            $('#all_standard_points_table_title').addClass('hidden');
+            $('#ave_standard_points_table_title').addClass('hidden');
+        }
+    });
 
     $("#showHideSamplesOnGraphButton").click(function () {
         // console.log("sh ", global_showhide_samples)
@@ -1160,7 +1471,7 @@ $(document).ready(function () {
                             },
                         },
                         legend: {position: 'bottom'},
-                        vAxis: {title: 'Signal'},
+                        vAxis: {title: 'Signal (Adjusted)'},
                         hAxis: {title: global_floater_standard_unit},
                         colors: ['MidnightBlue', 'MediumBlue', 'SteelBlue', 'White'],
                     };
@@ -1612,6 +1923,7 @@ $(document).ready(function () {
 
     function startFromAnOtherPlatemap_ajax() {
         // load data from file/block pk if one or more file/blocks is assigned
+
         if (global_plate_start_map === 'a_platemap') {
             let data = {
                 call: 'fetch_assay_study_platemap_for_platemap',
@@ -1638,6 +1950,7 @@ $(document).ready(function () {
                 error: function (xhr, errmsg, err) {
                     window.spinner.stop();
                     // $("#test_me1").text("error happened");
+                    console.log("return error....")
                     alert('An error has occurred (starting from another plate map), try a different matrix, assay plate map, or start from an empty plate.');
                     console.log(xhr.status + ": " + xhr.responseText);
                 }
@@ -3459,7 +3772,7 @@ $(document).ready(function () {
         // global_floater_target = global_floater_study_assay.substring(global_floater_study_assay.indexOf("TARGET") + 8, global_floater_study_assay.indexOf("METHOD")).trim();
         // global_floater_method = global_floater_study_assay.substring(global_floater_study_assay.indexOf("METHOD") + 8, global_floater_study_assay.indexOf("UNIT")).trim();
         // global_floater_unit   = global_floater_study_assay.substring(global_floater_study_assay.indexOf("UNIT") + 6, global_floater_study_assay.length).trim();
-        global_floater_target = global_floater_study_assay.substring(global_floater_study_assay.indexOf("TARGET") + 8, global_floater_study_assay.indexOf("METHOD")-3).trim() + ' (Detected)';
+        global_floater_target = global_floater_study_assay.substring(global_floater_study_assay.indexOf("TARGET") + 8, global_floater_study_assay.indexOf("METHOD")-3).trim();
         global_floater_method = global_floater_study_assay.substring(global_floater_study_assay.indexOf("METHOD") + 8, global_floater_study_assay.length).trim();
         global_floater_unit   = global_floater_study_assay.substring(0, global_floater_study_assay.indexOf("TARGET")-5).trim();
         // console.log('global_floater_target  ',    global_floater_target)
@@ -3678,6 +3991,10 @@ $(document).ready(function () {
 
     // general function to format numbers
     function generalFormatNumber(this_number_in) {
+        let sign = 1;
+        if (this_number_in < 0) {
+            sign = -1;
+        }
         let formatted_number = 0;
         // console.log("function format ", this_number_in)
         let this_number = Math.abs(parseFloat(this_number_in));
@@ -3715,7 +4032,7 @@ $(document).ready(function () {
             formatted_number = this_number.toExponential(2);
         }
 
-        return formatted_number;
+        return formatted_number*sign;
     }
 
   //    https://www.wikitechy.com/tutorials/javascript/print-a-number-with-commas-as-thousands-separators-in-javascript

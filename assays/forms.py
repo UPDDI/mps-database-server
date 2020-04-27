@@ -3609,7 +3609,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
         self.fields['form_calibration_sample_blank_average'].required = False
         self.fields['form_calibration_standard_standard0_average'].required = False
 
-    # these raw data
+        # these raw data
     form_number_file_block_combos = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
     se_block_select_string = forms.ChoiceField()
     ns_block_select_pk = forms.ChoiceField()
@@ -3654,13 +3654,15 @@ class AssayPlateReaderMapForm(BootstrapForm):
 
             )
     )
-
+    # forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+    # se_form_blank_handling = forms.ChoiceField(widget=forms.RadioSelect(attrs={'disabled': 'disabled'}),
     se_form_blank_handling = forms.ChoiceField(
-        choices=(('subtract', 'Subtract Average Standard Blanks from Standards and Average Sample Blanks from Samples'),
-                 ('subtractstandard', 'Subtract Average Standard Blanks from Standards (ignore sample blanks)'),
-                 ('subtractsample', 'Subtract Average Sample Blanks from Samples (ignore standard blanks)'),
-                 ('subtractstandardfromall', 'Subtract Average Standard Blanks from the Standards and Samples)'),
-                 ('ignore', 'Ignore the Blanks'))
+        choices=(('subtracteachfromeach', 'Subtracting Average STANDARD Blanks from STANDARDS and Average SAMPLE Blanks from SAMPLES'),
+                 ('subtractstandardfromstandard', 'Subtracting Average STANDARD Blanks from STANDARDS (ignore sample blanks)'),
+                 ('subtractsamplefromsample', 'Subtracting Average SAMPLE Blanks from SAMPLES (ignore standard blanks)'),
+                 ('subtractstandardfromall', 'Subtracting Average STANDARD Blanks from the STANDARDS and SAMPLES'),
+                 ('subtractsamplefromall', 'Subtracting Average SAMPLE Blanks from the STANDARDS and SAMPLES'),
+                 ('ignore', 'Ignoring the Blanks')), initial='subtracteachfromeach'
     )
 
     form_min_standard = forms.DecimalField(

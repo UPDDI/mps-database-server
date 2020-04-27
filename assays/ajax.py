@@ -4721,6 +4721,8 @@ def fetch_assay_study_platemap_for_platemap(request):
 
     this_platemap_queryset = AssayPlateReaderMap.objects.filter(
         id=this_platemap
+    ).prefetch_related(
+        'standard_unit',
     )
 
     # should be just one
@@ -4733,10 +4735,13 @@ def fetch_assay_study_platemap_for_platemap(request):
             'volume_unit': this_map.volume_unit,
             'cell_count': this_map.cell_count,
             'study_assay_id': this_map.study_assay_id,
-            'standard_unit': this_map.standard_unit
+            # 'standard_unit': this_map.standard_unit.unit,
+            'standard_unit': this_map.standard_unit.id,
+            'platemap_id': this_platemap,
         }
         platemap_data_to_return.append(data_fields)
 
+    # print("platemap_data_to_return")
     # print(platemap_data_to_return)
 
     this_queryset = AssayPlateReaderMapItem.objects.filter(
@@ -4778,10 +4783,17 @@ def fetch_assay_study_platemap_for_platemap(request):
         }
 
         data_to_return.append(data_fields)
-        data.update({'platemap_info': platemap_data_to_return,
-                     'item_info': data_to_return, })
 
+    # print("data_to_return")
     # print(data_to_return)
+
+    data.update({'platemap_info': platemap_data_to_return,
+                 'item_info': data_to_return, })
+
+    # print("json.dumps(data)")
+    # print(json.dumps(data))
+    # print("past it")
+
     return HttpResponse(json.dumps(data),
                         content_type="application/json")
 
