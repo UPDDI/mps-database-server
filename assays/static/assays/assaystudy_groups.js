@@ -515,7 +515,7 @@ $(document).ready(function () {
             $('<td>').html(
                 '<div class="no-wrap">' + buttons_to_add + '</div>'
             ).append(
-                $('<strong>').text('Series ' + (row_index + 1))
+                $('<strong>').text('Group ' + (row_index + 1))
             )
         );
 
@@ -684,7 +684,7 @@ $(document).ready(function () {
         replace_series_data();
 
         // Add group to selectors
-        // series_selector.append(new Option('Series ' + (row_index + 1), row_index + 1));
+        // series_selector.append(new Option('Group ' + (row_index + 1), row_index + 1));
     }
 
     $(document).on('change', '.test-type', function() {
