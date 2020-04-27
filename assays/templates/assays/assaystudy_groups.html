@@ -81,10 +81,12 @@
         {{ form.series_data }}
 
         {# contrived #}
-        <textarea type="text" id="id_group_name" name="group_name" class="form-control name" data-default="" data-index="0" rows="1" style="min-width: 100px;"></textarea>
+        <textarea type="text" id="id_group_name" name="group_name" class="form-control name" data-default="" rows="1" style="min-width: 100px;"></textarea>
+
+        <input type="number" id="id_number_of_items" name="number_of_items" class="form-control number-of-items" data-default="">
 
         {# {{ form.group_name }} #}
-        {{ form.number_of_items }}
+        {# {{ form.number_of_items }} #}
         {{ form.test_type }}
         {{ form.organ_model_full }}
         {{ form.organ_model_protocol_full }}
