@@ -722,6 +722,7 @@ $(document).ready(function () {
                     return false;
                 }
 
+                // Increment the number of colors
                 num_colors++;
             }
         });
@@ -772,7 +773,15 @@ $(document).ready(function () {
         }
 
         if (chart) {
-            var dataView = new google.visualization.DataView(data);
+            var data_view = new google.visualization.DataView(data);
+
+            // Crude: format everything
+            var formatter = new google.visualization.NumberFormat({ pattern: options.vAxis.format });
+            i = 1;
+            while (i < data.getNumberOfColumns()) {
+                formatter.format(data, i);
+                i++;
+            }
 
             // Change interval columns to intervals
             var interval_setter = [0];
@@ -787,9 +796,12 @@ $(document).ready(function () {
                 }
                 i += 1;
             }
-            dataView.setColumns(interval_setter);
+            data_view.setColumns(interval_setter);
 
-            chart.draw(dataView, options);
+            // To always allow html
+            // options.allowHtml = true;
+
+            chart.draw(data_view, options);
 
             chart.chart_index = index;
 
