@@ -1113,7 +1113,7 @@ def get_data_points_for_charting(
                         concentration = compound.get('concentration')
                         tag.append(
                             # May need this to have float minutes, unsure
-                            '{} {} {}'.format(
+                            '{} {:G} {}'.format(
                                 compound.get('name'),
                                 concentration,
                                 compound.get('base_unit')
