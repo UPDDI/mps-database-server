@@ -3527,6 +3527,7 @@ assay_plate_reader_main_well_use_choices = [
     ('blank', 'Blank'),
     ('empty', 'Empty/Unused')
 ]
+# here here if decide to do this later
 assay_plate_reader_blank_well_use_choices = [
     ('sample_blank', 'Sample Blank'),
     ('standard_blank', 'Standard Blank')
@@ -3538,8 +3539,9 @@ assay_plate_reader_cumulative_well_use_choices = [
     ('standard', 'Standard'),
     ('blank', 'Blank'),
     ('empty', 'Empty/Unused'),
-    ('sample_blank', 'Sample Blank'),
-    ('standard_blank', 'Standard Blank')
+    # here here if decide to do this
+    # ('sample_blank', 'Sample Blank'),
+    # ('standard_blank', 'Standard Blank')
 ]
 
 assay_plate_reader_volume_unit_choices = [
@@ -3899,12 +3901,12 @@ class AssayPlateReaderMapItem(models.Model):
         blank=True
     )
     collection_volume = models.FloatField(
-        default=0,
+        default=1,
         null=True,
         blank=True
     )
     collection_time = models.FloatField(
-        default=0,
+        default=1,
         null=True,
         blank=True
     )

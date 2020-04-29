@@ -4234,6 +4234,8 @@ def plate_reader_data_file_process_data(set_dict):
     method = set_dict.get('method')
     time_unit = set_dict.get('time_unit')
     volume_unit = set_dict.get('volume_unit')
+    called_from = set_dict.get('called_from')
+    # javascript or form_submit
 
     sendmessage = ''
 
@@ -4261,7 +4263,13 @@ def plate_reader_data_file_process_data(set_dict):
     if form_calibration_curve not in ['no_calibration', 'best_fit', 'linear', 'linear0', 'log', 'poly2', 'logistic4', 'log5']:
         form_calibration_curve = 'no_calibration'
         sendmessage = "Invalid entry - defaults used;  "
-    if form_blank_handling not in ['subtract', 'subtractstandard', 'subtractsample', 'subtractstandardfromall', 'ignore']:
+    if form_blank_handling not in [
+            'subtracteachfromeach',
+            'subtractstandardfromstandard',
+            'subtractsamplefromsample',
+            'subtractstandardfromall',
+            'subtractsamplefromall',
+            'ignore']:
         form_blank_handling = 'ignore'
         sendmessage = "Invalid entry - defaults used;  "
 
@@ -4283,7 +4291,27 @@ def plate_reader_data_file_process_data(set_dict):
     list_of_dicts_of_each_sample_row = []
     goBackToFileBlockRemovePlateMapToFixMessage = "To deal with this, go to the file block that uses this plate map and remove the plate map and save the file block, then, return to this plate map and add the required information and save. Go back to the file block and re-add this plate map. Return to this plate map and continue.; "
     goBackToFileBlockToFixFileBlockMessage = "A possible cause is that the file block was parsed correctly during file upload. Another possible cause is incorrect plate map setup. All wells designated as something other than empty should have a raw value.; "
-   
+
+    y_preds = []
+    y_predStandards_logistic4 = []
+    y_predStandards_linear = []
+    y_predStandards_linear0 = []
+    y_predStandards_log = []
+    y_predStandards_poly2 = []
+    slope_linear = 0
+    icept_linear = 0
+    slope_linear0 = 0
+    icept_linear0 = 0
+    A4 = 0
+    B4 = 0
+    C4 = 0
+    D4 = 0
+    A_log = 0
+    B_log = 0
+    A_poly2 = 0
+    B_poly2 = 0
+    C_poly2 = 0
+
     # Prelim QC SECTION Some QC that will cause errors if not detected up front
 
     # deal with the reporting unit containing /cells
@@ -4314,29 +4342,31 @@ def plate_reader_data_file_process_data(set_dict):
             sendmessage = sendmessage + goBackToFileBlockRemovePlateMapToFixMessage
             yes_to_continue = 'no'
 
-    # Check if results are to be normalized (no cells in standard unit but cells in processed unit)
-    # if so, is the collection time and collection volume provided?
-    if standardunitCellsStart == None and unitCellsStart != None:
-        with connection.cursor() as cursor:
-            sqls = "SELECT COUNT(*)"
-            sqls = sqls + " FROM assays_AssayPlateReaderMapItem "
-            sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.well_use = 'sample' "
-            sqls = sqls + " and assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(pk_platemap)
-            sqls = sqls + " and ( concat(trim(assays_AssayPlateReaderMapItem.collection_volume::varchar(255)),'zz') = 'zz' "
-            sqls = sqls + " or   assays_AssayPlateReaderMapItem.collection_volume = 0 "
-            sqls = sqls + " or    concat(trim(assays_AssayPlateReaderMapItem.collection_time::varchar(255)),'zz') = 'zz' "
-            sqls = sqls + " or   assays_AssayPlateReaderMapItem.collection_time = 0 )"
-            # print("1: ", sqls)
-            cursor.execute(sqls)
-            results = cursor.fetchall()
-            # print(results)
-            results00 = results[0][0]
-            # print("missing normalization information? ", results00)
-
-            if results00 > 0:
-                sendmessage = sendmessage + "ERROR: Samples are to be normalized, but one or more collection time or collection volume is Null or 0. "
-                sendmessage = sendmessage + goBackToFileBlockRemovePlateMapToFixMessage
-                yes_to_continue = 'no'
+    # Tongying asked for this one to be removed - plus I changed the default for these from 0 to 1
+    # so it really is not helpful anymore
+    # # Check if results are to be normalized (no cells in standard unit but cells in processed unit)
+    # # if so, is the collection time and collection volume provided?
+    # if standardunitCellsStart == None and unitCellsStart != None:
+    #     with connection.cursor() as cursor:
+    #         sqls = "SELECT COUNT(*)"
+    #         sqls = sqls + " FROM assays_AssayPlateReaderMapItem "
+    #         sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.well_use = 'sample' "
+    #         sqls = sqls + " and assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(pk_platemap)
+    #         sqls = sqls + " and ( concat(trim(assays_AssayPlateReaderMapItem.collection_volume::varchar(255)),'zz') = 'zz' "
+    #         sqls = sqls + " or   assays_AssayPlateReaderMapItem.collection_volume = 0 "
+    #         sqls = sqls + " or    concat(trim(assays_AssayPlateReaderMapItem.collection_time::varchar(255)),'zz') = 'zz' "
+    #         sqls = sqls + " or   assays_AssayPlateReaderMapItem.collection_time = 0 )"
+    #         # print("1: ", sqls)
+    #         cursor.execute(sqls)
+    #         results = cursor.fetchall()
+    #         # print(results)
+    #         results00 = results[0][0]
+    #         # print("missing normalization information? ", results00)
+    #
+    #         if results00 > 0:
+    #             sendmessage = sendmessage + "ERROR: Samples are to be normalized, but one or more collection time or collection volume is Null or 0. "
+    #             sendmessage = sendmessage + goBackToFileBlockRemovePlateMapToFixMessage
+    #             yes_to_continue = 'no'
 
     # look for samples with missing matrix items
     with connection.cursor() as cursor:
@@ -4491,14 +4521,13 @@ def plate_reader_data_file_process_data(set_dict):
         sqlsWhere = sqlsWhere + " and assays_AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock_id = "
         sqlsWhere = sqlsWhere + str(use_file_pk_for_standards) + " "
 
-        # EXTRA FOR CALIBRATION - could streamline this code (lot of repeated), but easier this way for now
+        # EXTRA FOR CALIBRATION
         if yes_to_calibrate == 'yes':
             # need to deal with sample blanks
 
-            # if subtracting by average sample blank, get average, else, set it = 0 and then can always subtract
-            # note: 4/14/2020 - will overwrite sample_blank_average with standard_blank_average later on
-            # if user selection for blank handling was 'subtractstandardfromall'
-            if form_blank_handling in ['subtract', 'subtractsample']:
+            # if subtracting (anything) by average of sample blanks,
+            # get average, else, set it = 0 (then can always subtract)
+            if form_blank_handling in ['subtracteachfromeach', 'subtractsamplefromsample', 'subtractsamplefromall']:
                 # get the average of the sample blanks
                 with connection.cursor() as cursor:
                     sqls = "SELECT AVG(raw_value)"
@@ -4521,7 +4550,8 @@ def plate_reader_data_file_process_data(set_dict):
             else:
                 sample_blank_average = 0
 
-            # if not given or not floatable, find the min concentration in the plate setup
+            # if not given or not floatable, assume user wants to use all, so
+            # find the min concentration in the plate setup that is being used for the standards
             if use_form_min == -1:
                 # find the values we should use
                 with connection.cursor() as cursor:
@@ -4529,12 +4559,13 @@ def plate_reader_data_file_process_data(set_dict):
                     sqls = sqls + "  MIN(assays_AssayPlateReaderMapItem.standard_value) "
                     sqls = sqls + sqlsFrom
                     sqls = sqls + sqlsWhere
-                    print("all standards sql: ", sqls)
+                    # print("all standards sql: ", sqls)
                     cursor.execute(sqls)
                     results = cursor.fetchall()
                     use_form_min = results[0][0]
 
-            # if not given or not floatable, find the max concentration in the plate setup
+            # if not given or not floatable, find the max concentration in the plate setup, so
+            # find the max concentration in the plate setup that is being used for the standards
             if use_form_max == -1:
                 # find the values we should use
                 with connection.cursor() as cursor:
@@ -4551,8 +4582,8 @@ def plate_reader_data_file_process_data(set_dict):
             # print("use_form_min ", use_form_min)
             # print("use_form_max ", use_form_max)
 
-            # if subtracting by average standard blank, get average, else, set it = 0 and then can always subtract
-            if form_blank_handling in ['subtract', 'subtractstandard', 'subtractstandardfromall']:
+            # if subtracting by average standard blank, get average, else, set it = 0
+            if form_blank_handling in ['subtracteachfromeach', 'subtractstandardfromstandard', 'subtractstandardfromall']:
                 # these are to use for 1) graphing and 2) curve fitting
 
                 # get the standard blank average
@@ -4573,16 +4604,41 @@ def plate_reader_data_file_process_data(set_dict):
                         standard_blank_average = results00
             else:
                 standard_blank_average = 0
+
             # print("sample_blank_average: ", sample_blank_average)
             # print("standard_blank_average: ", standard_blank_average)
 
             # 4/14/2020 added an option to subtract average standard from samples
             # this option is accommodate here - assumes that sample_blank_average was computed above
             # we will overwrite it here, if needed
+            # 4/26/2020 added options for blank handling...here is the logic that will overwrite what to subtract from
+            # what based on the users choices
+            # Note: before this, sample_blank_average = average of sample blanks or 0, depending on user selection
+            # Note: before this, standard_blank_average = average of standard blanks or 0, depending on user selection
+
+            # this will overwrite the previous selection, depending on the user's choices
+            # could put these above in the original selections, but just easier to do it here
             if form_blank_handling == 'subtractstandardfromall':
                 sample_blank_average = standard_blank_average
+            elif form_blank_handling == 'subtractsamplefromall':
+                standard_blank_average = sample_blank_average
 
-            # for graphing - get all adjusted standards (POINTS) (will subtract 0 in not adjusting, so okay to treat all the same)
+            # Summarizing:
+            # Two level assignment of what to subtract,
+            # first:
+            # a standard and sample blank average were calculated OR set to 0
+            # (based on user selection of blank handling).
+            # second:
+            # if the user selected to use the standard blank average for all,
+            # or to use sample blanks for all,
+            # the caculated average is overwritten
+            # note that, these are the values that will be used from now on,
+            # all based on the user selection of blank handling
+            # these will also be what shows in the analysis details for what is subtacted from blanks.
+
+            # for graphing - get all adjusted standards (POINTS)
+            # Note, based on how the standard_blank_average had be set above
+            # it is okay to treat all the blank handling conditions this way
             with connection.cursor() as cursor:
                 sqls = "SELECT "
                 sqls = sqls + "   assays_AssayPlateReaderMapItem.standard_value "
@@ -4594,6 +4650,7 @@ def plate_reader_data_file_process_data(set_dict):
                 # print("all standards sql: ", sqls)
                 cursor.execute(sqls)
                 mystandardsAll = cursor.fetchall()
+
             # print("all standards: ", mystandardsAll)
 
             # for fitting - get the average at each concentration that is IN user specified bounds
@@ -4621,7 +4678,7 @@ def plate_reader_data_file_process_data(set_dict):
             # for fitting, use the first and second column of the one below
             NL = []
             SL = []
-            NminNonZero = 9999
+            NminNonZero = 9999999999
             Nmin = mystandardsAvg[0][0]
             Nmax = mystandardsAvg[0][0]
             Smin = mystandardsAvg[0][1]
@@ -4634,6 +4691,8 @@ def plate_reader_data_file_process_data(set_dict):
                 this_row.update({'Concentration': xi })
                 this_row.update({'Ave Adjusted Observed Signal': yi })
                 this_row.update({'Ave Observed Signal': each[2]})
+                # we will populate this field later
+                this_row.update({'Fitted Signal': 0})
                 list_of_dicts_of_each_standard_row_ave_points.append(this_row)
 
                 NL.append(xi)
@@ -4687,7 +4746,7 @@ def plate_reader_data_file_process_data(set_dict):
                 A_linear = Sfitted[0]
                 B_linear = Sfitted[1]
 
-                y_predStandards = plateMapLinear(N, A_linear, B_linear)
+                y_predStandards_linear = plateMapLinear(N, A_linear, B_linear)
 
                 # y_predStandards = [None] * len(N)
                 # i = 0
@@ -4696,7 +4755,7 @@ def plate_reader_data_file_process_data(set_dict):
                 #     i = i + 1
 
                 # print("calling linear rsquared")
-                rsquared_linear = plateMapRsquared(N, S, y_predStandards)
+                rsquared_linear = plateMapRsquared(N, S, y_predStandards_linear)
                 r2['linear'] = rsquared_linear
 
             if form_calibration_curve in ['linear0', 'best_fit']:
@@ -4707,8 +4766,8 @@ def plate_reader_data_file_process_data(set_dict):
                 Sfitted, cost, info, msg, success = leastsq(plateMapResidualsLinear0, p0, args=(S, N), full_output=1)
                 A_linear0 = Sfitted[0]
                 B_linear0 = Sfitted[1]
-                y_predStandards = plateMapLinear(N, A_linear0, B_linear0)
-                rsquared_linear0 = plateMapRsquared(N, S, y_predStandards)
+                y_predStandards_linear0 = plateMapLinear(N, A_linear0, B_linear0)
+                rsquared_linear0 = plateMapRsquared(N, S, y_predStandards_linear0)
                 r2['linear0'] = rsquared_linear0
 
             if form_calibration_curve in ['logistic4', 'best_fit']:
@@ -4732,8 +4791,8 @@ def plate_reader_data_file_process_data(set_dict):
                 B4 = Sfitted[1]
                 C4 = Sfitted[2]
                 D4 = Sfitted[3]
-                y_predStandards = plateMapLogistic4(Nno0, A4, B4, C4, D4)
-                rsquared_logistic4 = plateMapRsquared(Nno0, Sno0, y_predStandards)
+                y_predStandards_logistic4 = plateMapLogistic4(Nno0, A4, B4, C4, D4)
+                rsquared_logistic4 = plateMapRsquared(Nno0, Sno0, y_predStandards_logistic4)
                 r2['logistic4'] = rsquared_logistic4
 
             if form_calibration_curve in ['log', 'best_fit']:
@@ -4752,12 +4811,12 @@ def plate_reader_data_file_process_data(set_dict):
                 Sfitted, cost, info, msg, success = leastsq(plateMapResidualsLinear, p0, args=(Sno0, np.log(Nno0)), full_output=1)
                 A_log = Sfitted[0]
                 B_log = Sfitted[1]
-                y_predStandards = plateMapLinear(np.log(Nno0), A_log, B_log)
+                y_predStandards_log = plateMapLinear(np.log(Nno0), A_log, B_log)
 
                 # print(Nno0)
                 # print(Sno0)
 
-                rsquared_log = plateMapRsquared(Nno0, Sno0, y_predStandards)
+                rsquared_log = plateMapRsquared(Nno0, Sno0, y_predStandards_log)
                 r2['log'] = rsquared_log
 
             if form_calibration_curve in ['poly2', 'best_fit']:
@@ -4771,8 +4830,8 @@ def plate_reader_data_file_process_data(set_dict):
                 B_poly2 = Sfitted[1]
                 C_poly2 = Sfitted[2]
                 D_poly2 = Sfitted[3]
-                y_predStandards = plateMapPoly2(N, A_poly2, B_poly2, C_poly2, D_poly2)
-                rsquared_poly2 = plateMapRsquared(N, S, y_predStandards)
+                y_predStandards_poly2 = plateMapPoly2(N, A_poly2, B_poly2, C_poly2, D_poly2)
+                rsquared_poly2 = plateMapRsquared(N, S, y_predStandards_poly2)
                 r2['poly2'] = rsquared_poly2
 
             # if best fit, find higheset rsquared
@@ -4988,6 +5047,53 @@ def plate_reader_data_file_process_data(set_dict):
                     list_of_dicts_of_each_standard_row_curve.append(this_row)
                     i = i + 1
 
+            # 202004221 - decided to put a fitted value in the average standards for table display
+            # I left a null spot in the list of dictionaries that we can now fill in
+            # remember, what we generated for the curve had 100 points...
+            # here, we want just our concentration with a fitted point
+            # this_row.update({'Concentration': xi})
+            # this_row.update({'Ave Adjusted Observed Signal': yi})
+            # this_row.update({'Ave Observed Signal': each[2]})
+            # this_row.update({'Fitted Signal': 0})
+            # list_of_dicts_of_each_standard_row_ave_points.append(this_row)
+            # list_of_dicts_of_each_standard_row_ave_points.append(this_row)
+
+            # now that we know which one, fill in the fitted concentration
+            # y_predStandards_linear = plateMapLinear(N, A_linear, B_linear)
+            # y_predStandards_linear0 = plateMapLinear(N, A_linear0, B_linear0)
+            # y_predStandards_logistic4 = plateMapLogistic4(Nno0, A4, B4, C4, D4)
+            # y_predStandards_log = plateMapLinear(np.log(Nno0), A_log, B_log)
+            # y_predStandards_poly2 = plateMapPoly2(N, A_poly2, B_poly2, C_poly2, D_poly2)
+
+            p = 0
+            for each in list_of_dicts_of_each_standard_row_ave_points:
+                CONC = each['Concentration']
+                # print(p , "   ",CONC)
+
+                if use_calibration_curve == 'linear':
+                    myFit = plateMapLinear(CONC, A_linear, B_linear)
+                elif use_calibration_curve == 'linear0':
+                    myFit = plateMapLinear(CONC, A_linear0, B_linear0)
+                elif use_calibration_curve == 'logistic4':
+                    if CONC == 0:
+                        myFit = ''
+                    else:
+                        myFit = plateMapLogistic4(CONC, A4, B4, C4, D4)
+                elif use_calibration_curve == 'log':
+                    if CONC == 0:
+                        myFit = ''
+                    else:
+                        myFit = plateMapLinear(np.log(CONC), A_log, B_log)
+                elif use_calibration_curve == 'poly2':
+                    myFit = plateMapPoly2(CONC, A_poly2, B_poly2, C_poly2, D_poly2)
+                else:
+                    err_msg = "There is a very bad error - missing a calibration method???"
+                    print(err_msg)
+
+                # print(p, "   ", myFit)
+                each['Fitted Signal'] = myFit
+                p = p + 1
+
             # # replacing with an N that is 100 long - just keep in hold for now
             # if form_calibration_curve == 'linear':
             #     y_predStandards100 = regressor_linear.predict(NN)
@@ -5006,12 +5112,34 @@ def plate_reader_data_file_process_data(set_dict):
             #     list_of_dicts_of_each_standard_row_curve.append(this_row)
             #     i = i + 1
 
-            # load up the standards row dictionary
+            # just declare these so can use the same fitting call that was made from later on in the code.
+            caution_flag = ''
+            exclude_flag = ''
+            sendmessage = sendmessage
+            df = 1
+            cv = 1
+            ct = 1
+
+            # load up the standards (points) row dictionary
             for each in mystandardsAll:
                 this_row = {}
                 this_row.update({'Concentration': each[0]})
                 this_row.update({'Adjusted Observed Signal': each[1]})
                 this_row.update({'Observed Signal': each[2]})
+                # what would the fitted concentration be at this signal?
+                araw =  each[1]
+                fitted_ftv_pdv_flags_sendmessage = plate_map_sub_return_the_fitted_and_other_info(
+                    araw, df, cv, ct, caution_flag, exclude_flag, sendmessage, standardunitCellsStart, unitCellsStart,
+                    yes_to_calibrate, use_calibration_curve, multiplier, use_form_max, use_form_min,
+                    slope_linear, icept_linear,
+                    slope_linear0, icept_linear0,
+                    A4, B4, C4, D4,
+                    A_log, B_log,
+                    A_poly2, B_poly2, C_poly2)
+                # [ftv, pdv, caution_flag, exclude_flag, sendmessage]
+                ftv = fitted_ftv_pdv_flags_sendmessage[0]
+                # print("ftv ",ftv)
+                this_row.update({'Fitted Concentration': ftv})
                 list_of_dicts_of_each_standard_row_points.append(this_row)
 
         # END EXTRA FOR CALIBRATION
@@ -5058,7 +5186,13 @@ def plate_reader_data_file_process_data(set_dict):
             sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(pk_platemap) + " "
             sqls = sqls + " and assays_AssayPlateReaderMapItem.well_use = 'sample' "
             sqls = sqls + " and assays_AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock_id = " + str(pk_data_block) + " "
-            sqls = sqls + " ORDER by assays_AssayPlateReaderMapItem.plate_index "
+            # sqls = sqls + " ORDER by assays_AssayPlateReaderMapItem.plate_index "
+            # need to order to find the replicates - use the key fields
+            sqls = sqls + " ORDER by assays_AssayPlateReaderMapItem.well_use "
+            sqls = sqls + " , assays_AssayPlateReaderMapItem.matrix_item_id "
+            sqls = sqls + " , assays_AssayPlateReaderMapItemValue.time"
+            sqls = sqls + " , assays_AssayPlateReaderMapItem.location_id"
+
             # print(sqls)
             cursor.execute(sqls)
             # cursor.fetchone() or cursor.fetchall()
@@ -5072,6 +5206,12 @@ def plate_reader_data_file_process_data(set_dict):
         # if any of these are null, they cause problems when making table in javascript
         # it is like they just get skipped (eg. an array that should be 30 is only 29)
         # try passin all as strings
+        replicate = 0
+        prevWellUse = ""
+        prevMatrixItemId = -1
+        prevTime = -1
+        prevLocationId = -1
+
         for each in myquery:
             this_row = {}
 
@@ -5090,6 +5230,16 @@ def plate_reader_data_file_process_data(set_dict):
             # adjusted raw value
             araw = each[12]
 
+            if prevWellUse == wellu and prevMatrixItemId == mxii and prevTime == st and prevLocationId == loci:
+                replicate = replicate + 1
+            else:
+                replicate = 1
+
+            prevWellUse = wellu
+            prevMatrixItemId = mxii
+            prevTime = st
+            prevLocationId = loci
+
             # print("araw, A, B, C, D ", str(araw), " ", str(A4), " ", str(B4), " ", str(C4), " ", str(D4), " ")
             # print("(A4 - D4) ", str(A4 - D4))
             # print("(araw - D4) ", str(araw - D4))
@@ -5098,94 +5248,23 @@ def plate_reader_data_file_process_data(set_dict):
 
             caution_flag = ''
             exclude_flag = ''
-            notes = ''
+            sendmessage = sendmessage
 
-            if yes_to_calibrate == 'no' or use_calibration_curve == 'no_calibration':
-                ftv = araw
+            fitted_ftv_pdv_flags_sendmessage = plate_map_sub_return_the_fitted_and_other_info(
+                araw, df, cv, ct, caution_flag, exclude_flag, sendmessage, standardunitCellsStart, unitCellsStart,
+                yes_to_calibrate, use_calibration_curve, multiplier, use_form_max, use_form_min,
+                slope_linear, icept_linear,
+                slope_linear0, icept_linear0,
+                A4, B4, C4, D4,
+                A_log, B_log,
+                A_poly2, B_poly2, C_poly2)
+            # [ftv, pdv, caution_flag, exclude_flag, sendmessage]
+            ftv = fitted_ftv_pdv_flags_sendmessage[0]
+            pdv = fitted_ftv_pdv_flags_sendmessage[1]
+            caution_flag = fitted_ftv_pdv_flags_sendmessage[2]
+            exclude_flag = fitted_ftv_pdv_flags_sendmessage[3]
+            sendmessage = fitted_ftv_pdv_flags_sendmessage[4]
 
-            elif use_calibration_curve == 'linear':
-                if slope_linear == 0:
-                    ftv = " "
-                    exclude_flag = 'X'
-                    notes = notes + "Slope is 0. Cannot calculate fitted value."
-                else:
-                    ftv = (araw - icept_linear) / slope_linear
-
-            elif use_calibration_curve == 'logistic4':
-                if araw-D4 == 0 or B4 == 0:
-                    ftv = " "
-                    exclude_flag = 'X'
-                    notes = notes + "A denominator is 0. Cannot calculate fitted value."
-                else:
-                    try:
-                        ftv = C4 * (((A4 - D4) / (araw - D4)) - 1) ** (1 / B4)
-                        if str(ftv).lower().strip() == 'nan':
-
-                            if araw < A4:
-                                ftv = A4
-                                caution_flag = 'e'
-                                notes = notes + "Sample value too small to calculate; set to theoretical response at zero concentration (A)."
-                            else:
-                                # print("araw,    A,    B,    C,    D ")
-                                # print(str(araw), " ", str(A4), " ", str(B4), " ", str(C4), " ", str(D4))
-                                ftv = " "
-                                exclude_flag = 'X'
-                                notes = notes + "Cannot calculate fitted value."
-                    except:
-                        ftv = " "
-                        exclude_flag = 'X'
-                        notes = notes + "Cannot calculate fitted value. Likely due to very large exponent."
-
-            elif use_calibration_curve == 'log':
-                if B_log == 0:
-                    ftv = " "
-                    exclude_flag = 'X'
-                    notes = notes + "A denominator is 0. Cannot calculate fitted value."
-                else:
-                    try:
-                        ftv = math.exp((araw-A_log)/B_log)
-                    except:
-                        ftv = " "
-                        exclude_flag = 'X'
-                        notes = notes + "Cannot calculate fitted value. Likely due to very large exponent."
-
-            elif use_calibration_curve == 'poly2':
-                if C_poly2 == 0:
-                    ftv = " "
-                    exclude_flag = 'X'
-                    notes = notes + "A denominator is 0. Cannot calculate fitted value."
-                else:
-                    ftv1 = ( (-1*B_poly2) + ( (B_poly2**2) - (4*C_poly2*(A_poly2-araw)) )**(1/2) ) / (2*C_poly2)
-                    ftv2 = ( (-1*B_poly2) - ( (B_poly2**2) - (4*C_poly2*(A_poly2-araw)) )**(1/2) ) / (2*C_poly2)
-                    if ftv1 >= 0:
-                        ftv = ftv1
-                    else:
-                        ftv = ftv2
-
-            else:
-                # elif use_calibration_curve == 'linear0':
-                if slope_linear0 == 0:
-                    ftv = " "
-                    exclude_flag = 'X'
-                    notes = notes + "Slope is 0. Cannot calculate fitted value."
-                else:
-                    ftv = araw / slope_linear0
-
-            # WATCH if change this above, will not work here!! Be careful.
-            if ftv != " ":
-                # adjust by normalization
-                if standardunitCellsStart == None and unitCellsStart != None:
-                    pdv = ftv * multiplier * df / cv / ct
-                else:
-                    pdv = ftv * multiplier * df
-
-                if yes_to_calibrate == 'yes':
-                    if ftv > use_form_max:
-                        caution_flag = 'E'
-                    if ftv < use_form_min:
-                        caution_flag = 'e'
-            else:
-                pdv = " "
 
             pi = str(each[0])
             df = str(each[1])
@@ -5204,15 +5283,16 @@ def plate_reader_data_file_process_data(set_dict):
             ftv = str(ftv)
             pdv = str(pdv)
 
+            # 0,1,2,3
             this_row.update({'plate_index'              : pi                    })
             this_row.update({'matrix_item_name'         : mxin                  })
             this_row.update({'matrix_item_id'           : mxii                  })
             this_row.update({'cross_reference'          : 'Plate Reader Tool'   })
-
+            # 4,5,6
             this_row.update({'plate_name'               : plate_name            })
             this_row.update({'well_name'                : welln                 })
             this_row.update({'well_use'                 : wellu                  })
-
+            # 7,8,9
             if (time_unit == 'Day'):
                 this_row.update({'day'                  : st                    })
                 this_row.update({'hour': '0'     })
@@ -5225,33 +5305,40 @@ def plate_reader_data_file_process_data(set_dict):
                 this_row.update({'day': '0'     })
                 this_row.update({'hour': '0'     })
                 this_row.update({'minute'               : st                    })
-
+            # 10,11,12,13,14
             this_row.update({'target'                   : target                })
             this_row.update({'subtarget'                : 'none'                })
             this_row.update({'method'                   : method                })
             this_row.update({'location_name'            : locn                  })
             this_row.update({'location_id'              : loci                  })
-
+            # 15,16,17
             this_row.update({'raw_value'                : raw                   })
             this_row.update({'standard_unit'            : standard_unit         })
             this_row.update({'average_blank'            : sample_blank_average  })
-
-            this_row.update({'adjusted_raw'             : araw                  })
-            this_row.update({'fitted_value'             : ftv                   })
-
+            # 18,19
+            if use_calibration_curve == 'no_calibration':
+                this_row.update({'adjusted_raw'             : ' '                   })
+                this_row.update({'fitted_value'             : ' '                   })
+            else:
+                this_row.update({'adjusted_raw'             : araw                  })
+                this_row.update({'fitted_value'             : ftv                   })
+            # 20,21,22,23
             this_row.update({'dilution_factor'          : df                    })
             this_row.update({'collection_volume'        : cv                    })
             this_row.update({'volume_unit'              : volume_unit           })
             this_row.update({'collection_time'          : ct                    })
-
+            # 24,25,26,27
             this_row.update({'multiplier'               : multiplier            })
             this_row.update({'processed_value'          : pdv                   })
             this_row.update({'unit'                     : unit                  })
-            this_row.update({'replicate'                : ' '                   })
+            this_row.update({'replicate'                : replicate             })
+            # 28,29,30,31
             this_row.update({'caution_flag'             : caution_flag          })
             this_row.update({'exclude'                  : exclude_flag          })
-            this_row.update({'notes'                    : notes                 })
+            this_row.update({'notes'                    : ' '                   })
             this_row.update({'sendmessage'              : sendmessage           })
+
+            # will add 32 in javascript - check box for exclude in average
 
             # add the dictionary to the list
             list_of_dicts_of_each_sample_row.append(this_row)
@@ -5271,6 +5358,110 @@ def plate_reader_data_file_process_data(set_dict):
             dict_of_parameter_values,
             dict_of_curve_info,
             dict_of_standard_info]
+
+
+def plate_map_sub_return_the_fitted_and_other_info(
+    araw, df, cv, ct, caution_flag, exclude_flag, sendmessage, standardunitCellsStart, unitCellsStart,
+    yes_to_calibrate, use_calibration_curve, multiplier, use_form_max, use_form_min,
+    slope_linear, icept_linear,
+    slope_linear0, icept_linear0,
+    A4, B4, C4, D4,
+    A_log, B_log,
+    A_poly2, B_poly2, C_poly2):
+
+    if yes_to_calibrate == 'no' or use_calibration_curve == 'no_calibration':
+        ftv = araw
+
+    elif use_calibration_curve == 'linear':
+        if slope_linear == 0:
+            ftv = " "
+            exclude_flag = 'X'
+            sendmessage = sendmessage + "Slope is 0. Cannot calculate fitted value."
+        else:
+            ftv = (araw - icept_linear) / slope_linear
+
+    elif use_calibration_curve == 'logistic4':
+        if araw - D4 == 0 or B4 == 0:
+            ftv = " "
+            exclude_flag = 'X'
+            sendmessage = sendmessage + "A denominator is 0. Cannot calculate fitted value."
+        else:
+            try:
+                ftv = C4 * (((A4 - D4) / (araw - D4)) - 1) ** (1 / B4)
+                if str(ftv).lower().strip() == 'nan':
+
+                    if araw < A4:
+                        ftv = A4
+                        caution_flag = 'e'
+                        sendmessage = sendmessage + "Sample value too small to calculate; set to theoretical response at zero concentration (A)."
+                    else:
+                        # print("araw,    A,    B,    C,    D ")
+                        # print(str(araw), " ", str(A4), " ", str(B4), " ", str(C4), " ", str(D4))
+                        ftv = " "
+                        exclude_flag = 'X'
+                        sendmessage = sendmessage + "Cannot calculate fitted value."
+            except:
+                ftv = " "
+                exclude_flag = 'X'
+                sendmessage = sendmessage + "Cannot calculate fitted value. Likely due to very large exponent."
+
+    elif use_calibration_curve == 'log':
+        if B_log == 0:
+            ftv = " "
+            exclude_flag = 'X'
+            sendmessage = sendmessage + "A denominator is 0. Cannot calculate fitted value."
+        else:
+            try:
+                ftv = math.exp((araw - A_log) / B_log)
+            except:
+                ftv = " "
+                exclude_flag = 'X'
+                sendmessage = sendmessage + "Cannot calculate fitted value. Likely due to very large exponent."
+
+    elif use_calibration_curve == 'poly2':
+        if C_poly2 == 0:
+            ftv = " "
+            exclude_flag = 'X'
+            sendmessage = sendmessage + "A denominator is 0. Cannot calculate fitted value."
+        else:
+            ftv1 = ((-1 * B_poly2) + ((B_poly2 ** 2) - (4 * C_poly2 * (A_poly2 - araw))) ** (1 / 2)) / (2 * C_poly2)
+            ftv2 = ((-1 * B_poly2) - ((B_poly2 ** 2) - (4 * C_poly2 * (A_poly2 - araw))) ** (1 / 2)) / (2 * C_poly2)
+            if ftv1 >= 0:
+                ftv = ftv1
+            else:
+                ftv = ftv2
+
+    else:
+        # elif use_calibration_curve == 'linear0':
+        if slope_linear0 == 0:
+            ftv = " "
+            exclude_flag = 'X'
+            sendmessage = sendmessage + "Slope is 0. Cannot calculate fitted value."
+        else:
+            ftv = araw / slope_linear0
+
+    # WATCH if change this above, will not work here!! Be careful.
+    if ftv != " ":
+        # adjust by normalization
+        if standardunitCellsStart == None and unitCellsStart != None:
+            if (cv == 0 or ct == 0):
+                pdv = " "
+                exclude_flag = 'X'
+                sendmessage = sendmessage + "Collection volume or collection time = 0.;"
+            else:
+                pdv = ftv * multiplier * df / cv / ct
+        else:
+            pdv = ftv * multiplier * df
+
+        if yes_to_calibrate == 'yes':
+            if ftv > use_form_max:
+                caution_flag = 'E'
+            if ftv < use_form_min:
+                caution_flag = 'e'
+    else:
+        pdv = " "
+    return [ftv, pdv, caution_flag, exclude_flag, sendmessage]
+
 
 # Find the R Squared
 def plateMapRsquared(N, S, y_predStandards):

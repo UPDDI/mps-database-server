@@ -3452,12 +3452,12 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
     form_number_dilution_factor.widget.attrs.update({'class': 'form-control'})
     form_number_collection_volume = forms.DecimalField(
         required=False,
-        initial=0,
+        initial=1,
     )
     form_number_collection_volume.widget.attrs.update({'class': 'form-control'})
     form_number_collection_time = forms.DecimalField(
         required=False,
-        initial=0,
+        initial=1,
     )
     form_number_collection_time.widget.attrs.update({'class': 'form-control'})
     form_number_increment_value = forms.DecimalField(
@@ -3584,7 +3584,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
         self.fields['form_make_mifc_on_submit'].widget.attrs.update({'class': ' big-checkbox'})
         self.fields['se_form_calibration_curve'].required = False
         self.fields['se_form_blank_handling'].required = False
-        self.fields['radio_replicate_handling_average_or_not'].required = False
+        # self.fields['radio_replicate_handling_average_or_not'].required = False
 
         # getting sent empty to be filled with ajax - took to long to do as routine
         # update, sending empty caused problems, fill with place holder
@@ -3725,8 +3725,11 @@ class AssayPlateReaderMapForm(BootstrapForm):
     radio_replicate_handling_average_or_not = forms.ChoiceField(
         # widget=forms.RadioSelect(attrs={'id': 'value'}),
         widget=forms.RadioSelect,
-        choices=[('average', 'Send the Average of the Replicates to the Study Summary'),
-                 ('each', 'Send Each Replicates Value to the Study Summary')])
+        choices=[
+            ('average', 'Show Averages the Replicate Samples'),
+            ('each', 'Show Each Sample')])
+            # ('average', 'Send the Average of the Replicates to the Study Summary'),
+            # ('each', 'Send Each Replicates Value to the Study Summary')])
     radio_standard_option_use_or_not = forms.ChoiceField(
         required=False,
         widget=forms.RadioSelect,
@@ -3807,6 +3810,14 @@ class AssayPlateReaderMapItemForm(forms.ModelForm):
     # def __init__(self, *args, **kwargs):
     #     super(AssayPlateReaderMapItemForm, self).__init__(*args, **kwargs)
     #     self.fields['name'].widget.attrs.update({'class': ' no-selectize'})
+
+    # 20200428 for user entered information
+    form_user_entered_notes = forms.CharField(
+        initial='-',
+        required=False,
+        widget=forms.TextInput()
+    )
+    form_user_entered_omit_from_average = forms.BooleanField(required=False, )
 
 
 # Item VALUES are sets that correspond to items. Each set should have a match to a well in the plate map.

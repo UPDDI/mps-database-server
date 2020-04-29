@@ -434,6 +434,9 @@
                                         </thead>
                                         <tbody>
                                             <tr>
+                                                <td>The database's base units were used to perform unit conversion. To review base units and associated scale factors, go to Studies, Study Components, View Units. Not all conversions are possible with this tool. Some tips: Reporting units that include per cell should include 10^, measurement units that include /well must be molar not mass, and reporting units with /time/10^# cells should have the time in 'day', 'hour', or 'minute', NOT other representations of time (i.e. 'days'). If necessary, the multiplier can be edited manually, but do so with care.</td>
+                                            </tr>
+                                            <tr>
                                                 <td> {{ form.form_data_processing_multiplier_string }} </td>
                                             </tr>
                                         </tbody>
@@ -488,6 +491,7 @@
                         {# Selecting what to work on #}
                         {% if not review %}
                             <div class="container">
+
                                 <div class="row">
                                     <div class="col-md-3">
                                         <div class="plate-map-page-field-labels-small">
@@ -498,30 +502,42 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                    {# Lines for the drop down version#}
-            {#                        <div class="col-md-2">#}
-            {#                            <div class="plate-map-page-field-contents-medium">#}
-            {#                                {{ assay_map_additional_info.se_well_use }}#}
-            {#                            </div>#}
-            {#                        </div>#}
-            {#                        <div class="col-md-7">#}
-            {#                        </div>#}
-
-                                    {# Lines for the radio button version#}
                                     <div class="plate-map-page-radio-contents">
                                         <div class="col-md-9">
-                                            <label><input type="radio" class="plate-map-bigger-radio" name="change_well_use" value="sample"><h3 class="plate-map-radio-spacing plate-map-no-wrap">Sample</h3></label>
-                                            <label><input type="radio" class="plate-map-bigger-radio" name="change_well_use" value="standard"><h3 class="plate-map-radio-spacing plate-map-no-wrap">Standard</h3></label>
-                                            <label><input type="radio" class="plate-map-bigger-radio" name="change_well_use" value="blank"><h3 class="plate-map-radio-spacing plate-map-no-wrap">Blank</h3></label>
-                                            <label><input type="radio" class="plate-map-bigger-radio" name="change_well_use" value="empty" checked><h3 class="plate-map-radio-spacing plate-map-no-wrap">Empty</h3></label>
-                                            {% if form.form_number_file_block_combos.value < 1 %}
-                                                <label><input type="radio" class="plate-map-bigger-radio" name="change_well_use" value="copys"><h3 class="plate-map-radio-spacing plate-map-no-wrap">Copy</h3></label>
-                                                <label><input type="radio" class="plate-map-bigger-radio" name="change_well_use" value="pastes" id="radio_pastes"><h3 class="plate-map-radio-spacing plate-map-no-wrap">Paste</h3></label>
-                                            {% endif %}
+
+                                            <label><input type="radio" class="plate-map-bigger-radio" name="change_well_use" value="sample">
+                                                <h3 class="plate-map-radio-spacing plate-map-no-wrap">Sample</h3></label>
+
+                                            <label><input type="radio" class="plate-map-bigger-radio" name="change_well_use" value="standard">
+                                                <h3 class="plate-map-radio-spacing plate-map-no-wrap">Standard</h3></label>
+
+                                            <label><input type="radio" class="plate-map-bigger-radio" name="change_well_use" value="blank">
+                                                <h3 class="plate-map-radio-spacing plate-map-no-wrap">Blank</h3></label>
+
+                                            <label><input type="radio" class="plate-map-bigger-radio" name="change_well_use" value="empty" checked>
+                                                <h3 class="plate-map-radio-spacing plate-map-no-wrap">Empty</h3></label>
                                         </div>
                                     </div>
-                                {# Both radio or dropdown#}
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="plate-map-page-field-labels-small">
+                                            <div>
+                                                <div><p id="copys_pastes_tooltip"></p>
+                                                    <label for="copys_pastes_tooltip">Using Copy and Paste &nbsp;</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="plate-map-page-radio-contents">
+                                        <div class="col-md-9">
+                                            <label><input type="radio" class="plate-map-bigger-radio" name="change_well_use" value="copys">
+                                                <h3 class="plate-map-radio-spacing plate-map-no-wrap">Copy</h3></label>
+                                            <label><input type="radio" class="plate-map-bigger-radio" name="change_well_use" value="pastes" id="radio_pastes">
+                                                <h3 class="plate-map-radio-spacing plate-map-no-wrap">Paste</h3></label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <hr>
@@ -539,6 +555,12 @@
                                             <h3><em>Set value(s) and action, check boxes to change value(s), then drag or click an appropriate apply button to make change(s).</em></h3>
                                             <br>
                                         </div>
+
+{#                                            <label><input type="radio" class="plate-map-bigger-radio" name="change_well_use" value="sample">#}
+{#                                                <h3 class="plate-map-radio-spacing plate-map-no-wrap">Sample</h3></label>#}
+{#                                            <label><input type="radio" class="plate-map-bigger-radio" name="change_well_use" value="sample_blank">#}
+{#                                                <h3 class="plate-map-radio-spacing plate-map-no-wrap">Sample Blank</h3></label>#}
+
                                     </div>
     {#                                <div class="row">#}
     {#                                    <div class="col-md-12">#}
@@ -697,6 +719,7 @@
 
                                             <br>
                                         </div>
+
                                     </div>
     {#                                <div class="row">#}
     {#                                    <div class="col-md-12">#}
@@ -737,6 +760,14 @@
                                             <br>
                                         </div>
                                     </div>
+{#                                    <div class="row">#}
+{#                                        <div class="col-md-12">#}
+{#                                             <label><input type="radio" class="plate-map-bigger-radio" name="change_blank_well_use" value="blank_smp">#}
+{#                                                <h3 class="plate-map-radio-spacing plate-map-no-wrap">Sample Blank</h3></label>#}
+{#                                            <label><input type="radio" class="plate-map-bigger-radio" name="change_blank_well_use" value="blank_stn">#}
+{#                                                <h3 class="plate-map-radio-spacing plate-map-no-wrap">Standard Blank</h3></label>#}
+{#                                        </div>#}
+{#                                    </div>#}
                                 </div>
                             </div>
                         {% endif %}
@@ -1293,8 +1324,11 @@
                                 <div class="col-md-3"></div>
                             </div>
 
+
+
                             <div class="row">
                                 <div class="col-md-3">
+                                    <br>
                                     <div class="plate-map-page-field-labels-small">
                                         <div><p id="plate_blank_handling_tooltip"></p>
                                             <label for="plate_blank_handling_tooltip">Blank Handling &nbsp;</label>
@@ -1302,11 +1336,50 @@
                                     </div>
                                 </div>
                                 <div class="col-md-9">
-                                    <div class="plate-map-page-field-contents-medium">
-                                        {{ form.se_form_blank_handling}}
+                                    <br>
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th><i>Select Subtraction Method</i></th>
+                                                <th style="text-align:center">Average of Standard Blanks</th>
+                                                <th style="text-align:center">Average of Sample Blanks</th>
+                                                <th style="text-align:center">Nothing</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th>Subtract from Standards</th>
+                                                <td align="center"><input id="standards_ave_standard_blanks" class="plate-map-bigger-radio" type="radio" name="radio_standards_blank_handling" value="standards_ave_standard_blanks"  checked></td>
+                                                <td align="center"><input id="standards_ave_sample_blanks"   class="plate-map-bigger-radio" type="radio" name="radio_standards_blank_handling" value="standards_ave_sample_blanks" ></td>
+                                                <td align="center"><input id="standards_nothing"             class="plate-map-bigger-radio" type="radio" name="radio_standards_blank_handling" value="standards_nothing" ></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Subtract from Samples</th>
+                                                <td align="center"><input id="samples_ave_standard_blanks" class="plate-map-bigger-radio" type="radio" name="radio_samples_blank_handling" value="samples_ave_standard_blanks" ></td>
+                                                <td align="center"><input id="samples_ave_sample_blanks"   class="plate-map-bigger-radio" type="radio" name="radio_samples_blank_handling" value="samples_ave_sample_blanks"  checked></td>
+                                                <td align="center"><input id="samples_nothing"             class="plate-map-bigger-radio" type="radio" name="radio_samples_blank_handling" value="samples_nothing" ></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="hidden">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="plate-map-page-field-labels-small">
+                                            <div><p></p>
+                                                <label></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div class="plate-map-page-field-contents-medium">
+                                            {{ form.se_form_blank_handling}}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+
 
                             <br>
                             <div class="plate-map-options-standards-blocks hidden">
@@ -1492,12 +1565,12 @@
 {#                                                                    Note to self: these are loosely the standard and sample blank average#}
 {#                                                                    however, they get overwritt#}
                                                                     <tr>
-                                                                        <td>Subtracting from Standards </td>
+                                                                        <td>Subtracting from Standards (to obtain Adjusted Signal) </td>
                                                                         <td>{{ form.form_calibration_standard_standard0_average }}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td>Subtracting from Samples</td>
+                                                                        <td>Subtracting from Samples (to obtain Adjusted Signal)</td>
                                                                         <td>{{ form.form_calibration_sample_blank_average }}
                                                                         </td>
                                                                     </tr>
@@ -1514,7 +1587,40 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="plate-map-page-field-contents-medium">
-                                            <button type="button" class="btn btn-primary" id="showHideSamplesOnGraphButton">Show/Hide Samples On Graph (QC Check)</button>
+                                            <button type="button" class="btn btn-primary" id="showHideStandardsTableButton">Show/Hide Standards Table</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <h3 class="hidden" id="ave_standard_points_table_title">Standards (Averages Used for Fitting)</h3>
+                                            <div class="hidden" id="div_for_standard_averages_table">
+                                            {#  note that the table (including the table tag) is made in javascript #}
+                                            </div>
+                                    </div>
+                                    <div class="col-md-5">
+                                    </div>
+                                </div>
+                                <br>
+
+{#                              This was primarily for QC, but it could be unhidden in the console if needed#}
+                                <div class="hidden">
+                                    <div class="row">
+                                        <div class="col-md-7">
+                                            <h3 class="hidden" id="all_standard_points_table_title">Standard Points (Fitted)</h3>
+                                            <div class="hidden" id="div_for_standards_table">
+                                            {#  note that the table (including the table tag) is made in javascript #}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-5">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="plate-map-page-field-contents-medium">
+                                            <button type="button" class="btn btn-primary" id="showHideSamplesOnGraphButton">Show/Hide Samples On Graph</button>
                                         </div>
                                     </div>
                                 </div>
@@ -1535,6 +1641,33 @@
                         <div class="plate-calibration-or-processing-yes hidden">
                             <br>
                             <h2>Processed Sample Data</h2>
+
+                                <div class="">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="plate-map-page-field-labels-small">
+                                                <div><p id="plate_replicate_handling_tooltip"></p>
+                                                    <label for="plate_replicate_handling_tooltip">Replicate Handling &nbsp;</label>
+                                                </div>
+                                            </div>
+                                            <p>This doesn't work yet.</p>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <div class="plate-map-page-radio-contents">
+    {#                                            comment{{ form.radio_replicate_handling_average_or_not }}#}
+    {#                                            comment<label><input type="radio" name="replicates" value="average" checked>  <b class="plate-map-radio-spacing">Send the Average of the Replicates to the Study Summary</b> </label>#}
+    {#                                            comment<label><input type="radio" name="replicates" value="each">  <b class="plate-map-radio-spacing">Send Each Replicate's Value to the Study Summary</b> </label>#}
+                                                {% for radio in form.radio_replicate_handling_average_or_not %}
+                                                    {{ radio.tag }}
+                                                    <label for="value_{{ forloop.counter0 }}"><b class="plate-map-radio-spacing">{{ radio.choice_label }}</b></label>
+                                                    <br>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br>
+                                </div>
+
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div id="div_for_processed_samples_table">
@@ -1557,40 +1690,32 @@
 
 
                         {# Send to main study #}
-                        <div class="plate-calibration-or-processing-yes hidden">
-                            <br>
-                            <h2>Sending Data to the Study Summary</h2>
-                            <p>Automated sending of data to the study summary is in development. For now, download the table above by clicking the 'CSV' button, then upload it as a MIF-C file. </p>
 
-                            <div class="hidden">
+{#                        <div>#}
+{#                            {{  form.form_make_mifc_on_submit }}#}
+{#                            <label for="form_make_mifc_on_submit" class="plate-map-radio-spacing">Send this Sample Data to Study Summary on Submit</label>#}
+{#                        </div>#}
+
+                        <div>
+                            <div class="plate-calibration-or-processing-yes hidden">
+                                <br>
+                                <h2>Sending Data to the Study Summary</h2>
                                 <div class="row">
                                     <div class="col-md-3">
                                         <div class="plate-map-page-field-labels-small">
-                                            <div><p id="plate_replicate_handling_tooltip"></p>
-                                                <label for="plate_replicate_handling_tooltip">Replicate Handling &nbsp;</label>
+                                            <div><p id="submit_to_study_summary_tooltip"></p>
+                                                <label for="submit_to_study_summary_tooltip">Send to Study Summary &nbsp;</label>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-9">
-                                        <div class="plate-map-page-radio-contents">
-{#                                            comment{{ form.radio_replicate_handling_average_or_not }}#}
-{#                                            comment<label><input type="radio" name="replicates" value="average" checked>  <b class="plate-map-radio-spacing">Send the Average of the Replicates to the Study Summary</b> </label>#}
-{#                                            comment<label><input type="radio" name="replicates" value="each">  <b class="plate-map-radio-spacing">Send Each Replicate's Value to the Study Summary</b> </label>#}
-                                            {% for radio in form.radio_replicate_handling_average_or_not %}
-                                                {{ radio.tag }}
-                                                <label for="value_{{ forloop.counter0 }}"><b class="plate-map-radio-spacing">{{ radio.choice_label }}</b></label>
-                                                <br>
-                                            {% endfor %}
+                                        <div class="plate-map-page-field-contents-medium">
+                                            {{  form.form_make_mifc_on_submit }}
                                         </div>
                                     </div>
                                 </div>
-
-                                <div>
-                                    {{  form.form_make_mifc_on_submit }}
-                                    <label for="form_make_mifc_on_submit" class="plate-map-radio-spacing">Send this Sample Data to Study Summary on Submit</label>
-                                </div>
+                                <p>This doesn't work yet.</p>
                             </div>
-
                         </div>
 
                     {% endif %}
