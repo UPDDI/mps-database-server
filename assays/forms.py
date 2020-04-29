@@ -3584,7 +3584,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
         self.fields['form_make_mifc_on_submit'].widget.attrs.update({'class': ' big-checkbox'})
         self.fields['se_form_calibration_curve'].required = False
         self.fields['se_form_blank_handling'].required = False
-        # self.fields['radio_replicate_handling_average_or_not'].required = False
+        self.fields['radio_replicate_handling_average_or_not'].required = False
 
         # getting sent empty to be filled with ajax - took to long to do as routine
         # update, sending empty caused problems, fill with place holder
