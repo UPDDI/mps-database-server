@@ -2016,7 +2016,10 @@ class AssayMatrix(FlaggableModel):
         null=True,
         blank=True,
         on_delete=models.CASCADE,
-        verbose_name='Device'
+        # verbose_name='Device'
+        # Requested change
+        # Is it always accurate, however?
+        verbose_name='Plate Type'
     )
 
     # Decided against the inclusion of organ model here
