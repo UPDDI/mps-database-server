@@ -1,3 +1,10 @@
+// This is to skip request to overwrite to avoid too many clicks
+window.OVERWRITE = {
+    // For skipping overwrite confirmations
+    // Perhaps it is excessive to have this and enter_override's skips?
+    'skip_confirmation': false
+};
+
 $(document).ready(function () {
     // Prevent CSS conflict with Bootstrap
     // $.fn.button.noConflict();
@@ -51,7 +58,7 @@ $(document).ready(function () {
 
     // TODO MAKE SURE THIS DOES NOT INTERRUPT OTHER TRIGGERS
     $('form').submit(function(event) {
-        if (!overwrite_was_confirmed) {
+        if (!overwrite_was_confirmed && !window.OVERWRITE.skip_confirmation) {
             // Stop propagation
             event.preventDefault();
             overwrite_confirm.dialog('open');

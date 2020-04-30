@@ -41,10 +41,10 @@ $(document).ready(function() {
     // TODO CHANGE POPUP BEHAVIOR
     var ready_for_sign_off_section = $('#ready_for_sign_off_section');
     ready_for_sign_off_section.dialog({
-       height:500,
-       width:900,
-       modal: true,
-       buttons: {
+        height:500,
+        width:900,
+        modal: true,
+        buttons: {
             Send: function() {
                 process_email_request();
                 // $(this).dialog("close");
@@ -54,9 +54,9 @@ $(document).ready(function() {
                 });
             },
             Cancel: function() {
-               $(this).dialog("close");
+                $(this).dialog("close");
             }
-       }
+        }
     });
     ready_for_sign_off_section.removeProp('hidden');
 
