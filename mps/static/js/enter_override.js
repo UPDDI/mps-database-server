@@ -3,7 +3,9 @@
 
 // This global variable checks whether there is an exception to the override
 window.OVERRIDE = {
-    'exceptions': []
+    'exceptions': [],
+    // For skipping navigation confirmations
+    'skip_confirmation': false
 };
 
 $(document).ready(function () {
@@ -49,11 +51,12 @@ $(document).ready(function () {
     });
     dialogConfirm.removeProp('hidden');
 
+    // Track enter presses and request confirmation first
     $(window).keydown(function(event) {
         if(event.keyCode === 13) {
             // Make sure this isn't the exception
             var exception_focused = false;
-            if(window.OVERRIDE.exceptions) {
+            if (window.OVERRIDE.exceptions) {
                 $.each(window.OVERRIDE.exceptions, function(index, exception_selector) {
                     if(exception_selector.is(':focus')) {
                         exception_focused = true;
@@ -62,13 +65,13 @@ $(document).ready(function () {
             }
 
             // If this is an exception
-            if(exception_focused) {
+            if (exception_focused) {
                 // Just prevent default if this is an exception
                 event.preventDefault();
                 return false;
             }
             // Only perform the override if an input is focused
-            else if($('input:focus')[0]) {
+            else if ($('input:focus')[0]) {
                 event.preventDefault();
                 dialogConfirm.dialog('open');
                 return false;
@@ -84,7 +87,7 @@ $(document).ready(function () {
 
     // When the user navigates away
     $(window).on('beforeunload', function() {
-        if (form_selector.data('changed') && !$(':submit').first().attr('disabled')) {
+        if (form_selector.data('changed') && !$(':submit').first().attr('disabled') && !window.OVERRIDE.skip_confirmation) {
             return 'Changes may not be saved.';
         }
     });

@@ -2061,7 +2061,10 @@ class AssayMatrix(FlaggableModel):
         null=True,
         blank=True,
         on_delete=models.CASCADE,
-        verbose_name='Device'
+        # verbose_name='Device'
+        # Requested change
+        # Is it always accurate, however?
+        verbose_name='Plate Type'
     )
 
     # Decided against the inclusion of organ model here
@@ -2147,6 +2150,501 @@ class AssayFailureReason(FlaggableModel):
 TEST_TYPE_CHOICES = (
     ('', '--------'), ('control', 'Control'), ('compound', 'Treated')
 )
+
+
+# Having an abstract class will cut down on problems with repetition
+class AbstractSetupCompound(models.Model):
+    """Defines an abstract compound configuration for binding to a group"""
+
+    class Meta(object):
+        abstract = True
+
+        # Default needs to be revised in models extending this, but for reference
+        unique_together = [
+            (
+                'compound_instance',
+                'concentration',
+                'concentration_unit',
+                'addition_time',
+                'duration',
+                'addition_location'
+            )
+        ]
+
+        ordering = (
+            'addition_time',
+            'compound_instance__compound__name',
+            'addition_location__name',
+            'concentration_unit__scale_factor',
+            'concentration',
+            'concentration_unit__name',
+            'duration',
+        )
+
+    # COMPOUND INSTANCE IS REQUIRED, however null=True was done to avoid a submission issue
+    # IDEALLY WE WILL RESOLVE THIS ASAP
+    compound_instance = models.ForeignKey(
+        'compounds.CompoundInstance',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name='Compound Instance'
+    )
+    concentration = models.FloatField(verbose_name='Concentration')
+    concentration_unit = models.ForeignKey(
+        'assays.PhysicalUnits',
+        verbose_name='Concentration Unit',
+        on_delete=models.CASCADE,
+    )
+
+    # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
+    addition_time = models.FloatField(
+        blank=True,
+        verbose_name='Addition Time'
+    )
+
+    # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
+    duration = models.FloatField(
+        blank=True,
+        verbose_name='Duration'
+    )
+
+    # TODO TODO TODO TEMPORARILY NOT REQUIRED
+    addition_location = models.ForeignKey(
+        AssaySampleLocation,
+        blank=True,
+        default=1,
+        on_delete=models.CASCADE,
+        verbose_name='Addition Location'
+    )
+
+    # NOT DRY
+    def get_addition_time_string(self):
+        split_times = get_split_times(self.addition_time)
+        return 'D{0:02} H{1:02} M{2:02}'.format(
+            split_times.get('day'),
+            split_times.get('hour'),
+            split_times.get('minute'),
+        )
+
+    def get_duration_string(self):
+        split_times = get_split_times(self.duration)
+        return 'D{0:02} H{1:02} M{2:02}'.format(
+            split_times.get('day'),
+            split_times.get('hour'),
+            split_times.get('minute'),
+        )
+
+    # CRUDE
+    def flex_string(self, criteria=None):
+        if criteria:
+            full_string = []
+            if 'compound_instance.compound_id' in criteria:
+                full_string.append(self.compound_instance.compound.name)
+            if 'concentration' in criteria:
+                full_string.append('{:g}'.format(self.concentration))
+                full_string.append(self.concentration_unit.unit)
+            if 'addition_time' in criteria:
+                full_string.append('Added on: ' + self.get_addition_time_string())
+            if 'duration' in criteria:
+                full_string.append('Duration of: ' + self.get_duration_string())
+            if 'addition_location_id' in criteria:
+                full_string.append(str(self.addition_location))
+            return '{}; '.format(' '.join(full_string))
+        else:
+            return str(self)
+
+    def __str__(self):
+        if self.addition_location:
+            return '{0} ({1} {2})\nAdded on: {3}; Duration of: {4}; Added to: {5}'.format(
+                self.compound_instance.compound.name,
+                self.concentration,
+                self.concentration_unit.unit,
+                self.get_addition_time_string(),
+                self.get_duration_string(),
+                self.addition_location
+            )
+        else:
+            return '{0} ({1} {2})\nAdded on: {3}; Duration of: {4}'.format(
+                self.compound_instance.compound.name,
+                self.concentration,
+                self.concentration_unit.unit,
+                self.get_addition_time_string(),
+                self.get_duration_string(),
+            )
+
+
+class AbstractSetupCell(models.Model):
+    """Defines an abstract cell configuration for binding to either a group or an MPS Model Version"""
+    class Meta(object):
+        abstract = True
+
+        # Default needs to be revised in models extending this, but for reference
+        unique_together = [
+            (
+                'cell_sample',
+                'biosensor',
+                # Skip density?
+                'density',
+                'density_unit',
+                'passage',
+                'addition_time',
+                'addition_location'
+                # Will we need addition time and location here?
+            )
+        ]
+
+        ordering = (
+            'addition_time',
+            'cell_sample__cell_type__name',
+            'cell_sample',
+            'addition_location__name',
+            'biosensor__name',
+            'density',
+            'density_unit__name',
+            'passage'
+        )
+
+    cell_sample = models.ForeignKey(
+        'cellsamples.CellSample',
+        on_delete=models.CASCADE,
+        verbose_name='Cell Sample'
+    )
+    biosensor = models.ForeignKey(
+        'cellsamples.Biosensor',
+        on_delete=models.CASCADE,
+        # Default is naive
+        default=2,
+        verbose_name='Biosensor'
+    )
+    density = models.FloatField(
+        verbose_name='density',
+        default=0
+    )
+
+    density_unit = models.ForeignKey(
+        'assays.PhysicalUnits',
+        on_delete=models.CASCADE,
+        verbose_name='Density Unit'
+    )
+    passage = models.CharField(
+        max_length=16,
+        verbose_name='Passage#',
+        blank=True,
+        default=''
+    )
+
+    # DO WE WANT ADDITION TIME AND DURATION?
+    # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
+    # TODO TODO TODO TEMPORARILY NOT REQUIRED
+    addition_time = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Addition Time'
+    )
+
+    # TODO TODO TODO DO WE WANT DURATION????
+    # duration = models.FloatField(null=True, blank=True)
+
+    # TODO TODO TODO TEMPORARILY NOT REQUIRED
+    addition_location = models.ForeignKey(
+        AssaySampleLocation,
+        blank=True,
+        default=1,
+        on_delete=models.CASCADE,
+        verbose_name='Addition Location'
+    )
+
+    # NOT DRY
+    def get_addition_time_string(self):
+        split_times = get_split_times(self.addition_time)
+        return 'D{0:02} H{1:02} M{2:02}'.format(
+            split_times.get('day'),
+            split_times.get('hour'),
+            split_times.get('minute'),
+        )
+
+    # def get_duration_string(self):
+    #     split_times = get_split_times(self.duration)
+    #     return 'D{0:02} H{1:02} M{2:02}'.format(
+    #         split_times.get('day'),
+    #         split_times.get('hour'),
+    #         split_times.get('minute'),
+    #     )
+
+    # CRUDE
+    def flex_string(self, criteria=None):
+        if criteria:
+            full_string = []
+            if 'cell_sample_id' in criteria:
+                full_string.append(str(self.cell_sample))
+            if 'cell_sample_id' not in criteria and 'cell_sample.cell_type_id' in criteria:
+                full_string.append(str(self.cell_sample.cell_type))
+            if 'cell_sample_id' not in criteria and 'cell_sample.cell_subtype_id' in criteria:
+                full_string.append(str(self.cell_sample.cell_subtype))
+            if 'passage' in criteria:
+                full_string.append(self.passage)
+            if 'density' in criteria:
+                full_string.append('{:g}'.format(self.density))
+                full_string.append(self.density_unit.unit)
+            if 'addition_time' in criteria:
+                full_string.append('Added on: ' + self.get_addition_time_string())
+            # if 'duration' in criteria:
+            #     full_string.append('Duration of: ' + self.get_duration_string())
+            if 'addition_location_id' in criteria:
+                full_string.append(str(self.addition_location))
+            return '{}; '.format(' '.join(full_string))
+        else:
+            return str(self)
+
+    def __str__(self):
+        passage = ''
+
+        if self.passage:
+            passage = 'p{}'.format(self.passage)
+
+        if self.addition_location:
+            return '{0} {1}\n~{2:.2e} {3}, Added to: {4}'.format(
+                self.cell_sample,
+                passage,
+                self.density,
+                self.density_unit.unit,
+                self.addition_location
+            )
+        else:
+            return '{0} {1}\n~{2:.2e} {3}'.format(
+                self.cell_sample,
+                passage,
+                self.density,
+                self.density_unit.unit,
+            )
+
+
+class AbstractSetupSetting(models.Model):
+    """Defines an abstract setting for binding to either a group or an MPS Model Version"""
+    class Meta(object):
+        abstract = True
+
+        # Default needs to be revised in models extending this, but for reference
+        unique_together = [
+            (
+                'setting',
+                'addition_location',
+                'unit',
+                'addition_time',
+                'duration',
+            )
+        ]
+
+        ordering = (
+            'addition_time',
+            'setting__name',
+            'addition_location__name',
+            'unit__name',
+            'value',
+            'duration',
+        )
+
+    setting = models.ForeignKey(
+        'assays.AssaySetting',
+        on_delete=models.CASCADE,
+        verbose_name='Setting'
+    )
+    # DEFAULTS TO NONE, BUT IS REQUIRED
+    unit = models.ForeignKey(
+        'assays.PhysicalUnits',
+        blank=True,
+        default=14,
+        on_delete=models.CASCADE,
+        verbose_name='Unit'
+    )
+    value = models.CharField(
+        max_length=255,
+        verbose_name='Value'
+    )
+
+    # Will we include these??
+    # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
+    addition_time = models.FloatField(
+        blank=True,
+        verbose_name='Addition Time'
+    )
+
+    # PLEASE NOTE THAT THIS IS IN MINUTES, CONVERTED FROM D:H:M
+    duration = models.FloatField(
+        blank=True,
+        verbose_name='Duration'
+    )
+
+    # TODO TODO TODO TEMPORARILY NOT REQUIRED
+    addition_location = models.ForeignKey(
+        AssaySampleLocation,
+        blank=True,
+        default=1,
+        on_delete=models.CASCADE,
+        verbose_name='Addition Location'
+    )
+
+    # NOT DRY
+    def get_addition_time_string(self):
+        split_times = get_split_times(self.addition_time)
+        return 'D{0:02} H{1:02} M{2:02}'.format(
+            split_times.get('day'),
+            split_times.get('hour'),
+            split_times.get('minute'),
+        )
+
+    def get_duration_string(self):
+        split_times = get_split_times(self.duration)
+        return 'D{0:02} H{1:02} M{2:02}'.format(
+            split_times.get('day'),
+            split_times.get('hour'),
+            split_times.get('minute'),
+        )
+
+    # CRUDE
+    def flex_string(self, criteria=None):
+        if criteria:
+            full_string = []
+            if 'setting_id' in criteria:
+                full_string.append(str(self.setting))
+            if 'value' in criteria:
+                full_string.append(self.value)
+                if self.unit:
+                    full_string.append(self.unit.unit)
+            if 'addition_time' in criteria:
+                full_string.append('Added on: ' + self.get_addition_time_string())
+            if 'duration' in criteria:
+                full_string.append('Duration of: ' + self.get_duration_string())
+            if 'addition_location_id' in criteria:
+                full_string.append(str(self.addition_location))
+            return '{}; '.format(' '.join(full_string))
+        else:
+            return str(self)
+
+    def __str__(self):
+        return '{} {} {}'.format(self.setting.name, self.value, self.unit)
+
+
+# Previously considered the name "AssaySetupGroup"
+class AssayGroup(models.Model):
+    # We are not considering series at the moment
+    # series = models.ForeignKey(
+    #     AssayItemSeries,
+    #     on_delete=models.CASCADE,
+    #     verbose_name='Series'
+    # )
+
+    # Groups are bound to a study for the moment
+    study = models.ForeignKey(
+        AssayStudy,
+        on_delete=models.CASCADE,
+        verbose_name='Study'
+    )
+
+    # For clarity, groups should have a name
+    # Should we require this? Or should it be optional?
+    name = models.CharField(
+        max_length=255,
+        verbose_name='Name',
+        blank=True,
+        default=''
+    )
+
+    # Need to store test type here, acquiring it implicitly is unpleasant
+    test_type = models.CharField(
+        max_length=8,
+        choices=TEST_TYPE_CHOICES,
+        # default='control',
+        verbose_name='Test Type'
+    )
+
+    # NOTE that I probably will not put device in here explicitly
+    # We should, at least, store the organ model here
+    organ_model = models.ForeignKey(
+        OrganModel,
+        verbose_name='MPS Model',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
+    )
+
+    # Will we also store the version?
+    # Yes, but it will not be required
+    organ_model_protocol = models.ForeignKey(
+        OrganModelProtocol,
+        verbose_name='MPS Model Version',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
+    )
+
+
+class AssayGroupCompound(AbstractSetupCompound):
+    class Meta(object):
+        # Needs to include series
+        unique_together = [
+            (
+                'group',
+                'compound_instance',
+                'concentration',
+                'concentration_unit',
+                'addition_time',
+                'duration',
+                'addition_location'
+            )
+        ]
+
+    group = models.ForeignKey(
+        AssayGroup,
+        on_delete=models.CASCADE,
+        verbose_name='Group'
+    )
+
+
+class AssayGroupCell(AbstractSetupCell):
+    class Meta(object):
+        unique_together = [
+            (
+                'group',
+                'cell_sample',
+                'biosensor',
+                # Skip density?
+                'density',
+                'density_unit',
+                'passage',
+                'addition_time',
+                'addition_location'
+                # Will we need addition time and location here?
+            )
+        ]
+
+    group = models.ForeignKey(
+        AssayGroup,
+        on_delete=models.CASCADE,
+        verbose_name='Group'
+    )
+
+
+class AssayGroupSetting(AbstractSetupSetting):
+    class Meta(object):
+        unique_together = [
+            (
+                'group',
+                'setting',
+                'addition_location',
+                'unit',
+                'addition_time',
+                'duration',
+            )
+        ]
+
+    group = models.ForeignKey(
+        AssayGroup,
+        on_delete=models.CASCADE,
+        verbose_name='Group'
+    )
+
 
 # SUBJECT TO REMOVAL (MAY JUST USE ASSAY SETUP)
 @reversion.register(follow=[
@@ -2284,6 +2782,16 @@ class AssayMatrixItem(FlaggableModel):
         null=True,
         on_delete=models.CASCADE,
         verbose_name='Failure Reason'
+    )
+
+    # Link to a group
+    # NEW SCHEMA
+    group = models.ForeignKey(
+        AssayGroup,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name='Group'
     )
 
     def __str__(self):

@@ -27,20 +27,30 @@ $(document).ready(function() {
         {
             text: 'Save',
             click: function() {
+                // Ignore overwrite request
+                if (window.OVERWRITE) {
+                    window.OVERWRITE.skip_confirmation = true;
+                }
                 $('#submit').trigger('click');
             }
         },
         {
             text: 'Do Not Save',
             click: function() {
+                // Ignore redirect note
+                if (window.OVERRIDE) {
+                    window.OVERRIDE.skip_confirmation = true;
+                }
                 $(location).attr('href', redirect_url.val());
-            }
+            },
+            class: 'btn btn-warning'
         },
         {
             text: 'Cancel',
             click: function() {
                $(this).dialog("close");
-            }
+            },
+            class: 'btn btn-danger'
         }],
         close: function() {
             $.ui.dialog.prototype.options.close();
