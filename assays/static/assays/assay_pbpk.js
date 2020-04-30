@@ -531,6 +531,9 @@ $(document).ready(function () {
             acidic_pka = data.acidic_pka;
             basic_pka = data.basic_pka;
             $("#compound-pka").val(data.basic_pka);
+            if ($("#compound-pka").val() == '') {
+                $("#compound-pka").val(data.acidic_pka);
+            }
             // $("#compound-bioavailability").val(data.bioavailability);
             $("#compound-fu").val(data.fu);
             $("#input-fa").val((parseFloat($("#input-ka").val()) / (parseFloat($("#species-ki").val()) + parseFloat($("#input-ka").val()))).toFixed(3));
