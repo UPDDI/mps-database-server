@@ -1,0 +1,211 @@
+// TODO: Things like prefixes should be listed here to avoid repetition!
+// Perhaps even selectors for things we know shouldn't change
+// (Also should think of a better scheme for dependency injection)
+window.GROUPS = {
+    make_difference_table: null,
+    make_group_preview: null
+};
+
+$(document).ready(function () {
+    // The different components of a setup
+    var prefixes = [
+        'cell',
+        'compound',
+        'setting',
+    ];
+
+    // TEMPORARY
+    var series_data_selector = $('#id_series_data');
+
+    // We need a variable to store the data that would go into a difference table
+    // Tricky thing is, is this variable or isn't it?
+    // We could have templates similar to the group displays...
+    // Would they be controlled the same way? ie. would "Show Full Details" affect them?
+    // Another complication is that we need displays that are mandatory (the compound and the units etc.) but sometimes the divergence may not be in these mandatory fields! For instance, the addition location could be divergent
+    // People will be unhappy if small divergences, like the addition location, are not made clear, but the displays would be unintelligible without the mandatory sections (compound, cell sample, etc.)
+    // Having a by field difference is possible, it just gets messy
+
+    // For the moment, we will make some number of templates in the component_displays include and use those for the difference table
+    // After all, there are instances where the stringification of cells will be the same but the samples in-and-of-themselves are different (one would only know easily because we have access to the ID)
+
+    // For the moment, the difference table content is stored as an array
+    // Each index is a group
+    // Each group's data is likewise an array, each index being a column
+    var difference_table_content = [];
+
+    // We needs to know whether or not to show a column for a particular prefix
+    var diverging_prefixes = {
+        'cell': false,
+        'compound': false,
+        'setting': false,
+    };
+
+    // This may be a good file to make these shared?
+    // Prefixes
+    // If I am going to use these, they should be ALL CAPS to indicate global status
+    var item_prefix = 'matrix_item';
+    var cell_prefix = 'cell';
+    var setting_prefix = 'setting';
+    var compound_prefix = 'compound';
+
+    // DISPLAYS
+    // JS ACCEPTS STRING LITERALS IN OBJECT INITIALIZATION
+    var empty_difference_html = {};
+    var empty_item_difference_html = $('#empty_matrix_item_difference_html').children();
+    var empty_compound_difference_html = $('#empty_compound_difference_html');
+    var empty_cell_difference_html = $('#empty_cell_difference_html');
+    var empty_setting_difference_html = $('#empty_setting_difference_html');
+    empty_difference_html[item_prefix] = empty_item_difference_html;
+    empty_difference_html[compound_prefix] = empty_compound_difference_html;
+    empty_difference_html[cell_prefix] = empty_cell_difference_html;
+    empty_difference_html[setting_prefix] = empty_setting_difference_html;
+
+    // WERE WE INTERESTED IN DISPLAYING THE DATA AS SEPARATE COLUMNS
+    // We would also need to keep track of the number of columns of each prefix
+    // Of course, this can diverge from the columns of the group table
+    // We would determine this from the max diverges for each prefix
+    // var number_of_columns = {
+    //     'cell': 0,
+    //     'compound': 0,
+    //     'setting': 0,
+    // };
+
+    // Get a proper stringification of a group
+    // TODO: REVISE
+    // As an array
+    // function stringify_group_contents(contents) {
+    //     var stringification = [];
+
+    //     for (var i=0;  i < contents.length; i++) {
+    //         stringification[i] = JSON.stringify(contents[i]);
+    //     }
+
+    //     // We need to do this to deal with on-the-fly difference tables
+    //     // Should just do a default string sort?
+    //     stringification.sort();
+
+    //     return stringification;
+    // }
+
+    // NOT DRY
+    function get_display_for_field(field_name, field_value, prefix) {
+        // NOTE: SPECIAL EXCEPTION FOR CELL SAMPLES
+        if (field_name === 'cell_sample') {
+            // TODO VERY POORLY DONE
+            // return $('#' + 'cell_sample_' + field_value).attr('data-name');
+            // Global here is a little sloppy, but should always succeed
+            return window.CELLS.cell_sample_id_to_label[field_value];
+        }
+        else {
+            // Ideally, this would be cached in an object or something
+            var origin = $('#id_' + prefix + '_' + field_name);
+
+            // Get the select display if select
+            if (origin.prop('tagName') === 'SELECT') {
+                // Convert to integer if possible, thanks
+                var possible_int = Math.floor(field_value);
+                if (possible_int) {
+                    return origin[0].selectize.options[possible_int].text;
+                }
+                else {
+                    if (origin[0].selectize.options[field_value]) {
+                        return origin[0].selectize.options[field_value].text;
+                    }
+                    // If the current selection is blank, return the empty string
+                    else {
+                        return '';
+                    }
+                }
+                // THIS IS BROKEN, FOR PRE-SELECTIZE ERA
+                // return origin.find('option[value="' + field_value + '"]').text()
+            }
+            // Just display the thing if there is an origin
+            else if (origin[0]) {
+                return field_value;
+            }
+            // Give back null to indicate this should not be displayed
+            else {
+                return null;
+            }
+        }
+    }
+
+    // TODO NEEDS MAJOR REVISION
+    function get_difference_display(prefix, content) {
+        var html_contents = [];
+
+        // Clone the empty_html for a starting point
+        var new_display = empty_difference_html[prefix].clone();
+
+        if (content && Object.keys(content).length) {
+            $.each(content, function(key, value) {
+                // html_contents.push(key + ': ' + value);
+                // I will need to think about invalid fields
+                var field_name = key.replace('_id', '');
+                if ((field_name !== 'addition_time' && field_name !== 'duration')) {
+                    var field_display = get_display_for_field(field_name, value, prefix);
+                    new_display.find('.' + prefix + '-' + field_name).html(field_display);
+                }
+                // NOTE THIS ONLY HAPPENS WHEN IT IS NEEDED IN ADD PAGE
+                else {
+                    var split_time = window.SPLIT_TIME.get_split_time(
+                        value
+                    );
+
+                    $.each(split_time, function(time_name, time_value) {
+                        new_display.find('.' + prefix + '-' + key + '_' + time_name).html(time_value);
+                    });
+                }
+            });
+
+            html_contents.push(new_display.html());
+        }
+        // else {
+        //     // Push empty otherwise?
+        //     html_contents.push('');
+        // }
+
+        html_contents = html_contents.join('<br>');
+
+        return html_contents;
+    }
+
+    function stringify_group_contents(contents) {
+        var stringification = {};
+
+        for (var i=0;  i < contents.length; i++) {
+            // TODO  NOTE: This assumes nothing goofy about how the object gets populated!
+            stringification[JSON.stringify(contents[i])] = true;
+        }
+
+        return stringification;
+    }
+
+    // Make the "difference table"
+    // This determines whether any of the cells, compounds, or settings of the groups differ and shows a table depicting as much
+    // NOTE: Depends on a particular element for table
+    // NOTE: Depends on a particular input for data (contrived JSON)
+    window.GROUPS.make_difference_table = function() {
+        console.log("DIFFERENCE TABLE START");
+
+        // FULL DATA
+        // TEMPORARY
+        var full_series_data = JSON.parse(series_data_selector.val());
+        var current_series_data = full_series_data.series_data;
+
+        var diverging_contents = {};
+
+        // Basically, we want to determine if a given component (as derived from its stringification) is NOT present in any of the other groups
+        // This means we iterate over every group and break when we find it is NOT present and mark it as being included in the difference table
+        // Iterate over every prefix
+        $.each(prefixes, function(prefix) {
+            // Iterate over every group
+
+            // Iterate over every group (ideally not the same group, but the comparison shouldn't take too long)
+
+            //
+        });
+    };
+
+    window.GROUPS.make_difference_table();
+});

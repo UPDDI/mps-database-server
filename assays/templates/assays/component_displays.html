@@ -152,4 +152,97 @@
     <div class="alert alert-danger force-off-black-text matrix_item-error-message-box">
     </div>
 </div>
+
+{# Difference table uses different templates than the "bubbles" #}
+<div id="empty_cell_difference_html">
+    <div data-prefix="{{ cell_prefix }}">
+        <div class="important-display">
+            <span class="cell-cell_sample"></span>
+        </div>
+        <div>Passage: <span class="cell-passage"></span></div>
+        <div>Biosensor: <span class="cell-biosensor"></span></div>
+        <div>
+            <span class="cell-density"></span>
+            <span class="cell-density_unit"></span>
+        </div>
+        <div class="cell-addition_time_section">
+            <span>Added on D</span>
+            <span class="cell-addition_time_day"></span>
+            <span>H</span>
+            <span class="cell-addition_time_hour"></span>
+            <span>M</span>
+            <span class="cell-addition_time_minute"></span>
+        </div>
+        <div>
+            <span class="cell-addition_location"></span>
+        </div>
+    </div>
+</div>
+
+{# TODO #}
+<div id="empty_compound_difference_html">
+    <div data-prefix="{{ compound_prefix }}">
+        <div class="error-message-section error-display important-display">
+        </div>
+        <div class="important-display">
+            <span class="compound-compound"></span>
+            <span class="compound-concentration"></span>
+            <span class="compound-concentration_unit"></span>
+        </div>
+        <div>
+            <span class="compound-supplier_text"></span>
+            <span class="compound-lot_text"></span>
+        </div>
+        <div class="compound-receipt_date"></div>
+        <div class="compound-addition_time_section">
+            <span>Added on D</span>
+            <span class="compound-addition_time_day"></span>
+            <span>H</span>
+            <span class="compound-addition_time_hour"></span>
+            <span>M</span>
+            <span class="compound-addition_time_minute"></span>
+        </div>
+        <div class="compound-duration_section">
+            <span>Duration of D</span>
+            <span class="compound-duration_day"></span>
+            <span>H</span>
+            <span class="compound-duration_hour"></span>
+            <span>M</span>
+            <span class="compound-duration_minute"></span>
+        </div>
+        <div>
+            <span class="compound-addition_location"></span>
+        </div>
+    </div>
+</div>
+
+{# TODO TODO TODO #}
+<div id="empty_setting_difference_html">
+    <div data-prefix="{{ setting_prefix }}">
+        <div class="important-display">
+            <span class="setting-setting"></span>
+            <span class="setting-value"></span>
+            <span class="setting-unit"></span>
+        </div>
+        <div class="setting-addition_time_section">
+            <span>Added on D</span>
+            <span class="setting-addition_time_day"></span>
+            <span>H</span>
+            <span class="setting-addition_time_hour"></span>
+            <span>M</span>
+            <span class="setting-addition_time_minute"></span>
+        </div>
+        <div class="setting-duration_section">
+            <span>Duration of D</span>
+            <span class="setting-duration_day"></span>
+            <span>H</span>
+            <span class="setting-duration_hour"></span>
+            <span>M</span>
+            <span class="setting-duration_minute"></span>
+        </div>
+        <div>
+            <span class="setting-addition_location"></span>
+        </div>
+    </div>
+</div>
 </div>
