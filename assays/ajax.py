@@ -5614,8 +5614,8 @@ def fetch_compound_physicochemical_parameters(request):
         'compound': pk_compound,
         'mw': compound.molecular_weight,
         'logd': compound.logd,
-        # TODO TODO ACIDIC OR BASIC?
-        'pka': compound.acidic_pka,
+        'acidic_pka': compound.acidic_pka,
+        'basic_pka': compound.basic_pka,
         # 'bioavailability': bioavailability,
         'fu': fu
     }

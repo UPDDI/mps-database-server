@@ -34,6 +34,7 @@ $(document).ready(function () {
     var end_time = null;
     var has_no_cells = false;
     var cell_profiles = null;
+    var acidic_pka, basic_pka = '';
 
     var pbpk_intrinsic_clearance = null;
     var prediction_plot_data = null;
@@ -527,7 +528,9 @@ $(document).ready(function () {
             $("#compound-compound").val(data.compound);
             $("#compound-mw").val(data.mw);
             $("#compound-logd").val(data.logd);
-            $("#compound-pka").val(data.pka);
+            acidic_pka = data.acidic_pka;
+            basic_pka = data.basic_pka;
+            $("#compound-pka").val(data.basic_pka);
             // $("#compound-bioavailability").val(data.bioavailability);
             $("#compound-fu").val(data.fu);
             $("#input-fa").val((parseFloat($("#input-ka").val()) / (parseFloat($("#species-ki").val()) + parseFloat($("#input-ka").val()))).toFixed(3));
@@ -746,9 +749,13 @@ $(document).ready(function () {
             } else {
                 $('#calculated-pk-container').show();
                 if (missing_plasma_values) {
-                    $('#plasma-container').hide();
+                    // $('#plasma-container').hide();
                     $('#plasma-dose-container').hide()
                     $('#dosing-chart-container').hide();
+                    $('#pk-param-vdss').val(numberWithCommas(data.calculated_pk_parameters['VDss (L)'][0].toFixed(3)));
+                    $('#pk-param-ke').val(numberWithCommas(data.calculated_pk_parameters['Ke(1/h)'][0].toFixed(3)));
+                    $('#pk-param-half-life-3-confirmed').val(numberWithCommas(data.calculated_pk_parameters['Elimination half-life'][0].toFixed(3)));
+                    $('#pk-param-auc').val('');
                 } else {
                     $('#plasma-container').show();
                     $('#plasma-dose-container').show()
@@ -1201,6 +1208,18 @@ $(document).ready(function () {
                 make_dosing_plot(prediction_plot_data, parseInt(ui.value));
             }
         });
+    });
+
+    $("input[name='acid-base']").change(function() {
+        if (this.value == "acidic") {
+            if ($("#compound-pka").val() == basic_pka || $("#compound-pka").val() == '') {
+                $("#compound-pka").val(acidic_pka);
+            }
+        } else {
+            if ($("#compound-pka").val() == acidic_pka || $("#compound-pka").val() == '') {
+                $("#compound-pka").val(basic_pka);
+            }
+        }
     });
 
     function make_chart(assay, unit, selector, data, height) {

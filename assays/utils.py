@@ -4070,7 +4070,7 @@ def calculate_pk_parameters(cl_ml_min,
     if not missing_plasma_values:
         AUC = Fa*dose_mg/VDss/Ke
     else:
-        AUC = np.nan
+        AUC = ""
     EHL = ((0.693*VDss)/CL_L)
 
     calculate_pk_parameters_df = pd.DataFrame(index=range(1), columns=par_col_names)
@@ -4202,7 +4202,7 @@ def calculate_pk_parameters(cl_ml_min,
     elif not missing_plasma_values and missing_dosing_values:
         return {'calculated_pk_parameters': calculate_pk_parameters_df.to_dict('list'), 'prediction_plot_table': prediction_plot_table.to_dict('list'), 'dosing_data': dosage_data}
     elif missing_plasma_values and not missing_dosing_values:
-        return {'dosing_data': dosage_data}
+        return {'calculated_pk_parameters': calculate_pk_parameters_df.to_dict('list'), 'dosing_data': dosage_data}
     else:
         return {'error': 'Invalid input provided. Please fill out more fields and try again.'}
 
