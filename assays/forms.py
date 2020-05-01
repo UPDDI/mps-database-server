@@ -106,6 +106,88 @@ def get_dic_for_custom_choice_field(form, filters=None):
 
 
 class SetupFormsMixin(BootstrapForm):
+    ### ADDING SETUP CELLS
+    cell_cell_sample = forms.IntegerField(required=False)
+    cell_biosensor = forms.ModelChoiceField(
+        queryset=Biosensor.objects.all().prefetch_related('supplier'),
+        required=False,
+        # Default is naive
+        initial=2
+    )
+    cell_density = forms.FloatField(required=False)
+
+    # TODO THIS IS TO BE HAMMERED OUT
+    cell_density_unit = forms.ModelChoiceField(
+        queryset=PhysicalUnits.objects.filter(
+            availability__contains='cell'
+        ).order_by('unit'),
+        required=False
+    )
+
+    cell_passage = forms.CharField(required=False)
+
+    cell_addition_location = forms.ModelChoiceField(
+        # Avoid duplicate query
+        queryset=AssaySampleLocation.objects.all().order_by('name'),
+        # queryset=AssaySampleLocation.objects.none(),
+        required=False
+    )
+
+    ### ?ADDING SETUP SETTINGS
+    setting_setting = forms.ModelChoiceField(
+        queryset=AssaySetting.objects.all().order_by('name'),
+        required=False
+    )
+    setting_unit = forms.ModelChoiceField(
+        queryset=PhysicalUnits.objects.all().order_by('base_unit','scale_factor'),
+        required=False
+    )
+
+    setting_value = forms.CharField(required=False)
+
+    setting_addition_location = forms.ModelChoiceField(
+        # Avoid duplicate query
+        queryset=AssaySampleLocation.objects.all().order_by('name'),
+        # queryset=AssaySampleLocation.objects.none(),
+        required=False
+    )
+
+    ### ADDING COMPOUNDS
+    compound_compound = forms.ModelChoiceField(
+        queryset=Compound.objects.all().order_by('name'),
+        required=False
+    )
+    # Notice the special exception for %
+    compound_concentration_unit = forms.ModelChoiceField(
+        queryset=(PhysicalUnits.objects.filter(
+            unit_type__unit_type='Concentration'
+        ).order_by(
+            'base_unit__unit',
+            'scale_factor'
+        ) | PhysicalUnits.objects.filter(unit='%')),
+        required=False, initial=4
+    )
+    compound_concentration = forms.FloatField(required=False)
+
+    compound_addition_location = forms.ModelChoiceField(
+        # Avoid duplicate query
+        queryset=AssaySampleLocation.objects.all().order_by('name'),
+        # queryset=AssaySampleLocation.objects.none(),
+        required=False
+    )
+    # Text field (un-saved) for supplier
+    compound_supplier_text = forms.CharField(
+        required=False,
+        initial=''
+    )
+    # Text field (un-saved) for lot
+    compound_lot_text = forms.CharField(
+        required=False,
+        initial=''
+    )
+    # Receipt date
+    compound_receipt_date = forms.DateField(required=False)
+
     def __init__(self, *args, **kwargs):
         super(SetupFormsMixin, self).__init__(*args, **kwargs)
 
@@ -174,69 +256,11 @@ class SetupFormsMixin(BootstrapForm):
                     if hasattr(self.fields[current_field]._queryset.model, 'get_add_url_manager'):
                         self.fields[current_field].widget.attrs['data_add_url'] = self.fields[current_field]._queryset.model.get_add_url_manager()
 
-    ### ADDING SETUP CELLS
-    cell_cell_sample = forms.IntegerField(required=False)
-    cell_biosensor = forms.ModelChoiceField(
-        queryset=Biosensor.objects.all().prefetch_related('supplier'),
-        required=False,
-        # Default is naive
-        initial=2
-    )
-    cell_density = forms.FloatField(required=False)
-
-    # TODO THIS IS TO BE HAMMERED OUT
-    cell_density_unit = forms.ModelChoiceField(
-        queryset=PhysicalUnits.objects.filter(
-            availability__contains='cell'
-        ).order_by('unit'),
-        required=False
-    )
-
-    cell_passage = forms.CharField(required=False)
-
-    cell_addition_location = forms.ModelChoiceField(queryset=AssaySampleLocation.objects.all().order_by('name'), required=False)
-
-    ### ?ADDING SETUP SETTINGS
-    setting_setting = forms.ModelChoiceField(queryset=AssaySetting.objects.all().order_by('name'), required=False)
-    setting_unit = forms.ModelChoiceField(queryset=PhysicalUnits.objects.all().order_by('base_unit','scale_factor'), required=False)
-
-    setting_value = forms.CharField(required=False)
-
-    setting_addition_location = forms.ModelChoiceField(
-        queryset=AssaySampleLocation.objects.all().order_by('name'),
-        required=False
-    )
-
-    ### ADDING COMPOUNDS
-    compound_compound = forms.ModelChoiceField(queryset=Compound.objects.all().order_by('name'), required=False)
-    # Notice the special exception for %
-    compound_concentration_unit = forms.ModelChoiceField(
-        queryset=(PhysicalUnits.objects.filter(
-            unit_type__unit_type='Concentration'
-        ).order_by(
-            'base_unit__unit',
-            'scale_factor'
-        ) | PhysicalUnits.objects.filter(unit='%')),
-        required=False, initial=4
-    )
-    compound_concentration = forms.FloatField(required=False)
-
-    compound_addition_location = forms.ModelChoiceField(
-        queryset=AssaySampleLocation.objects.all().order_by('name'),
-        required=False
-    )
-    # Text field (un-saved) for supplier
-    compound_supplier_text = forms.CharField(
-        required=False,
-        initial=''
-    )
-    # Text field (un-saved) for lot
-    compound_lot_text = forms.CharField(
-        required=False,
-        initial=''
-    )
-    # Receipt date
-    compound_receipt_date = forms.DateField(required=False)
+        # Avoid duplicate queries for the sample locations
+        # sample_locations = AssaySampleLocation.objects.all().order_by('name')
+        # self.fields['cell_addition_location'].queryset = sample_locations
+        # self.fields['compound_addition_location'].queryset = sample_locations
+        # self.fields['setting_addition_location'].queryset = sample_locations
 
 
 # DEPRECATED NO LONGER NEEDED AS CHARFIELDS NOW STRIP AUTOMATICALLY

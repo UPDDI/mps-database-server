@@ -154,8 +154,9 @@
 </div>
 
 {# Difference table uses different templates than the "bubbles" #}
+{# REVISE STYLE SOON PLEASE #}
 <div id="empty_cell_difference_html">
-    <div data-prefix="{{ cell_prefix }}">
+    <div style="border-style: solid;padding:2px 4px;" class="bg-success" data-prefix="{{ cell_prefix }}">
         <div class="important-display">
             <span class="cell-cell_sample"></span>
         </div>
@@ -181,7 +182,7 @@
 
 {# TODO #}
 <div id="empty_compound_difference_html">
-    <div data-prefix="{{ compound_prefix }}">
+    <div style="border-style: solid;padding:2px 4px;" class="bg-info" data-prefix="{{ compound_prefix }}">
         <div class="error-message-section error-display important-display">
         </div>
         <div class="important-display">
@@ -218,7 +219,7 @@
 
 {# TODO TODO TODO #}
 <div id="empty_setting_difference_html">
-    <div data-prefix="{{ setting_prefix }}">
+    <div style="border-style: solid;padding:2px 4px;" class="bg-warning" data-prefix="{{ setting_prefix }}">
         <div class="important-display">
             <span class="setting-setting"></span>
             <span class="setting-value"></span>

@@ -199,6 +199,9 @@ $(document).ready(function () {
     window.GROUPS.make_difference_table = function() {
         // console.log("DIFFERENCE TABLE START");
 
+        // CONTRIVED FOR NOW: REPLACE WITH CACHED SELECTOR
+        $('#difference_table').find('tbody').empty();
+
         // FULL DATA
         // TEMPORARY
         var full_series_data = JSON.parse(series_data_selector.val());
@@ -291,6 +294,4 @@ $(document).ready(function () {
             $('#difference_table').find('tbody').append(current_row);
         });
     };
-
-    window.GROUPS.make_difference_table();
 });
