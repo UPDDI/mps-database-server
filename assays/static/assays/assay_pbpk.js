@@ -49,7 +49,7 @@ $(document).ready(function () {
     var compound_logd_tooltip = "logD is a log of partition of a chemical compound between the lipid and aqueous phases.";
     var compound_pka_tooltip = "pKa is the negative log of the acid dissociation constant or Ka value.";
     // var compound_bioavailability_tooltip = "The proportion of a drug or other substance which enters the circulation when introduced into the body and so is able to have an active effect.";
-    var compound_fu_tooltip = "Fraction of unbound tissue in plasma.";
+    var compound_fu_tooltip = "Fraction of unbound drug in plasma.";
     var input_icl_tooltip = "Predicted intrinsic clearance.";
     var input_fa_tooltip = "Fraction absorbed. Default = ka / (ki + ka)";
     var input_ka_tooltip = "Absorption rate constant (range from 0.6 - 4.2).";
@@ -63,6 +63,15 @@ $(document).ready(function () {
     var pk_param_cl_tooltip = "Clearance.";
     var pk_param_fut_tooltip = "Fraction of unbound drug in tissues.";
     var pk_param_fi_tooltip = "Fraction of drug ionized at pH 7.4.";
+    var pk_single_mmax_tooltip = "Peak drug amount after single dose.";
+    var pk_single_cmax_tooltip = "Peak drug concentration after single dose.";
+    var pk_single_tmax_tooltip = "Time to reach peak level.";
+    var pk_multi_mss_tooltip = "Average steady state amount of drug after multiple doses.";
+    var pk_multi_css_tooltip = "Average steady state concentration of drug after multiple doses.";
+    var pk_multi_tmax_tooltip = "Time to reach peak level after a dose for multiple doses.";
+    var pk_desired_dose_tooltip = "Calculated required dose to achieve desired level.";
+    var pk_desired_50_tooltip = "Number of calculated doses to reach 50% desired level.";
+    var pk_desired_90_tooltip = "Number of calculated doses to reach 90% desired level.";
 
     $("#label-species-vp").html($("#label-species-vp").html() + make_escaped_tooltip(species_vp_tooltip));
     $("#label-species-ve").html($("#label-species-ve").html() + make_escaped_tooltip(species_ve_tooltip));
@@ -88,6 +97,15 @@ $(document).ready(function () {
     $("#label-pk-param-cl").html($("#label-pk-param-cl").html() + make_escaped_tooltip(pk_param_cl_tooltip));
     $("#label-pk-param-fut").html($("#label-pk-param-fut").html() + make_escaped_tooltip(pk_param_fut_tooltip));
     $("#label-pk-param-fi").html($("#label-pk-param-fi").html() + make_escaped_tooltip(pk_param_fi_tooltip));
+    $("#label-pk-single-mmax").html($("#label-pk-single-mmax").html() + make_escaped_tooltip(pk_single_mmax_tooltip));
+    $("#label-pk-single-cmax").html($("#label-pk-single-cmax").html() + make_escaped_tooltip(pk_single_cmax_tooltip));
+    $("#label-pk-single-tmax").html($("#label-pk-single-tmax").html() + make_escaped_tooltip(pk_single_tmax_tooltip));
+    $("#label-pk-multi-mss").html($("#label-pk-multi-mss").html() + make_escaped_tooltip(pk_multi_mss_tooltip));
+    $("#label-pk-multi-css").html($("#label-pk-multi-css").html() + make_escaped_tooltip(pk_multi_css_tooltip));
+    $("#label-pk-multi-tmax").html($("#label-pk-multi-tmax").html() + make_escaped_tooltip(pk_multi_tmax_tooltip));
+    $("#label-pk-desired-dose").html($("#label-pk-desired-dose").html() + make_escaped_tooltip(pk_desired_dose_tooltip));
+    $("#label-pk-desired-50").html($("#label-pk-desired-50").html() + make_escaped_tooltip(pk_desired_50_tooltip));
+    $("#label-pk-desired-90").html($("#label-pk-desired-90").html() + make_escaped_tooltip(pk_desired_90_tooltip));
 
     var group_table_columns = [
         {
@@ -537,6 +555,9 @@ $(document).ready(function () {
             // $("#compound-bioavailability").val(data.bioavailability);
             $("#compound-fu").val(data.fu);
             $("#input-fa").val((parseFloat($("#input-ka").val()) / (parseFloat($("#species-ki").val()) + parseFloat($("#input-ka").val()))).toFixed(3));
+            if ($("#input-fa").val() == "NaN") {
+                $("#input-fa").val(0.927);
+            }
         })
         .fail(function(xhr, errmsg, err) {
             // Stop spinner
@@ -1149,7 +1170,7 @@ $(document).ready(function () {
                 }
             },
             vAxis: {
-                title: 'Concentration in Plasma (mg/mL)',
+                title: 'Concentration in Plasma (mg/L)',
                 format: '',
                 textStyle: {
                     bold: true
