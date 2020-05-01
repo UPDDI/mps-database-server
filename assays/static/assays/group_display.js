@@ -173,9 +173,15 @@ $(document).ready(function () {
     function stringify_group_contents(contents) {
         var stringification = {};
 
+        // console.log(contents);
+
+        if (!contents) {
+            return stringification;
+        }
+
         for (var i=0;  i < contents.length; i++) {
             // TODO  NOTE: This assumes nothing goofy about how the object gets populated!
-            stringification[JSON.stringify(contents[i])] = true;
+            stringification[JSON.stringify(contents[i])] = i;
         }
 
         return stringification;
@@ -186,24 +192,77 @@ $(document).ready(function () {
     // NOTE: Depends on a particular element for table
     // NOTE: Depends on a particular input for data (contrived JSON)
     window.GROUPS.make_difference_table = function() {
-        console.log("DIFFERENCE TABLE START");
+        // console.log("DIFFERENCE TABLE START");
 
         // FULL DATA
         // TEMPORARY
         var full_series_data = JSON.parse(series_data_selector.val());
         var current_series_data = full_series_data.series_data;
 
-        var diverging_contents = {};
+        var diverging_contents = [];
+
+        // Stringify the groups
+        // Doing so during comparision is a waste of time
+        var stringified_groups = [];
+
+        $.each(current_series_data, function(index, group) {
+            var current_stringification = {};
+            $.each(prefixes, function(prefix_index, prefix) {
+                // console.log(prefix, group[prefix]);
+                current_stringification[prefix] = stringify_group_contents(group[prefix]);
+            });
+
+            stringified_groups.push(current_stringification);
+        });
 
         // Basically, we want to determine if a given component (as derived from its stringification) is NOT present in any of the other groups
         // This means we iterate over every group and break when we find it is NOT present and mark it as being included in the difference table
-        // Iterate over every prefix
-        $.each(prefixes, function(prefix) {
-            // Iterate over every group
 
-            // Iterate over every group (ideally not the same group, but the comparison shouldn't take too long)
+        // Iterate over every group
+        $.each(stringified_groups, function(group_1_index, group_1) {
+            diverging_contents.push({});
+            var current_divergence = diverging_contents[group_1_index];
 
-            //
+            // Iterate over every prefix
+            $.each(prefixes, function(prefix_index, prefix) {
+                current_divergence[prefix] = [];
+                // Iterate over every group (ideally not the same group, but the comparison shouldn't take too long)
+                $.each(stringified_groups, function(group_2_index, group_2) {
+                    $.each(group_1[prefix], function(current_content, current_index) {
+                        if (group_2[prefix][current_content] === undefined) {
+                            current_divergence[prefix].push(current_index);
+                        }
+                    });
+                });
+            });
+        });
+
+        // TODO TODO TODO
+        // Generate the difference table
+        $.each(diverging_contents, function(index, current_prefixes) {
+            var current_row = $('<tr>').append(
+                $('<td>').html(current_series_data[index]['name'])
+            );
+            $.each(current_prefixes, function(prefix, content_indices) {
+                var current_column = $('<td>');
+                if (Object.keys(content_indices).length > 0) {
+                    $.each(content_indices, function(content_index) {
+                        current_column.append(
+                            $('<div>').html(
+                                get_difference_display(
+                                    prefix,
+                                    current_series_data[index][prefix][content_index]
+                                )
+                            )
+                        );
+                    });
+                }
+
+                current_row.append(current_column);
+            });
+
+            // CONTRIVED FOR NOW: REPLACE WITH CACHED SELECTOR
+            $('#difference_table').find('tbody').append(current_row);
         });
     };
 
