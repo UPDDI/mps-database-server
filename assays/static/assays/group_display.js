@@ -3,7 +3,7 @@
 // (Also should think of a better scheme for dependency injection)
 window.GROUPS = {
     make_difference_table: null,
-    make_group_preview: null
+    make_group_preview: null,
 };
 
 $(document).ready(function () {
@@ -59,6 +59,11 @@ $(document).ready(function () {
     empty_difference_html[compound_prefix] = empty_compound_difference_html;
     empty_difference_html[cell_prefix] = empty_cell_difference_html;
     empty_difference_html[setting_prefix] = empty_setting_difference_html;
+
+    // Clumsy selectors (need these to get names from ids)
+    var test_type = $('#id_test_type');
+    var organ_model_full = $('#id_organ_model_full');
+    var organ_model_protocol_full = $('#id_organ_model_protocol_full');
 
     // WERE WE INTERESTED IN DISPLAYING THE DATA AS SEPARATE COLUMNS
     // We would also need to keep track of the number of columns of each prefix
@@ -240,8 +245,29 @@ $(document).ready(function () {
         // TODO TODO TODO
         // Generate the difference table
         $.each(diverging_contents, function(index, current_prefixes) {
+            var name_td = $('<td>').html(current_series_data[index]['name']);
+
+            var mps_model_td = $('<td>').append(
+                $('<div>').text(organ_model_full.find('option[value="' + current_series_data[index]['organ_model_id'] + '"]').text())
+            );
+
+            if (current_series_data[index]['organ_model_protocol_id']) {
+                mps_model_td.append(
+                    $('<div>').text('Version: ' + organ_model_protocol_full.find('option[value="' + current_series_data[index]['organ_model_protocol_id'] + '"]').text())
+                );
+            }
+
+            var test_type_td = $('<td>').html(
+                test_type.find('option[value="' + current_series_data[index]['test_type'] + '"]').text()
+            );
+
             var current_row = $('<tr>').append(
-                $('<td>').html(current_series_data[index]['name'])
+                // Name
+                name_td,
+                // MPS Model (and version)
+                mps_model_td,
+                // Test type
+                test_type_td,
             );
             $.each(current_prefixes, function(prefix, content_indices) {
                 var current_column = $('<td>');
