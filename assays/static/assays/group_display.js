@@ -14,6 +14,13 @@ $(document).ready(function () {
         'setting',
     ];
 
+    // For other things to compare
+    var non_prefix_comparisons = [
+        'organ_model_id',
+        'organ_model_protocol_id',
+        'test_type',
+    ];
+
     // TEMPORARY
     var series_data_selector = $('#id_series_data');
 
@@ -210,7 +217,7 @@ $(document).ready(function () {
         var diverging_contents = [];
 
         // Stringify the groups
-        // Doing so during comparision is a waste of time
+        // Doing so during comparison is a waste of time
         var stringified_groups = [];
 
         $.each(current_series_data, function(index, group) {
@@ -231,6 +238,16 @@ $(document).ready(function () {
             diverging_contents.push({});
             var current_divergence = diverging_contents[group_1_index];
 
+            // Special exceptions for model, version, and type
+            // Perhaps more later
+            $.each(non_prefix_comparisons, function(non_prefix_index, non_prefix_comparison) {
+                $.each(current_series_data, function(group_2_index, group_2) {
+                    if (current_series_data[group_1_index][non_prefix_comparison] !== current_series_data[group_2_index][non_prefix_comparison]) {
+                        current_divergence[non_prefix_comparison]= true;
+                    }
+                });
+            });
+
             // Iterate over every prefix
             $.each(prefixes, function(prefix_index, prefix) {
                 current_divergence[prefix] = [];
@@ -245,24 +262,32 @@ $(document).ready(function () {
             });
         });
 
+        // console.log(diverging_contents);
+
         // TODO TODO TODO
         // Generate the difference table
-        $.each(diverging_contents, function(index, current_prefixes) {
+        $.each(diverging_contents, function(index, current_content) {
             var name_td = $('<td>').html(current_series_data[index]['name']);
 
-            var mps_model_td = $('<td>').append(
-                $('<div>').text(organ_model_full.find('option[value="' + current_series_data[index]['organ_model_id'] + '"]').text())
-            );
+            var mps_model_td = $('<td>');
 
-            if (current_series_data[index]['organ_model_protocol_id']) {
+            if (current_content['organ_model_id']) {
                 mps_model_td.append(
-                    $('<div>').text('Version: ' + organ_model_protocol_full.find('option[value="' + current_series_data[index]['organ_model_protocol_id'] + '"]').text())
-                );
+                    $('<div>').text(organ_model_full.find('option[value="' + current_series_data[index]['organ_model_id'] + '"]').text())
+                )
             }
 
-            var test_type_td = $('<td>').html(
-                test_type.find('option[value="' + current_series_data[index]['test_type'] + '"]').text()
-            );
+            if (current_content['organ_model_protocol_id'] && current_series_data[index]['organ_model_protocol_id']) {
+                $('<div>').text('Version: ' + organ_model_protocol_full.find('option[value="' + current_series_data[index]['organ_model_protocol_id'] + '"]').text()).appendTo(mps_model_td);
+            }
+
+            var test_type_td = $('<td>');
+
+            if (current_content['test_type']) {
+                test_type_td.html(
+                    test_type.find('option[value="' + current_series_data[index]['test_type'] + '"]').text()
+                )
+            }
 
             var current_row = $('<tr>').append(
                 // Name
@@ -272,7 +297,8 @@ $(document).ready(function () {
                 // Test type
                 test_type_td,
             );
-            $.each(current_prefixes, function(prefix, content_indices) {
+            $.each(prefixes, function(prefix_index, prefix) {
+                var content_indices = current_content[prefix];
                 var current_column = $('<td>');
                 if (Object.keys(content_indices).length > 0) {
                     $.each(content_indices, function(content_index) {
