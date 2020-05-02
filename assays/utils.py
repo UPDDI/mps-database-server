@@ -4235,7 +4235,14 @@ def plate_reader_data_file_process_data(set_dict):
     time_unit = set_dict.get('time_unit')
     volume_unit = set_dict.get('volume_unit')
     called_from = set_dict.get('called_from')
+    user_notes = set_dict.get('user_notes')
+    user_omits = set_dict.get('user_omits')
+    # if python - in form save, use the form fields for users and omits
+    # if change_average - need to pull the user_omits and user_notes
+    # else - redo all omits and notes - starting over
     # javascript or form_submit
+
+    # todo here here all the averaging work (returning averaged for table.)
 
     sendmessage = ''
 

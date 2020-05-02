@@ -4725,6 +4725,16 @@ def fetch_assay_study_platemap_for_platemap(request):
 
     # should be just one
     for this_map in this_platemap_queryset:
+
+        try:
+            this_standard_unit_unit = this_map.standard_unit.unit
+        except:
+            this_standard_unit_unit = "-"
+        try:
+            this_standard_unit_id = this_map.standard_unit.id
+        except:
+            this_standard_unit_id = 0
+
         data_fields = {
             'name': this_map.name,
             'description': this_map.description,
@@ -4733,8 +4743,8 @@ def fetch_assay_study_platemap_for_platemap(request):
             'volume_unit': this_map.volume_unit,
             'cell_count': this_map.cell_count,
             'study_assay_id': this_map.study_assay_id,
-            'standard_unit': this_map.standard_unit.unit,
-            # 'standard_unit': this_map.standard_unit.id,
+            # 'standard_unit': this_map.standard_unit.unit,
+            'standard_unit': this_standard_unit_id,
             'platemap_id': this_platemap,
         }
         platemap_data_to_return.append(data_fields)
@@ -6145,7 +6155,6 @@ def fetch_data_processing_for_plate_map_integration(request):
     """
         Assay PLATE READER MAP DATA PROCESSING do the processing - used from ajax and from form save
     """
-    # called_from can be 'javascript' or 'formsave'
 
     called_from =                      request.POST.get('called_from', '0')
     study =                            request.POST.get('study', '0')
@@ -6168,6 +6177,8 @@ def fetch_data_processing_for_plate_map_integration(request):
     method =                           request.POST.get('method', '0')
     time_unit =                        request.POST.get('time_unit', '0')
     volume_unit =                      request.POST.get('volume_unit', '0')
+    user_notes =                       request.POST.get('user_notes', '0')
+    user_omits =                       request.POST.get('user_omits', '0')
 
     if not standard_unit:
         return HttpResponseServerError()
@@ -6195,6 +6206,8 @@ def fetch_data_processing_for_plate_map_integration(request):
         'method'                          : method                                  ,
         'time_unit'                       : time_unit                               ,
         'volume_unit'                     : volume_unit                             ,
+        'user_notes': user_notes,
+        'user_omits': user_omits,
     }
 
     # print(set_dict)

@@ -3,6 +3,8 @@ $(document).ready(function () {
     // Load core chart package
     google.charts.load('current', {'packages': ['corechart']});
 
+    let global_counter = 0;
+
     // These must be parallel! The second set is the column headers for the table (MIF-C file)
     // the first set is the order returning from the ajax call
     // look in the utils.py for the list that must match this in order! WATCH CAREFUL!
@@ -209,7 +211,7 @@ $(document).ready(function () {
 
         , "If calibrating, this is the multiplier that will be applied to the calibrated values. If not calibrating, this is the multiplier that will be applied to the raw values. Click to show the details for more information about how this multiplier was obtained."
         , "Use Copy to copy sections of the assay plate map to other wells in the plate. A popular method of using this feature is to start from an Existing Study Matrix, then copy the matrix items from that plate, change to Start From a Blank Assay Plate Map, select the desired plate size, then paste that matrix items on the plate. "
-        , "To make these data available in the Study Summary, check the box and click the Submit button. "
+        , "To make these data available in the Study Summary, check the box and click the Submit button. If replicates are present, the average of unchecked replicates will be sent to the Study Summary."
 
         ,];
     // load-function
@@ -433,6 +435,8 @@ $(document).ready(function () {
     let global_floater_molecular_weight = "";
     let global_floater_time_unit = "";
     let global_showhide_samples = "hide_samples";
+    let global_checkbox_platemap_index_working = 0;
+    let global_notes_platemap_index_working = 1;
 
     // END SECTION TO SET GLOBAL VARIABLES plus some
 
@@ -459,6 +463,10 @@ $(document).ready(function () {
     let global_lol_standards_curve = [];
     let global_lol_standards_points_for_table = [];
     let global_lol_standards_average_points_for_table = [];
+
+    let global_list_sample_with_caution_flags = [];
+    let global_list_plate_holding_user_omits = []
+    let global_list_plate_holding_user_notes = []
 
     let global_blank_handling_option = "";
 
@@ -532,27 +540,129 @@ $(document).ready(function () {
         }
     }
 
-
     // on CHANGE calibration on change events
     // change the notes or checkboxes in the table, update in the formset
     $(document).on('change', '.user-notes', function (t) {
         //HANDY - get the id of this in a datatable
         // does not work => console.log($(this).id)
         // use instead console.log(t.target.id)
-        let myPI = t.target.id.substring(8);
-        $('#id_assayplatereadermapitem_set-' + myPI + '-form_user_entered_notes').val($(this).val());
+        global_notes_platemap_index_working = t.target.id.substring(8);
+        let inMyFormFieldNow = $('#id_assayplatereadermapitem_set-' + global_notes_platemap_index_working + '-form_user_entered_notes').val();
+        //console.log("notes -",inMyFormFieldNow,"-")
+
+        let thisCellSelector = "#notesPI_"+global_notes_platemap_index_working;
+        let thisRowIndex = $(this).attr('row-index');
+
+        //sampleDataTable.data()[thisRowIndex][30] = sampleDataTable.data()[thisRowIndex][30];
+
+        $('#id_assayplatereadermapitem_set-' + global_notes_platemap_index_working + '-form_user_entered_notes').val($(this).val());
     });
 
-    $(document).on('click', '.user-omit-average', function (t) {
-        let myPI = t.target.id.substring(7);
+    $(document).on('change', '.user-omit-average', function (t) {
+        global_checkbox_platemap_index_working = t.target.id.substring(7);
+        //console.log("global_checkbox_platemap_index_working ",global_checkbox_platemap_index_working)
+
+        let thisCautionFlag = "#caution_flag_"+global_checkbox_platemap_index_working;
         let myTF = true;
+        //console.log("on change fired...")
+
+        global_counter = global_counter + 1;
+        //console.log("global_counter ",global_counter)
+
+        let thisRowIndex = $(this).attr('row-index');
+        //console.log("thisRowIndex ",thisRowIndex)
+
+        //console.log("change ", $(this).prop("checked"))
+        //console.log(sampleDataTable.data()[1][5])
+
         if($(this).prop("checked") == false) {
+            //sampleDataTable.data()[thisRowIndex][32] = sampleDataTable.data()[thisRowIndex][32].replace(' checked="checked">', '>');
             myTF = false;
+            if ($(thisCautionFlag).text().trim().length > 0) {
+                // when omit was checked, but the user unchecks it, make them add a note
+                forceTheUserToEnterANote(global_checkbox_platemap_index_working);
+            }
         } else {
+            //sampleDataTable.data()[thisRowIndex][32] = sampleDataTable.data()[thisRowIndex][32].replace('>', ' checked="checked">');
             myTF = true;
+            //the box got returned to checked, clear the note
+            if ($(thisCautionFlag).text().trim().length > 0) {
+                $('#notesPI-'+global_checkbox_platemap_index_working).val("");
+                $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working + '-form_user_entered_notes').val("");
+            }
         }
-        $('#id_assayplatereadermapitem_set-' + myPI + '-form_user_entered_omit_from_average').prop('checked', myTF)
+        $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working + '-form_user_entered_omit_from_average').prop('checked', myTF)
     });
+
+    // $(document).on('change', '.user-omit-average', function (t) {
+    //     global_counter = global_counter + 1;
+    //     console.log("global_counter ",global_counter)
+    //      let thisRowIndex = $(this).attr('row-index');
+    //      console.log("change ", $(this).prop("checked"))
+    //      //console.log(sampleDataTable.data()[1][5])
+    //      if($(this).prop("checked") == false) {
+    //          sampleDataTable.data()[thisRowIndex][32] = sampleDataTable.data()[thisRowIndex][32].replace(' checked="checked">', '>');
+    //      } else {
+    //          sampleDataTable.data()[thisRowIndex][32] = sampleDataTable.data()[thisRowIndex][32].replace('>', ' checked="checked">');
+    //      }
+    // });
+
+    //https://stackoverflow.com/questions/34709715/how-to-launch-a-jquery-dialog-based-on-dropdown-selection
+    function forceTheUserToEnterANote() {
+        dialog_element.removeClass('hidden');
+        dialog_element.dialog('open');
+        $("#selectable").selectable();
+        // this can happen before the dialog, so do not put stuff here
+    }
+
+    var dialog_element = $('#dialog_element');
+    dialog_element.dialog({
+        //autoOpen: false,
+        // Height and width here
+        height:350,
+        width:800,
+        //closeOnEscape: true,
+        // If you want it to blot out the rest of the screen
+        modal: true,
+        // to hide the scroll bar
+        open: function (event, ui) {
+            $('#dialog_element').css('overflow', 'hidden');
+        },
+        title: "Please select the reason for using a sample that is out of bounds.",
+        // Each entry in this Object makes a new button
+        buttons: {
+            Apply: function() {
+                // console.log("selectable val " + $("#selectable").val());
+                let hold_note = $("#selectable").val();
+                // console.log("hold note ",hold_note)
+                $("#hold_note_val").val(hold_note);
+                fillTheNote();
+                $(this).dialog('close');
+            },
+            // Cancel: function() {
+            //     $(this).dialog("close");
+            // },
+       }
+    });
+
+    function fillTheNote() {
+        //this should fire after a user changes a checked Omit From Average to unchecked
+        //console.log("global_checkbox_platemap_index_working ",global_checkbox_platemap_index_working)
+        //these also need changed in the html!!!!
+        let note0 = "Close to calibration range"
+        let note1 = "Preferred to include"
+        let note2 = "Other/Unspecified"
+        if ($("#hold_note_val").val() == 0) {
+            $('#notesPI-' + global_checkbox_platemap_index_working).val(note0);
+            $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working + '-form_user_entered_notes').val(note0);
+        } else if ($("#hold_note_val").val() == 1) {
+            $('#notesPI-' + global_checkbox_platemap_index_working).val(note1);
+            $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working + '-form_user_entered_notes').val(note1);
+        } else {
+            $('#notesPI-' + global_checkbox_platemap_index_working).val(note2);
+            $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working + '-form_user_entered_notes').val(note2);
+        }
+    }
 
     // blank handling, based on selections, change what shows in the box
     $("input[type='radio'][name='radio_standards_blank_handling']").click(function () {
@@ -608,6 +718,8 @@ $(document).ready(function () {
 
     $("input[type='radio'][name='radio_replicate_handling_average_or_not']").click(function () {
         global_calibrate_radio_replicate_handling_average_or_not_0 = $(this).val();
+        loadPlatesIndexNotesAndOmits()
+        changedTheCalibrationCurveAndOtherChangesThatMightCauseRunCalibrate('change_average');
     });
 
     $("#id_form_min_standard").change(function () {
@@ -772,17 +884,33 @@ $(document).ready(function () {
         goAheadWithCalibrationAndOrProcessing(called_from);
     }
 
+    function clearTheOmitAndNoteFieldsBeforeRecalibration(called_from) {
+        // since getting ready to recalibrate from the facebook page, clear the form fields of notes and omit boxes
+        for(i = 0; i < global_plate_size; i++) {
+            $('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_notes').val("");
+            $('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_omit_from_average').prop('checked', false)
+        }
+    }    
+    
+    function loadPlatesIndexNotesAndOmits() {
+        // when called from python, these will be form fields, but, when calling in page, need memory variables
+        for(i = 0; i < global_plate_size; i++) {
+            global_list_plate_holding_user_notes.push($('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_notes').text());
+            global_list_plate_holding_user_omits.push($('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_omit_from_average').is(':checked'));
+        }
+    }
+
     // calibration FUNCTIONS
     function goAheadWithCalibrationAndOrProcessing(called_from) {
         // console.log("goAheadWithCalibrationAndOrProcessing called_from: ", called_from)
         //console.log("counter ", global_counter_to_check_calibration_runs)
-
+        clearTheOmitAndNoteFieldsBeforeRecalibration(called_from)
         global_counter_to_check_calibration_runs=global_counter_to_check_calibration_runs + 1;
-        packProcessedData();
+        packProcessedData(called_from);
     }
 
     // Get what is needed for the calibration/processing
-    function packProcessedData() {
+    function packProcessedData(called_from) {
         // console.log("packProcessedData")
 
         let form_blank_handling = "";
@@ -798,7 +926,7 @@ $(document).ready(function () {
 
         let data = {
             call: 'fetch_data_processing_for_plate_map_integration',
-            called_from: 'javascript',
+            called_from: 'called_from',
             study: global_plate_study_id,
             pk_platemap: global_plate_this_platemap_id,
             pk_data_block: global_calibrate_block_select_string_is_block_working_with_pk,
@@ -819,6 +947,8 @@ $(document).ready(function () {
             method: global_floater_method,
             time_unit: global_floater_time_unit,
             volume_unit: global_floater_volume_unit,
+            user_notes: global_list_plate_holding_user_notes,
+            user_omits: global_list_plate_holding_user_omits,
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
         };
         window.spinner.spin(document.getElementById("spinner"));
@@ -851,6 +981,7 @@ $(document).ready(function () {
     }
     // post processing from ajax call
     let packProcessedDataSection = function (json, exist) {
+        //here here todo return when average was selected..need to complete deal with
         let sendmessage = json.sendmessage;
         // console.log(sendmessage)
         $("#id_form_data_parsable_message").val(sendmessage);
@@ -966,12 +1097,27 @@ $(document).ready(function () {
         //todo get a different list to pack the graph...later
 
         buildTheProcessedDataTable_ajax(lol_processed);
+
+    }
+
+    function updateTheFormFieldCheckBoxes() {
+        //here here WILL need to change this to include all updates when coming back so toggle average each works correctly
+        // console.log('global_list_sample_with_caution_flags ', global_list_sample_with_caution_flags)
+        $.each(global_list_sample_with_caution_flags, function (index, each) {
+            // console.log("each ", each)
+            //  id_assayplatereadermapitem_set-    78      -form_user_entered_omit_from_average
+            $('#id_assayplatereadermapitem_set-' + each + '-form_user_entered_omit_from_average').prop('checked', true);
+        });
     }
 
     function buildTheProcessedDataTable_ajax(lol_processed) {
         // so that the DataTable will work, make the whole table each time so can destroy it and bring it back
+        //here here todo !!!!!
+        //alert('Developers Note: do not forget to clean out the form fields of the notes and omit check boxes OR fill them in the table depending on WHAT the TEAM decides they want to do.');
 
-        alert('Developers Note: do not forget to clean out the form fields of the notes and omit check boxes OR fill them in the table depending on WHAT the TEAM decides they want to do.');
+        // here here todo - need to send the omit check boxes AND the notes
+        // need to determine what changed...if Average to Replicate, do not clear the check box and notes,
+        // else clear the notes and boxes
 
 
 
@@ -1005,7 +1151,10 @@ $(document).ready(function () {
         var tableBody = document.createElement('TBODY');
         var rowcounter = 0;
         var each_plate_index = 0;
+        var row_caution_flag = "";
         $.each(lol_processed, function (ir, row) {
+            // reset for each row
+            row_caution_flag = "";
             // console.log("rowcounter ", rowcounter)
             // console.log("--row ", row)
             var tr = document.createElement('TR');
@@ -1020,6 +1169,10 @@ $(document).ready(function () {
                 var td = document.createElement('TD');
                 $(td).attr('col-index', colcounter);
                 let myCellContent = col.toString().trim();
+                if (ii == 28) {
+                   $(td).attr('id', "caution_flag_"+each_plate_index);
+                   row_caution_flag = myCellContent.trim();
+                }
                 if (myCellContent.length == 0) {
                     myCellContent = " ";
                 } else if (ii == 7  || ii == 8  || ii == 9  ||
@@ -1041,13 +1194,16 @@ $(document).ready(function () {
                 // this will just overwrite the previous notes, which should be a blank space from utils.py
                 if (colcounter == 30) {
                     // add text input box to column 30
-                    myCellContent = document.createElement('input');
-                    myCellContent.type = 'text';
+                    //myCellContent = document.createElement('input');
+                    myCellContent = document.createElement('textarea');
+                    ////myCellContent.type = 'text';
                     myCellContent.id = 'notesPI-'+each_plate_index;
-                    myCellContent.name = 'notesPI-'+each_plate_index;
-                    myCellContent.value = 'notesPI-'+each_plate_index;
+                    myCellContent.name = 'n-notesPI-'+each_plate_index;
+                    //todo here here get the notes when toggle is each and average
+                    // myCellContent.value = 'testing--'+each_plate_index;
                     myCellContent.className = 'user-notes';
                     td.appendChild(myCellContent);
+                    $(myCellContent).attr("row-index",rowcounter)
                 } else {
                     td.appendChild(document.createTextNode(myCellContent));
                 }
@@ -1062,10 +1218,23 @@ $(document).ready(function () {
             myCellContent.type = 'checkbox';
             myCellContent.id = 'omitPI-'+each_plate_index;
             myCellContent.name = 'omitPI';
-            myCellContent.value = 'unchecked';
             myCellContent.className = 'user-omit-average';
+
             td.appendChild(myCellContent);
             tr.appendChild(td);
+
+            $(myCellContent).attr("row-index",rowcounter)
+
+            //console.log("row_caution_flag ",row_caution_flag)
+            //console.log("row_caution_flag.length ",row_caution_flag.length)
+            // this checked attribute must be last
+            if (row_caution_flag.length > 0) {
+                $(myCellContent).attr('checked', 'checked');
+                global_list_sample_with_caution_flags.push(each_plate_index);
+            }
+            // else {
+            //
+            // }
 
             rowcounter = rowcounter+1
         });
@@ -1113,10 +1282,26 @@ $(document).ready(function () {
             {"targets": [  27], "visible": true, },
             {"targets": [  28], "visible": true, },
                 {"targets": [  29], "visible": false, },
-                {"targets": [  30], "visible": false, },
+                {"targets": [  30], "visible": true, },
                 {"targets": [  31], "visible": false, },
-            {"targets": [  32], "visible": true, },
+            {"targets": [  32], "visible": true,  },
+
+
+                {responsivePriority: 1, targets: 5},
+                {responsivePriority: 2, targets: 28},
+                {responsivePriority: 3, targets: 32},
+                {responsivePriority: 4, targets: 30},
+
+
+           { "orderDataType": "dom-text", "targets": [ 30 ] },
+           // { "type": "numeric", "targets": 3 },
+           // { "orderDataType": "dom-select", "targets": 4 },
+            { "orderDataType": "dom-checkbox", "targets": [ 32 ] },
+
             ];
+        //https://datatables.net/reference/option/columns.orderDataType
+
+
         // console.log("Before " , table_column_defs)
         // console.log("global_calibrate_radio_standard_option_use_or_not " , global_calibrate_radio_standard_option_use_or_not)
             // let dict18 = {"targets": [  18], "visible": false, };
@@ -1135,7 +1320,7 @@ $(document).ready(function () {
 
         // to format the table - after creating it
         // these column number are in the table cell tags - use them to keep everything straight
-        $('#processed_samples_table').DataTable({
+        sampleDataTable = $('#processed_samples_table').DataTable({
             //     $(myTable).DataTable({
             "iDisplayLength": 25,
             "sDom": '<B<"row">lfrtip>',
@@ -1146,6 +1331,8 @@ $(document).ready(function () {
             "columnDefs": table_column_defs
 
         });
+
+        updateTheFormFieldCheckBoxes();
 
         return myTable;
     }

@@ -3,6 +3,9 @@
 
 {% block extra_head %}
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{#    <script type="text/javascript" src="jquery.dataTables.js"></script>#}
+{#    <script type="text/javascript" src="dataTables.dataSourcePlugins.js"></script>#}
+
 {% endblock %}
 
 {#{% block content %}#}
@@ -715,7 +718,7 @@
                                     <div class="row">
                                         <div class="col-md-12">
                                             <h3><em>Set value and action, then drag or click an appropriate apply button to make change(s).</em></h3>
-                                            <h4>Note: Standard blanks should be assigned a value = 0.</h4>
+                                            <h4>Note: Standard blanks should be assigned a Standard Value = 0.</h4>
 
                                             <br>
                                         </div>
@@ -1383,30 +1386,34 @@
 
                             <br>
                             <div class="plate-map-options-standards-blocks hidden">
-                                <div class="row">
-                                    <div class="col-md-3">
-                                        <div class="plate-map-page-field-labels-small">
-                                            <div><p id="plate_map_has_no_standards_tooltip"></p>
-                                                <label for="plate_map_has_no_standards_tooltip">No Standards On Plate &nbsp;</label>
+                                <div >
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="plate-map-page-field-labels-small">
+                                                <div><p id="plate_map_has_no_standards_tooltip"></p>
+                                                    <label for="plate_map_has_no_standards_tooltip">No Standards On Plate &nbsp;</label>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-9">
-                                        <div class="plate-map-page-radio-contents">
-    {#                                        IMPORTANT - populating the pick list depends on this radio button being changed to pick a block!!!!#}
-{#                                            <label><input type="radio" name="standard_pick" value="no_calibration" checked> <b class="plate-map-radio-spacing">No Processing (send Raw Values)</b> </label>#}
-{#                                            <label><input type="radio" name="standard_pick" value="pick_block"> <b class="plate-map-radio-spacing">Pick a Block of Data With Standards </b></label>#}
-{#                                        {{ form.radio_standard_option_use_or_not }}#}
-                                        {#  HANDY to pass radio buttons from forms #}
-                                            {% for radio in form.radio_standard_option_use_or_not %}
-                                                {{ radio.tag }}
-                                                <label for="value_{{ forloop.counter0 }}"><b class="plate-map-radio-spacing">{{ radio.choice_label }}</b></label>
-                                                <br>
-                                            {% endfor %}
+                                        <div class="col-md-9">
+                                            <div class="plate-map-page-radio-contents">
+        {#                                        IMPORTANT - populating the pick list depends on this radio button being changed to pick a block!!!!#}
+    {#                                            <label><input type="radio" name="standard_pick" value="no_calibration" checked> <b class="plate-map-radio-spacing">No Processing (send Raw Values)</b> </label>#}
+    {#                                            <label><input type="radio" name="standard_pick" value="pick_block"> <b class="plate-map-radio-spacing">Pick a Block of Data With Standards </b></label>#}
+    {#                                        {{ form.radio_standard_option_use_or_not }}#}
+                                            {#  HANDY to pass radio buttons from forms #}
+                                                {% for radio in form.radio_standard_option_use_or_not %}
+                                                    {{ radio.tag }}
+                                                    <label for="value_{{ forloop.counter0 }}">
+                                                        <b class="plate-map-radio-spacing">{{ radio.choice_label }}</b>
+                                                    </label>
+                                                {% endfor %}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
+                                <br>
                                 <div class="pick-standard-file-block hidden">
                                     <div class="row pick-standard-file-block hidden">
                                         <div class="col-md-3">
@@ -1642,15 +1649,15 @@
                             <br>
                             <h2>Processed Sample Data</h2>
 
-                                <div class="">
+                                <div >
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="plate-map-page-field-labels-small">
                                                 <div><p id="plate_replicate_handling_tooltip"></p>
                                                     <label for="plate_replicate_handling_tooltip">Replicate Handling &nbsp;</label>
+                                                    <p>Not working yet....shows Each</p>
                                                 </div>
                                             </div>
-                                            <p>This doesn't work yet.</p>
                                         </div>
                                         <div class="col-md-9">
                                             <div class="plate-map-page-radio-contents">
@@ -1659,8 +1666,9 @@
     {#                                            comment<label><input type="radio" name="replicates" value="each">  <b class="plate-map-radio-spacing">Send Each Replicate's Value to the Study Summary</b> </label>#}
                                                 {% for radio in form.radio_replicate_handling_average_or_not %}
                                                     {{ radio.tag }}
-                                                    <label for="value_{{ forloop.counter0 }}"><b class="plate-map-radio-spacing">{{ radio.choice_label }}</b></label>
-                                                    <br>
+                                                    <label for="value_{{ forloop.counter0 }}">
+                                                        <b class="plate-map-radio-spacing">{{ radio.choice_label }}</b>
+                                                    </label>
                                                 {% endfor %}
                                             </div>
                                         </div>
@@ -1705,6 +1713,7 @@
                                         <div class="plate-map-page-field-labels-small">
                                             <div><p id="submit_to_study_summary_tooltip"></p>
                                                 <label for="submit_to_study_summary_tooltip">Send to Study Summary &nbsp;</label>
+                                                <p>Not working yet.</p>
                                             </div>
                                         </div>
                                     </div>
@@ -1714,7 +1723,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <p>This doesn't work yet.</p>
+
                             </div>
                         </div>
 
@@ -1724,6 +1733,23 @@
 
             {# END THE PROCESSING DATA SECTION #}
 
+
+            {# START THE DIALOGUE SECTION #}
+            <div class="hidden">
+                <p id="hold_note_val"></p>
+            </div>
+            <div id="dialog_element" class="hidden" >
+                <form id=noteSelectionForm>
+{#                    these also need changed in the js#}
+                    <select name="note_options" id="selectable" class="plate-map-dialog-selectable">
+                        <option selected="selected" value=""></option>
+                        <option value="0" id="note_0">Close to calibration range</option>
+                        <option value="1" id="note_1">Preferred to include</option>
+                        <option value="2" id="note_2">Other/Unspecified</option>
+                    </select>
+                </form>
+            </div>
+            {# END THE DIALOGUE SECTION #}
 
             {# formsets #}
             <div>
@@ -1811,6 +1837,5 @@
             </div>
 
         </div>
-
     </form>
 {% endblock %}

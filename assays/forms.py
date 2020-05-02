@@ -3815,7 +3815,7 @@ class AssayPlateReaderMapItemForm(forms.ModelForm):
     form_user_entered_notes = forms.CharField(
         initial='-',
         required=False,
-        widget=forms.TextInput()
+        widget=forms.Textarea(attrs={'cols': 10, 'rows': 1}),
     )
     form_user_entered_omit_from_average = forms.BooleanField(required=False, )
 

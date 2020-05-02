@@ -57,7 +57,8 @@
             <table id="assayplatereaderfiles" class="display table table-striped table-hover" cellspacing="0" width="100%">
             <thead>
                 <tr>
-                    <th>View or Edit</th>
+                    <th>View</th>
+                    <th>Edit</th>
                     <th>Assay Plate Reader File Name</th>
                     <th>Link to View File</th>
                     <th>Description</th>
@@ -68,11 +69,13 @@
             <tbody>
             {% for file in assayplatereadermapdatafiles %}
                 <tr>
-                    <td class="no-wrap">
-                            <a class="btn btn-primary" href="{% url 'assayplatereaderfile-view' file.id  %}">View </a>
-{#                            {% if not object.signed_off_by %}#}
-                                <a class="btn btn-primary" href="{% url 'assayplatereaderfile-update' file.id  %}">Edit </a>
-{#                            {% endif %}#}
+                    <td>
+                        <a class="btn btn-primary" href="{% url 'assayplatereaderfile-view' file.id  %}">View </a>
+                    </td>
+                    <td>
+{#                      {% if not object.signed_off_by %}#}
+                        <a class="btn btn-primary" href="{% url 'assayplatereaderfile-update' file.id  %}">Edit </a>
+{#                      {% endif %}#}
                     </td>
                     <td>{{ file.name_short }}</td>
                     <td>
