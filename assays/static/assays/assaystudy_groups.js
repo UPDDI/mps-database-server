@@ -246,7 +246,8 @@ $(document).ready(function () {
                     $('a[data-edit-button="true"][data-row="' + current_row_index +'"][data-column="' + current_column_index +'"][data-prefix="' + current_prefix + '"]').parent().html(html_contents);
 
                     // Overkill
-                    rebuild_table();
+                    // rebuild_table();
+                    window.GROUPS.make_difference_table();
 
                     $(this).dialog('close');
                 }
@@ -698,7 +699,8 @@ $(document).ready(function () {
         modify_series_data('test_type', $(this).val(), $(this).attr('data-row'));
 
         // Overkill
-        rebuild_table();
+        // rebuild_table();
+        window.GROUPS.make_difference_table();
     });
 
     $(document).on('change', '.number-of-items', function() {
@@ -707,14 +709,16 @@ $(document).ready(function () {
         modify_chip_data($(this).val(), $(this).attr('data-row'));
 
         // Overkill
-        rebuild_table();
+        // rebuild_table();
+        window.GROUPS.make_difference_table();
     });
 
     $(document).on('change', '.group-name', function() {
         modify_series_data('name', $(this).val(), $(this).attr('data-row'));
 
         // Overkill
-        rebuild_table();
+        // rebuild_table();
+        window.GROUPS.make_difference_table();
     });
 
     // $(document).on('change', '.organ-model', function() {

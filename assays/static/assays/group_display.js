@@ -45,6 +45,10 @@ $(document).ready(function () {
         'cell': false,
         'compound': false,
         'setting': false,
+        // These are called 'non_prefixes' above, should resolve naming convention
+        'organ_model_id': false,
+        'organ_model_protocol_id': false,
+        'test_type': false,
     };
 
     // This may be a good file to make these shared?
@@ -243,7 +247,7 @@ $(document).ready(function () {
             $.each(non_prefix_comparisons, function(non_prefix_index, non_prefix_comparison) {
                 $.each(current_series_data, function(group_2_index, group_2) {
                     if (current_series_data[group_1_index][non_prefix_comparison] !== current_series_data[group_2_index][non_prefix_comparison]) {
-                        current_divergence[non_prefix_comparison]= true;
+                        diverging_prefixes[non_prefix_comparison] = true;
                     }
                 });
             });
@@ -256,6 +260,8 @@ $(document).ready(function () {
                     $.each(group_1[prefix], function(current_content, current_index) {
                         if (group_2[prefix][current_content] === undefined) {
                             current_divergence[prefix].push(current_index);
+
+                            diverging_prefixes[prefix] = true;
                         }
                     });
                 });
@@ -271,19 +277,19 @@ $(document).ready(function () {
 
             var mps_model_td = $('<td>');
 
-            if (current_content['organ_model_id']) {
+            if (diverging_prefixes['organ_model_id']) {
                 mps_model_td.append(
                     $('<div>').text(organ_model_full.find('option[value="' + current_series_data[index]['organ_model_id'] + '"]').text())
                 )
             }
 
-            if (current_content['organ_model_protocol_id'] && current_series_data[index]['organ_model_protocol_id']) {
+            if (diverging_prefixes['organ_model_protocol_id'] && current_series_data[index]['organ_model_protocol_id']) {
                 $('<div>').text('Version: ' + organ_model_protocol_full.find('option[value="' + current_series_data[index]['organ_model_protocol_id'] + '"]').text()).appendTo(mps_model_td);
             }
 
             var test_type_td = $('<td>');
 
-            if (current_content['test_type']) {
+            if (diverging_prefixes['test_type']) {
                 test_type_td.html(
                     test_type.find('option[value="' + current_series_data[index]['test_type'] + '"]').text()
                 )
