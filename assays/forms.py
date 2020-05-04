@@ -188,6 +188,23 @@ class SetupFormsMixin(BootstrapForm):
     # Receipt date
     compound_receipt_date = forms.DateField(required=False)
 
+    # For MPS Models etc.
+    test_type = forms.ChoiceField(
+        initial='control',
+        choices=TEST_TYPE_CHOICES,
+        required=False
+    )
+    organ_model_full = forms.ModelChoiceField(
+        queryset=OrganModel.objects.all().order_by('name'),
+        required=False,
+        label='Matrix Item MPS Model'
+    )
+    organ_model_protocol_full = forms.ModelChoiceField(
+        queryset=OrganModelProtocol.objects.all().order_by('name'),
+        required=False,
+        label='Matrix Item MPS Model Version'
+    )
+
     def __init__(self, *args, **kwargs):
         super(SetupFormsMixin, self).__init__(*args, **kwargs)
 
@@ -261,6 +278,11 @@ class SetupFormsMixin(BootstrapForm):
         # self.fields['cell_addition_location'].queryset = sample_locations
         # self.fields['compound_addition_location'].queryset = sample_locations
         # self.fields['setting_addition_location'].queryset = sample_locations
+
+        # CRUDE: MAKE SURE NO SELECTIZE INTERFERING
+        self.fields['organ_model_full'].widget.attrs['class'] = 'no-selectize'
+        self.fields['organ_model_protocol_full'].widget.attrs['class'] = 'no-selectize'
+        self.fields['test_type'].widget.attrs['class'] = 'no-selectize'
 
 
 # DEPRECATED NO LONGER NEEDED AS CHARFIELDS NOW STRIP AUTOMATICALLY
@@ -682,11 +704,21 @@ class AssayStudyDetailForm(SignOffMixin, BootstrapForm):
 
 class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
     # CONTRIVANCES
-    test_type = forms.ChoiceField(
-        initial='control',
-        choices=TEST_TYPE_CHOICES,
-        required=False
-    )
+    # test_type = forms.ChoiceField(
+    #     initial='control',
+    #     choices=TEST_TYPE_CHOICES,
+    #     required=False
+    # )
+    # organ_model_full = forms.ModelChoiceField(
+    #     queryset=OrganModel.objects.all().order_by('name'),
+    #     required=False,
+    #     label='Matrix Item MPS Model'
+    # )
+    # organ_model_protocol_full = forms.ModelChoiceField(
+    #     queryset=OrganModelProtocol.objects.all().order_by('name'),
+    #     required=False,
+    #     label='Matrix Item MPS Model Version'
+    # )
     # number_of_items = forms.CharField(
     #     initial='',
     #     required=False
@@ -695,20 +727,12 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
     #     initial='',
     #     required=False
     # )
+
+    # Contrivance
     organ_model = forms.ModelChoiceField(
         queryset=OrganModel.objects.all().order_by('name'),
         required=False,
         label='Matrix Item MPS Model'
-    )
-    organ_model_full = forms.ModelChoiceField(
-        queryset=OrganModel.objects.all().order_by('name'),
-        required=False,
-        label='Matrix Item MPS Model'
-    )
-    organ_model_protocol_full = forms.ModelChoiceField(
-        queryset=OrganModelProtocol.objects.all().order_by('name'),
-        required=False,
-        label='Matrix Item MPS Model Version'
     )
 
     class Meta(object):
@@ -750,9 +774,6 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
         # Contrivances
         self.fields['test_type'].widget.attrs['class'] = 'no-selectize required form-control'
-
-        self.fields['organ_model_full'].widget.attrs['class'] = 'no-selectize'
-        self.fields['organ_model_protocol_full'].widget.attrs['class'] = 'no-selectize'
 
     # def clean(self):
     #     """Checks for at least one study type"""
@@ -1211,12 +1232,14 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
     #     return study
 
 
-class AssayStudyChipForm(SignOffMixin, BootstrapForm):
+class AssayStudyChipForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
     class Meta(object):
         model = AssayStudy
         # Since we are splitting into multiple forms, includes are safer
         fields = (
             'series_data',
+            'organ_model_full',
+            'organ_model_protocol_full'
         )
 
 # OLD TO BE REMOVED
@@ -1248,7 +1271,7 @@ class AssayStudyChipForm(SignOffMixin, BootstrapForm):
 #         )
 
 
-class AssayStudyPlateForm(SignOffMixin, BootstrapForm):
+class AssayStudyPlateForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
     series_data = forms.CharField(required=False)
 
     class Meta(object):

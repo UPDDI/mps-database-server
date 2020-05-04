@@ -1,5 +1,8 @@
 // TODO WE ARE NOW CALLING THEM GROUPS AGAIN, I GUESS
 $(document).ready(function () {
+    // Make the difference table
+    window.GROUPS.make_difference_table();
+
     // TEMPORARY
     var series_data_selector = $('#id_series_data');
 
@@ -56,6 +59,10 @@ $(document).ready(function () {
     }
 
     function make_row(index, chip) {
+        var current_stored_tds = window.GROUPS.difference_table_displays[chip['group_id']];
+        console.log(index, chip);
+        console.log(window.GROUPS.difference_table_displays);
+
         var new_row = $('<tr>');
 
         var index_td = $('<td>').html(index + 1);
@@ -75,11 +82,21 @@ $(document).ready(function () {
         );
 
         // TODO: DIFFERENCE TABLE STUFF
+        var model_td = current_stored_tds['model'].clone();
+        var test_type_td = current_stored_tds['test_type'].clone();
+        var cell_td = current_stored_tds['cell'].clone();
+        var compound_td = current_stored_tds['compound'].clone();
+        var setting_td = current_stored_tds['setting'].clone();
 
         new_row.append(
             index_td,
             name_td,
-            group_td
+            group_td,
+            model_td,
+            test_type_td,
+            cell_td,
+            compound_td,
+            setting_td
         );
 
         // Set values
@@ -92,6 +109,8 @@ $(document).ready(function () {
     }
 
     function build_chip_table() {
+        chips_table_body.empty();
+
         $.each(chips, function(index, chip) {
             make_row(index, chip);
         });
@@ -114,5 +133,8 @@ $(document).ready(function () {
         // Modify the chip group
         chips[$(this).attr('data-index')]['group_id'] = $(this).val();
         replace_series_data();
+
+        // Rebuild the table
+        build_chip_table();
     });
 });

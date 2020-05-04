@@ -4,6 +4,7 @@
 window.GROUPS = {
     make_difference_table: null,
     make_group_preview: null,
+    difference_table_displays: {},
 };
 
 $(document).ready(function () {
@@ -207,7 +208,7 @@ $(document).ready(function () {
     // This determines whether any of the cells, compounds, or settings of the groups differ and shows a table depicting as much
     // NOTE: Depends on a particular element for table
     // NOTE: Depends on a particular input for data (contrived JSON)
-    window.GROUPS.make_difference_table = function() {
+    window.GROUPS.make_difference_table = function(restrict_to) {
         // console.log("DIFFERENCE TABLE START");
 
         // CONTRIVED FOR NOW: REPLACE WITH CACHED SELECTOR
@@ -216,7 +217,17 @@ $(document).ready(function () {
         // FULL DATA
         // TEMPORARY
         var full_series_data = JSON.parse(series_data_selector.val());
-        var current_series_data = full_series_data.series_data;
+        var relevant_group_data = full_series_data.series_data;
+
+        // For plate and chip difference tables we need to trim to the particular interface
+        if (restrict_to) {
+            relevant_group_data = [];
+            $.each(JSON.parse(series_data_selector.val()).series_data, function(index, group) {
+                if (group['device_type'] === restrict_to) {
+                    relevant_group_data.push(group);
+                }
+            });
+        }
 
         var diverging_contents = [];
 
@@ -224,7 +235,7 @@ $(document).ready(function () {
         // Doing so during comparison is a waste of time
         var stringified_groups = [];
 
-        $.each(current_series_data, function(index, group) {
+        $.each(relevant_group_data, function(index, group) {
             var current_stringification = {};
             $.each(prefixes, function(prefix_index, prefix) {
                 // console.log(prefix, group[prefix]);
@@ -245,8 +256,8 @@ $(document).ready(function () {
             // Special exceptions for model, version, and type
             // Perhaps more later
             $.each(non_prefix_comparisons, function(non_prefix_index, non_prefix_comparison) {
-                $.each(current_series_data, function(group_2_index, group_2) {
-                    if (current_series_data[group_1_index][non_prefix_comparison] !== current_series_data[group_2_index][non_prefix_comparison]) {
+                $.each(relevant_group_data, function(group_2_index, group_2) {
+                    if (relevant_group_data[group_1_index][non_prefix_comparison] !== relevant_group_data[group_2_index][non_prefix_comparison]) {
                         diverging_prefixes[non_prefix_comparison] = true;
                     }
                 });
@@ -273,25 +284,27 @@ $(document).ready(function () {
         // TODO TODO TODO
         // Generate the difference table
         $.each(diverging_contents, function(index, current_content) {
-            var name_td = $('<td>').html(current_series_data[index]['name']);
+            var stored_tds = {};
+
+            var name_td = $('<td>').html(relevant_group_data[index]['name']);
 
             var mps_model_td = $('<td>');
 
             if (diverging_prefixes['organ_model_id']) {
                 mps_model_td.append(
-                    $('<div>').text(organ_model_full.find('option[value="' + current_series_data[index]['organ_model_id'] + '"]').text())
+                    $('<div>').text(organ_model_full.find('option[value="' + relevant_group_data[index]['organ_model_id'] + '"]').text())
                 )
             }
 
-            if (diverging_prefixes['organ_model_protocol_id'] && current_series_data[index]['organ_model_protocol_id']) {
-                $('<div>').text('Version: ' + organ_model_protocol_full.find('option[value="' + current_series_data[index]['organ_model_protocol_id'] + '"]').text()).appendTo(mps_model_td);
+            if (diverging_prefixes['organ_model_protocol_id'] && relevant_group_data[index]['organ_model_protocol_id']) {
+                $('<div>').text('Version: ' + organ_model_protocol_full.find('option[value="' + relevant_group_data[index]['organ_model_protocol_id'] + '"]').text()).appendTo(mps_model_td);
             }
 
             var test_type_td = $('<td>');
 
             if (diverging_prefixes['test_type']) {
                 test_type_td.html(
-                    test_type.find('option[value="' + current_series_data[index]['test_type'] + '"]').text()
+                    test_type.find('option[value="' + relevant_group_data[index]['test_type'] + '"]').text()
                 )
             }
 
@@ -303,6 +316,12 @@ $(document).ready(function () {
                 // Test type
                 test_type_td,
             );
+
+            stored_tds = {
+                model: mps_model_td,
+                test_type: test_type_td
+            };
+
             $.each(prefixes, function(prefix_index, prefix) {
                 var content_indices = current_content[prefix];
                 var current_column = $('<td>');
@@ -312,7 +331,7 @@ $(document).ready(function () {
                             $('<div>').html(
                                 get_difference_display(
                                     prefix,
-                                    current_series_data[index][prefix][content_index]
+                                    relevant_group_data[index][prefix][content_index]
                                 )
                             )
                         );
@@ -320,10 +339,14 @@ $(document).ready(function () {
                 }
 
                 current_row.append(current_column);
+
+                stored_tds[prefix] = current_column;
             });
 
             // CONTRIVED FOR NOW: REPLACE WITH CACHED SELECTOR
             $('#difference_table').find('tbody').append(current_row);
+
+            window.GROUPS.difference_table_displays[index] = stored_tds;
         });
     };
 });

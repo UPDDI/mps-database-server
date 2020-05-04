@@ -7,6 +7,9 @@
     {# <script src="{% static "js/flag.js" %}"></script> #}
     <script src="{% static "assays/assaystudy_tabs.js" %}"></script>
     {# Respective page's script here #}
+    <script src="{% static "assays/cell_sample_selection.js" %}"></script>
+    <script src="{% static "js/split_time.js" %}"></script>
+    <script src="{% static "assays/group_display.js" %}"></script>
     <script src="{% static "assays/assaystudy_plate_add.js" %}"></script>
 {% endblock %}
 
@@ -140,6 +143,8 @@
             </tbody>
         </table>
     </div>
+
+    {% include 'assays/group_difference_table.html' %}
 
     {# For displaying cells etc. #}
     {% include 'assays/component_displays.html' %}
