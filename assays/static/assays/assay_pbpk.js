@@ -46,22 +46,26 @@ $(document).ready(function () {
     var species_asr_tooltip = "Intestinal absorptive surface area.";
     var species_ki_tooltip = "Inverse of small intestine transit time.";
     var compound_mw_tooltip = "Molecular weight is a measure of the sum of the atomic weight values of the atoms in a molecule.";
-    var compound_logd_tooltip = "logD is a log of partition of a chemical compound between the lipid and aqueous phases.";
-    var compound_pka_tooltip = "pKa is the negative log of the acid dissociation constant or Ka value.";
-    // var compound_bioavailability_tooltip = "The proportion of a drug or other substance which enters the circulation when introduced into the body and so is able to have an active effect.";
-    var compound_fu_tooltip = "Fraction of unbound drug in plasma.";
+    var compound_logd_tooltip = "Log of octanol/water ratio.";
+    var compound_pka_tooltip = "Negative log of the acid dissociation constant or Ka value.";
+    // var compound_bioavailability_tooltip = "The proportion of a dose that reaches the systemic circulation.";
+    var compound_fu_tooltip = "Fraction of unbound drug in plasma. Value be between 0 and 1.";
     var input_icl_tooltip = "Predicted intrinsic clearance.";
-    var input_fa_tooltip = "Fraction absorbed. Default = ka / (ki + ka)";
+    var input_fa_tooltip = "Fraction absorbed. Default = ka / (ki + ka). Value must be between 0 and 1.";
     var input_ka_tooltip = "Absorption rate constant (range from 0.6 - 4.2).";
+    var input_dosing_cp_tooltip = "To predict dose required enter a desired plasma concentration.";
+    var input_dosing_interval_tooltip = "Enter a desired dosing interval.";
+    var input_plasma_dose_tooltip = "To predict plasma concentration enter a desired dose.";
+    var input_plasma_dose_interval_tooltip = "Enter a desired dosing interval.";
     var pk_param_vdss_tooltip = "Volume of distribution at steady state.";
     var pk_param_ke_tooltip = "Elimination rate constant.";
     var pk_param_halflife_tooltip = "The period of time for half of a drug to be eliminated from the plasma.";
-    var pk_param_auc_tooltip = "Area under the dose curve.";
-    var pk_param_elogd_tooltip = "ELogD = (0.9638*LogD) + 0.0417";
+    var pk_param_auc_tooltip = "Area under the concentration-vs-time curve.";
+    var pk_param_elogd_tooltip = "Oct/water distribution coefficient determined by RP chromatography. ELogD = (0.9638*LogD) + 0.0417";
     var pk_param_vc_tooltip = "Volume of well perfused tissues.";
     var pk_param_logvow_tooltip = "Log of vegetable oil/water ratio.";
     var pk_param_cl_tooltip = "Clearance.";
-    var pk_param_fut_tooltip = "Fraction of unbound drug in tissues.";
+    var pk_param_fut_tooltip = "Fraction of unbound drug in tissues. Value must be between 0 and 1.";
     var pk_param_fi_tooltip = "Fraction of drug ionized at pH 7.4.";
     var pk_single_mmax_tooltip = "Peak drug amount after single dose.";
     var pk_single_cmax_tooltip = "Peak drug concentration after single dose.";
@@ -87,6 +91,10 @@ $(document).ready(function () {
     $("#label-input-icl").html($("#label-input-icl").html() + make_escaped_tooltip(input_icl_tooltip));
     $("#label-input-fa").html($("#label-input-fa").html() + make_escaped_tooltip(input_fa_tooltip));
     $("#label-input-ka").html($("#label-input-ka").html() + make_escaped_tooltip(input_ka_tooltip));
+    $("#label-input-dosing-cp").html($("#label-input-dosing-cp").html() + make_escaped_tooltip(input_dosing_cp_tooltip));
+    $("#label-input-dosing-interval").html($("#label-input-dosing-interval").html() + make_escaped_tooltip(input_dosing_interval_tooltip));
+    $("#label-input-plasma-dose").html($("#label-input-plasma-dose").html() + make_escaped_tooltip(input_plasma_dose_tooltip));
+    $("#label-input-plasma-dose-interval").html($("#label-input-plasma-dose-interval").html() + make_escaped_tooltip(input_plasma_dose_interval_tooltip));
     $("#label-pk-param-vdss").html($("#label-pk-param-vdss").html() + make_escaped_tooltip(pk_param_vdss_tooltip));
     $("#label-pk-param-ke").html($("#label-pk-param-ke").html() + make_escaped_tooltip(pk_param_ke_tooltip));
     $("#label-pk-param-halflife").html($("#label-pk-param-halflife").html() + make_escaped_tooltip(pk_param_halflife_tooltip));
@@ -591,85 +599,85 @@ $(document).ready(function () {
         var missing_required_values = false;
         var missing_plasma_values = false;
         var missing_dosing_values = false;
-        if ($('#input-icl').val() == '') {
+        if ($('#input-icl').val() == '' || isNaN($('#input-icl').val().replace(/\,/g,'')) || $('#input-icl').val()[0] == "-" || !($('#input-icl').val() > 0)) {
             $('#input-icl').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
             $('#input-icl').css('background-color', '#fffabb');
         }
-        if ($('#species-body-mass').val() == '') {
+        if ($('#species-body-mass').val() == '' || isNaN($('#species-body-mass').val().replace(/\,/g,'')) || $('#species-body-mass').val()[0] == "-" || !($('#species-body-mass').val() > 0)) {
             $('#species-body-mass').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
             $('#species-body-mass').css('background-color', '#fffabb');
         }
-        if ($('#compound-mw').val() == '') {
+        if ($('#compound-mw').val() == '' || isNaN($('#compound-mw').val().replace(/\,/g,'')) || $('#compound-mw').val()[0] == "-") {
             $('#compound-mw').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
             $('#compound-mw').css('background-color', '#fffabb');
         }
-        if ($('#compound-logd').val() == '') {
+        if ($('#compound-logd').val() == '' || isNaN($('#compound-logd').val().replace(/\,/g,'')) || $('#compound-logd').val()[0] == "-") {
             $('#compound-logd').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
             $('#compound-logd').css('background-color', '#fffabb');
         }
-        if ($('#compound-pka').val() == '') {
+        if ($('#compound-pka').val() == '' || isNaN($('#compound-pka').val().replace(/\,/g,''))) {
             $('#compound-pka').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
             $('#compound-pka').css('background-color', '#fffabb');
         }
-        if ($('#compound-fu').val() == '') {
+        if ($('#compound-fu').val() == '' || isNaN($('#compound-fu').val().replace(/\,/g,'')) || $('#compound-fu').val()[0] == "-" || !($('#compound-fu').val() > 0) || $('#compound-fu').val() > 1) {
             $('#compound-fu').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
             $('#compound-fu').css('background-color', '#fffabb');
         }
-        if ($('#species-vp').val() == '') {
+        if ($('#species-vp').val() == '' || isNaN($('#species-vp').val().replace(/\,/g,'')) || $('#species-vp').val()[0] == "-" || !($('#species-vp').val() > 0)) {
             $('#species-vp').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
             $('#species-vp').css('background-color', '#fffabb');
         }
-        if ($('#species-ve').val() == '') {
+        if ($('#species-ve').val() == '' || isNaN($('#species-ve').val().replace(/\,/g,'')) || $('#species-ve').val()[0] == "-") {
             $('#species-ve').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
             $('#species-ve').css('background-color', '#fffabb');
         }
-        if ($('#species-rei').val() == '') {
+        if ($('#species-rei').val() == '' || isNaN($('#species-rei').val().replace(/\,/g,'')) || $('#species-rei').val()[0] == "-") {
             $('#species-rei').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
             $('#species-rei').css('background-color', '#fffabb');
         }
-        if ($('#species-vr').val() == '') {
+        if ($('#species-vr').val() == '' || isNaN($('#species-vr').val().replace(/\,/g,'')) || $('#species-vr').val()[0] == "-") {
             $('#species-vr').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
             $('#species-vr').css('background-color', '#fffabb');
         }
-        if ($('#species-asr').val() == '') {
+        if ($('#species-asr').val() == '' || isNaN($('#species-asr').val().replace(/\,/g,'')) || $('#species-asr').val()[0] == "-") {
             $('#species-asr').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
             $('#species-asr').css('background-color', '#fffabb');
         }
-        if ($('#species-ki').val() == '') {
+        if ($('#species-ki').val() == '' || isNaN($('#species-ki').val().replace(/\,/g,'')) || $('#species-ki').val()[0] == "-") {
             $('#species-ki').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
             $('#species-ki').css('background-color', '#fffabb');
         }
-        if ($('#input-ka').val() == '') {
+        if ($('#input-ka').val() == '' || isNaN($('#input-ka').val().replace(/\,/g,'')) || $('#input-ka').val()[0] == "-" || !($('#input-ka').val() > 0)) {
             $('#input-ka').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
             $('#input-ka').css('background-color', '#fffabb');
         }
-        if ($('#input-fa').val() == '') {
+        if ($('#input-fa').val() == '' || isNaN($('#input-fa').val().replace(/\,/g,'')) || $('#input-fa').val()[0] == "-" || !($('#input-fa').val() > 0) || $('#input-fa').val() > 1) {
             $('#input-fa').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
@@ -680,42 +688,42 @@ $(document).ready(function () {
         $('#input-plasma-dose').css('background-color', '#fffabb');
         $('#input-plasma-dose-interval').css('background-color', '#fffabb');
 
-        if ($('#input-plasma-dose').val() != '' && $('#input-plasma-dose-interval').val() != '') {
-            if ($('#input-dosing-cp').val() != '' && $('#input-dosing-interval').val() != '') {
+        if ($('#input-plasma-dose').val() != '' && !isNaN($('#input-plasma-dose').val().replace(/\,/g,'')) && $('#input-plasma-dose').val()[0] != "-" && $('#input-plasma-dose-interval').val() != '' && !isNaN($('#input-plasma-dose-interval').val().replace(/\,/g,'')) && $('#input-plasma-dose-interval').val()[0] != "-" && $('#input-plasma-dose-interval').val() > 0) {
+            if ($('#input-dosing-cp').val() != '' && !isNaN($('#input-dosing-cp').val().replace(/\,/g,'')) && $('#input-dosing-cp').val()[0] != "-" && $('#input-dosing-interval').val() != '' && !isNaN($('#input-dosing-interval').val().replace(/\,/g,'')) && $('#input-dosing-interval').val()[0] != "-" && $('#input-dosing-interval').val() > 0) {
                 // BOTH ARE GOOD
             } else {
                 // ONLY PLASMA VALUES ARE GOOD
                 missing_dosing_values = true;
-                if ($('#input-plasma-dose').val() == '') {
+                if ($('#input-plasma-dose').val() == '' || isNaN($('#input-plasma-dose').val().replace(/\,/g,'')) || $('#input-plasma-dose').val()[0] == "-") {
                     $('#input-plasma-dose').css('background-color', '#f2dede');
                 }
-                if ($('#input-plasma-dose-interval').val() == '') {
+                if ($('#input-plasma-dose-interval').val() == '' || isNaN($('#input-plasma-dose-interval').val().replace(/\,/g,'')) || $('#input-plasma-dose-interval').val()[0] == "-" || !($('#input-plasma-dose-interval').val() > 0)) {
                     $('#input-plasma-dose-interval').css('background-color', '#f2dede');
                 }
             }
         } else {
             missing_plasma_values = true;
-            if ($('#input-dosing-cp').val() != '' && $('#input-dosing-interval').val() != '') {
+            if ($('#input-dosing-cp').val() != '' && !isNaN($('#input-dosing-cp').val().replace(/\,/g,'')) && $('#input-dosing-cp').val()[0] != "-" && $('#input-dosing-interval').val() != '' && !isNaN($('#input-dosing-interval').val().replace(/\,/g,'')) && $('#input-dosing-interval').val()[0] != "-") {
                 // ONLY DOSING VALUES ARE GOOD
-                if ($('#input-dosing-cp').val() == '') {
+                if ($('#input-dosing-cp').val() == '' || isNaN($('#input-dosing-cp').val().replace(/\,/g,'')) || $('#input-dosing-cp').val()[0] == "-") {
                     $('#input-dosing-cp').css('background-color', '#f2dede');
                 }
-                if ($('#input-dosing-interval').val() == '') {
+                if ($('#input-dosing-interval').val() == '' || isNaN($('#input-dosing-interval').val().replace(/\,/g,'')) || $('#input-dosing-interval').val()[0] == "-" || !($('#input-dosing-interval').val() > 0)) {
                     $('#input-dosing-interval').css('background-color', '#f2dede');
                 }
             } else {
                 // NEITHER ARE GOOD
                 missing_dosing_values = true;
-                if ($('#input-dosing-cp').val() == '') {
+                if ($('#input-dosing-cp').val() == '' || isNaN($('#input-dosing-cp').val().replace(/\,/g,'')) || $('#input-dosing-cp').val()[0] == "-") {
                     $('#input-dosing-cp').css('background-color', '#f2dede');
                 }
-                if ($('#input-dosing-interval').val() == '') {
+                if ($('#input-dosing-interval').val() == '' || isNaN($('#input-dosing-interval').val().replace(/\,/g,'')) || $('#input-dosing-interval').val()[0] == "-" || !($('#input-dosing-interval').val() > 0)) {
                     $('#input-dosing-interval').css('background-color', '#f2dede');
                 }
-                if ($('#input-plasma-dose').val() == '') {
+                if ($('#input-plasma-dose').val() == '' || isNaN($('#input-plasma-dose').val().replace(/\,/g,'')) || $('#input-plasma-dose').val()[0] == "-") {
                     $('#input-plasma-dose').css('background-color', '#f2dede');
                 }
-                if ($('#input-plasma-dose-interval').val() == '') {
+                if ($('#input-plasma-dose-interval').val() == '' || isNaN($('#input-plasma-dose-interval').val().replace(/\,/g,'')) || $('#input-plasma-dose-interval').val()[0] == "-" || !($('#input-plasma-dose-interval').val() > 0)) {
                     $('#input-plasma-dose-interval').css('background-color', '#f2dede');
                 }
             }
@@ -725,7 +733,7 @@ $(document).ready(function () {
             window.spinner.stop();
             $('#calculated-pk-container').hide();
             $('#pbpk-error-container').show();
-            $('#pbpk-error-text').text('There are required values missing to perform PBPK analysis. Please fill them out and try again.');
+            $('#pbpk-error-text').text('There are missing or invalid values required to perform PBPK analysis. Please fill them out and try again.');
             return;
         }
 
@@ -770,6 +778,7 @@ $(document).ready(function () {
             if ("error" in data) {
                 $('#pbpk-error-text').text(data.error);
                 $('#pbpk-error-container').show();
+                $('#calculated-pk-container').hide();
             } else {
                 $('#calculated-pk-container').show();
                 if (missing_plasma_values) {
@@ -849,19 +858,19 @@ $(document).ready(function () {
         }
 
         var missing_required_values = false;
-        if ($('#number-of-cells-calc').val() == '') {
+        if ($('#number-of-cells-calc').val() == '' || isNaN($('#number-of-cells-calc').val().replace(/\,/g,'')) || $('#number-of-cells-calc').val()[0] == "-") {
             $('#number-of-cells-calc').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
             $('#number-of-cells-calc').css('background-color', '#fffabb');
         }
-        if ($('#species-organ-tissue').val() == '') {
+        if ($('#species-organ-tissue').val() == '' || isNaN($('#species-organ-tissue').val().replace(/\,/g,'')) || $('#species-organ-tissue').val()[0] == "-") {
             $('#species-organ-tissue').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
             $('#species-organ-tissue').css('background-color', '#fffabb');
         }
-        if ($('#species-total-organ-weight').val() == '') {
+        if ($('#species-total-organ-weight').val() == '' || isNaN($('#species-total-organ-weight').val().replace(/\,/g,'')) || $('#species-total-organ-weight').val()[0] == "-") {
             $('#species-total-organ-weight').css('background-color', '#f2dede');
             missing_required_values = true;
         } else {
@@ -872,7 +881,7 @@ $(document).ready(function () {
             window.spinner.stop();
             $('#calculated-pk-container').hide();
             $('#clearance-error-container').show();
-            $('#clearance-error-text').text('There are required values missing to perform PBPK clearance calculations. Please fill them out and try again.');
+            $('#clearance-error-text').text('There are missing or invalid values required to perform PBPK clearance calculations. Please fill them out and try again.');
             clear_clearance();
             return;
         }

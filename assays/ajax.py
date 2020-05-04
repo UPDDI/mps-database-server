@@ -5691,6 +5691,7 @@ def fetch_pbpk_intrinsic_clearance_results(request):
 
 def fetch_pbpk_dosing_results(request):
     data = {}
+    fetch_pbpk_error = ""
 
     usansky_sinko_volume_data = [
         ['Human', 'Volume (L)', 'Vw', 'Vn', 'Vph'],
@@ -5704,45 +5705,64 @@ def fetch_pbpk_dosing_results(request):
     ]
 
     # Plasma Values
+    dose_mg = ''
+    dose_interval = ''
     if request.POST.get('dose_mg'):
-        dose_mg = float(request.POST.get('dose_mg'))
-    else:
-        dose_mg = ''
+        try:
+            dose_mg = float(request.POST.get('dose_mg').strip())
+        except ValueError:
+            fetch_pbpk_error = 'Invalid input provided for Dose.'
     if request.POST.get('dose_interval'):
-        dose_interval = float(request.POST.get('dose_interval'))
-    else:
-        dose_interval = ''
+        try:
+            dose_interval = float(request.POST.get('dose_interval').strip())
+        except ValueError:
+            fetch_pbpk_error = 'Invalid input provided for Dose Interval.'
 
     # Dosing Values
+    desired_Cp = ''
+    desired_dose_interval = ''
+    estimated_fraction_absorbed = ''
     if request.POST.get('desired_Cp'):
-        desired_Cp = float(request.POST.get('desired_Cp'))
-    else:
-        desired_Cp = ''
+        try:
+            desired_Cp = float(request.POST.get('desired_Cp').strip())
+        except ValueError:
+            fetch_pbpk_error = 'Invalid input provided for Desired Cp.'
     if request.POST.get('desired_dose_interval'):
-        desired_dose_interval = float(request.POST.get('desired_dose_interval'))
-    else:
-        desired_dose_interval = ''
+        try:
+            desired_dose_interval = float(request.POST.get('desired_dose_interval').strip())
+        except ValueError:
+            fetch_pbpk_error = 'Invalid input provided for Desired Dose Interval.'
     if request.POST.get('estimated_fraction_absorbed'):
-        estimated_fraction_absorbed = float(request.POST.get('estimated_fraction_absorbed'))
-    else:
-        estimated_fraction_absorbed = ''
+        try:
+            estimated_fraction_absorbed = float(request.POST.get('estimated_fraction_absorbed').strip())
+        except ValueError:
+            fetch_pbpk_error = 'Invalid input provided for Fraction Absorbed.'
+
+    if desired_dose_interval == 0 or dose_interval == 0:
+        fetch_pbpk_error = 'Intervals cannot be 0.'
+
+    if fetch_pbpk_error != "":
+        return HttpResponse(
+            json.dumps({'error': fetch_pbpk_error}),
+            content_type="application/json"
+        )
 
     dosing_results = calculate_pk_parameters(
-        float(request.POST.get('cl_ml_min')),
+        float(request.POST.get('cl_ml_min').strip()),
         usansky_sinko_volume_data,
-        float(request.POST.get('body_mass')),
-        float(request.POST.get('MW')),
-        float(request.POST.get('logD')),
-        float(request.POST.get('pKa')),
-        float(request.POST.get('fu')),
-        float(request.POST.get('Vp')),
-        float(request.POST.get('VE')),
-        float(request.POST.get('REI')),
-        float(request.POST.get('VR')),
-        float(request.POST.get('ASR')),
-        float(request.POST.get('Ki')),
-        float(request.POST.get('Ka')),
-        float(request.POST.get('Fa')),
+        float(request.POST.get('body_mass').strip()),
+        float(request.POST.get('MW').strip()),
+        float(request.POST.get('logD').strip()),
+        float(request.POST.get('pKa').strip()),
+        float(request.POST.get('fu').strip()),
+        float(request.POST.get('Vp').strip()),
+        float(request.POST.get('VE').strip()),
+        float(request.POST.get('REI').strip()),
+        float(request.POST.get('VR').strip()),
+        float(request.POST.get('ASR').strip()),
+        float(request.POST.get('Ki').strip()),
+        float(request.POST.get('Ka').strip()),
+        float(request.POST.get('Fa').strip()),
         dose_mg,
         dose_interval,
         desired_Cp,
