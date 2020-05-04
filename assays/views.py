@@ -587,7 +587,12 @@ class AssayStudyMixin(FormHandlerMixin):
             'has_chips': True,
             'has_plates': True,
             'has_next_button': True,
-            'has_previous_button': True
+            'has_previous_button': True,
+            'cellsamples' : CellSample.objects.all().prefetch_related(
+                'cell_type__organ',
+                'supplier',
+                'cell_subtype__cell_type'
+            )
         })
 
         return context
@@ -654,20 +659,6 @@ class AssayStudyGroups(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     template_name = 'assays/assaystudy_groups.html'
     form_class = AssayStudyGroupForm
 
-    def get_context_data(self, **kwargs):
-        context = super(AssayStudyGroups, self).get_context_data(**kwargs)
-
-        # TODO SLATED FOR REMOVAL
-        context.update({
-            'cellsamples' : CellSample.objects.all().prefetch_related(
-                'cell_type__organ',
-                'supplier',
-                'cell_subtype__cell_type'
-            )
-        })
-
-        return context
-
 
 class AssayStudyChips(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     template_name = 'assays/assaystudy_chips.html'
@@ -727,7 +718,12 @@ class AssayStudyPlateMixin(FormHandlerMixin):
             'has_chips': True,
             # Necessarily True!
             'has_plates': True,
-            'specific_plate': True
+            'specific_plate': True,
+            'cellsamples' : CellSample.objects.all().prefetch_related(
+                'cell_type__organ',
+                'supplier',
+                'cell_subtype__cell_type'
+            )
         })
 
         return context

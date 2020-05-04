@@ -10,8 +10,8 @@
     <script src="{% static "assays/cell_sample_selection.js" %}"></script>
     <script src="{% static "js/split_time.js" %}"></script>
     <script src="{% static "assays/organ_model_filter.js" %}"></script>
-    <script src="{% static "assays/assaystudy_groups.js" %}"></script>
     <script src="{% static "assays/group_display.js" %}"></script>
+    <script src="{% static "assays/assaystudy_groups.js" %}"></script>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -76,6 +76,8 @@
     </table>
     </div>
 
+    {% include 'assays/group_difference_table.html' %}
+
     {# HIDDEN FOR Groups #}
     <div hidden>
         {# TODO: LIKELY TO BE REVISED #}
@@ -88,9 +90,9 @@
 
         {# {{ form.group_name }} #}
         {# {{ form.number_of_items }} #}
-        {{ form.test_type }}
-        {{ form.organ_model_full }}
-        {{ form.organ_model_protocol_full }}
+        {# {{ form.test_type }} #}
+        {# {{ form.organ_model_full }} #}
+        {# {{ form.organ_model_protocol_full }} #}
     </div>
 
     <div hidden id="version_dialog" title="Choose a MPS Model Version">
@@ -104,214 +106,6 @@
         <div class="row">
         <div class="col-xs-12">
         <table class="table table-striped table-bordered table-nonfluid" id="series_table_preview">
-        </table>
-        </div>
-        </div>
-    </div>
-
-    {# Dialogs for changing components #}
-    {# Compound #}
-    <div hidden id="compound_dialog" title="Edit a Compound">
-        <div class="row" style="margin-bottom: 175px;">
-        <div class="col-sm-1"></div>
-        <div class="col-sm-11">
-        <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
-        <tr>
-            <th colspan="3">Compound*</th>
-        </tr>
-        <tr>
-            <td colspan="3">
-                {{ form.compound_compound }}
-                {% include 'generic_popup_link.html' with field=form.compound_compound %}
-            </td>
-        </tr>
-        <tr>
-            <th>Supplier</th>
-            <th>Lot</th>
-            <th>Receipt Date</th>
-        </tr>
-        <tr>
-            <td>{{ form.compound_supplier_text }}</td>
-            <td>{{ form.compound_lot_text }}</td>
-            <td>{{ form.compound_receipt_date }}</td>
-        </tr>
-        </table>
-        <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
-            <tr>
-                <th>Concentration*</th>
-                <th>Concentration Unit*</th>
-            </tr>
-            <tr>
-                <td>{{ form.compound_concentration }}</td>
-                <td>
-                    {{ form.compound_concentration_unit }}
-                    {% include 'generic_popup_link.html' with field=form.compound_concentration_unit %}
-                </td>
-            </tr>
-            {% comment %}
-            <tr>
-                <th>Use a Dilution Series</th>
-                <th>Dilution Factor</th>
-                <th>Dilution Operation</th>
-            </tr>
-            <tr>
-                <td class="text-center"><input id="id_use_compound_concentration_increment" name="use_compound_concentration_increment" class="big-checkbox" type="checkbox"></td>
-                <td>{{ form.compound_concentration_increment }}</td>
-                <td>{{ form.compound_concentration_increment_type }}</td>
-            </tr>
-            <tr>
-                <td colspan="3">{{ form.compound_concentration_increment_direction }}</td>
-            </tr>
-            {% endcomment %}
-        </table>
-        <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
-            <tr>
-                <th class="bg-success" colspan="3">Addition Time*</th>
-                <th class="bg-info" colspan="3">Duration*</th>
-                <th class="bg-warning">Addition Location*</th>
-            </tr>
-            <tr>
-                <th class="bg-success">Day</th>
-                <th class="bg-success">Hour</th>
-                <th class="bg-success">Minute</th>
-                <th class="bg-info">Day</th>
-                <th class="bg-info">Hour</th>
-                <th class="bg-info">Minute</th>
-                <td class="bg-warning">{{ form.compound_addition_location }}</td>
-            </tr>
-            <tr>
-                <td class="bg-success">{{ form.compound_addition_time_day }}</td>
-                <td class="bg-success">{{ form.compound_addition_time_hour }}</td>
-                <td class="bg-success">{{ form.compound_addition_time_minute }}</td>
-                <td class="bg-info">{{ form.compound_duration_day }}</td>
-                <td class="bg-info">{{ form.compound_duration_hour }}</td>
-                <td class="bg-info">{{ form.compound_duration_minute }}</td>
-                <td class="bg-warning">
-                    {% include 'generic_popup_link.html' with field=form.compound_addition_location %}
-                </td>
-            </tr>
-        </table>
-        </div>
-        </div>
-    </div>
-
-    {# Cell #}
-    <div hidden id="cell_dialog" title="Edit a Cell">
-        <div class="row" style="margin-bottom: 175px;">
-        <div class="col-sm-1"></div>
-        <div class="col-sm-11">
-        <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
-            <tr>
-                <th>Cell Sample*</th>
-                <th>Passage</th>
-                <th>Biosensor*</th>
-            </tr>
-            <tr>
-            <td>
-                {# Inline styles are evil #}
-                <input readonly="readonly" id="id_cell_cell_sample" name="cell_cell_sample" value="{{ form.cell_cell_sample.value|default_if_none:'' }}" class="form-control required" style="width: 75px; display: inline;">
-                <button id='id_cell_sample_search' type="button" class="btn btn-xs btn-primary open-cell-sample-dialog">
-                    <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-                </button>
-                <label class="small" id="id_cell_sample_label"></label>
-            </td>
-            <td>{{ form.cell_passage }}</td>
-            <td>
-                {{ form.cell_biosensor }}
-                {% include 'generic_popup_link.html' with field=form.cell_biosensor %}
-            </td>
-            </tr>
-        </table>
-        <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
-            <tr>
-                <th>Density*</th>
-                <th>Density Unit*</th>
-            </tr>
-            <tr>
-                <td title="Use 'e' for scientific notation: 1e+3 = 1000">{{ form.cell_density }}</td>
-                <td>
-                    {{ form.cell_density_unit }}
-                    {# {% include 'generic_popup_link.html' with field=form.cell_density_unit %} #}
-                </td>
-            </tr>
-        </table>
-        <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
-            <tr>
-                <th class="bg-success" colspan="3">Addition Time*</th>
-        {#                        <th class="bg-info" colspan="3">Duration*</th>#}
-                <th class="bg-warning">Addition Location*</th>
-            </tr>
-            <tr>
-                <th class="bg-success">Day</th>
-                <th class="bg-success">Hour</th>
-                <th class="bg-success">Minute</th>
-        {#                        <th class="bg-info">Day</th>#}
-        {#                        <th class="bg-info">Hour</th>#}
-        {#                        <th class="bg-info">Minute</th>#}
-                <td class="bg-warning">{{ form.cell_addition_location }}</td>
-            </tr>
-            <tr>
-
-                <td class="bg-success">{{ form.cell_addition_time_day }}</td>
-                <td class="bg-success">{{ form.cell_addition_time_hour }}</td>
-                <td class="bg-success">{{ form.cell_addition_time_minute }}</td>
-        {#                        <td class="bg-info">{{ form.cell_duration_day }}</td>#}
-        {#                        <td class="bg-info">{{ form.cell_duration_hour }}</td>#}
-        {#                        <td class="bg-info">{{ form.cell_duration_minute }}</td>#}
-                <td class="bg-warning">{% include 'generic_popup_link.html' with field=form.cell_addition_location %}</td>
-            </tr>
-        </table>
-        </div>
-        </div>
-    </div>
-
-    {# Setting #}
-    <div hidden id="setting_dialog" title="Edit a Setting">
-        <div class="row" style="margin-bottom: 175px;">
-        <div class="col-sm-1"></div>
-        <div class="col-sm-11">
-        <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
-            <tr>
-                <th>Setting*</th>
-                <th>Value*</th>
-                <th>Unit*</th>
-            </tr>
-            <tr>
-                <td>
-                    {{ form.setting_setting }}
-                    {% include 'generic_popup_link.html' with field=form.setting_setting %}
-                </td>
-                <td>{{ form.setting_value }}</td>
-                <td>
-                    {{ form.setting_unit }}
-                    {% include 'generic_popup_link.html' with field=form.setting_unit %}
-                </td>
-            </tr>
-        </table>
-        <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
-            <tr>
-                <th class="bg-success" colspan="3">Addition Time*</th>
-                <th class="bg-info" colspan="3">Duration*</th>
-                <th class="bg-warning">Addition Location*</th>
-            </tr>
-            <tr>
-                <th class="bg-success">Day</th>
-                <th class="bg-success">Hour</th>
-                <th class="bg-success">Minute</th>
-                <th class="bg-info">Day</th>
-                <th class="bg-info">Hour</th>
-                <th class="bg-info">Minute</th>
-                <td class="bg-warning">{{ form.setting_addition_location }}</td>
-            </tr>
-            <tr>
-                <td class="bg-success">{{ form.setting_addition_time_day }}</td>
-                <td class="bg-success">{{ form.setting_addition_time_hour }}</td>
-                <td class="bg-success">{{ form.setting_addition_time_minute }}</td>
-                <td class="bg-info">{{ form.setting_duration_day }}</td>
-                <td class="bg-info">{{ form.setting_duration_hour }}</td>
-                <td class="bg-info">{{ form.setting_duration_minute }}</td>
-                <td class="bg-warning">{% include 'generic_popup_link.html' with field=form.setting_addition_location %}</td>
-            </tr>
         </table>
         </div>
         </div>

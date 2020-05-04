@@ -7,6 +7,9 @@
     {# <script src="{% static "js/flag.js" %}"></script> #}
     <script src="{% static "assays/assaystudy_tabs.js" %}"></script>
     {# Respective page's script here #}
+    <script src="{% static "assays/cell_sample_selection.js" %}"></script>
+    <script src="{% static "js/split_time.js" %}"></script>
+    <script src="{% static "assays/group_display.js" %}"></script>
     <script src="{% static "assays/assaystudy_chips.js" %}"></script>
 {% endblock %}
 
@@ -50,6 +53,8 @@
             <th>Index</th>
             <th>Name</th>
             <th>Group</th>
+            <th>Model</th>
+            <th>Test Type</th>
             <th>Cells</th>
             <th>Compounds</th>
             <th>Settings</th>
@@ -82,6 +87,8 @@
 
     {# Hidden for chips #}
     <div hidden>
+        {% include 'assays/group_difference_table.html' %}
+
         {{ form.series_data }}
 
         {# contrived #}

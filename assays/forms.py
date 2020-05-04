@@ -122,6 +122,105 @@ def get_dic_for_custom_choice_field(form, filters=None):
 
 
 class SetupFormsMixin(BootstrapForm):
+    ### ADDING SETUP CELLS
+    cell_cell_sample = forms.IntegerField(required=False)
+    cell_biosensor = forms.ModelChoiceField(
+        queryset=Biosensor.objects.all().prefetch_related('supplier'),
+        required=False,
+        # Default is naive
+        initial=2
+    )
+    cell_density = forms.FloatField(required=False)
+
+    # TODO THIS IS TO BE HAMMERED OUT
+    cell_density_unit = forms.ModelChoiceField(
+        queryset=PhysicalUnits.objects.filter(
+            availability__contains='cell'
+        ).order_by('unit'),
+        required=False
+    )
+
+    cell_passage = forms.CharField(required=False)
+
+    cell_addition_location = forms.ModelChoiceField(
+        # Avoid duplicate query
+        queryset=AssaySampleLocation.objects.all().order_by('name'),
+        # queryset=AssaySampleLocation.objects.none(),
+        required=False
+    )
+
+    ### ?ADDING SETUP SETTINGS
+    setting_setting = forms.ModelChoiceField(
+        queryset=AssaySetting.objects.all().order_by('name'),
+        required=False
+    )
+    setting_unit = forms.ModelChoiceField(
+        queryset=PhysicalUnits.objects.all().order_by('base_unit','scale_factor'),
+        required=False
+    )
+
+    setting_value = forms.CharField(required=False)
+
+    setting_addition_location = forms.ModelChoiceField(
+        # Avoid duplicate query
+        queryset=AssaySampleLocation.objects.all().order_by('name'),
+        # queryset=AssaySampleLocation.objects.none(),
+        required=False
+    )
+
+    ### ADDING COMPOUNDS
+    compound_compound = forms.ModelChoiceField(
+        queryset=Compound.objects.all().order_by('name'),
+        required=False
+    )
+    # Notice the special exception for %
+    compound_concentration_unit = forms.ModelChoiceField(
+        queryset=(PhysicalUnits.objects.filter(
+            unit_type__unit_type='Concentration'
+        ).order_by(
+            'base_unit__unit',
+            'scale_factor'
+        ) | PhysicalUnits.objects.filter(unit='%')),
+        required=False, initial=4
+    )
+    compound_concentration = forms.FloatField(required=False)
+
+    compound_addition_location = forms.ModelChoiceField(
+        # Avoid duplicate query
+        queryset=AssaySampleLocation.objects.all().order_by('name'),
+        # queryset=AssaySampleLocation.objects.none(),
+        required=False
+    )
+    # Text field (un-saved) for supplier
+    compound_supplier_text = forms.CharField(
+        required=False,
+        initial=''
+    )
+    # Text field (un-saved) for lot
+    compound_lot_text = forms.CharField(
+        required=False,
+        initial=''
+    )
+    # Receipt date
+    compound_receipt_date = forms.DateField(required=False)
+
+    # For MPS Models etc.
+    test_type = forms.ChoiceField(
+        initial='control',
+        choices=TEST_TYPE_CHOICES,
+        required=False
+    )
+    organ_model_full = forms.ModelChoiceField(
+        queryset=OrganModel.objects.all().order_by('name'),
+        required=False,
+        label='Matrix Item MPS Model'
+    )
+    organ_model_protocol_full = forms.ModelChoiceField(
+        queryset=OrganModelProtocol.objects.all().order_by('name'),
+        required=False,
+        label='Matrix Item MPS Model Version'
+    )
+
     def __init__(self, *args, **kwargs):
         super(SetupFormsMixin, self).__init__(*args, **kwargs)
 
@@ -190,69 +289,16 @@ class SetupFormsMixin(BootstrapForm):
                     if hasattr(self.fields[current_field]._queryset.model, 'get_add_url_manager'):
                         self.fields[current_field].widget.attrs['data_add_url'] = self.fields[current_field]._queryset.model.get_add_url_manager()
 
-    ### ADDING SETUP CELLS
-    cell_cell_sample = forms.IntegerField(required=False)
-    cell_biosensor = forms.ModelChoiceField(
-        queryset=Biosensor.objects.all().prefetch_related('supplier'),
-        required=False,
-        # Default is naive
-        initial=2
-    )
-    cell_density = forms.FloatField(required=False)
+        # Avoid duplicate queries for the sample locations
+        # sample_locations = AssaySampleLocation.objects.all().order_by('name')
+        # self.fields['cell_addition_location'].queryset = sample_locations
+        # self.fields['compound_addition_location'].queryset = sample_locations
+        # self.fields['setting_addition_location'].queryset = sample_locations
 
-    # TODO THIS IS TO BE HAMMERED OUT
-    cell_density_unit = forms.ModelChoiceField(
-        queryset=PhysicalUnits.objects.filter(
-            availability__contains='cell'
-        ).order_by('unit'),
-        required=False
-    )
-
-    cell_passage = forms.CharField(required=False)
-
-    cell_addition_location = forms.ModelChoiceField(queryset=AssaySampleLocation.objects.all().order_by('name'), required=False)
-
-    ### ?ADDING SETUP SETTINGS
-    setting_setting = forms.ModelChoiceField(queryset=AssaySetting.objects.all().order_by('name'), required=False)
-    setting_unit = forms.ModelChoiceField(queryset=PhysicalUnits.objects.all().order_by('base_unit','scale_factor'), required=False)
-
-    setting_value = forms.CharField(required=False)
-
-    setting_addition_location = forms.ModelChoiceField(
-        queryset=AssaySampleLocation.objects.all().order_by('name'),
-        required=False
-    )
-
-    ### ADDING COMPOUNDS
-    compound_compound = forms.ModelChoiceField(queryset=Compound.objects.all().order_by('name'), required=False)
-    # Notice the special exception for %
-    compound_concentration_unit = forms.ModelChoiceField(
-        queryset=(PhysicalUnits.objects.filter(
-            unit_type__unit_type='Concentration'
-        ).order_by(
-            'base_unit__unit',
-            'scale_factor'
-        ) | PhysicalUnits.objects.filter(unit='%')),
-        required=False, initial=4
-    )
-    compound_concentration = forms.FloatField(required=False)
-
-    compound_addition_location = forms.ModelChoiceField(
-        queryset=AssaySampleLocation.objects.all().order_by('name'),
-        required=False
-    )
-    # Text field (un-saved) for supplier
-    compound_supplier_text = forms.CharField(
-        required=False,
-        initial=''
-    )
-    # Text field (un-saved) for lot
-    compound_lot_text = forms.CharField(
-        required=False,
-        initial=''
-    )
-    # Receipt date
-    compound_receipt_date = forms.DateField(required=False)
+        # CRUDE: MAKE SURE NO SELECTIZE INTERFERING
+        self.fields['organ_model_full'].widget.attrs['class'] = 'no-selectize'
+        self.fields['organ_model_protocol_full'].widget.attrs['class'] = 'no-selectize'
+        self.fields['test_type'].widget.attrs['class'] = 'no-selectize'
 
 
 # DEPRECATED NO LONGER NEEDED AS CHARFIELDS NOW STRIP AUTOMATICALLY
@@ -674,11 +720,21 @@ class AssayStudyDetailForm(SignOffMixin, BootstrapForm):
 
 class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
     # CONTRIVANCES
-    test_type = forms.ChoiceField(
-        initial='control',
-        choices=TEST_TYPE_CHOICES,
-        required=False
-    )
+    # test_type = forms.ChoiceField(
+    #     initial='control',
+    #     choices=TEST_TYPE_CHOICES,
+    #     required=False
+    # )
+    # organ_model_full = forms.ModelChoiceField(
+    #     queryset=OrganModel.objects.all().order_by('name'),
+    #     required=False,
+    #     label='Matrix Item MPS Model'
+    # )
+    # organ_model_protocol_full = forms.ModelChoiceField(
+    #     queryset=OrganModelProtocol.objects.all().order_by('name'),
+    #     required=False,
+    #     label='Matrix Item MPS Model Version'
+    # )
     # number_of_items = forms.CharField(
     #     initial='',
     #     required=False
@@ -687,20 +743,12 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
     #     initial='',
     #     required=False
     # )
+
+    # Contrivance
     organ_model = forms.ModelChoiceField(
         queryset=OrganModel.objects.all().order_by('name'),
         required=False,
         label='Matrix Item MPS Model'
-    )
-    organ_model_full = forms.ModelChoiceField(
-        queryset=OrganModel.objects.all().order_by('name'),
-        required=False,
-        label='Matrix Item MPS Model'
-    )
-    organ_model_protocol_full = forms.ModelChoiceField(
-        queryset=OrganModelProtocol.objects.all().order_by('name'),
-        required=False,
-        label='Matrix Item MPS Model Version'
     )
 
     class Meta(object):
@@ -742,9 +790,6 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
         # Contrivances
         self.fields['test_type'].widget.attrs['class'] = 'no-selectize required form-control'
-
-        self.fields['organ_model_full'].widget.attrs['class'] = 'no-selectize'
-        self.fields['organ_model_protocol_full'].widget.attrs['class'] = 'no-selectize'
 
     # def clean(self):
     #     """Checks for at least one study type"""
@@ -1203,12 +1248,14 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
     #     return study
 
 
-class AssayStudyChipForm(SignOffMixin, BootstrapForm):
+class AssayStudyChipForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
     class Meta(object):
         model = AssayStudy
         # Since we are splitting into multiple forms, includes are safer
         fields = (
             'series_data',
+            'organ_model_full',
+            'organ_model_protocol_full'
         )
 
 # OLD TO BE REMOVED
@@ -1240,7 +1287,7 @@ class AssayStudyChipForm(SignOffMixin, BootstrapForm):
 #         )
 
 
-class AssayStudyPlateForm(SignOffMixin, BootstrapForm):
+class AssayStudyPlateForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
     series_data = forms.CharField(required=False)
 
     class Meta(object):
