@@ -270,7 +270,7 @@ $(document).ready(function () {
                 $.each(stringified_groups, function(group_2_index, group_2) {
                     $.each(group_1[prefix], function(current_content, current_index) {
                         if (group_2[prefix][current_content] === undefined) {
-                            current_divergence[prefix].push(current_index);
+                            current_divergence[prefix][current_index] = true;
 
                             diverging_prefixes[prefix] = true;
                         }
@@ -327,7 +327,7 @@ $(document).ready(function () {
                 var current_column = $('<td>');
                 if (Object.keys(content_indices).length > 0) {
                     // Har har
-                    $.each(content_indices, function(content_index_index, content_index) {
+                    $.each(content_indices, function(content_index) {
                         current_column.append(
                             $('<div>').html(
                                 get_difference_display(
@@ -341,7 +341,7 @@ $(document).ready(function () {
 
                 current_row.append(current_column);
 
-                stored_tds[prefix] = current_column;
+                stored_tds[prefix] = current_column.clone();
             });
 
             // CONTRIVED FOR NOW: REPLACE WITH CACHED SELECTOR
