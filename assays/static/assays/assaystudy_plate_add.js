@@ -26,6 +26,9 @@ $(document).ready(function () {
         };
     }
 
+    // Make the difference table
+    window.GROUPS.make_difference_table('plate');
+
     // SERIES DATA
     var series_data = full_series_data.series_data;
 
