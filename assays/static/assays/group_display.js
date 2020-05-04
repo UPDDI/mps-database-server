@@ -326,7 +326,8 @@ $(document).ready(function () {
                 var content_indices = current_content[prefix];
                 var current_column = $('<td>');
                 if (Object.keys(content_indices).length > 0) {
-                    $.each(content_indices, function(content_index) {
+                    // Har har
+                    $.each(content_indices, function(content_index_index, content_index) {
                         current_column.append(
                             $('<div>').html(
                                 get_difference_display(
