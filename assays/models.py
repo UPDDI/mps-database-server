@@ -25,6 +25,8 @@ import django.forms as forms
 # Avoid wildcards when possible
 from mps.utils import *
 
+from django.urls import reverse
+
 # THIS WILL ONLY BE USED FOR PROTOTYPE
 from django.contrib.postgres.fields import JSONField
 
@@ -2083,7 +2085,9 @@ class AssayMatrix(FlaggableModel):
         return '/assays/assaymatrix/{}/'.format(self.id)
 
     def get_post_submission_url(self):
-        return self.study.get_post_submission_url()
+        # return self.study.get_post_submission_url()
+        # Assumes the new interface
+        return reverse('assays-assaystudy-update-plates', args=[self.study.pk])
 
     def get_delete_url(self):
         return '{}delete/'.format(self.get_absolute_url())
