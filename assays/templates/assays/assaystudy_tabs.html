@@ -1,5 +1,5 @@
 <ul id="study_tabs_section" class="nav nav-tabs nav-justified">
-    {% if update %}
+    {% if update or specific_plate %}
     {# TODO SCRIPT TO DISABLE ACTIVE TAB #}
     <li role="presentation" data-interface="details">
         <a href="{% url 'assays-assaystudy-update-details' study.id %}">Details</a>
@@ -18,7 +18,7 @@
         <a href="{% url 'assays-assaystudy-update-plates' study.id %}">Plates</a>
     </li>
     {% if specific_plate %}
-    <li role="presentation" data-interface="plate">
+    <li class="active" role="presentation" data-interface="plate">
         <a href="#">Plate</a>
     </li>
     {% endif %}
