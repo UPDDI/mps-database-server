@@ -41,17 +41,6 @@ $(document).ready(function () {
     // Each group's data is likewise an array, each index being a column
     var difference_table_content = [];
 
-    // We needs to know whether or not to show a column for a particular prefix
-    var diverging_prefixes = {
-        'cell': false,
-        'compound': false,
-        'setting': false,
-        // These are called 'non_prefixes' above, should resolve naming convention
-        'organ_model_id': false,
-        'organ_model_protocol_id': false,
-        'test_type': false,
-    };
-
     // This may be a good file to make these shared?
     // Prefixes
     // If I am going to use these, they should be ALL CAPS to indicate global status
@@ -211,6 +200,17 @@ $(document).ready(function () {
     window.GROUPS.make_difference_table = function(restrict_to) {
         // console.log("DIFFERENCE TABLE START");
 
+        // We needs to know whether or not to show a column for a particular prefix
+        var diverging_prefixes = {
+            'cell': false,
+            'compound': false,
+            'setting': false,
+            // These are called 'non_prefixes' above, should resolve naming convention
+            'organ_model_id': false,
+            'organ_model_protocol_id': false,
+            'test_type': false,
+        };
+
         // CONTRIVED FOR NOW: REPLACE WITH CACHED SELECTOR
         $('#difference_table').find('tbody').empty();
 
@@ -280,6 +280,7 @@ $(document).ready(function () {
         });
 
         // console.log(diverging_contents);
+        // console.log(diverging_prefixes);
 
         // TODO TODO TODO
         // Generate the difference table
