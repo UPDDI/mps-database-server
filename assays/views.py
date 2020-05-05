@@ -679,6 +679,7 @@ class AssayStudyPlateMixin(FormHandlerMixin):
         # TODO: Check whether this Study has Chips or Plates
         # Contrived at the moment
         context.update({
+            # TODO
             'has_chips': True,
             # Necessarily True!
             'has_plates': True,
@@ -687,7 +688,9 @@ class AssayStudyPlateMixin(FormHandlerMixin):
                 'cell_type__organ',
                 'supplier',
                 'cell_subtype__cell_type'
-            )
+            ),
+            'has_next_button': True,
+            'has_previous_button': True
         })
 
         return context
