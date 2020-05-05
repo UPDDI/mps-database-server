@@ -278,7 +278,7 @@ $(document).ready(function () {
         current_label.find('.matrix-item-hover')
             .removeClass('label-warning')
             .addClass('label-primary')
-            .text(group);
+            .text(series_data[group].name);
     }
 
     function unset_label(current_label) {
@@ -777,18 +777,22 @@ $(document).ready(function () {
     // For the hover preview of the data
     // TODO NEED current_group for dilution etc.
     function generate_row_clone_html(current_well_name, current_series, current_group) {
-        // (This divs are contrivances)
+        // (these divs are contrivances)
         var name_row = $('<div>').append(
             $('<tr>').append(
                 $('<td>').text(current_well_name)
             )
         );
 
+        var full_row = $('<div>');
+
         // SUBJECT TO CHANGE
         // Just draws from the difference table
-        var full_row = $('<div>').append(
-            $('tr[data-group-name="' + series_data[current_series].name + '"]').clone()
-        );
+        if (series_data[current_series]) {
+            full_row.append(
+                $('tr[data-group-name="' + series_data[current_series].name + '"]').clone()
+            );
+        }
 
         // var full_row = $('<div>').append(
         //     $('tr[data-series="' + current_series + '"]').clone()
