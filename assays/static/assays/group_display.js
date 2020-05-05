@@ -265,7 +265,7 @@ $(document).ready(function () {
 
             // Iterate over every prefix
             $.each(prefixes, function(prefix_index, prefix) {
-                current_divergence[prefix] = [];
+                current_divergence[prefix] = {};
                 // Iterate over every group (ideally not the same group, but the comparison shouldn't take too long)
                 $.each(stringified_groups, function(group_2_index, group_2) {
                     $.each(group_1[prefix], function(current_content, current_index) {
@@ -309,7 +309,9 @@ $(document).ready(function () {
                 )
             }
 
-            var current_row = $('<tr>').append(
+            var current_row = $('<tr>')
+            .attr('data-group-name', relevant_group_data[index]['name'])
+            .append(
                 // Name
                 name_td,
                 // MPS Model (and version)
@@ -350,5 +352,24 @@ $(document).ready(function () {
 
             window.GROUPS.difference_table_displays[index] = stored_tds;
         });
+
+        // Determine what to hide
+        // TODO: Subject to revision
+        // Crude and explicit for the moment
+        if (!diverging_prefixes['organ_model_id'] && !diverging_prefixes['organ_model_protocol_id']) {
+            $('#difference_table td:nth-child(2), #difference_table th:nth-child(2)').hide();
+        }
+        if (!diverging_prefixes['test_type']) {
+            $('#difference_table td:nth-child(3), #difference_table th:nth-child(3)').hide();
+        }
+        if (!diverging_prefixes['cell']) {
+            $('#difference_table td:nth-child(4), #difference_table th:nth-child(4)').hide();
+        }
+        if (!diverging_prefixes['compound']) {
+            $('#difference_table td:nth-child(5), #difference_table th:nth-child(5)').hide();
+        }
+        if (!diverging_prefixes['setting']) {
+            $('#difference_table td:nth-child(6), #difference_table th:nth-child(6)').hide();
+        }
     };
 });

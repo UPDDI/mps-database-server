@@ -784,26 +784,32 @@ $(document).ready(function () {
             )
         );
 
+        // SUBJECT TO CHANGE
+        // Just draws from the difference table
         var full_row = $('<div>').append(
-            $('tr[data-series="' + current_series + '"]').clone()
+            $('tr[data-group-name="' + series_data[current_series].name + '"]').clone()
         );
 
-        // Axe the first column
-        full_row.find('td').first().remove();
+        // var full_row = $('<div>').append(
+        //     $('tr[data-series="' + current_series + '"]').clone()
+        // );
 
-        // Replace selects with their values
-        var current_selects = full_row.find('select');
-        current_selects.each(function() {
-            var current_text = $(this).find('option[value="' + $(this).val() + '"]').text();
-            var current_parent = $(this).parent();
+        // // Axe the first column
+        // full_row.find('td').first().remove();
 
-            current_parent.html(current_text);
-        });
+        // // Replace selects with their values
+        // var current_selects = full_row.find('select');
+        // current_selects.each(function() {
+        //     var current_text = $(this).find('option[value="' + $(this).val() + '"]').text();
+        //     var current_parent = $(this).parent();
+
+        //     current_parent.html(current_text);
+        // });
 
         // TODO: NEED TO REVISE COMPOUND DISPLAYS FOR DILUTION
 
         // Kill buttons (this isn't for editing, just showing the data)
-        full_row.find('.btn').remove();
+        // full_row.find('.btn').remove();
 
         return name_row.html() + full_row.html();
     }
@@ -813,6 +819,8 @@ $(document).ready(function () {
     // ie. NEED TO DIFFERENTIATE GROUP AND SERIES
     $(document).on('mouseover', '.matrix-item-hover', function() {
         // Current group of the item
+        // We do not currently differentiate groups and series
+        // (We will probably have to go back and rename series stuff for clarity)
         var current_group = null;
         var current_series = null;
         var current_data = matrix_item_data[$(this).parent().attr('data-row-column')];
@@ -828,7 +836,7 @@ $(document).ready(function () {
             matrix_contents_hover.show();
             // var left = $(this).offset().left - 10;
             // Hard value for left (TODO: Probably better to set to left of the matrix?)
-            var left = $('#fluid-content').position().left + 30;
+            var left = $('#matrix_table').position().left - 15;
             // Place slightly below current label
             var top = $(this).offset().top + 50;
             matrix_contents_hover.offset({left: left, top: top});
