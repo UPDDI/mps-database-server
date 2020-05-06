@@ -136,6 +136,7 @@ $(document).ready(function () {
         }
     }
 
+    // I could include iteration here rather than in the other loop
     // TODO NEEDS MAJOR REVISION
     function get_difference_display(prefix, content) {
         var html_contents = [];
@@ -171,9 +172,60 @@ $(document).ready(function () {
         //     html_contents.push('');
         // }
 
-        html_contents = html_contents.join('<br>');
+        html_contents = html_contents.join('');
 
         return html_contents;
+    }
+
+    // Proposed alternative
+    // This uses just a strict short hand
+    // The consequence is that if a parameter like addition time diverges, one wouldn't know until they looked at the popup or the group table
+    function get_shorthand_display(prefix, content) {
+
+            // Just start with an empty div
+            // var html_contents = $('<div>');
+            var text_to_use = '';
+
+            // Clone the empty_html for a starting point
+            // var new_display = empty_difference_html[prefix].clone();
+
+            if (content && Object.keys(content).length) {
+                // Different handling per prefix
+                if (prefix === 'cell') {
+                    // MAKES ASSUMPTIONS ABOUT CELL SAMPLE FORMAT
+                    // SPlit on paren to get origin and cell type (crude)
+                    text_to_use = $.trim(get_display_for_field('cell_sample', content['cell_sample_id'], prefix).split('(')[0]);
+                }
+                else if (prefix === 'compound') {
+                    text_to_use = $.trim(
+                        [
+                            get_display_for_field('compound', content['compound_id'], prefix),
+                            get_display_for_field('concentration', content['concentration'], prefix),
+                            get_display_for_field('concentration_unit', content['concentration_unit_id'], prefix)
+                        ].join(' ')
+                    );
+                }
+                else if (prefix === 'setting') {
+                    text_to_use = $.trim(
+                        [
+                            get_display_for_field('setting', content['setting_id'], prefix),
+                            get_display_for_field('value', content['value'], prefix),
+                            get_display_for_field('unit', content['unit_id'], prefix)
+                        ].join(' ')
+                    );
+                }
+
+                text_to_use += ';';
+
+                // html_contents.text(text_to_use + ';');
+            }
+            // else {
+            //     // Push empty otherwise?
+            //     html_contents.push('');
+            // }
+
+        // return html_contents[0].outerHTML;
+        return text_to_use;
     }
 
     function stringify_group_contents(contents) {
@@ -332,8 +384,14 @@ $(document).ready(function () {
                     // Har har
                     $.each(content_indices, function(content_index) {
                         current_column.append(
-                            $('<div>').html(
-                                get_difference_display(
+                            // $('<div>').html(
+                                // get_difference_display(
+                                //     prefix,
+                                //     relevant_group_data[index][prefix][content_index]
+                                // )
+                            // )
+                            $('<div>').text(
+                                get_shorthand_display(
                                     prefix,
                                     relevant_group_data[index][prefix][content_index]
                                 )
@@ -352,6 +410,9 @@ $(document).ready(function () {
 
             window.GROUPS.difference_table_displays[index] = stored_tds;
         });
+
+        // Show all initially
+        $('#difference_table td, #difference_table th').show();
 
         // Determine what to hide
         // TODO: Subject to revision
@@ -372,4 +433,27 @@ $(document).ready(function () {
             $('#difference_table td:nth-child(6), #difference_table th:nth-child(6)').hide();
         }
     };
+
+    $.each(prefixes, function(index, prefix) {
+        // Make all of the popups
+        var current_dialog = $('#' + prefix + '_full_contents_popup');
+        current_dialog.dialog({
+            width: 900,
+            height: 500,
+            buttons: [
+                {
+                    text: 'Close',
+                    click: function() {
+                       $(this).dialog('close');
+                    }
+                }
+            ]
+        });
+        current_dialog.removeProp('hidden');
+
+        // Triggers for spawning the popups
+        $('#spawn_' + prefix + '_full_contents_popup').click(function() {
+            $('#' + prefix + '_full_contents_popup').dialog('open');
+        });
+    });
 });
