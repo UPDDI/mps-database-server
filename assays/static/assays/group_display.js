@@ -5,6 +5,8 @@ window.GROUPS = {
     make_difference_table: null,
     make_group_preview: null,
     difference_table_displays: {},
+    // Indicates the hidden columns via object
+    hidden_columns: {}
 };
 
 $(document).ready(function () {
@@ -511,24 +513,30 @@ $(document).ready(function () {
 
         // Show all initially
         $('#difference_table td, #difference_table th').show();
+        window.GROUPS.hidden_columns = {};
 
         // Determine what to hide
         // TODO: Subject to revision
         // Crude and explicit for the moment
         if (!diverging_prefixes['organ_model_id'] && !diverging_prefixes['organ_model_protocol_id']) {
             $('#difference_table td:nth-child(2), #difference_table th:nth-child(2)').hide();
+            window.GROUPS.hidden_columns['model'] = true;
         }
         if (!diverging_prefixes['test_type']) {
             $('#difference_table td:nth-child(3), #difference_table th:nth-child(3)').hide();
+            window.GROUPS.hidden_columns['test_type'] = true;
         }
         if (!diverging_prefixes['cell']) {
             $('#difference_table td:nth-child(4), #difference_table th:nth-child(4)').hide();
+            window.GROUPS.hidden_columns['cell'] = true;
         }
         if (!diverging_prefixes['compound']) {
             $('#difference_table td:nth-child(5), #difference_table th:nth-child(5)').hide();
+            window.GROUPS.hidden_columns['compound'] = true;
         }
         if (!diverging_prefixes['setting']) {
             $('#difference_table td:nth-child(6), #difference_table th:nth-child(6)').hide();
+            window.GROUPS.hidden_columns['setting'] = true;
         }
     };
 

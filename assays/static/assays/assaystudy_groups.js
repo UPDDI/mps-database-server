@@ -502,9 +502,13 @@ $(document).ready(function () {
 
     // JUST USES DEFAULT PROTOCOL FOR NOW
     function spawn_row(setup_to_use, add_new_row) {
-        // TODO: SHOULD REMOVE, WHOLE CONCEPT OF current_setup NEED TO BE REVISED
+        // TODO: SHOULD REMOVE, WHOLE CONCEPT OF current_setup NEEDS TO BE REVISED
         if (!setup_to_use) {
-            setup_to_use = current_setup;
+            setup_to_use = {
+                'cell': [],
+                'compound': [],
+                'setting': []
+            };
         }
 
         var new_row = $('<tr>');
@@ -1044,6 +1048,26 @@ $(document).ready(function () {
         height: 500,
         open: function() {
             $.ui.dialog.prototype.options.open();
+
+            // Set the organ model and organ model protocol to current
+            if (current_setup['organ_model_id']) {
+                organ_model[0].selectize.setValue(current_setup['organ_model_id']);
+                organ_model.trigger('change');
+
+                // RACE CONDITION (need to wait until dropdown is populated)
+                // NOTE: Not how one should handle race conditions (TODO REVISE)
+                setTimeout(function() {
+                    if (current_setup['organ_model_protocol_id']) {
+                        protocol[0].selectize.setValue(current_setup['organ_model_protocol_id']);
+                        protocol.trigger('change');
+                    }
+                }, 150);
+            }
+            else {
+                organ_model[0].selectize.setValue('');
+                organ_model.trigger('change');
+            }
+
             // BAD
             setTimeout(function() {
                 // Blur all
