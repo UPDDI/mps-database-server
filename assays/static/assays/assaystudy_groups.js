@@ -502,9 +502,13 @@ $(document).ready(function () {
 
     // JUST USES DEFAULT PROTOCOL FOR NOW
     function spawn_row(setup_to_use, add_new_row) {
-        // TODO: SHOULD REMOVE, WHOLE CONCEPT OF current_setup NEED TO BE REVISED
+        // TODO: SHOULD REMOVE, WHOLE CONCEPT OF current_setup NEEDS TO BE REVISED
         if (!setup_to_use) {
-            setup_to_use = current_setup;
+            setup_to_use = {
+                'cell': [],
+                'compound': [],
+                'setting': []
+            };
         }
 
         var new_row = $('<tr>');
