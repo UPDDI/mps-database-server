@@ -245,6 +245,101 @@ $(document).ready(function () {
         return stringification;
     }
 
+    function get_text_display_for_field(field_name, value, prefix) {
+        // I will need to think about invalid fields
+        var field_name = field_name.replace('_id', '');
+        if ((field_name !== 'addition_time' && field_name !== 'duration')) {
+            return get_display_for_field(field_name, value, prefix);
+        }
+        // NOTE THIS ONLY HAPPENS WHEN IT IS NEEDED IN ADD PAGE
+        else {
+            var split_time = window.SPLIT_TIME.get_split_time(
+                value
+            );
+
+            // $.each(split_time, function(time_name, time_value) {
+            //     new_display.find('.' + prefix + '-' + field_name + '_' + time_name).html(time_value);
+            // });
+
+            // CRUDE
+            // Should use double digits?
+            return 'D ' + split_time['day'] + ' H ' + split_time['hour'] + ' M ' + split_time['minute'];
+        }
+    }
+
+    function populate_popup_tables(relevant_group_data) {
+        // For every prefix
+        $.each(prefixes, function(prefix_index, prefix) {
+            // The popup table in question
+            var current_popup_table = $('#' + prefix + '_full_contents_popup_table');
+            // The head
+            var current_head = current_popup_table.find('thead');
+            // The body
+            var current_body = current_popup_table.find('tbody');
+
+            // Run through the header to get the fields we need to compare and their order
+            // The field points to a boolean that is false if it finds any divergences in the field
+            var current_fields = [];
+
+            // Get all of the fields from the table header (a little tricky, but makes sure we keep order)
+            current_head.find('th').each(function() {
+                if ($(this).attr('data-field')) {
+                    current_fields.push($(this).attr('data-field'));
+                }
+            });
+
+            // Clear the body
+            current_body.empty();
+
+            $.each(relevant_group_data, function(index, group) {
+                var new_row = $('<tr>').append(
+                    $('<td>').text(group['name'])
+                );
+
+                $.each(current_fields, function(field_index, current_field) {
+                    var new_td = $('<td>');
+
+                    if (group[prefix][0]) {
+                        // Crude: determine if all the same
+                        var all_the_same = true;
+                        var value_to_compare = group[prefix][0][current_field];
+
+                        $.each(group[prefix], function(content_index, content) {
+                            if (content[current_field] !== value_to_compare) {
+                                all_the_same = false;
+                                // Break
+                                return false;
+                            }
+                        });
+
+                        if (all_the_same) {
+                            new_td.append(
+                                $('<div>').text(
+                                    // Note added semicolon
+                                    get_text_display_for_field(current_field, value_to_compare, prefix)
+                                )
+                            );
+                        }
+                        else {
+                            $.each(group[prefix], function(content_index, content) {
+                                new_td.append(
+                                    $('<div>').text(
+                                        // Note added semicolon
+                                        get_text_display_for_field(current_field, content[current_field], prefix) + ';'
+                                    )
+                                );
+                            });
+                        }
+                    }
+
+                    new_row.append(new_td);
+                });
+
+                current_body.append(new_row);
+            });
+        });
+    }
+
     // Make the "difference table"
     // This determines whether any of the cells, compounds, or settings of the groups differ and shows a table depicting as much
     // NOTE: Depends on a particular element for table
@@ -280,6 +375,9 @@ $(document).ready(function () {
                 }
             });
         }
+
+        // Make the popup tables
+        populate_popup_tables(relevant_group_data);
 
         var diverging_contents = [];
 
@@ -438,7 +536,7 @@ $(document).ready(function () {
         // Make all of the popups
         var current_dialog = $('#' + prefix + '_full_contents_popup');
         current_dialog.dialog({
-            width: 900,
+            width: $(document).width(),
             height: 500,
             buttons: [
                 {
