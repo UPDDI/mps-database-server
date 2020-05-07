@@ -2222,9 +2222,17 @@ class AssayStudyImages(StudyViewerMixin, DetailView):
             'setting__study'
         )
 
-        ordered_study_images = AssayImage.objects.filter(
-            setting_id__in=study_image_settings
-        ).order_by('time').values_list('id', flat=True)
+        ordered_study_images = list(
+            AssayImage.objects.filter(
+                setting_id__in=study_image_settings
+            ).order_by(
+                'time',
+                'file_name'
+            ).values_list(
+                'id',
+                flat=True
+            )
+        )
 
         metadata = {}
         tableCols = []
