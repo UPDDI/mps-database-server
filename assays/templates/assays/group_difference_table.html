@@ -1,13 +1,133 @@
+{# Probably worthwhile to have some kind of visibility stuff here #}
 <table class="table table-striped table-bordered" id="difference_table">
     <thead>
         <tr>
             <th>Group Name</th>
             <th>MPS Model</th>
             <th>Test Type</th>
-            <th>Cells</th>
-            <th>Compounds</th>
-            <th>Settings</th>
+            <th>
+                Cells
+                <a id="spawn_cell_full_contents_popup" role="button" class="btn btn-info">
+                    <span class="glyphicon glyphicon-search"></span>
+                </a>
+            </th>
+            <th>
+                Compounds
+                <a id="spawn_compound_full_contents_popup" role="button" class="btn btn-info">
+                    <span class="glyphicon glyphicon-search"></span>
+                </a>
+            </th>
+            <th>
+                Settings
+                <a id="spawn_setting_full_contents_popup" role="button" class="btn btn-info">
+                    <span class="glyphicon glyphicon-search"></span>
+                </a>
+            </th>
         </tr>
     </thead>
     <tbody></tbody>
 </table>
+
+{# Popups for components #}
+<div hidden title="Group Cell Data" id="cell_full_contents_popup">
+    <table class="table table-striped table-bordered" id="cell_full_contents_popup_table">
+        {# Should we explicitly or implicitly fill this out? #}
+        <thead>
+            <th>
+                Group Name
+            </th>
+            <th data-field="cell_sample_id">
+                Cell Sample
+            </th>
+            <th data-field="passage">
+                Passage
+            </th>
+            <th data-field="biosensor_id">
+                Biosensor
+            </th>
+            <th data-field="density">
+                Density
+            </th>
+            <th data-field="density_unit_id">
+                Density Unit
+            </th>
+            <th data-field="addition_time">
+                Addition Time
+            </th>
+            <th data-field="addition_location_id">
+                Addition Location
+            </th>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div hidden title="Group Compound Data" id="compound_full_contents_popup">
+    <table class="table table-striped table-bordered" id="compound_full_contents_popup_table">
+        {# Should we explicitly or implicitly fill this out? #}
+        <thead>
+            <th>
+                Group Name
+            </th>
+            <th data-field="compound_id">
+                Compound
+            </th>
+            <th data-field="concentration">
+                Concentration
+            </th>
+            <th data-field="concentration_unit_id">
+                Unit
+            </th>
+            {# ? #}
+            <th data-field="supplier_text">
+                Supplier
+            </th>
+            <th data-field="lot_text">
+                Compound
+            </th>
+            <th data-field="receipt_date">
+                Receipt Date
+            </th>
+            <th data-field="addition_time">
+                Addition Time
+            </th>
+            <th data-field="duration">
+                Duration
+            </th>
+            <th data-field="addition_location_id">
+                Addition Location
+            </th>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div hidden title="Group Setting Data" id="setting_full_contents_popup">
+    <table class="table table-striped table-bordered" id="setting_full_contents_popup_table">
+        {# Should we explicitly or implicitly fill this out? #}
+        <thead>
+            <th>
+                Group Name
+            </th>
+            <th data-field="setting_id">
+                Setting
+            </th>
+            <th data-field="value">
+                Value
+            </th>
+            <th data-field="unit_id">
+                Unit
+            </th>
+            <th data-field="addition_time">
+                Addition Time
+            </th>
+            <th data-field="duration">
+                Duration
+            </th>
+            <th data-field="addition_location_id">
+                Addition Location
+            </th>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
