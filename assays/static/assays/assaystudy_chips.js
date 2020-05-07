@@ -114,6 +114,21 @@ $(document).ready(function () {
         $.each(chips, function(index, chip) {
             make_row(index, chip);
         });
+
+        // Determine row hiding
+        var columns_to_check = [
+            'model',
+            'test_type',
+            'cell',
+            'compound',
+            'setting'
+        ];
+
+        $.each(columns_to_check, function(index, key) {
+            if (window.GROUPS.hidden_columns[key]) {
+                $('#chips_table td:nth-child(' + (index + 4) + '), #chips_table th:nth-child(' + (index + 4) + ')').hide();
+            }
+        });
     }
 
     build_chip_table();
