@@ -1048,6 +1048,26 @@ $(document).ready(function () {
         height: 500,
         open: function() {
             $.ui.dialog.prototype.options.open();
+
+            // Set the organ model and organ model protocol to current
+            if (current_setup['organ_model_id']) {
+                organ_model[0].selectize.setValue(current_setup['organ_model_id']);
+                organ_model.trigger('change');
+
+                // RACE CONDITION (need to wait until dropdown is populated)
+                // NOTE: Not how one should handle race conditions (TODO REVISE)
+                setTimeout(function() {
+                    if (current_setup['organ_model_protocol_id']) {
+                        protocol[0].selectize.setValue(current_setup['organ_model_protocol_id']);
+                        protocol.trigger('change');
+                    }
+                }, 150);
+            }
+            else {
+                organ_model[0].selectize.setValue('');
+                organ_model.trigger('change');
+            }
+
             // BAD
             setTimeout(function() {
                 // Blur all
