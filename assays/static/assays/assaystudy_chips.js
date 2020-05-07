@@ -2,6 +2,8 @@
 $(document).ready(function () {
     // Make the difference table
     window.GROUPS.make_difference_table();
+    // NOTE THAT THIS IS RESTRICTED TO CHIPS
+    // window.GROUPS.make_difference_table('chip');
 
     // TEMPORARY
     var series_data_selector = $('#id_series_data');
@@ -126,6 +128,8 @@ $(document).ready(function () {
 
         $.each(columns_to_check, function(index, key) {
             if (window.GROUPS.hidden_columns[key]) {
+                // Be careful with magic strings!
+                // (And magic numbers for the index offset)
                 $('#chips_table td:nth-child(' + (index + 4) + '), #chips_table th:nth-child(' + (index + 4) + ')').hide();
             }
         });
@@ -151,5 +155,18 @@ $(document).ready(function () {
 
         // Rebuild the table
         build_chip_table();
+    });
+
+    // Simple triggers for difference popups
+    $('#spawn_cell_full_contents_popup_duplicate').click(function() {
+        $('#spawn_cell_full_contents_popup').trigger('click');
+    });
+
+    $('#spawn_compound_full_contents_popup_duplicate').click(function() {
+        $('#spawn_compound_full_contents_popup').trigger('click');
+    });
+
+    $('#spawn_setting_full_contents_popup_duplicate').click(function() {
+        $('#spawn_setting_full_contents_popup').trigger('click');
     });
 });
