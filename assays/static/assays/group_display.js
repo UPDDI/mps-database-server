@@ -508,7 +508,8 @@ $(document).ready(function () {
             // CONTRIVED FOR NOW: REPLACE WITH CACHED SELECTOR
             $('#difference_table').find('tbody').append(current_row);
 
-            window.GROUPS.difference_table_displays[index] = stored_tds;
+            // ASSUMES UNIQUE NAMES
+            window.GROUPS.difference_table_displays[relevant_group_data[index]['name']] = stored_tds;
         });
 
         // Show all initially

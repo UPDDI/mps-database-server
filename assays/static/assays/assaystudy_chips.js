@@ -1,7 +1,7 @@
 // TODO WE ARE NOW CALLING THEM GROUPS AGAIN, I GUESS
 $(document).ready(function () {
     // Make the difference table
-    window.GROUPS.make_difference_table();
+    window.GROUPS.make_difference_table('chip');
     // NOTE THAT THIS IS RESTRICTED TO CHIPS
     // window.GROUPS.make_difference_table('chip');
 
@@ -61,7 +61,14 @@ $(document).ready(function () {
     }
 
     function make_row(index, chip) {
-        var current_stored_tds = window.GROUPS.difference_table_displays[chip['group_id']];
+        // Previously just used the index
+        // var current_stored_tds = window.GROUPS.difference_table_displays[chip['group_id']];
+
+        var current_group_name = series_data[Math.floor(chip['group_id'])].name;
+
+        // ASSUMES UNIQUE NAMES
+        var current_stored_tds = window.GROUPS.difference_table_displays[current_group_name];
+
         console.log(index, chip);
         console.log(window.GROUPS.difference_table_displays);
 
