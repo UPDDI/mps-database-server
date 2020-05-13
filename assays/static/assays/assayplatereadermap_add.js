@@ -1923,7 +1923,7 @@ $(document).ready(function () {
                     // https://developers.google.com/chart/interactive/docs/points
 
                     options = {
-                        title: global_floater_form_calibration_method,
+                        title: $('#id_form_calibration_method').val(),
                         seriesType: 'scatter',
                         series: {
                             // 0: {pointShape: 'square'}, pointSize: 0.3,
