@@ -4862,8 +4862,9 @@ def fetch_review_plate_reader_data_file_with_block_info(request):
     set_delimiter = request.POST.get('set_delimiter', '0')
     set_format = request.POST.get('set_format', '0')
     set_plate_size = request.POST.get('set_plate_size', '0')
-    number_plate_lines = request.POST.get('number_plate_lines', '0')
-    number_plate_columns = request.POST.get('number_plate_columns', '0')
+    # these are legacy and should be deleted
+    # number_plate_lines = request.POST.get('number_plate_lines', '0')
+    # number_plate_columns = request.POST.get('number_plate_columns', '0')
     set_number_blocks = request.POST.get('set_number_blocks', '0')
     set_number_blank_columns = request.POST.get('set_number_blank_columns', '0')
     set_number_blank_rows = request.POST.get('set_number_blank_rows', '0')

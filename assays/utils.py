@@ -3523,6 +3523,22 @@ def sub_function_inside_utils_plate_reader_map_file_best_guess_block_detect(
         start_block_delimiter_indexes = [form_number_blank_columns] * len(start_block_line_indexes)
         data_block_metadata = [None] * (len(start_block_line_indexes) * len(start_block_delimiter_indexes))
 
+    elif set_number_blank_columns == 'true' and \
+            form_number_blank_columns != 123 and \
+            set_number_blank_rows == 'false':
+
+        start_block_line_indexes = [form_number_blank_rows]
+        start_block_delimiter_indexes = [form_number_blank_columns] * len(start_block_line_indexes)
+        data_block_metadata = [None] * (len(start_block_line_indexes) * len(start_block_delimiter_indexes))
+
+    elif set_number_blank_columns == 'false' and \
+            set_number_blank_rows == 'true' and \
+            form_number_blank_rows != 444:
+
+        start_block_line_indexes = [form_number_blank_rows]
+        start_block_delimiter_indexes = [form_number_blank_columns] * len(start_block_line_indexes)
+        data_block_metadata = [None] * (len(start_block_line_indexes) * len(start_block_delimiter_indexes))
+
     elif len(cols_idx_with_1_of_1_2_3) > 0:
         start_block_line_indexes = sorted(set(rows_idx_with_1_2_3))
         start_block_delimiter_indexes = sorted(set(cols_idx_with_1_of_1_2_3))

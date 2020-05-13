@@ -3743,8 +3743,8 @@ $(document).ready(function () {
         let ret_location = null;
         let ret_location_text = "";
         let ret_dilution_factor = "1";
-        let ret_collection_volume = "0";
-        let ret_collection_time = "0";
+        let ret_collection_volume = "1";
+        let ret_collection_time = "1";
         let ret_compound = "";
         let ret_cell = "";
         let ret_setting = "";
@@ -4559,17 +4559,6 @@ $(document).ready(function () {
 
 
 // START - STUFF FOR REFERENCE
-// used to format the reference table - keep if show table, else, do not need this formatting
-// NOTE that the table is needed to pull setup information (using javascript) to show in assay plate map
-// NOTE: if show table as DataTable, matrix items that are not display are not accessible,
-// $('#matrix_items_table').DataTable({
-//  //"iDisplayLength": 25,
-//  "paging": false,
-//  "sDom": '<B<"row">lfrtip>',
-//  fixedHeader: {headerOffset: 50},
-//  responsive: true,
-//  "order": [[2, "asc"]],
-//});
 
 // keep for reference for now - adding a formset the original way from here:
 // https:// simpleit.rocks/python/django/dynamic-add-form-with-add-button-in-django-modelformset-template/
@@ -4588,10 +4577,6 @@ $(document).ready(function () {
 //  }
 //}
 
-// another method to try, do not recall if worked or not, need to retest
-// var $saveme = $('#standard_target_selected').selectize();
-// var myselection = $saveme[0].selectize;;
-// console.log(myselection)
 // example of finding regexp
 //  var needle = ':'
 //  var re = new RegExp(needle,'gi');
@@ -4613,7 +4598,6 @@ $(document).ready(function () {
 //    // console.log( index + ": " + $( this ).text() );
 //  });
 //}
-
 
 // HANDY to know for going through a formset
 // console.log("$('#value_formset')")
