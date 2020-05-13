@@ -50,6 +50,7 @@ from assays.models import (
     assay_plate_reader_map_info_plate_size_choices,
     assay_plate_reader_volume_unit_choices,
     assay_plate_reader_file_delimiter_choices,
+    upload_file_location,
 )
 from compounds.models import Compound, CompoundInstance, CompoundSupplier
 from microdevices.models import (
@@ -70,16 +71,19 @@ from .utils import (
     # EXCLUDED_DATA_POINT_CODE,
     AssayFileProcessor,
     get_user_accessible_studies,
+    plate_reader_data_file_process_data,
 )
+
 from django.utils import timezone
 
 from mps.templatetags.custom_filters import is_group_admin, filter_groups, ADMIN_SUFFIX
 
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 
+from mps.settings import MEDIA_ROOT
 import ujson as json
-
 import os
+import csv
 
 # TODO REFACTOR WHITTLING TO BE HERE IN LIEU OF VIEW
 # TODO REFACTOR FK QUERYSETS TO AVOID N+1
@@ -3565,16 +3569,15 @@ class AssayPlateReaderMapForm(BootstrapForm):
             'unit',
         )
         self.fields['study_assay'].widget.attrs['class'] += ' required'
-        # the selectize was causing so many PROBLEMS with turning to required in JS, I turned it off this field!
+        # the selectize was causing PROBLEMS, I turned it off this field
         # self.fields['volume_unit'].widget.attrs.update({'class': 'no-selectize'})
         # self.fields['volume_unit'].widget.attrs['class'] += ' form-control'
         self.fields['standard_molecular_weight'].widget.attrs['class'] += ' form-control'
 
         ######
         # START section to deal with raw data showing in the plate map after file assignment
-        # this will populate a dropdown that lets the user pick which file block to see on the page
-        # note that, as of 20200111, there is one value set with null file
-        # So, only look for those that have a populated file block id
+        # this will populate a dropdown that lets the user pick which file block to see on the page (map and calibrate)
+        # For the dropdown, only look for those file blocks that have a populated file block id
         # get a record in the table with the plate index of 0 and that have a file block id
         as_value_formset_with_file_block = AssayPlateReaderMapItemValue.objects.filter(
             assayplatereadermap=my_instance.id
@@ -3633,18 +3636,13 @@ class AssayPlateReaderMapForm(BootstrapForm):
         self.fields['se_form_blank_handling'].required = False
         self.fields['radio_replicate_handling_average_or_not'].required = False
 
-        # getting sent empty to be filled with ajax - took to long to do as routine
-        # update, sending empty caused problems, fill with place holder
-        self.fields['se_block_standard_borrow_string'].widget.attrs['class'] += ' required'
-        self.fields['se_block_standard_borrow_string'].required = False
-
         # HANDY - save problems, this is likely the cause (required fields!)
         self.fields['form_data_processing_multiplier_string'].required = False
         self.fields['form_data_parsable_message'].required = False
         self.fields['form_calibration_curve_method_used'].required = False
         self.fields['form_calibration_equation'].required = False
         self.fields['form_calibration_rsquared'].required = False
-        self.fields['form_file_block_pk_borrowed_for_standard'].required = False
+
         self.fields['form_calibration_parameter_1_string'].required = False
         self.fields['form_calibration_parameter_2_string'].required = False
         self.fields['form_calibration_parameter_3_string'].required = False
@@ -3659,25 +3657,145 @@ class AssayPlateReaderMapForm(BootstrapForm):
         self.fields['form_calibration_standard_fitted_max_for_e'].required = False
         self.fields['form_calibration_sample_blank_average'].required = False
         self.fields['form_calibration_standard_standard0_average'].required = False
+        self.fields['form_calibration_method'].required = False
+        self.fields['form_calibration_target'].required = False
+        self.fields['form_calibration_unit'].required = False
+        self.fields['form_number_standards_this_plate'].required = False
+        self.fields['form_hold_the_data_block_metadata_string'].required = False
+        self.fields['form_hold_the_omits_string'].required = False
+        self.fields['form_hold_the_notes_string'].required = False
 
-    # these raw data
-    form_number_file_block_combos = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
-    se_block_select_string = forms.ChoiceField()
-    ns_block_select_pk = forms.ChoiceField()
+        # Need a valid choice field.
+        # When the selected plate map has standards, the user will never see this field and will not need it.
+        # If the plate does not have standards, the user will need the option to pick to borrow standards from another plate.
 
-    # HAVE to have one for the form to save correctly
-    # HANDY error saving undefined
-    se_block_standard_borrow_string = forms.ChoiceField(
-        choices=(
-            (0, 'Select One'),
+        # does this plate map have standards?
+        does_this_plate_have_standards = AssayPlateReaderMapItem.objects.filter(
+            assayplatereadermap=my_instance.id
+        ).filter(
+            well_use='standard'
+        )
+        number_standards_wells_on_plate = len(does_this_plate_have_standards)
+
+        choiceBorrowData = (0, 'Select One'),
+        choiceBorrowDataToPlateMap = (0, 0),
+
+        if number_standards_wells_on_plate > 0:
+            # left - file block pk in both
+            # right is a string of the data block meta data for selection of data block pk (left)
+            choiceBorrowData = choiceBorrowData
+            # right is plate map pk
+            choiceBorrowDataToPlateMap = choiceBorrowDataToPlateMap
+        else:
+            # if we have to borrow standards, need a list to pick from - add to choiceBorrowData
+            # need to borrow standards from another plate
+            # 20200510 - moving this to here from ajax call. Might move back depending on performance.
+            as_value_formset_with_file_block_standard = AssayPlateReaderMapItemValue.objects.filter(
+                study_id=self.study
+            ).filter(
+                assayplatereadermapdatafileblock__isnull=False
+            ).filter(
+                well_use='standard'
+            ).prefetch_related(
+                'assayplatereadermapdatafileblock',
+                'assayplatereadermap',
+            ).order_by(
+                'assayplatereadermapdatafileblock__id', 'well_use'
             )
-    )
+
+            # print('as_value_formset_with_file_block_standard')
+            # print(as_value_formset_with_file_block_standard)
+
+            number_filed_combos_standard = len(as_value_formset_with_file_block_standard)
+            prev_file = "none"
+            prev_data_block_file_specific_pk = 0
+
+            # queryset should have one record for each value SET that HAS a file-block and at least one standard associated to it
+            if number_filed_combos_standard > 0:
+                for record in as_value_formset_with_file_block_standard:
+
+                    short_file_name = os.path.basename(str(record.assayplatereadermapdatafile.plate_reader_file))
+                    # this is the data block of the file (for file 0 to something...)
+                    data_block_file_specific_pk = record.assayplatereadermapdatafileblock.data_block
+
+                    if prev_file == short_file_name and prev_data_block_file_specific_pk == data_block_file_specific_pk:
+                        pass
+                    else:
+                        data_platemap_pk = record.assayplatereadermap_id
+                        data_platemap_name = record.assayplatereadermap.name
+                        data_block_metadata = record.assayplatereadermapdatafileblock.data_block_metadata
+                        data_block_database_pk = record.assayplatereadermapdatafileblock.id
+
+                        # make a choice tuple list for showing selections and a choice tuple list of containing the file pk and block pk for javascript
+                        pick_string = 'PLATEMAP: ' + data_platemap_name + '  FILE: ' + short_file_name + '  BLOCK: ' + data_block_metadata + ' (' + str(
+                            data_block_file_specific_pk) + ')'
+
+                        addString1 = (data_block_database_pk, pick_string),
+                        choiceBorrowData = choiceBorrowData + addString1
+                        addString2 = (data_block_database_pk, data_platemap_pk),
+                        choiceBorrowDataToPlateMap = choiceBorrowDataToPlateMap + (addString2)
+
+                    prev_file = short_file_name
+                    prev_data_block_file_specific_pk = data_block_file_specific_pk
+
+        # print('choiceBorrowData')
+        # print(choiceBorrowData)
+        # print('choiceBorrowDataToPlateMap')
+        # print(choiceBorrowDataToPlateMap)
+
+        self.fields['se_block_standard_borrow_string'].choices = choiceBorrowData
+        self.fields['ns_block_standard_borrow_string_to_block_pk_back_to_platemap_pk'].choices = choiceBorrowDataToPlateMap
+        self.fields['ns_block_standard_borrow_string_to_block_pk_back_to_platemap_pk'].required = False
+        self.fields['se_block_standard_borrow_string'].widget.attrs['class'] += ' required'
+        self.fields['se_block_standard_borrow_string'].required = False
+        # field below replaced with something else,...delete when sure do not need
+        # self.fields['form_file_block_pk_borrowed_for_standard'].required = False
+
+    # enable the selection of a plate to borrow standards from by letting the user see a string of info about the DATA BLOCK (not just the plate map!)
+    se_block_standard_borrow_string = forms.ChoiceField()
+    ns_block_standard_borrow_string_to_block_pk_back_to_platemap_pk = forms.ChoiceField()
+
+    # pk of the file block borrowing when no standards on the current plate (store it here)
     form_block_standard_borrow_pk_single_for_storage = forms.IntegerField(
         required=False,
     )
+    # pk of the plate map associated with the file block borrowing when no standards on the current plate (store it here)
     form_block_standard_borrow_pk_platemap_single_for_storage = forms.IntegerField(
         required=False,
     )
+
+    form_hold_the_study_id = forms.IntegerField(
+        required=False,
+    )
+    form_hold_the_platemap_id = forms.IntegerField(
+        required=False,
+    )
+    form_hold_the_data_block_metadata_string = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
+    )
+    form_hold_the_omits_string = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
+    )
+    form_hold_the_notes_string = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
+    )
+
+    form_block_file_data_block_selected_pk_for_storage = forms.IntegerField(
+        required=False,
+    )
+
+    form_number_file_block_combos = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+    # string of selected file block (selected in dropdown)
+    se_block_select_string = forms.ChoiceField()
+    # pk of selected file block (stays lined up with the string)
+    ns_block_select_pk = forms.ChoiceField()
+
+    # this field got replaced with a different one...delete when sure do not need
+    # form_file_block_pk_borrowed_for_standard = forms.IntegerField(
+    #     widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+    # )
+    # NOTE: ns_block_select_pk is the field with the block that is being processed
+
     # END section to deal with raw data showing in the plate map after file assignment and deal with standard in a different file block
 
     # print("MAIN FORM")
@@ -3694,7 +3812,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
             ('log', 'Logarithmic'),
             ('poly2', 'Polynomial'),
 
-            ('select_one', 'Select One (n = standard concentration, s = signal)'),
+            # ('select_one', 'Select One (n = standard concentration, s = signal)'),
             # ('no_calibration', 'No Calibration'),
             # ('best_fit', 'Best Fit'),
             # ('logistic4', '4 Parameter Logistic (s = ((A-D)/(1.0+((n/C)**B))) + D)'),
@@ -3764,10 +3882,6 @@ class AssayPlateReaderMapForm(BootstrapForm):
     form_calibration_rsquared = forms.DecimalField(
         widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
     )
-    form_file_block_pk_borrowed_for_standard = forms.IntegerField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
-    )
-    # NOTE: ns_block_select_pk is the field with the block that is being processed
 
     radio_replicate_handling_average_or_not = forms.ChoiceField(
         # widget=forms.RadioSelect(attrs={'id': 'value'}),
@@ -3786,49 +3900,257 @@ class AssayPlateReaderMapForm(BootstrapForm):
     # think the max I will need is 5 for 5 parameter logistic
     # going to need to keep track of order
     form_calibration_parameter_1_string = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
+        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
     )
     form_calibration_parameter_2_string = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
     )
     form_calibration_parameter_3_string = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
     )
     form_calibration_parameter_4_string = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
     )
     form_calibration_parameter_5_string = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
+        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
     )
     form_calibration_parameter_1_value = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
     )
     form_calibration_parameter_2_value = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
     )
     form_calibration_parameter_3_value = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
     )
     form_calibration_parameter_4_value = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
     )
     form_calibration_parameter_5_value = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
     )
     form_calibration_standard_fitted_min_for_e = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
     )
     form_calibration_standard_fitted_max_for_e = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
     )
     form_calibration_sample_blank_average = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
     )
     form_calibration_standard_standard0_average = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
     )
-
+    form_calibration_method = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
+    )
+    form_calibration_target = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
+    )
+    form_calibration_unit = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
+    )
+    form_number_standards_this_plate = forms.IntegerField(
+        required=False,
+        initial=1,
+    )
     form_make_mifc_on_submit = forms.BooleanField(required=False)
+
+    def clean(self):
+        data = self.cleaned_data
+
+        if data.get('form_make_mifc_on_submit'):
+            # search term MIFC - if MIFC changes, this will need changed
+            # make a list of column headers for the mifc file
+            column_table_headers_average = [
+                'Chip ID',
+                'Cross Reference',
+                'Assay Plate ID',
+                'Assay Well ID',
+                'Day',
+
+                'Hour',
+                'Minute',
+                'Target/Analyte',
+                'Subtarget',
+                'Method/Kit',
+
+                'Sample Location',
+                'Value',
+                'Value Unit',
+                'Replicate',
+                'Caution Flag',
+
+                'Exclude',
+                'Notes',
+                'Processing Details',
+            ]
+            # search term MIFC - if MIFC changes, this will need changed
+            # Make a dictionary of headers in utils and header needed in the mifc file
+            utils_key_column_header = {
+                'matrix_item_name': 'Chip ID',
+                'cross_reference': 'Cross Reference',
+                'plate_name': 'Assay Plate ID',
+                'well_name': 'Assay Well ID',
+                'day': 'Day',
+                'hour': 'Hour',
+                'minute': 'Minute',
+                'target': 'Target/Analyte',
+                'subtarget': 'Subtarget',
+                'method': 'Method/Kit',
+                'location_name': 'Sample Location',
+                'processed_value': 'Value',
+                'unit': 'Value Unit',
+                'replicate': 'Replicate',
+                'caution_flag': 'Caution Flag',
+                'exclude': 'Exclude',
+                'notes': 'Notes',
+                'sendmessage': 'Processing Details'}
+
+            # these should match what is in the forms.py...could make a generic dict, but leave for now WATCH BE CAREFUL
+            calibration_curve_xref = {
+                'select_one': 'Select One',
+                'no_calibration': 'No Calibration',
+                'best_fit': 'Best Fit',
+                'logistic4': '4 Parameter Logistic',
+                'linear': 'Linear w/fitted intercept',
+                'linear0': 'Linear w/intercept = 0',
+                'log': 'Logarithmic',
+                'poly2': 'Polynomial'
+            }
+
+            # print(".unit ",data.get('standard_unit').unit)
+            # print(".id ", data.get('standard_unit').id)
+            # .unit
+            # µg / mL
+            # .id
+            # 6
+
+            if data.get('form_block_standard_borrow_pk_single_for_storage') == None:
+                borrowed_block_pk = -1
+            else:
+                borrowed_block_pk = data.get('form_block_standard_borrow_pk_single_for_storage')
+
+            if data.get('form_block_standard_borrow_pk_platemap_single_for_storage') == None:
+                borrowed_platemap_pk = -1
+            else:
+                borrowed_platemap_pk = data.get(
+                    'form_block_standard_borrow_pk_platemap_single_for_storage')
+
+            use_curve_long = data.get('form_calibration_curve_method_used')
+            use_curve = find_a_key_by_value_in_dictionary(calibration_curve_xref, use_curve_long)
+            if use_curve == 'select_one':
+                use_curve = 'no_calibration'
+
+            # make a dictionary to send to the utils.py when call the function
+            set_dict = {
+                'called_from': 'form_save',
+                'study': data.get('form_hold_the_study_id'),
+                'pk_platemap': data.get('form_hold_the_platemap_id'),
+                'pk_data_block': data.get('form_block_file_data_block_selected_pk_for_storage'),
+                'plate_name': data.get('name'),
+                'form_calibration_curve': use_curve,
+                'multiplier': data.get('form_data_processing_multiplier'),
+                'unit': data.get('form_calibration_unit'),
+                'standard_unit': data.get('standard_unit').unit,
+                'form_min_standard': data.get('form_calibration_standard_fitted_min_for_e'),
+                'form_max_standard': data.get('form_calibration_standard_fitted_max_for_e'),
+                'form_blank_handling': data.get('se_form_blank_handling'),
+                'radio_standard_option_use_or_not': data.get('radio_standard_option_use_or_not'),
+                'radio_replicate_handling_average_or_not_0': data.get(
+                    'radio_replicate_handling_average_or_not'),
+                'borrowed_block_pk': borrowed_block_pk,
+                'borrowed_platemap_pk': borrowed_platemap_pk,
+                'count_standards_current_plate': data.get('form_number_standards_this_plate'),
+                'target': data.get('form_calibration_target'),
+                'method': data.get('form_calibration_method'),
+                'time_unit': data.get('time_unit'),
+                'volume_unit': data.get('volume_unit'),
+                'user_notes': data.get('form_hold_the_notes_string'),
+                'user_omits': data.get('form_hold_the_omits_string'),
+                'plate_size': data.get('device'),
+            }
+
+            # this function is in utils.py that returns data
+            data_mover = plate_reader_data_file_process_data(set_dict)
+            # what comes back is a dictionary of
+            list_of_dicts = data_mover[9]
+            list_of_lists_mifc_headers_row_0 = [None] * (len(list_of_dicts) + 1)
+            list_of_lists_mifc_headers_row_0[0] = column_table_headers_average
+            i = 1
+            # print(" ")
+            for each_dict_in_list in list_of_dicts:
+                list_each_row = []
+                for this_mifc_header in column_table_headers_average:
+                    # print("this_mifc_header ", this_mifc_header)
+                    # find the key in the dictionary that we need
+                    utils_dict_header = find_a_key_by_value_in_dictionary(utils_key_column_header, this_mifc_header)
+                    # print("utils_dict_header ", utils_dict_header)
+                    # get the value that is associated with this header in the dict
+                    this_value = each_dict_in_list.get(utils_dict_header)
+                    # print("this_value ", this_value)
+                    # add the value to the list for this dict in the list of dicts
+                    list_each_row.append(this_value)
+                # when down with the dictionary, add the completely list for this row to the list of lists
+                # print("list_each_row ", list_each_row)
+                list_of_lists_mifc_headers_row_0[i] = list_each_row
+                i = i + 1
+
+            # print("  ")
+            # print('list_of_lists_mifc_headers_row_0')
+            # print(list_of_lists_mifc_headers_row_0)
+
+            # First make a csv from the list_of_lists (using list_of_lists_mifc_headers_row_0)
+
+            # Specify the file for use with the file uploader class
+            bulk_location = upload_file_location(
+               self.study,
+                'PLATE-{}|METADATA-{}'.format(
+                    data.get('name'),
+                    data.get('form_hold_the_data_block_metadata_string')
+                )
+            )
+
+            # Make sure study has directories
+            if not os.path.exists(MEDIA_ROOT + '/data_points/{}'.format(data.get('form_hold_the_study_id'))):
+                os.makedirs(MEDIA_ROOT + '/data_points/{}'.format(data.get('form_hold_the_study_id')))
+
+            # Need to import from models
+            # Avoid magic string, use media location
+            file_location = MEDIA_ROOT.replace('mps/../', '', 1) + '/' + bulk_location + '.csv'
+
+            # Should make a csv writer to avoid repetition
+            file_to_write = open(file_location, 'w')
+            csv_writer = csv.writer(file_to_write, dialect=csv.excel)
+
+            # Add the UTF-8 BOM
+            list_of_lists_mifc_headers_row_0[0][0] = '\ufeff' + list_of_lists_mifc_headers_row_0[0][0]
+
+            # Write the lines
+            for one_line_of_data in list_of_lists_mifc_headers_row_0:
+                csv_writer.writerow(one_line_of_data)
+
+            file_to_write.close()
+            new_mifc_file = open(file_location, 'rb')
+            file_processor = AssayFileProcessor(new_mifc_file,
+                                                self.study,
+                                                self.user, save=True,
+                                                full_path='/media/' + bulk_location + '.csv')
+
+            # Process the file
+            file_processor.process_file()
+
+        return data
+
+# this finds the key for the value provided as thisHeader
+def find_a_key_by_value_in_dictionary(this_dict, this_header):
+    my_key = ''
+    for key, value in this_dict.items():
+        if value == this_header:
+            my_key = key
+            break
+    return my_key
+
 
 # There should be a complete set of items for each saved plate map (one for each well in the selected plate)
 class AssayPlateReaderMapItemForm(forms.ModelForm):

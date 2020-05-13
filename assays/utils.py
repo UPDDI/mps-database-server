@@ -545,16 +545,26 @@ CSV_ROOT = settings.MEDIA_ROOT.replace('mps/../', '', 1) + '/csv/'
 
 class AssayFileProcessor:
     """Processes Assay MIFC files"""
-    def __init__(self, current_file, study, user, current_data_file_upload=None, save=False):
+    def __init__(self, current_file, study, user, current_data_file_upload=None, save=False, full_path=''):
         self.current_file = current_file
         self.user = user
+        self.full_path = full_path
+
         if save:
-            self.data_file_upload = AssayDataFileUpload(
-                file_location=current_file.url,
-                created_by=user,
-                modified_by=user,
-                study=study
-            )
+            if hasattr(current_file, 'url'):
+                self.data_file_upload = AssayDataFileUpload(
+                    file_location=current_file.url,
+                    created_by=user,
+                    modified_by=user,
+                    study=study
+                )
+            else:
+                self.data_file_upload = AssayDataFileUpload(
+                    file_location=full_path,
+                    created_by=user,
+                    modified_by=user,
+                    study=study
+                )
         else:
             self.data_file_upload = AssayDataFileUpload()
         self.study = study
@@ -1081,10 +1091,13 @@ class AssayFileProcessor:
             self.data_file_upload.save()
 
         self.current_file.seek(0, 0)
-        try:
-            self.process_excel_file()
-        except xlrd.XLRDError:
+        if self.full_path:
             self.process_csv_file()
+        else:
+            try:
+                self.process_excel_file()
+            except xlrd.XLRDError:
+                self.process_csv_file()
 
 
 # TODO TODO TODO PLEASE REVISE STYLES WHEN POSSIBLE
@@ -4212,6 +4225,8 @@ def plate_reader_data_file_process_data(set_dict):
     """
     Assay PLATE READER FILE Data Processing (utility) - called from web page and form save.
     """
+    # print(" in utils.py")
+    # print(set_dict)
 
     # get passed IN (from ajax) info into variables
     study = int(set_dict.get('study'))
@@ -4237,12 +4252,19 @@ def plate_reader_data_file_process_data(set_dict):
     called_from = set_dict.get('called_from')
     user_notes = set_dict.get('user_notes')
     user_omits = set_dict.get('user_omits')
+    plate_size = set_dict.get('plate_size')
+
     # if python - in form save, use the form fields for users and omits
     # if change_average - need to pull the user_omits and user_notes
     # else - redo all omits and notes - starting over
     # javascript or form_submit
 
-    # todo here here all the averaging work (returning averaged for table.)
+    # print("called_from")
+    # print(called_from)
+    # print("user_notes")
+    # print(user_notes)
+    # print("user_omits")
+    # print(user_omits)
 
     sendmessage = ''
 
@@ -4259,6 +4281,10 @@ def plate_reader_data_file_process_data(set_dict):
         use_form_max = float(form_max_standard)
     except:
         use_form_max = -1.0
+    try:
+        use_plate_size = int(plate_size)
+    except:
+        use_plate_size = 96
 
     # check for injection of invalid values
     if radio_replicate_handling_average_or_not_0 not in ['average', 'each']:
@@ -4289,13 +4315,16 @@ def plate_reader_data_file_process_data(set_dict):
     use_file_pk_for_standards = pk_data_block
     use_platemap_pk_for_standards = pk_platemap
     dict_of_parameter_labels = ({'p1': '-', 'p2': '-', 'p3': '-', 'p4': '-', 'p5': '-'})
-    dict_of_parameter_values = ({'p1': None, 'p2': None, 'p3': None, 'p4': None, 'p5': None})
+    dict_of_parameter_values = ({'p1': 0, 'p2': 0, 'p3': 0, 'p4': 0, 'p5': 0})
     dict_of_curve_info = ({'method': '-', 'equation': '-', 'rsquared': 0})
     dict_of_standard_info = ({'min': 0, 'max': 0, 'standard0average': 0, 'blankaverage': 0})
     list_of_dicts_of_each_standard_row_points = []
     list_of_dicts_of_each_standard_row_ave_points = []
     list_of_dicts_of_each_standard_row_curve = []
-    list_of_dicts_of_each_sample_row = []
+    list_of_dicts_of_each_sample_row_each = []
+    list_of_dicts_of_each_sample_row_average = []
+    notes = ''
+    omits = False
     goBackToFileBlockRemovePlateMapToFixMessage = "To deal with this, go to the file block that uses this plate map and remove the plate map and save the file block, then, return to this plate map and add the required information and save. Go back to the file block and re-add this plate map. Return to this plate map and continue.; "
     goBackToFileBlockToFixFileBlockMessage = "A possible cause is that the file block was parsed correctly during file upload. Another possible cause is incorrect plate map setup. All wells designated as something other than empty should have a raw value.; "
 
@@ -4677,6 +4706,7 @@ def plate_reader_data_file_process_data(set_dict):
                 sqls = sqls + str(use_form_max) + " "
 
                 sqls = sqls + " GROUP BY assays_AssayPlateReaderMapItem.standard_value"
+                sqls = sqls + " ORDER BY assays_AssayPlateReaderMapItem.standard_value"
                 # print("all standards sql: ", sqls)
                 cursor.execute(sqls)
                 mystandardsAvg = cursor.fetchall()
@@ -4696,8 +4726,8 @@ def plate_reader_data_file_process_data(set_dict):
                 yi = each[1]
 
                 this_row.update({'Concentration': xi })
-                this_row.update({'Ave Adjusted Observed Signal': yi })
-                this_row.update({'Ave Observed Signal': each[2]})
+                this_row.update({'Adjusted Observed Signal': yi })
+                this_row.update({'Observed Signal': each[2]})
                 # we will populate this field later
                 this_row.update({'Fitted Signal': 0})
                 list_of_dicts_of_each_standard_row_ave_points.append(this_row)
@@ -4886,7 +4916,7 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_parameter_labels_linear = (
                     {'p1': 'Intercept (A)', 'p2': 'Slope (B)', 'p3': '-', 'p4': '-', 'p5': '-'})
                 dict_of_parameter_values_linear = (
-                    {'p1': icept, 'p2': slope, 'p3': None, 'p4': None, 'p5': None})
+                    {'p1': icept, 'p2': slope, 'p3': 0, 'p4': 0, 'p5': 0})
 
                 dict_of_curve_info_linear = (
                     {'method': 'Linear w/fitted intercept', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve})
@@ -4922,7 +4952,7 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_parameter_labels_logistic4 = (
                     {'p1': 'Theoretical response at zero concentration (A)', 'p2': 'Slope factor (B)', 'p3': 'Mid-range concentration (inflection point) (C)', 'p4': 'Theoretical response at infinite concentration (D)', 'p5': '-'})
                 dict_of_parameter_values_logistic4 = (
-                    {'p1': A_logistic4, 'p2': B_logistic4, 'p3': C_logistic4, 'p4': D_logistic4, 'p5': None})
+                    {'p1': A_logistic4, 'p2': B_logistic4, 'p3': C_logistic4, 'p4': D_logistic4, 'p5': 0})
 
                 dict_of_curve_info_logistic4 = (
                     {'method': '4-Parameter Logistic', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
@@ -4934,6 +4964,12 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_parameter_values = dict_of_parameter_values_logistic4
                 dict_of_curve_info = dict_of_curve_info_logistic4
                 dict_of_standard_info = dict_of_standard_info_logistic4
+
+                # print("araw, A, B, C, D ", str(araw), " ", str(A4), " ", str(B4), " ", str(C4), " ", str(D4), " ")
+                # print("(A4 - D4) ", str(A4 - D4))
+                # print("(araw - D4) ", str(araw - D4))
+                # print("(1 / B4) ", str(1 / B4))
+                # print("(((A4 - D4) / (araw - D4)) - 1) ", str(((A4 - D4) / (araw - D4)) - 1))
 
             elif use_calibration_curve == 'log':
                 if N100[0] == 0:
@@ -4955,7 +4991,7 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_parameter_labels_log = (
                     {'p1': 'constant (A)', 'p2': 'coefficient of ln (B)', 'p3': '-', 'p4': '-', 'p5': '-'})
                 dict_of_parameter_values_log = (
-                    {'p1': A_logs, 'p2': B_logs, 'p3': None, 'p4': None, 'p5': None})
+                    {'p1': A_logs, 'p2': B_logs, 'p3': 0, 'p4': 0, 'p5': 0})
 
                 dict_of_curve_info_log = (
                     {'method': 'Logarithmic', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
@@ -4985,7 +5021,7 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_parameter_labels_poly2 = (
                     {'p1': 'coefficient (A)', 'p2': 'coefficient of concentration (B)', 'p3': 'coefficient of concentration**2 (C)', 'p4': '-', 'p5': '-'})
                 dict_of_parameter_values_poly2 = (
-                    {'p1': A_poly2s, 'p2': B_poly2s, 'p3': C_poly2s, 'p4': None, 'p5': None})
+                    {'p1': A_poly2s, 'p2': B_poly2s, 'p3': C_poly2s, 'p4': 0, 'p5': 0})
 
                 dict_of_curve_info_poly2 = (
                     {'method': 'Polynomial', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
@@ -5016,7 +5052,7 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_parameter_labels_linear0 = (
                     {'p1': 'Intercept (A)', 'p2': 'Slope (B)', 'p3': '-', 'p4': '-', 'p5': '-'})
                 dict_of_parameter_values_linear0 = (
-                    {'p1': icept, 'p2': slope, 'p3': None, 'p4': None, 'p5': None})
+                    {'p1': icept, 'p2': slope, 'p3': 0, 'p4': 0, 'p5': 0})
 
                 dict_of_curve_info_linear0 = (
                     {'method': 'Linear w/intercept = 0', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve})
@@ -5034,7 +5070,7 @@ def plate_reader_data_file_process_data(set_dict):
                 i = 0
                 for each in N100no0:
                     this_row = {}
-                    this_row.update({'Average Concentration': N100no0[i]})
+                    this_row.update({'Concentration': N100no0[i]})
                     this_row.update({'Observed Signal': None})
                     # FYI when using 2D numpy array....y_predStandards100[i] returns an array of 1
                     # when using 2D numpy array .... this_row.update({'Predicted Signal': y_predStandards100[i][0]})
@@ -5046,7 +5082,7 @@ def plate_reader_data_file_process_data(set_dict):
                 i = 0
                 for each in N100:
                     this_row = {}
-                    this_row.update({'Average Concentration': N100[i]})
+                    this_row.update({'Concentration': N100[i]})
                     this_row.update({'Observed Signal': None})
                     # FYI when using 2D numpy array....y_predStandards100[i] returns an array of 1
                     # when using 2D numpy array .... this_row.update({'Predicted Signal': y_predStandards100[i][0]})
@@ -5121,7 +5157,6 @@ def plate_reader_data_file_process_data(set_dict):
 
             # just declare these so can use the same fitting call that was made from later on in the code.
             caution_flag = ''
-            exclude_flag = ''
             sendmessage = sendmessage
             df = 1
             cv = 1
@@ -5134,16 +5169,16 @@ def plate_reader_data_file_process_data(set_dict):
                 this_row.update({'Adjusted Observed Signal': each[1]})
                 this_row.update({'Observed Signal': each[2]})
                 # what would the fitted concentration be at this signal?
-                araw =  each[1]
+                araw = each[1]
                 fitted_ftv_pdv_flags_sendmessage = plate_map_sub_return_the_fitted_and_other_info(
-                    araw, df, cv, ct, caution_flag, exclude_flag, sendmessage, standardunitCellsStart, unitCellsStart,
+                    araw, df, cv, ct, caution_flag, notes, omits, sendmessage, standardunitCellsStart, unitCellsStart,
                     yes_to_calibrate, use_calibration_curve, multiplier, use_form_max, use_form_min,
                     slope_linear, icept_linear,
                     slope_linear0, icept_linear0,
                     A4, B4, C4, D4,
                     A_log, B_log,
                     A_poly2, B_poly2, C_poly2)
-                # [ftv, pdv, caution_flag, exclude_flag, sendmessage]
+                # [ftv, pdv, caution_flag, sendmessage]
                 ftv = fitted_ftv_pdv_flags_sendmessage[0]
                 # print("ftv ",ftv)
                 this_row.update({'Fitted Concentration': ftv})
@@ -5178,7 +5213,6 @@ def plate_reader_data_file_process_data(set_dict):
             sqls = sqls + ", (assays_AssayPlateReaderMapItemValue.raw_value"
             sqls = sqls + "-" + str(sample_blank_average) + ")"
 
-
             sqls = sqls + " FROM ((( assays_AssayPlateReaderMapItem "
             sqls = sqls + " INNER JOIN assays_AssayPlateReaderMapItemValue ON "
             sqls = sqls + " assays_AssayPlateReaderMapItem.plate_index=assays_AssayPlateReaderMapItemValue.plate_index) "
@@ -5199,6 +5233,7 @@ def plate_reader_data_file_process_data(set_dict):
             sqls = sqls + " , assays_AssayPlateReaderMapItem.matrix_item_id "
             sqls = sqls + " , assays_AssayPlateReaderMapItemValue.time"
             sqls = sqls + " , assays_AssayPlateReaderMapItem.location_id"
+            sqls = sqls + " , assays_AssayMatrixItem.name"
 
             # print(sqls)
             cursor.execute(sqls)
@@ -5209,19 +5244,62 @@ def plate_reader_data_file_process_data(set_dict):
 
             sendmessage = sendmessage + "Fitting method: " + use_calibration_curve + ";  Standard minimum: " + str(use_form_min) + ";  Standard maximum: " + str(use_form_max) + ";  "
 
-        #  WATCH CAREFUL - this order is important in assay plate map add js
+        #  WATCH CAREFUL - this order is important below
         # if any of these are null, they cause problems when making table in javascript
         # it is like they just get skipped (eg. an array that should be 30 is only 29)
         # try passin all as strings
-        replicate = 0
+        replicate = 1
         prevWellUse = ""
         prevMatrixItemId = -1
         prevTime = -1
         prevLocationId = -1
 
-        for each in myquery:
-            this_row = {}
+        # need the string info to get the notes and true/false if omit box is checked
+        # need whenever processing, but only need to use if called when the replicate handling is average
+        # which means, the user made changes to the each, then clicked to average
+        # these lists index should be the plate index
+        average_notes_list = []
+        average_omits_list = []
+        # split strings into lists - these are by plate map index (could all be empty, but that's okay)
+        average_notes_list = user_notes.split("|")
+        average_omits_list = user_omits.split("|")
 
+        # print("len(average_notes_list) ", len(average_notes_list))
+        # print("len(average_omits_list) ", len(average_omits_list))
+
+        if use_plate_size != len(average_notes_list) or use_plate_size != len(average_omits_list):
+            err_msg = "There is a very bad error - lengths of notes or omits are not the same as plate size."
+            print(err_msg)
+
+        # print('average_notes_list')
+        # print(average_notes_list)
+        # print('average_omits_list')
+        # print(average_omits_list)
+
+        # set some previous of the key fields for the replicates
+        # the key fields for determining a replicate (these should only be samples)
+        prevMatrixItemId = -1
+        prevTime = -1
+        prevLocationId = -1
+        cumNotes = ''
+        cumWelln = ''
+        cumCautionFlag = ''
+        valueSum = 0
+        valueCount = 1
+
+        # what if all the replicates are marked for omit?
+        # and/or, if there are not replicates but the one was marked for omit
+        omitsFalseSum = 0
+
+        # same for all rows
+        cross_reference = "Plate Reader Tool"
+        subtarget = 'none'
+        a_space = ' '
+
+        # print("called_from ",called_from)
+
+        for each in myquery:
+            # fields coming directly for sql queries
             pi = each[0]
             df = each[1]
             loci = each[2]
@@ -5237,138 +5315,375 @@ def plate_reader_data_file_process_data(set_dict):
             # adjusted raw value
             araw = each[12]
 
-            if prevWellUse == wellu and prevMatrixItemId == mxii and prevTime == st and prevLocationId == loci:
-                replicate = replicate + 1
-            else:
-                replicate = 1
-
-            prevWellUse = wellu
-            prevMatrixItemId = mxii
-            prevTime = st
-            prevLocationId = loci
-
-            # print("araw, A, B, C, D ", str(araw), " ", str(A4), " ", str(B4), " ", str(C4), " ", str(D4), " ")
-            # print("(A4 - D4) ", str(A4 - D4))
-            # print("(araw - D4) ", str(araw - D4))
-            # print("(1 / B4) ", str(1 / B4))
-            # print("(((A4 - D4) / (araw - D4)) - 1) ", str(((A4 - D4) / (araw - D4)) - 1))
-
+            # get for this row, sendmessage will cum, and that's fine
             caution_flag = ''
-            exclude_flag = ''
+            notes = ''
+            omits = 'false'
             sendmessage = sendmessage
 
             fitted_ftv_pdv_flags_sendmessage = plate_map_sub_return_the_fitted_and_other_info(
-                araw, df, cv, ct, caution_flag, exclude_flag, sendmessage, standardunitCellsStart, unitCellsStart,
+                araw, df, cv, ct, caution_flag, notes, omits, sendmessage, standardunitCellsStart, unitCellsStart,
                 yes_to_calibrate, use_calibration_curve, multiplier, use_form_max, use_form_min,
                 slope_linear, icept_linear,
                 slope_linear0, icept_linear0,
                 A4, B4, C4, D4,
                 A_log, B_log,
                 A_poly2, B_poly2, C_poly2)
-            # [ftv, pdv, caution_flag, exclude_flag, sendmessage]
+
+            # [ftv, pdv, caution_flag, sendmessage]
             ftv = fitted_ftv_pdv_flags_sendmessage[0]
             pdv = fitted_ftv_pdv_flags_sendmessage[1]
             caution_flag = fitted_ftv_pdv_flags_sendmessage[2]
-            exclude_flag = fitted_ftv_pdv_flags_sendmessage[3]
-            sendmessage = fitted_ftv_pdv_flags_sendmessage[4]
+            sendmessage = fitted_ftv_pdv_flags_sendmessage[3]
+            notes = fitted_ftv_pdv_flags_sendmessage[4]
+            omits = fitted_ftv_pdv_flags_sendmessage[5]
 
+            notesPassed = average_notes_list[pi]
+            omitsPassed = average_omits_list[pi]
 
-            pi = str(each[0])
-            df = str(each[1])
-            loci = str(each[2])
-            mxii = str(each[3])
-            cv = str(each[4])
-            ct = str(each[5])
-            welln = str(each[6])
-            wellu = str(each[7])
-            st = str(each[8])
-            raw = str(each[9])
-            locn = str(each[10])
-            mxin = str(each[11])
-            # adjusted raw value
-            araw = str(each[12])
-            ftv = str(ftv)
-            pdv = str(pdv)
+            # print('---pi ', pi)
+            # print('notes       ', notes)
+            # print('notesPassed ', notesPassed)
+            # print('omits       ', omits)
+            # print('omitsPassed ', omitsPassed)
 
-            # 0,1,2,3
-            this_row.update({'plate_index'              : pi                    })
-            this_row.update({'matrix_item_name'         : mxin                  })
-            this_row.update({'matrix_item_id'           : mxii                  })
-            this_row.update({'cross_reference'          : 'Plate Reader Tool'   })
-            # 4,5,6
-            this_row.update({'plate_name'               : plate_name            })
-            this_row.update({'well_name'                : welln                 })
-            this_row.update({'well_use'                 : wellu                  })
-            # 7,8,9
-            if (time_unit == 'Day'):
-                this_row.update({'day'                  : st                    })
-                this_row.update({'hour': '0'     })
-                this_row.update({'minute': '0'     })
-            elif (time_unit == 'Hour'):
-                this_row.update({'day': '0'})
-                this_row.update({'hour'                 : st                    })
-                this_row.update({'minute': '0'     })
+            if called_from == 'change_average' or called_from == 'form_save':
+                # the user input (in memory from page or in form field from from save)
+                # needs to overwrite what was just calculated (notes or omits)
+                notes = notesPassed
+                omits = omitsPassed
+
+            # when doing each, get the replicate number right
+            if prevMatrixItemId == mxii and prevTime == st and prevLocationId == loci:
+                # this is a replicate of the previous
+                replicate = replicate + 1
             else:
-                this_row.update({'day': '0'     })
-                this_row.update({'hour': '0'     })
-                this_row.update({'minute'               : st                    })
-            # 10,11,12,13,14
-            this_row.update({'target'                   : target                })
-            this_row.update({'subtarget'                : 'none'                })
-            this_row.update({'method'                   : method                })
-            this_row.update({'location_name'            : locn                  })
-            this_row.update({'location_id'              : loci                  })
-            # 15,16,17
-            this_row.update({'raw_value'                : raw                   })
-            this_row.update({'standard_unit'            : standard_unit         })
-            this_row.update({'average_blank'            : sample_blank_average  })
-            # 18,19
-            if use_calibration_curve == 'no_calibration':
-                this_row.update({'adjusted_raw'             : ' '                   })
-                this_row.update({'fitted_value'             : ' '                   })
+                replicate = 1
+
+            this_row_each = sub_to_load_processed_data_to_dict(
+                replicate,
+                mxii, mxin, loci, locn, st,
+                welln, notes, omits, pdv,
+                pi, df, cv, ct,
+                raw, araw, ftv,
+                cross_reference, subtarget, a_space,
+                wellu, use_calibration_curve, time_unit, target, plate_name, method,
+                standard_unit, sample_blank_average, volume_unit, multiplier,
+                unit, caution_flag, sendmessage
+            )
+            # add the dictionary to the list for each
+            list_of_dicts_of_each_sample_row_each.append(this_row_each)
+
+            # deal with the replicates grouping and averaging
+            # print("replicate number ", replicate)
+            # print('**welln ', welln)
+            # print('omitsFalseSum ', omitsFalseSum)
+            # print('omits ', omits)
+            if prevMatrixItemId == mxii and prevTime == st and prevLocationId == loci:
+                # this is a replicate of the previous, if it is included, continue
+
+                # for the last, need to know if any in this group were unchecked (to include)
+                if omits == 'false':
+                    omitsFalseSum = omitsFalseSum + 1
+
+                    if cumCautionFlag.find(caution_flag) < 0:
+                        cumCautionFlag = cumCautionFlag + caution_flag
+
+                    cumWelln = welln + " " + cumWelln
+                    if (len(notes.strip()) > 0):
+                        cumNotes = cumNotes + ' | ' + notes
+
+
+                    valueSum = valueSum + pdv
+                    valueCount = valueCount + 1
             else:
-                this_row.update({'adjusted_raw'             : araw                  })
-                this_row.update({'fitted_value'             : ftv                   })
-            # 20,21,22,23
-            this_row.update({'dilution_factor'          : df                    })
-            this_row.update({'collection_volume'        : cv                    })
-            this_row.update({'volume_unit'              : volume_unit           })
-            this_row.update({'collection_time'          : ct                    })
-            # 24,25,26,27
-            this_row.update({'multiplier'               : multiplier            })
-            this_row.update({'processed_value'          : pdv                   })
-            this_row.update({'unit'                     : unit                  })
-            this_row.update({'replicate'                : replicate             })
-            # 28,29,30,31
-            this_row.update({'caution_flag'             : caution_flag          })
-            this_row.update({'exclude'                  : exclude_flag          })
-            this_row.update({'notes'                    : ' '                   })
-            this_row.update({'sendmessage'              : sendmessage           })
+                # this is the row AFTER the last in a replicate or last when no replicate
+                # write the average info to the average list of rows
+                # load the average to the dict
+                # print('-Start New Group pi ', pi)
+                if omitsFalseSum > 1:
 
-            # will add 32 in javascript - check box for exclude in average
+                    this_row_average = sub_to_load_processed_data_to_dict_limited(
+                        1,
+                        mxin, locn, st,
+                        cumWelln, cumNotes, valueSum/valueCount,
+                        cross_reference, subtarget, a_space,
+                        time_unit, target, plate_name, method,
+                        unit, cumCautionFlag, sendmessage
+                    )
+                    # add the dictionary to the list for average
+                    list_of_dicts_of_each_sample_row_average.append(this_row_average)
 
-            # add the dictionary to the list
-            list_of_dicts_of_each_sample_row.append(this_row)
+                # reset to start for next time
+                if (omits == 'false'):
+                    # the point we are sitting on WILL be included, so set with this points info
+                    cumCautionFlag = caution_flag
+                    cumNotes = notes
+                    cumWelln = welln
+                    valueSum = pdv
+                    valueCount = 1
+                    omitsFalseSum = 1
+                else:
+                    # the point we are sitting on will NOT be included, so do not set its info
+                    cumCautionFlag = ''
+                    cumNotes = ''
+                    cumWelln = ''
+                    valueSum = 0
+                    valueCount = 0
+                    omitsFalseSum = 0
 
-        # print('***list_of_dicts_of_each_sample_row going back to ajax')
-        # print(list_of_dicts_of_each_sample_row)
+            # print('cumWelln ', cumWelln)
+            # print('valueCount ', valueCount)
+
+            # reset the previous - the key fields for determining a replicate (these should only be samples)
+            prevMatrixItemId = mxii
+            prevTime = st
+            prevLocationId = loci
+
+        # get values needed and load the LAST average to the dict after the loop
+        # print("on last record: ", omitsFalseSum)
+        if omitsFalseSum > 0:
+            this_row_average = sub_to_load_processed_data_to_dict_limited(
+                1,
+                mxin, locn, st,
+                cumWelln, cumNotes, valueSum / valueCount,
+                cross_reference, subtarget, a_space,
+                time_unit, target, plate_name, method,
+                unit, cumCautionFlag, sendmessage
+            )
+            # add the dictionary to the list for average
+            list_of_dicts_of_each_sample_row_average.append(this_row_average)
+
+        # print('***list_of_dicts_of_each_sample_row_each going back to ajax')
+        # print(list_of_dicts_of_each_sample_row_each)
+        # print('***list_of_dicts_of_each_standard_row_ave_points')
+        # print(list_of_dicts_of_each_standard_row_ave_points)
+        # print("list_of_dicts_of_each_sample_row_average ")
+        # print(list_of_dicts_of_each_sample_row_average)
 
     # regardless of errors, return the sendmessage
 
     # if failed one or more of QC, only the sendmessage should be populated
     return [sendmessage,
-            list_of_dicts_of_each_sample_row,
+            list_of_dicts_of_each_sample_row_each,
             list_of_dicts_of_each_standard_row_points,
             list_of_dicts_of_each_standard_row_ave_points,
             list_of_dicts_of_each_standard_row_curve,
             dict_of_parameter_labels,
             dict_of_parameter_values,
             dict_of_curve_info,
-            dict_of_standard_info]
+            dict_of_standard_info,
+            list_of_dicts_of_each_sample_row_average]
+
+
+def sub_to_load_processed_data_to_dict(
+        replicate,
+        mxii, mxin, loci, locn, st,
+        welln, notes, omits, pdv,
+        pi, df, cv, ct,
+        raw, araw, ftv,
+        cross_reference, subtarget, a_space,
+        wellu, use_calibration_curve, time_unit, target, plate_name, method,
+        standard_unit, sample_blank_average, volume_unit, multiplier,
+        unit, caution_flag, sendmessage
+        ):
+    # print('notes- ', notes)
+    # print('omits- ', omits)
+    # pi = str(each[0])
+    # df = str(each[1])
+    # loci = str(each[2])
+    # mxii = str(each[3])
+    # cv = str(each[4])
+    # ct = str(each[5])
+    # welln = str(each[6])
+    # wellu = str(each[7])
+    # st = str(each[8])
+    # raw = str(each[9])
+    # locn = str(each[10])
+    # mxin = str(each[11])
+    # # adjusted raw value
+    # araw = str(each[12])
+    # ftv = str(ftv)
+    # pdv = str(pdv)
+
+    pi = str(pi)
+    df = str(df)
+    loci = str(loci)
+    mxii = str(mxii)
+    cv = str(cv)
+    ct = str(ct)
+    welln = str(welln)
+    wellu = str(wellu)
+    st = str(st)
+    raw = str(raw)
+    locn = str(locn)
+    mxin = str(mxin)
+    araw = str(araw)
+    ftv = str(ftv)
+    pdv = str(pdv)
+
+    this_row = {}
+    # for each - do every time
+    # 0,1,2,3
+    this_row.update({'plate_index'              : pi                    })
+    this_row.update({'matrix_item_name'         : mxin                  })
+    this_row.update({'matrix_item_id'           : mxii                  })
+    this_row.update({'cross_reference'          : cross_reference       })
+    # 4,5,6
+    this_row.update({'plate_name'               : plate_name            })
+    this_row.update({'well_name'                : welln                 })
+    this_row.update({'well_use'                 : wellu                  })
+    # 7,8,9
+    if (time_unit == 'Day'):
+        this_row.update({'day'                  : st                    })
+        this_row.update({'hour': '0'     })
+        this_row.update({'minute': '0'     })
+    elif (time_unit == 'Hour'):
+        this_row.update({'day': '0'})
+        this_row.update({'hour'                 : st                    })
+        this_row.update({'minute': '0'     })
+    else:
+        this_row.update({'day': '0'     })
+        this_row.update({'hour': '0'     })
+        this_row.update({'minute'               : st                    })
+    # 10,11,12,13,14
+    this_row.update({'target'                   : target                })
+    this_row.update({'subtarget'                : subtarget             })
+    this_row.update({'method'                   : method                })
+    this_row.update({'location_name'            : locn                  })
+    this_row.update({'location_id'              : loci                  })
+    # 15,16,17
+    this_row.update({'raw_value'                : raw                   })
+    this_row.update({'standard_unit'            : standard_unit         })
+    this_row.update({'average_blank'            : sample_blank_average  })
+    # 18,19
+    if use_calibration_curve == 'no_calibration':
+        this_row.update({'adjusted_raw'             : a_space           })
+        this_row.update({'fitted_value'             : a_space           })
+    else:
+        this_row.update({'adjusted_raw'             : araw              })
+        this_row.update({'fitted_value'             : ftv               })
+    # 20,21,22,23
+    this_row.update({'dilution_factor'          : df                    })
+    this_row.update({'collection_volume'        : cv                    })
+    this_row.update({'volume_unit'              : volume_unit           })
+    this_row.update({'collection_time'          : ct                    })
+    # 24,25,26,27
+    this_row.update({'multiplier'               : multiplier            })
+    this_row.update({'processed_value'          : pdv                   })
+    this_row.update({'unit'                     : unit                  })
+    this_row.update({'replicate'                : replicate             })
+    # 28,29,30,31
+    this_row.update({'caution_flag'             : caution_flag          })
+    this_row.update({'exclude'                  : a_space               })
+    this_row.update({'notes'                    : notes                 })
+    this_row.update({'sendmessage'              : sendmessage           })
+    this_row.update({'omits'                    : omits                 })
+    return this_row
+
+
+# 1,
+# mxin, locn, st,
+# cumWelln, cumNotes, valueSum / valueCount,
+# cross_reference, subtarget, a_space,
+# time_unit, target, plate_name, method,
+# unit, cumCautionFlag, sendmessage
+# search term MIFC - if MIFC changes, this will need changed
+def sub_to_load_processed_data_to_dict_limited(
+        replicate,
+        mxin, locn, st,
+        welln, notes, pdv,
+        cross_reference, subtarget, a_space,
+        time_unit, target, plate_name, method,
+        unit, caution_flag, sendmessage
+        ):
+    # print('notes- ', notes)
+    # print('omits- ', omits)
+    # pi = str(each[0])
+    # df = str(each[1])
+    # loci = str(each[2])
+    # mxii = str(each[3])
+    # cv = str(each[4])
+    # ct = str(each[5])
+    # welln = str(each[6])
+    # wellu = str(each[7])
+    # st = str(each[8])
+    # raw = str(each[9])
+    # locn = str(each[10])
+    # mxin = str(each[11])
+    # # adjusted raw value
+    # araw = str(each[12])
+    # ftv = str(ftv)
+    # pdv = str(pdv)
+
+    welln = str(welln)
+    st = str(st)
+    locn = str(locn)
+    mxin = str(mxin)
+    pdv = str(pdv)
+
+    this_row = {}
+    # for each - do every time
+    # 0,1,2,3
+    # this_row.update({'plate_index'              : pi                    })
+    this_row.update({'matrix_item_name'         : mxin                  })
+    # this_row.update({'matrix_item_id'           : mxii                  })
+    this_row.update({'cross_reference'          : cross_reference       })
+    # 4,5,6
+    this_row.update({'plate_name'               : plate_name            })
+    this_row.update({'well_name'                : welln                 })
+    # this_row.update({'well_use'                 : wellu                  })
+    # 7,8,9
+    if (time_unit == 'Day'):
+        this_row.update({'day'                  : st                    })
+        this_row.update({'hour': '0'     })
+        this_row.update({'minute': '0'     })
+    elif (time_unit == 'Hour'):
+        this_row.update({'day': '0'})
+        this_row.update({'hour'                 : st                    })
+        this_row.update({'minute': '0'     })
+    else:
+        this_row.update({'day': '0'     })
+        this_row.update({'hour': '0'     })
+        this_row.update({'minute'               : st                    })
+    # 10,11,12,13,14
+    this_row.update({'target'                   : target                })
+    this_row.update({'subtarget'                : subtarget             })
+    this_row.update({'method'                   : method                })
+    this_row.update({'location_name'            : locn                  })
+    # this_row.update({'location_id'              : loci                  })
+    # 15,16,17
+    # this_row.update({'raw_value'                : raw                   })
+    # this_row.update({'standard_unit'            : standard_unit         })
+    # this_row.update({'average_blank'            : sample_blank_average  })
+    # 18,19
+    # if use_calibration_curve == 'no_calibration':
+    #     this_row.update({'adjusted_raw'             : a_space           })
+    #     this_row.update({'fitted_value'             : a_space           })
+    # else:
+    #     this_row.update({'adjusted_raw'             : araw              })
+    #     this_row.update({'fitted_value'             : ftv               })
+    # 20,21,22,23
+    # this_row.update({'dilution_factor'          : df                    })
+    # this_row.update({'collection_volume'        : cv                    })
+    # this_row.update({'volume_unit'              : volume_unit           })
+    # this_row.update({'collection_time'          : ct                    })
+    # 24,25,26,27
+    # this_row.update({'multiplier'               : multiplier            })
+    this_row.update({'processed_value'          : pdv                   })
+    this_row.update({'unit'                     : unit                  })
+    this_row.update({'replicate'                : replicate             })
+    # 28,29,30,31
+    this_row.update({'caution_flag'             : caution_flag          })
+    this_row.update({'exclude'                  : a_space               })
+    this_row.update({'notes'                    : notes                 })
+    this_row.update({'sendmessage'              : sendmessage           })
+    # this_row.update({'omits'                    : omits                 })
+    return this_row
 
 
 def plate_map_sub_return_the_fitted_and_other_info(
-    araw, df, cv, ct, caution_flag, exclude_flag, sendmessage, standardunitCellsStart, unitCellsStart,
+    araw, df, cv, ct, caution_flag, notes, omits, sendmessage, standardunitCellsStart, unitCellsStart,
     yes_to_calibrate, use_calibration_curve, multiplier, use_form_max, use_form_min,
     slope_linear, icept_linear,
     slope_linear0, icept_linear0,
@@ -5382,7 +5697,7 @@ def plate_map_sub_return_the_fitted_and_other_info(
     elif use_calibration_curve == 'linear':
         if slope_linear == 0:
             ftv = " "
-            exclude_flag = 'X'
+            caution_flag = 'F'
             sendmessage = sendmessage + "Slope is 0. Cannot calculate fitted value."
         else:
             ftv = (araw - icept_linear) / slope_linear
@@ -5390,7 +5705,7 @@ def plate_map_sub_return_the_fitted_and_other_info(
     elif use_calibration_curve == 'logistic4':
         if araw - D4 == 0 or B4 == 0:
             ftv = " "
-            exclude_flag = 'X'
+            caution_flag = 'F'
             sendmessage = sendmessage + "A denominator is 0. Cannot calculate fitted value."
         else:
             try:
@@ -5405,30 +5720,30 @@ def plate_map_sub_return_the_fitted_and_other_info(
                         # print("araw,    A,    B,    C,    D ")
                         # print(str(araw), " ", str(A4), " ", str(B4), " ", str(C4), " ", str(D4))
                         ftv = " "
-                        exclude_flag = 'X'
+                        caution_flag = 'F'
                         sendmessage = sendmessage + "Cannot calculate fitted value."
             except:
                 ftv = " "
-                exclude_flag = 'X'
+                caution_flag = 'F'
                 sendmessage = sendmessage + "Cannot calculate fitted value. Likely due to very large exponent."
 
     elif use_calibration_curve == 'log':
         if B_log == 0:
             ftv = " "
-            exclude_flag = 'X'
+            caution_flag = 'F'
             sendmessage = sendmessage + "A denominator is 0. Cannot calculate fitted value."
         else:
             try:
                 ftv = math.exp((araw - A_log) / B_log)
             except:
                 ftv = " "
-                exclude_flag = 'X'
+                caution_flag = 'F'
                 sendmessage = sendmessage + "Cannot calculate fitted value. Likely due to very large exponent."
 
     elif use_calibration_curve == 'poly2':
         if C_poly2 == 0:
             ftv = " "
-            exclude_flag = 'X'
+            caution_flag = 'F'
             sendmessage = sendmessage + "A denominator is 0. Cannot calculate fitted value."
         else:
             ftv1 = ((-1 * B_poly2) + ((B_poly2 ** 2) - (4 * C_poly2 * (A_poly2 - araw))) ** (1 / 2)) / (2 * C_poly2)
@@ -5442,7 +5757,7 @@ def plate_map_sub_return_the_fitted_and_other_info(
         # elif use_calibration_curve == 'linear0':
         if slope_linear0 == 0:
             ftv = " "
-            exclude_flag = 'X'
+            caution_flag = 'F'
             sendmessage = sendmessage + "Slope is 0. Cannot calculate fitted value."
         else:
             ftv = araw / slope_linear0
@@ -5453,7 +5768,7 @@ def plate_map_sub_return_the_fitted_and_other_info(
         if standardunitCellsStart == None and unitCellsStart != None:
             if (cv == 0 or ct == 0):
                 pdv = " "
-                exclude_flag = 'X'
+                caution_flag = 'F'
                 sendmessage = sendmessage + "Collection volume or collection time = 0.;"
             else:
                 pdv = ftv * multiplier * df / cv / ct
@@ -5467,7 +5782,12 @@ def plate_map_sub_return_the_fitted_and_other_info(
                 caution_flag = 'e'
     else:
         pdv = " "
-    return [ftv, pdv, caution_flag, exclude_flag, sendmessage]
+
+    if len(caution_flag) > 0:
+        omits = 'true'
+    else:
+        omits = 'false'
+    return [ftv, pdv, caution_flag, sendmessage, notes, omits]
 
 
 # Find the R Squared
@@ -5621,7 +5941,7 @@ def plateMap_pevalLinear(n, p):
 #     dict_of_parameter_labels_linear = (
 #         {'p1': 'slope', 'p2': 'Intercept', 'p3': '-', 'p4': '-', 'p5': '-'})
 #     dict_of_parameter_values_linear = (
-#         {'p1': slope, 'p2': icept, 'p3': None, 'p4': None, 'p5': None})
+#         {'p1': slope, 'p2': icept, 'p3': 9876543210, 'p4': 9876543210, 'p5': 9876543210})
 #
 #     dict_of_curve_info_linear = (
 #         {'method': 'Linear w/fitted intercept', 'equation': equation,
@@ -5651,7 +5971,7 @@ def plateMap_pevalLinear(n, p):
 #     dict_of_parameter_labels_linear0 = (
 #         {'p1': 'slope', 'p2': 'Intercept', 'p3': '-', 'p4': '-', 'p5': '-'})
 #     dict_of_parameter_values_linear0 = (
-#         {'p1': slope, 'p2': icept, 'p3': None, 'p4': None, 'p5': None})
+#         {'p1': slope, 'p2': icept, 'p3': 9876543210, 'p4': 9876543210, 'p5': 9876543210})
 #
 #     dict_of_curve_info_linear0 = (
 #         {'method': 'Linear w/intercept = 0', 'equation': equation,

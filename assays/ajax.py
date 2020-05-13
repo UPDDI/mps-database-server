@@ -4587,6 +4587,7 @@ def fetch_information_for_plate_map_layout(request):
         #     print(matrix_item.stringify_settings())
         #     print(matrix_item.matrix.name)
 
+        # search term - change if CHIP SETUP changes todo-sck I think this is the only place in plate map stuff
         for each in matrix_items:
             short_compound = ""
             short_cell = ""
@@ -5090,6 +5091,9 @@ def sub_to_fetch_information_for_value_set_of_plate_map_for_data_block(bin_upper
     return bin_index
 
 # sck - assay plate map - Get raw value and time for display in existing plate map with file block attached.
+# 20200510 transitioning this to get the selection down in the forms.py
+# eventually, can get rid of this, but do not do it until sure do not want to do this way
+# but note that, might go back for performance reasons
 def fetch_information_for_study_platemap_standard_file_blocks(request):
     """
     Assay Plate Map Calibrate - Get list of file blocks in this study with at least one standard on plate.
@@ -6199,6 +6203,7 @@ def fetch_data_processing_for_plate_map_integration(request):
     volume_unit =                      request.POST.get('volume_unit', '0')
     user_notes =                       request.POST.get('user_notes', '0')
     user_omits =                       request.POST.get('user_omits', '0')
+    plate_size =                       request.POST.get('plate_size', '0')
 
     if not standard_unit:
         return HttpResponseServerError()
@@ -6228,6 +6233,7 @@ def fetch_data_processing_for_plate_map_integration(request):
         'volume_unit'                     : volume_unit                             ,
         'user_notes': user_notes,
         'user_omits': user_omits,
+        'plate_size': plate_size,
     }
 
     # print(set_dict)
@@ -6237,7 +6243,7 @@ def fetch_data_processing_for_plate_map_integration(request):
     data = {}
     data.update({
         'sendmessage':                        data_mover[0],
-        'list_of_dicts_of_each_sample_row':   data_mover[1],
+        'list_of_dicts_of_each_sample_row_each':   data_mover[1],
         'list_of_dicts_of_each_standard_row_points': data_mover[2],
         'list_of_dicts_of_each_standard_row_ave_points': data_mover[3],
         'list_of_dicts_of_each_standard_row_curve':  data_mover[4],
@@ -6245,6 +6251,7 @@ def fetch_data_processing_for_plate_map_integration(request):
         'dict_of_parameter_values':  data_mover[6],
         'dict_of_curve_info':        data_mover[7],
         'dict_of_standard_info':     data_mover[8],
+        'list_of_dicts_of_each_sample_row_average': data_mover[9],
         })
     return HttpResponse(json.dumps(data), content_type="application/json")
 
