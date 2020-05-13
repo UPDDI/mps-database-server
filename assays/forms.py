@@ -3825,11 +3825,12 @@ class AssayPlateReaderMapForm(BootstrapForm):
     )
 
     se_form_blank_handling = forms.ChoiceField(
-        choices=(('subtract', 'Subtract Average Standard Blanks from Standards and Average Sample Blanks from Samples'),
-                 ('subtractstandard', 'Subtract Average Standard Blanks from Standards (ignore sample blanks)'),
-                 ('subtractsample', 'Subtract Average Sample Blanks from Samples (ignore standard blanks)'),
-                 ('subtractstandardfromall', 'Subtract Average Standard Blanks from the Standards and Samples)'),
-                 ('ignore', 'Ignore the Blanks'))
+        choices=(('subtracteachfromeach', 'Subtracting Average STANDARD Blanks from STANDARDS and Average SAMPLE Blanks from SAMPLES'),
+                 ('subtractstandardfromstandard', 'Subtracting Average STANDARD Blanks from STANDARDS (ignore sample blanks)'),
+                 ('subtractsamplefromsample', 'Subtracting Average SAMPLE Blanks from SAMPLES (ignore standard blanks)'),
+                 ('subtractstandardfromall', 'Subtracting Average STANDARD Blanks from the STANDARDS and SAMPLES'),
+                 ('subtractsamplefromall', 'Subtracting Average SAMPLE Blanks from the STANDARDS and SAMPLES'),
+                 ('ignore', 'Ignoring the Blanks')), initial='subtracteachfromeach'
     )
 
     form_min_standard = forms.DecimalField(
