@@ -5804,7 +5804,7 @@ def plate_map_sub_return_the_fitted_and_other_info(
                 caution_flag = 'F'
                 sendmessage = sendmessage + " Collection volume or collection time = 0.;"
             else:
-                pdv = ftv * multiplier * df / cv / ct
+                pdv = ftv * multiplier * df * cv / ct
         else:
             pdv = ftv * multiplier * df
 
