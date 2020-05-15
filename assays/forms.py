@@ -3810,7 +3810,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
             ('linear', 'Linear w/fitted intercept'),
             ('linear0', 'Linear w/intercept = 0'),
             ('log', 'Logarithmic'),
-            ('poly2', 'Polynomial'),
+            ('poly2', 'Quadratic Polynomial'),
 
             # ('select_one', 'Select One (n = standard concentration, s = signal)'),
             # ('no_calibration', 'No Calibration'),
@@ -4017,7 +4017,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
                 'linear': 'Linear w/fitted intercept',
                 'linear0': 'Linear w/intercept = 0',
                 'log': 'Logarithmic',
-                'poly2': 'Polynomial'
+                'poly2': 'Quadratic Polynomial'
             }
 
             # print(".unit ",data.get('standard_unit').unit)

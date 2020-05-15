@@ -5835,7 +5835,7 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
     # set the defaults
     more_conversions_needed = "yes"
     multiplier = 1.0
-    multiplier_string = reportin_unit + " = " + standard_unit
+    multiplier_string = reportin_unit + " = (" + standard_unit + ")"
     multiplier_string_display = ""
     data = {}
     data_to_return = []
@@ -5862,27 +5862,29 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
         # print("re.search(r'mol', standard_base_unit_unit) ",re.search(r'mol', standard_base_unit_unit))
         if re.search(r'pmol', standard_unit) and re.search(r'g', reportin_unit):
             standard_unit = re.sub('mol', 'g', standard_unit)
-            multiplier = multiplier * molecular_weight * 1/10**12
-            multiplier_string = multiplier_string + " * (1g/10^12pg) * (" + str(molecular_weight) + "g/mol)"
+            multiplier = multiplier * (1/10**12) * molecular_weight
+            multiplier_string = multiplier_string + "*(1g/10^12pg)*(" + str(molecular_weight) + "g/mol)"
         elif re.search(r'nmol', standard_unit) and re.search(r'g', reportin_unit):
             standard_unit = re.sub('mol', 'g', standard_unit)
-            multiplier = multiplier * molecular_weight * 1/10**9
-            multiplier_string = multiplier_string + " * (1g/10^9ng) * (" + str(molecular_weight) + "g/mol)"
+            multiplier = multiplier * (1/10**9) * molecular_weight
+            multiplier_string = multiplier_string + "*(1g/10^9ng)*(" + str(molecular_weight) + "g/mol)"
         elif re.search(r'µmol', standard_unit) and re.search(r'g', reportin_unit):
             standard_unit = re.sub('mol', 'g', standard_unit)
-            multiplier = multiplier * molecular_weight * 1/10**6
-            multiplier_string = multiplier_string + " * (1g/10^6µg) * (" + str(molecular_weight) + "g/mol)"
+            multiplier = multiplier * (1/10**6) * molecular_weight
+            multiplier_string = multiplier_string + "*(1g/10^6µg)*(" + str(molecular_weight) + "g/mol)"
         elif re.search(r'mmol', standard_unit) and re.search(r'g', reportin_unit):
             standard_unit = re.sub('mol', 'g', standard_unit)
-            multiplier = multiplier * molecular_weight * 1/10**3
-            multiplier_string = multiplier_string + " * (1g/10^3mg) * (" + str(molecular_weight) + "g/mol)"
+            multiplier = multiplier * (1/10**3) * molecular_weight
+            multiplier_string = multiplier_string + "*(1g/10^3mg)*(" + str(molecular_weight) + "g/mol)"
         elif re.search(r'mol', standard_unit) and re.search(r'g', reportin_unit):
             standard_unit = re.sub('mol', 'g', standard_unit)
             multiplier = multiplier * molecular_weight
-            multiplier_string = multiplier_string + " * (1g/1g) * (" + str(molecular_weight) + "g/mol)"
+            #multiplier_string = multiplier_string + " * (1g/1g) * (" + str(molecular_weight) + "g/mol)"
+            multiplier_string = multiplier_string + "*(" + str(molecular_weight) + "g/mol)"
 
         # if there was a 'well', there will be a need to divide by the well volume, so that before checking next
-        # print("1B.1** after mole to mass: ", multiplier_string)
+        # print("1B.1** after mole to mass string: ", multiplier_string)
+        # print("1B.1** after mole to mass value: ", multiplier)
         # print("1B.1** standard_unit: ", standard_unit)
 
         # did not fail but need more conversion
@@ -5904,7 +5906,7 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
             standard_unit = standard_unit[:locationWellStart].strip() + volume_unit + standard_unit[locationWellEnd:].strip()
             # print("standard_unit ", standard_unit)
             multiplier = multiplier / well_volume
-            multiplier_string = multiplier_string + " * (well/" + str(well_volume) + volume_unit + ")"
+            multiplier_string = multiplier_string + "*(well/" + str(well_volume) + " " + volume_unit + ")"
             # print("multiplier string ", multiplier_string)
             # print("standard_unit ", standard_unit)
 
@@ -5944,39 +5946,41 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
             if re.search(r'/pL', standard_unit):
                 standard_unit = re.sub('/pL', '', standard_unit)
                 multiplier = multiplier * 10**12
-                multiplier_string = multiplier_string + " * efflux " + volume_unit + " * (10^12pL/1L)"
+                multiplier_string = multiplier_string + "*(efflux " + volume_unit + ")*(10^12pL/1L)"
             elif re.search(r'/nL', standard_unit):
                 standard_unit = re.sub('/nL', '', standard_unit)
                 multiplier = multiplier * 10**9
-                multiplier_string = multiplier_string + " * efflux " + volume_unit + " * (10^9nL/1L)"
+                multiplier_string = multiplier_string + "*(efflux " + volume_unit + ")*(10^9nL/1L)"
             elif re.search(r'/µL', standard_unit):
                 standard_unit = re.sub('/µL', '', standard_unit)
                 multiplier = multiplier * 10**6
-                multiplier_string = multiplier_string + " * efflux " + volume_unit + " * (10^6µL/1L)"
+                multiplier_string = multiplier_string + "*(efflux " + volume_unit + ")*(10^6µL/1L)"
             elif re.search(r'/mL', standard_unit):
                 standard_unit = re.sub('/mL', '', standard_unit)
                 multiplier = multiplier * 10**3
-                multiplier_string = multiplier_string + " * efflux " + volume_unit + " * (10^3mL/1L)"
+                multiplier_string = multiplier_string + "*(efflux " + volume_unit + ")*(10^3mL/1L)"
             elif re.search(r'/L', standard_unit):
                 standard_unit = re.sub('/L', '', standard_unit)
                 multiplier = multiplier
-                multiplier_string = multiplier_string + " * efflux " + volume_unit + " * (1L/1L)"
+                # multiplier_string = multiplier_string + " *(efflux " + volume_unit + " * (1L/1L)"
+                multiplier_string = multiplier_string + "*(efflux " + volume_unit + ")"
 
             if re.search(r'pL', volume_unit):
                 multiplier = multiplier / 10**12
-                multiplier_string = multiplier_string + " * (1L/10^12pL) "
+                multiplier_string = multiplier_string + "*(1L/10^12pL)"
             elif re.search(r'nL', volume_unit):
                 multiplier = multiplier / 10**9
-                multiplier_string = multiplier_string + " * (1L/10^9nL) "
+                multiplier_string = multiplier_string + "*(1L/10^9nL)"
             elif re.search(r'µL', volume_unit):
                 multiplier = multiplier / 10**6
-                multiplier_string = multiplier_string + " * (1L/10^6µL) "
+                multiplier_string = multiplier_string + "*(1L/10^6µL)"
             elif re.search(r'mL', volume_unit):
                 multiplier = multiplier / 10**3
-                multiplier_string = multiplier_string + " * (1L/10^3mL) "
+                multiplier_string = multiplier_string + "*(1L/10^3mL)"
             elif re.search(r'L', volume_unit):
                 multiplier = multiplier
-                multiplier_string = multiplier_string + " * (1L/1L) "
+                # multiplier_string = multiplier_string + " * (1L/1L) "
+                multiplier_string = multiplier_string
 
         # print("2B.1** after volume prep: ", multiplier_string)
         # print("2B.1** after volume prep: ", multiplier)
@@ -5987,37 +5991,40 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
                 standard_unit = standard_unit + "/day"
                 if time_unit == "day":
                     multiplier = multiplier * 1
-                    multiplier_string = multiplier_string + " * (1/efflux collection day) * (1day/1day)"
+                    # multiplier_string = multiplier_string + " * (1/efflux collection day) * (1day/1day)"
+                    multiplier_string = multiplier_string + "*(1/efflux collection day)"
                 elif time_unit == "hour":
                     multiplier = multiplier * 24
-                    multiplier_string = multiplier_string + " * (1/efflux collection hour) * (24hour/1day)"
+                    multiplier_string = multiplier_string + "*(1/efflux collection hour)*(24hour/1day)"
                 else:
                     multiplier = multiplier * 1440
-                    multiplier_string = multiplier_string + " * (1/efflux collection minute) * (1440minute/1day)"
+                    multiplier_string = multiplier_string + "*(1/efflux collection minute)*(1440minute/1day)"
 
             elif re.search(r'h', reportin_unit):
                 standard_unit = standard_unit + "/hour"
                 if time_unit == "day":
                     multiplier = multiplier * 1/24
-                    multiplier_string = multiplier_string + " * (1/efflux collection day) * (1day/24hour)"
+                    multiplier_string = multiplier_string + "*(1/efflux collection day)*(1day/24hour)"
                 elif time_unit == "hour":
                     multiplier = multiplier * 1
-                    multiplier_string = multiplier_string + " * (1/efflux collection hour) * (1hour/1hour)"
+                    # multiplier_string = multiplier_string + " * (1/efflux collection hour) * (1hour/1hour)"
+                    multiplier_string = multiplier_string + "*(1/efflux collection hour)"
                 else:
                     multiplier = multiplier * 60
-                    multiplier_string = multiplier_string + " * (1/efflux collection minute) * (60minute/1hour)"
+                    multiplier_string = multiplier_string + "*(1/efflux collection minute)*(60minute/1hour)"
 
             elif re.search(r'min', reportin_unit):
                 standard_unit = standard_unit + "/minute"
                 if time_unit == "day":
                     multiplier = multiplier / 1440
-                    multiplier_string = multiplier_string + " * (1/efflux collection day) * (1day/1440minute)"
+                    multiplier_string = multiplier_string + "*(1/efflux collection day)*(1day/1440minute)"
                 elif time_unit == "hour":
                     multiplier = multiplier / 60
-                    multiplier_string = multiplier_string + " * (1/efflux collection hour) * (1hour/60minute)"
+                    multiplier_string = multiplier_string + "*(1/efflux collection hour)*(1hour/60minute)"
                 else:
                     multiplier = multiplier * 1
-                    multiplier_string = multiplier_string + " * (1/efflux collection minute) * (1minute/1minute)"
+                    # multiplier_string = multiplier_string + "*(1/efflux collection minute)*(1minute/1minute)"
+                    multiplier_string = multiplier_string + "*(1/efflux collection minute)"
 
         # print("2B.2** after time prep: ", multiplier_string)
         # print("2B.2** after time prep: ", multiplier)
@@ -6043,15 +6050,25 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
         # print("location10hatEnd ",location10hatEnd)
         # print("heading back: ", multiplier_string)
 
-        if locationCellsStart >= 0:
-            # reportin unit has cells in it; making assumption that the standard unit does not
+        if locationCellsStart >= 0 and location10hatStart >= 0:
+            # reportin unit has cells and 10^ in it; making assumption that the standard unit does not and need conversion
             cellNumberExponent = reportin_unit[location10hatEnd:locationCellsStart].strip()
             cellString = reportin_unit[location10hatStart:].strip()
 
+            # print("locationCellsStart ", locationCellsStart)
+            # print("location10hatStart ",location10hatStart)
+            # print("cellNumberExponent = reportin_unit[location10hatEnd:locationCellsStart].strip()  ", cellNumberExponent)
+            # print("cellString = reportin_unit[location10hatStart:].strip() ", cellString)
+            # locationCellsStart  12
+            # location10hatStart  7
+            # cellNumberExponent = reportin_unit[location10hatEnd:locationCellsStart].strip()   6
+            # cellString = reportin_unit[location10hatStart:].strip()  10^6 cells
+
             try:
                 intcellNumberExponent = int(cellNumberExponent)
-                multiplier = multiplier / (cell_count * 10**intcellNumberExponent)
-                multiplier_string = multiplier_string + " * (1/" + str(cell_count) + "cells) * (" + cellString + "/" + cellString + ")"
+                multiplier = multiplier * (10 ** intcellNumberExponent) / cell_count
+
+                multiplier_string = multiplier_string + "*(10^" + str(intcellNumberExponent) + ")/(" + str(cell_count) + "*10^" + str(intcellNumberExponent) + " cells)"
             except:
                 multiplier = 0.0
                 multiplier_string = multiplier_string + " PROBLEM with Cell Number division."
@@ -6119,48 +6136,56 @@ def sub_to_fetch_multiplier_for_data_processing_plate_map_integration(more_conve
     reportin_scale_factor = 0
     reportin_base_unit_unit = "unk"
 
-    # do complete easiest case first, before mix in a lot of custom options
-    standard_unit_queryset = PhysicalUnits.objects.filter(
-        unit=standard_unit
-    ).prefetch_related(
-        'base_unit',
-    )
-    lenStandardBase = len(standard_unit_queryset)
+    # check to see if the standard_unit is now equal to the reporting_unit
+    if reportin_unit == standard_unit:
+        # nothing needed, send back done
+        multiplier = 1.0
+        multiplier_string = ""
+        more_conversions_needed = "done"
+    else:
+        # do complete easiest case first, before mix in a lot of custom options
+        standard_unit_queryset = PhysicalUnits.objects.filter(
+            unit=standard_unit
+        ).prefetch_related(
+            'base_unit',
+        )
+        lenStandardBase = len(standard_unit_queryset)
 
-    if lenStandardBase == 0:
-        multiplier = 0.0
-        multiplier_string = multiplier_string + " Missing Base Unit in MPS Database."
-        multiplier_string_display = multiplier_string_display + " Could not find " + standard_unit + " in the database physical unit list. Add it and an associated base unit before continuing. "
-        more_conversions_needed = "error"
+        if lenStandardBase == 0:
+            multiplier = 0.0
+            multiplier_string = multiplier_string + " Missing Base Unit in MPS Database."
+            multiplier_string_display = multiplier_string_display + " Could not find " + standard_unit + " in the database physical unit list. Add it and an associated base unit before continuing. "
+            more_conversions_needed = "error"
 
-    reportin_unit_queryset = PhysicalUnits.objects.filter(
-        unit=reportin_unit
-    ).prefetch_related(
-        'base_unit',
-    )
-    lenReportinBase = len(reportin_unit_queryset)
+        reportin_unit_queryset = PhysicalUnits.objects.filter(
+            unit=reportin_unit
+        ).prefetch_related(
+            'base_unit',
+        )
+        lenReportinBase = len(reportin_unit_queryset)
 
-    if lenReportinBase == 0:
-        multiplier = 0.0
-        multiplier_string = multiplier_string + " Missing Base Unit in MPS Database."
-        multiplier_string_display = multiplier_string_display + " Could not find " + reportin_unit + " in the database physical unit list. Add it and an associated base unit before continuing. "
-        more_conversions_needed = "error"
+        if lenReportinBase == 0:
+            multiplier = 0.0
+            multiplier_string = multiplier_string + " Missing Base Unit in MPS Database."
+            multiplier_string_display = multiplier_string_display + " Could not find " + reportin_unit + " in the database physical unit list. Add it and an associated base unit before continuing. "
+            more_conversions_needed = "error"
 
-    if lenStandardBase > 0 and lenReportinBase > 0:
-        # should only be one...
-        for each in standard_unit_queryset:
-            standard_scale_factor = each.scale_factor
-            standard_base_unit_unit = each.base_unit.unit
+        if lenStandardBase > 0 and lenReportinBase > 0:
+            # should only be one...
+            for each in standard_unit_queryset:
+                standard_scale_factor = each.scale_factor
+                standard_base_unit_unit = each.base_unit.unit
 
-        for each in reportin_unit_queryset:
-            reportin_scale_factor = each.scale_factor
-            reportin_base_unit_unit = each.base_unit.unit
+            for each in reportin_unit_queryset:
+                reportin_scale_factor = each.scale_factor
+                reportin_base_unit_unit = each.base_unit.unit
 
-        if standard_base_unit_unit == reportin_base_unit_unit:
-            # units needed ONLY conversion through the base unit
-            multiplier = standard_scale_factor * (1.0/reportin_scale_factor)
-            multiplier_string = " [ (" + str(standard_scale_factor) + ")(" + standard_base_unit_unit + ")/("+standard_unit+") ]" + " / [ (" + str(reportin_scale_factor) + ")(" + reportin_base_unit_unit + ")/("+reportin_unit+") ]"
-            more_conversions_needed = "done"
+            if standard_base_unit_unit == reportin_base_unit_unit:
+                # units needed ONLY conversion through the base unit
+                multiplier = standard_scale_factor * (1.0/reportin_scale_factor)
+                multiplier_string = "( (scale factor base to standard: " + str(standard_scale_factor) + ")(base: " + standard_base_unit_unit + ")/(standard: "+standard_unit+") )" + "/( (scale factor base to reporting: " + str(reportin_scale_factor) + ")(base: " + reportin_base_unit_unit + ")/(reporting: "+reportin_unit+") )"
+                more_conversions_needed = "done"
+
     # print("")
     # print("----SUB")
     # print("--multiplier ", multiplier)

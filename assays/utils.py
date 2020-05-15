@@ -4282,7 +4282,7 @@ def plate_reader_data_file_process_data(set_dict):
     # print("user_omits")
     # print(user_omits)
 
-    sendmessage = ''
+    sendmessage1 = ''
 
     # check for injection of invalid values
     try:
@@ -4305,13 +4305,13 @@ def plate_reader_data_file_process_data(set_dict):
     # check for injection of invalid values
     if radio_replicate_handling_average_or_not_0 not in ['average', 'each']:
         radio_replicate_handling_average_or_not_0 = 'each'
-        sendmessage = "Invalid entry - defaults used;  "
+        sendmessage1 = "Invalid entry - defaults used;  "
     if radio_standard_option_use_or_not not in ['pick_block', 'no_calibration']:
         radio_standard_option_use_or_not = 'no_calibration'
-        sendmessage = "Invalid entry - defaults used;  "
+        sendmessage1 = "Invalid entry - defaults used;  "
     if form_calibration_curve not in ['no_calibration', 'best_fit', 'linear', 'linear0', 'log', 'poly2', 'logistic4', 'log5']:
         form_calibration_curve = 'no_calibration'
-        sendmessage = "Invalid entry - defaults used;  "
+        sendmessage1 = "Invalid entry - defaults used;  "
     if form_blank_handling not in [
             'subtracteachfromeach',
             'subtractstandardfromstandard',
@@ -4320,7 +4320,7 @@ def plate_reader_data_file_process_data(set_dict):
             'subtractsamplefromall',
             'ignore']:
         form_blank_handling = 'ignore'
-        sendmessage = "Invalid entry - defaults used;  "
+        sendmessage1 = "Invalid entry - defaults used;  "
 
     # set defaults
     yes_to_continue = 'yes'
@@ -4390,8 +4390,8 @@ def plate_reader_data_file_process_data(set_dict):
         # print("missing samples if == 0? ", results00)
 
         if results00 == 0:
-            sendmessage = sendmessage + "ERROR: There are no samples on this plate - no data to process. "
-            sendmessage = sendmessage + goBackToFileBlockRemovePlateMapToFixMessage
+            sendmessage1 = sendmessage1 + "ERROR: There are no samples on this plate - no data to process. "
+            sendmessage1 = sendmessage1 + goBackToFileBlockRemovePlateMapToFixMessage
             yes_to_continue = 'no'
 
     # Tongying asked for this one to be removed - plus I changed the default for these from 0 to 1
@@ -4416,8 +4416,8 @@ def plate_reader_data_file_process_data(set_dict):
     #         # print("missing normalization information? ", results00)
     #
     #         if results00 > 0:
-    #             sendmessage = sendmessage + "ERROR: Samples are to be normalized, but one or more collection time or collection volume is Null or 0. "
-    #             sendmessage = sendmessage + goBackToFileBlockRemovePlateMapToFixMessage
+    #             sendmessage1 = sendmessage1 + "ERROR: Samples are to be normalized, but one or more collection time or collection volume is Null or 0. "
+    #             sendmessage1 = sendmessage1 + goBackToFileBlockRemovePlateMapToFixMessage
     #             yes_to_continue = 'no'
 
     # look for samples with missing matrix items
@@ -4436,8 +4436,8 @@ def plate_reader_data_file_process_data(set_dict):
         # print("missing matrix items? ", results00)
 
         if results00 > 0:
-            sendmessage = sendmessage + "ERROR: One or more samples are missing a matrix item label. This will cause them to omitted from data processing. "
-            sendmessage = sendmessage + goBackToFileBlockRemovePlateMapToFixMessage
+            sendmessage1 = sendmessage1 + "ERROR: One or more samples are missing a matrix item label. This will cause them to omitted from data processing. "
+            sendmessage1 = sendmessage1 + goBackToFileBlockRemovePlateMapToFixMessage
             yes_to_continue = 'no'
 
     # look for samples with missing sample locations
@@ -4456,8 +4456,8 @@ def plate_reader_data_file_process_data(set_dict):
         # print("missing sample locations? ", results00)
 
         if results00 > 0:
-            sendmessage = sendmessage + "ERROR: One or more samples are missing a matrix item label. This will cause them to be omitted from data processing. "
-            sendmessage = sendmessage + goBackToFileBlockRemovePlateMapToFixMessage
+            sendmessage1 = sendmessage1 + "ERROR: One or more samples are missing a matrix item label. This will cause them to be omitted from data processing. "
+            sendmessage1 = sendmessage1 + goBackToFileBlockRemovePlateMapToFixMessage
             yes_to_continue = 'no'
 
     # look for samples, standards, or blanks with missing raw values (null)
@@ -4486,8 +4486,8 @@ def plate_reader_data_file_process_data(set_dict):
         # print("missing sample raw values? ", results00)
 
         if results00 > 0:
-            sendmessage = sendmessage + "ERROR: One or more samples, standards, or blanks have a null raw value in the file. "
-            sendmessage = sendmessage + goBackToFileBlockToFixFileBlockMessage
+            sendmessage1 = sendmessage1 + "ERROR: One or more samples, standards, or blanks have a null raw value in the file. "
+            sendmessage1 = sendmessage1 + goBackToFileBlockToFixFileBlockMessage
             yes_to_continue = 'no'
 
     # need to know what plate has standards for next QC check
@@ -4520,8 +4520,8 @@ def plate_reader_data_file_process_data(set_dict):
             # print("missing standard concentrations for well use == standard on selected plate? ",results00)
 
             if results00 > 0:
-                sendmessage = sendmessage + "ERROR: One or more of the wells in the plate map selected for standards are missing a standard concentration. "
-                sendmessage = sendmessage + goBackToFileBlockRemovePlateMapToFixMessage
+                sendmessage1 = sendmessage1 + "ERROR: One or more of the wells in the plate map selected for standards are missing a standard concentration. "
+                sendmessage1 = sendmessage1 + goBackToFileBlockRemovePlateMapToFixMessage
                 yes_to_continue = 'no'
 
         # look for missing standard raw values from the plate selected to use for standards
@@ -4547,8 +4547,8 @@ def plate_reader_data_file_process_data(set_dict):
             # print("missing raw standard values? ", results00)
 
             if results00 > 0:
-                sendmessage = sendmessage + "ERROR: One or more of the wells in the plate selected for standards have a null raw value in the file. "
-                sendmessage = sendmessage + goBackToFileBlockRemovePlateMapToFixMessage
+                sendmessage1 = sendmessage1 + "ERROR: One or more of the wells in the plate selected for standards have a null raw value in the file. "
+                sendmessage1 = sendmessage1 + goBackToFileBlockRemovePlateMapToFixMessage
                 yes_to_continue = 'no'
 
     # Prelim QC SECTION end
@@ -4768,7 +4768,7 @@ def plate_reader_data_file_process_data(set_dict):
             # print("S ",S)
 
             if len(N) < 4:
-                sendmessage = sendmessage + "ERROR: There are not enough concentrations of standards in bounds (minimum of 4 needed for calibration);  "
+                sendmessage1 = sendmessage1 + "ERROR: There are not enough concentrations of standards in bounds (minimum of 4 needed for calibration);  "
                 yes_to_continue = 'no'
 
     if yes_to_continue == 'yes':
@@ -5040,7 +5040,7 @@ def plate_reader_data_file_process_data(set_dict):
                     {'p1': A_poly2s, 'p2': B_poly2s, 'p3': C_poly2s, 'p4': 0, 'p5': 0})
 
                 dict_of_curve_info_poly2 = (
-                    {'method': 'Polynomial', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
+                    {'method': 'Quadratic Polynomial', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
                 dict_of_standard_info_poly2 = (
                     {'min': use_form_min, 'max': use_form_max, 'standard0average': standard_blank_average,
                      'blankaverage': sample_blank_average})
@@ -5173,7 +5173,7 @@ def plate_reader_data_file_process_data(set_dict):
 
             # just declare these so can use the same fitting call that was made from later on in the code.
             caution_flag = ''
-            sendmessage = sendmessage
+            sendmessage1 = ''
             df = 1
             cv = 1
             ct = 1
@@ -5186,16 +5186,16 @@ def plate_reader_data_file_process_data(set_dict):
                 this_row.update({'Observed Signal': each[2]})
                 # what would the fitted concentration be at this signal?
                 araw = each[1]
-                fitted_ftv_pdv_flags_sendmessage = plate_map_sub_return_the_fitted_and_other_info(
-                    araw, df, cv, ct, caution_flag, notes, omits, sendmessage, standardunitCellsStart, unitCellsStart,
+                fitted_ftv_pdv_flags_sendmessage1 = plate_map_sub_return_the_fitted_and_other_info(
+                    araw, df, cv, ct, caution_flag, notes, omits, sendmessage1, standardunitCellsStart, unitCellsStart,
                     yes_to_calibrate, use_calibration_curve, multiplier, use_form_max, use_form_min,
                     slope_linear, icept_linear,
                     slope_linear0, icept_linear0,
                     A4, B4, C4, D4,
                     A_log, B_log,
                     A_poly2, B_poly2, C_poly2)
-                # [ftv, pdv, caution_flag, sendmessage]
-                ftv = fitted_ftv_pdv_flags_sendmessage[0]
+                # [ftv, pdv, caution_flag, sendmessage1]
+                ftv = fitted_ftv_pdv_flags_sendmessage1[0]
                 # print("ftv ",ftv)
                 this_row.update({'Fitted Concentration': ftv})
                 list_of_dicts_of_each_standard_row_points.append(this_row)
@@ -5258,7 +5258,7 @@ def plate_reader_data_file_process_data(set_dict):
 
             # print(myquery)
 
-            sendmessage = sendmessage + "Fitting method: " + use_calibration_curve + ";  Standard minimum: " + str(use_form_min) + ";  Standard maximum: " + str(use_form_max) + ";  "
+            sendmessage1 = sendmessage1 + "Fitting method: " + use_calibration_curve + ";  Standard minimum: " + str(use_form_min) + ";  Standard maximum: " + str(use_form_max) + ";  "
 
         #  WATCH CAREFUL - this order is important below
         # if any of these are null, they cause problems when making table in javascript
@@ -5331,14 +5331,14 @@ def plate_reader_data_file_process_data(set_dict):
             # adjusted raw value
             araw = each[12]
 
-            # get for this row, sendmessage will cum, and that's fine
+            # get for this row, sendmessage1 will cum, and that's fine
             caution_flag = ''
             notes = ''
             omits = 'false'
-            sendmessage = sendmessage
+            sendmessage2 = ''
 
             fitted_ftv_pdv_flags_sendmessage = plate_map_sub_return_the_fitted_and_other_info(
-                araw, df, cv, ct, caution_flag, notes, omits, sendmessage, standardunitCellsStart, unitCellsStart,
+                araw, df, cv, ct, caution_flag, notes, omits, sendmessage2, standardunitCellsStart, unitCellsStart,
                 yes_to_calibrate, use_calibration_curve, multiplier, use_form_max, use_form_min,
                 slope_linear, icept_linear,
                 slope_linear0, icept_linear0,
@@ -5346,11 +5346,11 @@ def plate_reader_data_file_process_data(set_dict):
                 A_log, B_log,
                 A_poly2, B_poly2, C_poly2)
 
-            # [ftv, pdv, caution_flag, sendmessage]
+            # [ftv, pdv, caution_flag, sendmessage1]
             ftv = fitted_ftv_pdv_flags_sendmessage[0]
             pdv = fitted_ftv_pdv_flags_sendmessage[1]
             caution_flag = fitted_ftv_pdv_flags_sendmessage[2]
-            sendmessage = fitted_ftv_pdv_flags_sendmessage[3]
+            sendmessage2 = fitted_ftv_pdv_flags_sendmessage[3]
             notes = fitted_ftv_pdv_flags_sendmessage[4]
             omits = fitted_ftv_pdv_flags_sendmessage[5]
 
@@ -5385,16 +5385,22 @@ def plate_reader_data_file_process_data(set_dict):
                 cross_reference, subtarget, a_space,
                 wellu, use_calibration_curve, time_unit, target, plate_name, method,
                 standard_unit, sample_blank_average, volume_unit, multiplier,
-                unit, caution_flag, sendmessage
+                unit, caution_flag, sendmessage1+sendmessage2
             )
             # add the dictionary to the list for each
             list_of_dicts_of_each_sample_row_each.append(this_row_each)
 
             # deal with the replicates grouping and averaging
-            # print("replicate number ", replicate)
+            # print("-----replicate number ", replicate)
             # print('**welln ', welln)
-            # print('omitsFalseSum ', omitsFalseSum)
             # print('omits ', omits)
+            # print('omitsFalseSum ', omitsFalseSum)
+            # print("prevMatrixItemId ",prevMatrixItemId)
+            # print("mxii ", mxii)
+            # print("prevTime ", prevTime)
+            # print("st ", st)
+            # print("prevLocationId ", prevLocationId )
+            # print("loci ", loci)
             if prevMatrixItemId == mxii and prevTime == st and prevLocationId == loci:
                 # this is a replicate of the previous, if it is included, continue
 
@@ -5417,16 +5423,17 @@ def plate_reader_data_file_process_data(set_dict):
                 # write the average info to the average list of rows
                 # load the average to the dict
                 # print('-Start New Group pi ', pi)
-                if omitsFalseSum > 1:
-
+                # print('omitsFalseSum ', omitsFalseSum)
+                if omitsFalseSum > 0:
                     this_row_average = sub_to_load_processed_data_to_dict_limited(
                         1,
                         mxin, locn, st,
                         cumWelln, cumNotes, valueSum/valueCount,
                         cross_reference, subtarget, a_space,
                         time_unit, target, plate_name, method,
-                        unit, cumCautionFlag, sendmessage
+                        unit, cumCautionFlag, sendmessage1+sendmessage2
                     )
+                    # print("this row average ", this_row_average)
                     # add the dictionary to the list for average
                     list_of_dicts_of_each_sample_row_average.append(this_row_average)
 
@@ -5465,7 +5472,7 @@ def plate_reader_data_file_process_data(set_dict):
                 cumWelln, cumNotes, valueSum / valueCount,
                 cross_reference, subtarget, a_space,
                 time_unit, target, plate_name, method,
-                unit, cumCautionFlag, sendmessage
+                unit, cumCautionFlag, sendmessage1+sendmessage2
             )
             # add the dictionary to the list for average
             list_of_dicts_of_each_sample_row_average.append(this_row_average)
@@ -5477,10 +5484,10 @@ def plate_reader_data_file_process_data(set_dict):
         # print("list_of_dicts_of_each_sample_row_average ")
         # print(list_of_dicts_of_each_sample_row_average)
 
-    # regardless of errors, return the sendmessage
+    # regardless of errors, return the sendmessage1
 
-    # if failed one or more of QC, only the sendmessage should be populated
-    return [sendmessage,
+    # if failed one or more of QC, only the sendmessage1 should be populated
+    return [sendmessage1,
             list_of_dicts_of_each_sample_row_each,
             list_of_dicts_of_each_standard_row_points,
             list_of_dicts_of_each_standard_row_ave_points,
@@ -5537,6 +5544,9 @@ def sub_to_load_processed_data_to_dict(
     araw = str(araw)
     ftv = str(ftv)
     pdv = str(pdv)
+    multiplier = str(multiplier)
+
+    # print("multiplier ", multiplier)
 
     this_row = {}
     # for each - do every time
@@ -5585,6 +5595,7 @@ def sub_to_load_processed_data_to_dict(
     this_row.update({'volume_unit'              : volume_unit           })
     this_row.update({'collection_time'          : ct                    })
     # 24,25,26,27
+    # need to string the multiplier because, if it is small, it will show as 0
     this_row.update({'multiplier'               : multiplier            })
     this_row.update({'processed_value'          : pdv                   })
     this_row.update({'unit'                     : unit                  })
@@ -5603,7 +5614,7 @@ def sub_to_load_processed_data_to_dict(
 # cumWelln, cumNotes, valueSum / valueCount,
 # cross_reference, subtarget, a_space,
 # time_unit, target, plate_name, method,
-# unit, cumCautionFlag, sendmessage
+# unit, cumCautionFlag, sendmessage1
 # search term MIFC - if MIFC changes, this will need changed
 def sub_to_load_processed_data_to_dict_limited(
         replicate,
@@ -5707,6 +5718,8 @@ def plate_map_sub_return_the_fitted_and_other_info(
     A_log, B_log,
     A_poly2, B_poly2, C_poly2):
 
+    ftv = araw
+
     if yes_to_calibrate == 'no' or use_calibration_curve == 'no_calibration':
         ftv = araw
 
@@ -5714,7 +5727,7 @@ def plate_map_sub_return_the_fitted_and_other_info(
         if slope_linear == 0:
             ftv = " "
             caution_flag = 'F'
-            sendmessage = sendmessage + "Slope is 0. Cannot calculate fitted value."
+            sendmessage = sendmessage + " Slope is 0. Cannot calculate fitted value."
         else:
             ftv = (araw - icept_linear) / slope_linear
 
@@ -5722,7 +5735,7 @@ def plate_map_sub_return_the_fitted_and_other_info(
         if araw - D4 == 0 or B4 == 0:
             ftv = " "
             caution_flag = 'F'
-            sendmessage = sendmessage + "A denominator is 0. Cannot calculate fitted value."
+            sendmessage = sendmessage + " A denominator is 0. Cannot calculate fitted value."
         else:
             try:
                 ftv = C4 * (((A4 - D4) / (araw - D4)) - 1) ** (1 / B4)
@@ -5731,36 +5744,37 @@ def plate_map_sub_return_the_fitted_and_other_info(
                     if araw < A4:
                         ftv = A4
                         caution_flag = 'e'
-                        sendmessage = sendmessage + "Sample value too small to calculate; set to theoretical response at zero concentration (A)."
+                        print(sendmessage)
+                        sendmessage = sendmessage + " Sample value too small to calculate; set to theoretical response at zero concentration (A)."
                     else:
                         # print("araw,    A,    B,    C,    D ")
                         # print(str(araw), " ", str(A4), " ", str(B4), " ", str(C4), " ", str(D4))
                         ftv = " "
                         caution_flag = 'F'
-                        sendmessage = sendmessage + "Cannot calculate fitted value."
+                        sendmessage = sendmessage + " Cannot calculate fitted value."
             except:
                 ftv = " "
                 caution_flag = 'F'
-                sendmessage = sendmessage + "Cannot calculate fitted value. Likely due to very large exponent."
+                sendmessage = sendmessage + " Cannot calculate fitted value. Likely due to very large exponent."
 
     elif use_calibration_curve == 'log':
         if B_log == 0:
             ftv = " "
             caution_flag = 'F'
-            sendmessage = sendmessage + "A denominator is 0. Cannot calculate fitted value."
+            sendmessage = sendmessage + " A denominator is 0. Cannot calculate fitted value."
         else:
             try:
                 ftv = math.exp((araw - A_log) / B_log)
             except:
                 ftv = " "
                 caution_flag = 'F'
-                sendmessage = sendmessage + "Cannot calculate fitted value. Likely due to very large exponent."
+                sendmessage = sendmessage + " Cannot calculate fitted value. Likely due to very large exponent."
 
     elif use_calibration_curve == 'poly2':
         if C_poly2 == 0:
             ftv = " "
             caution_flag = 'F'
-            sendmessage = sendmessage + "A denominator is 0. Cannot calculate fitted value."
+            sendmessage = sendmessage + " A denominator is 0. Cannot calculate fitted value."
         else:
             ftv1 = ((-1 * B_poly2) + ((B_poly2 ** 2) - (4 * C_poly2 * (A_poly2 - araw))) ** (1 / 2)) / (2 * C_poly2)
             ftv2 = ((-1 * B_poly2) - ((B_poly2 ** 2) - (4 * C_poly2 * (A_poly2 - araw))) ** (1 / 2)) / (2 * C_poly2)
@@ -5774,7 +5788,7 @@ def plate_map_sub_return_the_fitted_and_other_info(
         if slope_linear0 == 0:
             ftv = " "
             caution_flag = 'F'
-            sendmessage = sendmessage + "Slope is 0. Cannot calculate fitted value."
+            sendmessage = sendmessage + " Slope is 0. Cannot calculate fitted value."
         else:
             ftv = araw / slope_linear0
 
@@ -5785,7 +5799,7 @@ def plate_map_sub_return_the_fitted_and_other_info(
             if (cv == 0 or ct == 0):
                 pdv = " "
                 caution_flag = 'F'
-                sendmessage = sendmessage + "Collection volume or collection time = 0.;"
+                sendmessage = sendmessage + " Collection volume or collection time = 0.;"
             else:
                 pdv = ftv * multiplier * df / cv / ct
         else:

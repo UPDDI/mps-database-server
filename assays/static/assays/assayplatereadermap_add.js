@@ -442,7 +442,7 @@ $(document).ready(function () {
 
     // these get used in the table maker to determine what needs to be parsed and formatted how
     let global_utils_integers = ['plate_index','matrix_item_id','location_id', 'replicate'];
-    let global_utils_strings = ['matrix_item_name', 'cross_reference', 'well_name', 'well_use',
+    let global_utils_strings = ['matrix_item_name', 'cross_reference', 'plate_name', 'well_name', 'well_use',
     'target', 'subtarget', 'method', 'location_name', 'standard_unit', 'volume_unit', 'unit',
     'caution_flag', 'exclude', 'notes', 'sendmessage'];
 
@@ -984,7 +984,8 @@ $(document).ready(function () {
                 alert("Not Programmed for this combination. Please select another combination.\n");
                 $('input[name=radio_standards_blank_handling][value=standards_ave_standard_blanks]').prop('checked',true);
                 $('input[name=radio_samples_blank_handling][value=samples_ave_sample_blanks]').prop('checked',true);
-                blankOption = 'subtracteachfromeach';            }
+                blankOption = 'subtracteachfromeach';
+            }
         } else if (standards === 'standards_nothing') {
             if (samples === 'samples_ave_standard_blanks') {
                 alert("Not Programmed for this combination. Please select another combination.\n");
@@ -1688,7 +1689,7 @@ $(document).ready(function () {
 
             $.each(column_table_headers, function (ii, col) {
                 let each_plate_index = row['plate_index'];
-                if (each_or_average == 'standards') {
+                if (each_or_average === 'standards') {
                     each_plate_index = rowcounter;
                 }
                 let myUtilsName = findTheUtilsKeyFromMIFCHeader(col);
@@ -1703,7 +1704,7 @@ $(document).ready(function () {
                 $(td).attr('row-index', rowcounter);
                 $(td).attr('id', each_or_average + '_' + myUtilsName+'_'+each_plate_index);
 
-                if (myUtilsName == 'notes' && each_or_average == 'each') {
+                if (myUtilsName === 'notes' && each_or_average === 'each') {
                     passedIn = passedIn.toString().trim();
                     // if the reprocessing was called, we want an empty text box
                     // reprocessing is NOT called if just a toggle back to each is selected
@@ -1714,7 +1715,7 @@ $(document).ready(function () {
                     $(myCellContent).attr('class', each_or_average + '_' + myUtilsName);
                     $(myCellContent).val(passedIn);
                     td.appendChild(myCellContent);
-                } else if (myUtilsName == 'omits') {
+                } else if (myUtilsName === 'omits') {
                     // console.log("passedIn ",passedIn)
                     var myCellContent = document.createElement('input');
                     myCellContent.type = 'checkbox';
@@ -1722,7 +1723,7 @@ $(document).ready(function () {
                     $(myCellContent).attr('id', each_or_average + '_box_' + myUtilsName+'_'+each_plate_index);
                     $(myCellContent).attr('name', myUtilsName+'_'+each_plate_index);
                     $(myCellContent).attr('class', each_or_average + '_' + myUtilsName);
-                    if (passedIn == 'true') {
+                    if (passedIn === 'true') {
                         // console.log("ready to check")
                         $(myCellContent).attr('checked', 'checked');
                         $('#id_assayplatereadermapitem_set-' + each_plate_index
@@ -1731,7 +1732,9 @@ $(document).ready(function () {
                     // else leave unchecked, which is default
                     td.appendChild(myCellContent);
                 } else {
+                    // console.log("passedIn1 ",passedIn)
                     passedIn = passedIn.toString().trim();
+                    // console.log("passedIn2 ",passedIn)
                     if (passedIn.length == 0) {
                         myCellContent = " ";
                     } else if (global_utils_integers.includes(myUtilsName)) {
@@ -1743,10 +1746,10 @@ $(document).ready(function () {
                         passedIn = thousands_separators(passedIn);
                         myCellContent = passedIn;
                     }
-
+                    // console.log("passedIn3 ",passedIn)
                     td.appendChild(document.createTextNode(myCellContent));
 
-                    if (myUtilsName == 'caution_flag' && myCellContent.length > 0) {
+                    if (myUtilsName === 'caution_flag' && myCellContent.length > 0) {
                         global_list_sample_with_caution_flags.push(each_plate_index);
                     }
                 }
@@ -1762,7 +1765,7 @@ $(document).ready(function () {
         myTableDiv.appendChild(myTable);
 
         let table_order = [[2, "asc"]];
-        if (each_or_average == 'standards') {
+        if (each_or_average === 'standards') {
             table_order = [[0, "asc"]];
         }
 
@@ -1775,10 +1778,10 @@ $(document).ready(function () {
             "columnDefs": global_table_column_defs
         });
 
-        if (each_or_average == 'each') {
+        if (each_or_average === 'each') {
             // change what see columns are shown by default based on if calibration or not
             // overwrites what was set above for the general case
-            if (global_calibrate_se_form_calibration_curve == 'no_calibration') {
+            if (global_calibrate_se_form_calibration_curve === 'no_calibration') {
                 global_table_column_defs_each[18]['visible'] = false;
                 global_table_column_defs_each[19]['visible'] = false;
             } else {
