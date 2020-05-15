@@ -450,6 +450,33 @@ def get_queryset_with_number_of_data_points(queryset):
             data_point.study_id: current_value + 1
         })
 
+    plate_maps = AssayPlateReaderMap.objects.filter(
+        study_id__in=study_ids
+    ).only('id', 'study_id')
+
+    plate_reader_files = AssayPlateReaderMapDataFile.objects.filter(
+        study_id__in=study_ids
+    ).only('id', 'study_id')
+
+    plate_maps_map = {}
+    plate_reader_files_map = {}
+
+    for plate_map in plate_maps:
+        current_value = plate_maps_map.setdefault(
+            plate_map.study_id, 0
+        )
+        plate_maps_map.update({
+            plate_map.study_id: current_value + 1
+        })
+
+    for plate_reader_file in plate_reader_files:
+        current_value = plate_reader_files_map.setdefault(
+            plate_reader_file.study_id, 0
+        )
+        plate_reader_files_map.update({
+            plate_reader_file.study_id: current_value + 1
+        })
+
     images = AssayImage.objects.filter(
         setting__study_id__in=study_ids
     ).prefetch_related(
@@ -506,6 +533,8 @@ def get_queryset_with_number_of_data_points(queryset):
         study.images = images_map.get(study.id, 0)
         study.videos = videos_map.get(study.id, 0)
         study.supporting_data = supporting_data_map.get(study.id, 0)
+        study.plate_maps = plate_maps_map.get(study.id, 0)
+        study.plate_reader_files = plate_reader_files_map.get(study.id, 0)
 
 
 # TODO GET NUMBER OF DATA POINTS

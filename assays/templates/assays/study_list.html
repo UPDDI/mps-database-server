@@ -2,6 +2,7 @@
 
 {# PLEASE NOTE THAT SORTING ETC. IS NOT HERE, IT CHANGES DEPENDING ON THE PAGE #}
 {# PLEASE NOTE THAT THE ID IS CONTRIVED, ALWAYS "studies" #}
+{# PLEASE NOTE THAT: sck added two columns to table 20200515 #}
 <table hidden id="studies" class="display" cellspacing="0" width="100%">
     <thead>
         <tr>
@@ -18,6 +19,8 @@
             <th>Data Points</th>
             <th>Images</th>
             <th>Videos</th>
+            <th>Plate Maps</th>
+            <th>Plate Reader Files</th>
             <th>Supporting Data Files</th>
 {#                    <th>Integrated Study Configuration</th>#}
             <th>Description</th>
@@ -63,6 +66,16 @@
             {% endif %}
             {% if study.videos %}
                 <td class="text-success">{{ study.videos|intcomma }}</td>
+            {% else %}
+                <td class="text-danger">0</td>
+            {% endif %}
+            {% if study.plate_maps %}
+                <td class="text-success">{{ study.plate_maps|intcomma }}</td>
+            {% else %}
+                <td class="text-danger">0</td>
+            {% endif %}
+            {% if study.plate_reader_files %}
+                <td class="text-success">{{ study.plate_reader_files|intcomma }}</td>
             {% else %}
                 <td class="text-danger">0</td>
             {% endif %}

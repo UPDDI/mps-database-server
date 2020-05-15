@@ -609,6 +609,7 @@ $(document).ready(function () {
         {responsivePriority: 4, targets: 30},
         {responsivePriority: 5, targets: 27},
         {responsivePriority: 6, targets: 32},
+        {'sortable': false, 'targets': [30, 32]},
         //may need the following later - if pursue sorting on these fields
         //https://datatables.net/reference/option/columns.orderDataType
         //https://datatables.net/reference/option/columns.responsivePriority
@@ -1572,7 +1573,12 @@ $(document).ready(function () {
         $.each(list_of_dicts_of_each_sample_row_each, function (index, eachrow) {
             let adjusted_raw = eachrow['adjusted_raw'];
             let fitted_value = eachrow['fitted_value'];
-            global_lol_samples_for_graph_each.push([parseFloat(fitted_value), null, null, null, parseFloat(adjusted_raw)]);
+            //console.log("adj raw, fitted con ",adjusted_raw,", ", fitted_value)
+            if (String(fitted_value).trim().length == 0) {
+                //don't push this because it will graph at 0 and don't want that
+            } else {
+                global_lol_samples_for_graph_each.push([parseFloat(fitted_value), null, null, null, parseFloat(adjusted_raw)]);
+            }
         });
     }
     /**
@@ -1584,6 +1590,10 @@ $(document).ready(function () {
         $.each(list_of_dicts_of_each_sample_row_average, function (index, eachrow) {
             let adjusted_raw = eachrow['adjusted_raw'];
             let fitted_value = eachrow['fitted_value'];
+            //console.log("adj raw, fitted con ",adjusted_raw,", ", fitted_value)
+            //these are not actually being used BECAUSE these are NOT fields
+            //that are sent back with the AVERAGE...may need to do that later if
+            //team requests to see average on the graphs, otherwise, the are underfined....!!!
             global_lol_samples_for_graph_average.push([parseFloat(fitted_value), null, null, null, parseFloat(adjusted_raw)]);
         });
     }
@@ -1640,7 +1650,7 @@ $(document).ready(function () {
         thisTableName,
         column_table_headers,
         each_or_average,
-        global_table_column_defs)
+        table_column_defs)
 
         {
         // HANDY delete child node
@@ -1766,7 +1776,7 @@ $(document).ready(function () {
 
         let table_order = [[2, "asc"]];
         if (each_or_average === 'standards') {
-            table_order = [[0, "asc"]];
+            table_order = [[0, "asc"], [1, "asc"]];
         }
 
         sampleDataTable = $('#'+thisTableName).DataTable({
@@ -1775,20 +1785,20 @@ $(document).ready(function () {
             fixedHeader: {headerOffset: 50},
             responsive: true,
             "order": table_order,
-            "columnDefs": global_table_column_defs
+            "columnDefs": table_column_defs
         });
 
-        if (each_or_average === 'each') {
-            // change what see columns are shown by default based on if calibration or not
-            // overwrites what was set above for the general case
-            if (global_calibrate_se_form_calibration_curve === 'no_calibration') {
-                global_table_column_defs_each[18]['visible'] = false;
-                global_table_column_defs_each[19]['visible'] = false;
-            } else {
-                global_table_column_defs_each[18]['visible'] = true;
-                global_table_column_defs_each[19]['visible'] = true;
-            }
-        }
+        // if (each_or_average === 'each') {
+        //     // change what see columns are shown by default based on if calibration or not
+        //     // overwrites what was set above for the general case
+        //     if (global_calibrate_se_form_calibration_curve === 'no_calibration') {
+        //         global_table_column_defs_each[18]['visible'] = false;
+        //         global_table_column_defs_each[19]['visible'] = false;
+        //     } else {
+        //         global_table_column_defs_each[18]['visible'] = true;
+        //         global_table_column_defs_each[19]['visible'] = true;
+        //     }
+        // }
 
         return myTable;
     }

@@ -5742,10 +5742,13 @@ def plate_map_sub_return_the_fitted_and_other_info(
                 if str(ftv).lower().strip() == 'nan':
 
                     if araw < A4:
-                        ftv = A4
-                        caution_flag = 'e'
-                        print(sendmessage)
-                        sendmessage = sendmessage + " Sample value too small to calculate; set to theoretical response at zero concentration (A)."
+                        ftv = " "
+                        caution_flag = 'F'
+                        sendmessage = sendmessage + " Sample value too small to calculate."
+                        # here here if change their mind and want the theoretical response at 0
+                        # ftv = A4
+                        # caution_flag = 'e'
+                        # sendmessage = sendmessage + " Sample value too small to calculate; set to theoretical response at zero concentration (A)."
                     else:
                         # print("araw,    A,    B,    C,    D ")
                         # print(str(araw), " ", str(A4), " ", str(B4), " ", str(C4), " ", str(D4))
@@ -5939,7 +5942,7 @@ def plateMap_pevalLinear(n, p):
     return plateMapLinear(n, A, B)
 
 # START - save for now in case change mind and go back to this way.
-
+# using a different fitting method
 # to work in fitting, need to be a reshaped numpy array
 # NN = np.array(N).reshape(-1, 1)
 # RR = np.array(R).reshape(-1, 1)
