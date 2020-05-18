@@ -3985,7 +3985,7 @@ class AssayPlateReaderMapAdd(StudyGroupMixin, CreateView):
     template_name = 'assays/assayplatereadermap_add.html'
     form_class = AssayPlateReaderMapForm
 
-    # used in ADD, not in UPDATE - check carefully if copy
+    # used in ADD, not in UPDATE - check carefully if copy - changing, use partial in update
     def get_form(self, form_class=None):
         form_class = self.get_form_class()
         study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
@@ -4125,6 +4125,17 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
     model = AssayPlateReaderMap
     template_name = 'assays/assayplatereadermap_add.html'
     form_class = AssayPlateReaderMapForm
+
+    def get_form(self, form_class=None):
+        form_class = self.get_form_class()
+        # study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
+        study = self.object.study
+        # print("study ", study)
+        # print("study_id ", study.id)
+        if self.request.method == 'POST':
+            return form_class(self.request.POST, self.request.FILES, instance=self.object, study=study, user=self.request.user)
+        else:
+            return form_class(instance=self.object, study=study, user=self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super(AssayPlateReaderMapUpdate, self).get_context_data(**kwargs)
