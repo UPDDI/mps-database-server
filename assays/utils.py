@@ -4981,7 +4981,7 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_curve_info = dict_of_curve_info_logistic4
                 dict_of_standard_info = dict_of_standard_info_logistic4
 
-                # print("araw, A, B, C, D ", str(araw), " ", str(A4), " ", str(B4), " ", str(C4), " ", str(D4), " ")
+                # print("A, B, C, D ", str(A4), " ", str(B4), " ", str(C4), " ", str(D4), " ")
                 # print("(A4 - D4) ", str(A4 - D4))
                 # print("(araw - D4) ", str(araw - D4))
                 # print("(1 / B4) ", str(1 / B4))

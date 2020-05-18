@@ -3880,8 +3880,8 @@ class AssayPlateReaderMapForm(BootstrapForm):
     form_calibration_equation = forms.CharField(
         widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
     )
-    form_calibration_rsquared = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
+    form_calibration_rsquared = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
     )
 
     radio_replicate_handling_average_or_not = forms.ChoiceField(
@@ -3915,32 +3915,32 @@ class AssayPlateReaderMapForm(BootstrapForm):
     form_calibration_parameter_5_string = forms.CharField(
         widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
     )
-    form_calibration_parameter_1_value = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
+    form_calibration_parameter_1_value = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
     )
-    form_calibration_parameter_2_value = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
+    form_calibration_parameter_2_value = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
     )
-    form_calibration_parameter_3_value = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
+    form_calibration_parameter_3_value = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
     )
-    form_calibration_parameter_4_value = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
+    form_calibration_parameter_4_value = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
     )
-    form_calibration_parameter_5_value = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
+    form_calibration_parameter_5_value = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
     )
-    form_calibration_standard_fitted_min_for_e = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
+    form_calibration_standard_fitted_min_for_e = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
     )
-    form_calibration_standard_fitted_max_for_e = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
+    form_calibration_standard_fitted_max_for_e = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
     )
-    form_calibration_sample_blank_average = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
+    form_calibration_sample_blank_average = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
     )
-    form_calibration_standard_standard0_average = forms.DecimalField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': 0})
+    form_calibration_standard_standard0_average = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
     )
     form_calibration_method = forms.CharField(
         widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
@@ -3956,6 +3956,12 @@ class AssayPlateReaderMapForm(BootstrapForm):
         initial=1,
     )
     form_make_mifc_on_submit = forms.BooleanField(required=False)
+
+    # def save(self, commit=True):
+    #     print("made it here")
+    #     data = self.cleaned_data
+    #     print("data.get('form_make_mifc_on_submit') ", data.get('form_make_mifc_on_submit'))
+
 
     def clean(self):
         data = self.cleaned_data

@@ -704,14 +704,22 @@ $(document).ready(function () {
     //findThePkForTheSelectedString("id_se_block_select_string", "id_ns_block_select_pk")
     function findThePkForTheSelectedString(thisStringElement, thisPkElement) {
         // get the selected index of the pk of the selected data block (0 to # file/blocks-1) and get index of the selection box = 0, 1, 2, 3...
-        if (global_calibrate_block_select_string_is_block_working_with_string) {
+        // console.log("global_calibrate_block_select_string_is_block_working_with_string1 ", global_calibrate_block_select_string_is_block_working_with_string)
+        // if (global_calibrate_block_select_string_is_block_working_with_string) {
             try {
                 global_calibrate_block_select_string_is_block_working_with_string = $("#"+thisStringElement).selectize()[0].selectize.items[0];
             } catch (err) {
                 global_calibrate_block_select_string_is_block_working_with_string = $("#"+thisStringElement).val();
             }
+        // }
+        // console.log("global_calibrate_block_select_string_is_block_working_with_string2 ", global_calibrate_block_select_string_is_block_working_with_string)
+        // console.log ("thisStringElement", ", ", "thisPkElement")
+        // console.log (thisStringElement, ", ", thisPkElement)
+        try {
+            $("#"+thisPkElement).selectize()[0].selectize.setValue(global_calibrate_block_select_string_is_block_working_with_string);
+        } catch (err) {
+            $("#" + thisPkElement).selectize()[0].selectize.setValue(global_calibrate_block_select_string_is_block_working_with_string);
         }
-        $("#"+thisPkElement).selectize()[0].selectize.setValue(global_calibrate_block_select_string_is_block_working_with_string);
 
         //HANDY get the text from selectized
         global_calibrate_form_ns_block_select_pk = $("#"+thisPkElement).selectize()[0].selectize.options[global_calibrate_block_select_string_is_block_working_with_string]['text'];
@@ -843,12 +851,20 @@ $(document).ready(function () {
             //the following is something Luke suggested for managing dataTable, but went a different direction
             //sampleDataTable.data()[thisRowIndex][32] = sampleDataTable.data()[thisRowIndex][32].replace(' checked="checked">', '>');
 
-            $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working_omits
-                + '-form_user_entered_omit_from_average').prop('checked', false)
+            // console.log("thisCautionFlag ",thisCautionFlag)
+            // console.log("thisCautionFlag.search('F') ", thisCautionFlag.search('F'))
 
-            if (thisCautionFlagLength > 0) {
-                // when omit with a caution flag is unchecked, make them add a note
-                forceTheUserToEnterANote(global_checkbox_platemap_index_working_omits);
+            if ($(thisCautionFlag).text().search('F') >= 0) {
+                $(this).prop('checked', true)
+                alert("No value to include.\n");
+            } else {
+                $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working_omits
+                    + '-form_user_entered_omit_from_average').prop('checked', false)
+
+                if (thisCautionFlagLength > 0) {
+                    // when omit with a caution flag is unchecked, make them add a note
+                    forceTheUserToEnterANote(global_checkbox_platemap_index_working_omits);
+                }
             }
         } else {
             //sampleDataTable.data()[thisRowIndex][32] = sampleDataTable.data()[thisRowIndex][32].replace('>', ' checked="checked">');
@@ -1506,6 +1522,8 @@ $(document).ready(function () {
         $("#id_form_calibration_parameter_3_string").val(dict_of_parameter_labels.p3);
         $("#id_form_calibration_parameter_4_string").val(dict_of_parameter_labels.p4);
         $("#id_form_calibration_parameter_5_string").val(dict_of_parameter_labels.p5);
+        //when these were not parseFloat ed if they had a comma, an error on form save
+        //they were not interpreted as numbers. If this happens again, just make the string fields in the form.
         $("#id_form_calibration_parameter_1_value").val(dict_of_parameter_values.p1);
         $("#id_form_calibration_parameter_2_value").val(dict_of_parameter_values.p2);
         $("#id_form_calibration_parameter_3_value").val(dict_of_parameter_values.p3);
