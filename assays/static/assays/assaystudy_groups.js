@@ -570,6 +570,14 @@ $(document).ready(function () {
             )
         );
 
+        var type_display = $('<div>')
+            .attr('data-row', row_index)
+            .html(setup_to_use['device_type'][0].toUpperCase() + setup_to_use['device_type'].substr(1).toLowerCase());
+
+        new_row.append(
+            $('<td>').append(type_display)
+        );
+
         var name_input = $('#id_group_name')
             .clone()
             .removeAttr('id')
