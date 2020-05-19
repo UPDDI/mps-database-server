@@ -4363,6 +4363,13 @@ def plate_reader_data_file_process_data(set_dict):
     A_poly2 = 0
     B_poly2 = 0
     C_poly2 = 0
+    # since the log case had the 0s removed, may not have the same number of points in the 100 array, deal with
+    adj_low = 0
+    adj_mid = 0
+    adj_high = 0
+    con_low = 0
+    con_mid = 0
+    con_high = 0
 
     # Prelim QC SECTION Some QC that will cause errors if not detected up front
 
@@ -4778,6 +4785,18 @@ def plate_reader_data_file_process_data(set_dict):
             # FUN IS HERE
 
             # CALIBRATION OPTIONS ALL STARTING FROM
+            # https://stats.stackexchange.com/questions/22718/what-is-the-difference-between-linear-regression-on-y-with-x-and-x-with-y
+            # That is, we are saying that x is measured without error and constitutes the set of values we care about, but that y has sampling error.
+            # https://www.abcam.com/ps/products/102/ab102526/documents/ab102526%20LDH%20Assay%20Kit%20Colorimetric%20protocol%20v13d%20(website).pdf
+            # on page 15, the concentration is x and the OD is y. The equation is y = mx + b
+            # with that in mind, the fitting was done with concentration as the x and signal as the y.
+            # 20200518 - some differences in poly2 with TS. TS indicated she fitted with x as signal and y as concentration.
+            # Emailed team to determine which is the independant and which is the dependant variable.
+
+            # set here so can flip back and forth signal and conc
+            sig_or_con = "signal"
+
+
             r2 = {}
 
             if form_calibration_curve in ['linear', 'best_fit']:
@@ -5084,13 +5103,6 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_curve_info = dict_of_curve_info_linear0
                 dict_of_standard_info = dict_of_standard_info_linear0
 
-            # since the log case had the 0s removed, may not have the same number of points in the 100 array, deal with
-            adj_low = 0
-            adj_mid = 0
-            adj_high = 0
-            con_low = 0
-            con_mid = 0
-            con_high = 0
             if use_calibration_curve == 'log' or use_calibration_curve == 'logistic4':
                 i = 0
                 for each in N100no0:
