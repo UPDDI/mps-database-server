@@ -5038,6 +5038,9 @@ def plate_reader_data_file_process_data(set_dict):
                     {'p1': 'coefficient (A)', 'p2': 'coefficient of concentration (B)', 'p3': 'coefficient of concentration**2 (C)', 'p4': '-', 'p5': '-'})
                 dict_of_parameter_values_poly2 = (
                     {'p1': A_poly2s, 'p2': B_poly2s, 'p3': C_poly2s, 'p4': 0, 'p5': 0})
+                # print('A_poly2s ',A_poly2s)
+                # print('B_poly2s ', B_poly2s)
+                # print('C_poly2s ', C_poly2s)
 
                 dict_of_curve_info_poly2 = (
                     {'method': 'Quadratic Polynomial', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
@@ -5082,6 +5085,12 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_standard_info = dict_of_standard_info_linear0
 
             # since the log case had the 0s removed, may not have the same number of points in the 100 array, deal with
+            adj_low = 0
+            adj_mid = 0
+            adj_high = 0
+            con_low = 0
+            con_mid = 0
+            con_high = 0
             if use_calibration_curve == 'log' or use_calibration_curve == 'logistic4':
                 i = 0
                 for each in N100no0:
@@ -5094,6 +5103,10 @@ def plate_reader_data_file_process_data(set_dict):
                     list_of_dicts_of_each_standard_row_curve.append(this_row)
                     i = i + 1
 
+                con_low = N100no0[1]
+                con_mid = N100no0[50]
+                con_high = N100no0[99]
+
             else:
                 i = 0
                 for each in N100:
@@ -5105,6 +5118,14 @@ def plate_reader_data_file_process_data(set_dict):
                     this_row.update({'Predicted Signal': y_predStandards100[i]})
                     list_of_dicts_of_each_standard_row_curve.append(this_row)
                     i = i + 1
+
+                con_low = N100[1]
+                con_mid = N100[50]
+                con_high = N100[99]
+
+            adj_low = y_predStandards100[1]
+            adj_mid = y_predStandards100[50]
+            adj_high = y_predStandards100[99]
 
             # 202004221 - decided to put a fitted value in the average standards for table display
             # I left a null spot in the list of dictionaries that we can now fill in
@@ -5193,7 +5214,8 @@ def plate_reader_data_file_process_data(set_dict):
                     slope_linear0, icept_linear0,
                     A4, B4, C4, D4,
                     A_log, B_log,
-                    A_poly2, B_poly2, C_poly2)
+                    A_poly2, B_poly2, C_poly2,
+                    adj_low, adj_mid,adj_high,con_low,con_mid,con_high)
                 # [ftv, pdv, caution_flag, sendmessage1]
                 ftv = fitted_ftv_pdv_flags_sendmessage1[0]
                 # print("ftv ",ftv)
@@ -5344,7 +5366,8 @@ def plate_reader_data_file_process_data(set_dict):
                 slope_linear0, icept_linear0,
                 A4, B4, C4, D4,
                 A_log, B_log,
-                A_poly2, B_poly2, C_poly2)
+                A_poly2, B_poly2, C_poly2,
+                adj_low, adj_mid,adj_high,con_low,con_mid,con_high)
 
             # [ftv, pdv, caution_flag, sendmessage1]
             ftv = fitted_ftv_pdv_flags_sendmessage[0]
@@ -5716,7 +5739,8 @@ def plate_map_sub_return_the_fitted_and_other_info(
     slope_linear0, icept_linear0,
     A4, B4, C4, D4,
     A_log, B_log,
-    A_poly2, B_poly2, C_poly2):
+    A_poly2, B_poly2, C_poly2,
+    adj_low, adj_mid,adj_high,con_low,con_mid,con_high):
 
     ftv = araw
 
@@ -5781,10 +5805,26 @@ def plate_map_sub_return_the_fitted_and_other_info(
         else:
             ftv1 = ((-1 * B_poly2) + ((B_poly2 ** 2) - (4 * C_poly2 * (A_poly2 - araw))) ** (1 / 2)) / (2 * C_poly2)
             ftv2 = ((-1 * B_poly2) - ((B_poly2 ** 2) - (4 * C_poly2 * (A_poly2 - araw))) ** (1 / 2)) / (2 * C_poly2)
-            if ftv1 >= 0:
+            # if ftv1 >= 0:
+            #     ftv = ftv1
+            #     # print("one")
+            # else:
+            #     ftv = ftv2
+            #     # print("two")
+            #
+            # # print("ftv1 ", ftv1)
+            # # print("ftv1 ", ftv1)
+            #
+            # # always pick the positive root
+            # ftv = ftv1
+
+            # how to pick the root
+            if (araw <= adj_mid and ftv1 <= con_mid) or (araw > adj_mid and ftv1 > con_mid):
                 ftv = ftv1
-            else:
+            elif (araw <= adj_mid and ftv2 <= con_mid) or (araw > adj_mid and ftv2 > con_mid):
                 ftv = ftv2
+            else:
+                ftv = ftv1
 
     else:
         # elif use_calibration_curve == 'linear0':
@@ -6034,7 +6074,8 @@ def sandrasGeneralFormatNumberFunction(this_number_in):
         if x == 0:
             formatted_number = '{:.0f}'.format(x)
         elif x <= 0.00001:
-            formatted_number = '{:.4e}'.format(x)
+            # formatted_number = '{:.4e}'.format(x)
+            formatted_number = '{:.8f}'.format(x)
         elif x <= 0.0001:
             formatted_number = '{:.5f}'.format(x)
         elif x <= 0.001:
