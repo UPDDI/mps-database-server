@@ -306,8 +306,17 @@ $(document).ready(function () {
                         var all_the_same = true;
                         var value_to_compare = group[prefix][0][current_field];
 
+                        // NOTE: We can't compare the first value if the first value is empty (eg. someone deleted "Cell 1")
+                        // As a result, we need to find the first populated and SKIP all totally empty columns
                         $.each(group[prefix], function(content_index, content) {
-                            if (content[current_field] !== value_to_compare) {
+                            if (content) {
+                                value_to_compare = content[current_field];
+                            }
+                        });
+
+                        $.each(group[prefix], function(content_index, content) {
+                            // Don't bother with empties
+                            if (Object.keys(content).length > 0 && content[current_field] !== value_to_compare) {
                                 all_the_same = false;
                                 // Break
                                 return false;
@@ -324,12 +333,15 @@ $(document).ready(function () {
                         }
                         else {
                             $.each(group[prefix], function(content_index, content) {
-                                new_td.append(
-                                    $('<div>').text(
-                                        // Note added semicolon
-                                        get_text_display_for_field(current_field, content[current_field], prefix) + ';'
-                                    )
-                                );
+                                // Don't bother with empties
+                                if (Object.keys(content).length > 0) {
+                                    new_td.append(
+                                        $('<div>').text(
+                                            // Note added semicolon
+                                            get_text_display_for_field(current_field, content[current_field], prefix) + ';'
+                                        )
+                                    );
+                                }
                             });
                         }
                     }
