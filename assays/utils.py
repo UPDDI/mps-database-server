@@ -4364,12 +4364,8 @@ def plate_reader_data_file_process_data(set_dict):
     B_poly2 = 0
     C_poly2 = 0
     # since the log case had the 0s removed, may not have the same number of points in the 100 array, deal with
-    adj_low = 0
     adj_mid = 0
-    adj_high = 0
-    con_low = 0
     con_mid = 0
-    con_high = 0
 
     # Prelim QC SECTION Some QC that will cause errors if not detected up front
 
@@ -5115,9 +5111,7 @@ def plate_reader_data_file_process_data(set_dict):
                     list_of_dicts_of_each_standard_row_curve.append(this_row)
                     i = i + 1
 
-                con_low = N100no0[1]
                 con_mid = N100no0[50]
-                con_high = N100no0[99]
 
             else:
                 i = 0
@@ -5131,13 +5125,9 @@ def plate_reader_data_file_process_data(set_dict):
                     list_of_dicts_of_each_standard_row_curve.append(this_row)
                     i = i + 1
 
-                con_low = N100[1]
                 con_mid = N100[50]
-                con_high = N100[99]
 
-            adj_low = y_predStandards100[1]
             adj_mid = y_predStandards100[50]
-            adj_high = y_predStandards100[99]
 
             # 202004221 - decided to put a fitted value in the average standards for table display
             # I left a null spot in the list of dictionaries that we can now fill in
@@ -5227,7 +5217,7 @@ def plate_reader_data_file_process_data(set_dict):
                     A4, B4, C4, D4,
                     A_log, B_log,
                     A_poly2, B_poly2, C_poly2,
-                    adj_low, adj_mid,adj_high,con_low,con_mid,con_high)
+                    adj_mid, con_mid)
                 # [ftv, pdv, caution_flag, sendmessage1]
                 ftv = fitted_ftv_pdv_flags_sendmessage1[0]
                 # print("ftv ",ftv)
@@ -5379,7 +5369,7 @@ def plate_reader_data_file_process_data(set_dict):
                 A4, B4, C4, D4,
                 A_log, B_log,
                 A_poly2, B_poly2, C_poly2,
-                adj_low, adj_mid,adj_high,con_low,con_mid,con_high)
+                adj_mid, con_mid)
 
             # [ftv, pdv, caution_flag, sendmessage1]
             ftv = fitted_ftv_pdv_flags_sendmessage[0]
@@ -5752,7 +5742,7 @@ def plate_map_sub_return_the_fitted_and_other_info(
     A4, B4, C4, D4,
     A_log, B_log,
     A_poly2, B_poly2, C_poly2,
-    adj_low, adj_mid,adj_high,con_low,con_mid,con_high):
+    adj_mid, con_mid):
 
     ftv = araw
 
@@ -5864,7 +5854,7 @@ def plate_map_sub_return_the_fitted_and_other_info(
             if ftv > use_form_max:
                 caution_flag = 'E'
             if ftv < use_form_min:
-                caution_flag = 'e'
+                caution_flag = 'E'
     else:
         pdv = " "
 
@@ -6086,8 +6076,8 @@ def sandrasGeneralFormatNumberFunction(this_number_in):
         if x == 0:
             formatted_number = '{:.0f}'.format(x)
         elif x <= 0.00001:
-            # formatted_number = '{:.4e}'.format(x)
-            formatted_number = '{:.8f}'.format(x)
+            formatted_number = '{:.4e}'.format(x)
+            #formatted_number = '{:.8f}'.format(x)
         elif x <= 0.0001:
             formatted_number = '{:.5f}'.format(x)
         elif x <= 0.001:
