@@ -9,7 +9,8 @@ from resources.models import (
     ResourceType,
     ResourceSubtype,
     Definition,
-    ComingSoonEntry
+    ComingSoonEntry,
+    WhatIsNewEntry
 )
 from resources.forms import (
     ResourceForm,
@@ -180,3 +181,13 @@ class ComingSoonEntryAdmin(LockableAdmin):
     list_editable = ['contents']
 
 admin.site.register(ComingSoonEntry, ComingSoonEntryAdmin)
+
+
+# Just register the WhatIsNewEntry
+class WhatIsNewEntryAdmin(LockableAdmin):
+    model = WhatIsNewEntry
+
+    list_display = ['id', 'contents', 'short_contents', 'modified_on']
+    list_editable = ['contents', 'short_contents']
+
+admin.site.register(WhatIsNewEntry, WhatIsNewEntryAdmin)

@@ -82,3 +82,13 @@ class ComingSoonEntry(LockableModel):
         verbose_name_plural = 'Coming Soon Entries'
 
     contents = models.TextField(default='')
+
+
+class WhatIsNewEntry(LockableModel):
+    """An entry for the About Page's "What's New" Section"""
+    class Meta(object):
+        verbose_name = 'What\'s New Entry'
+        verbose_name_plural = 'What\'s New Entries'
+
+    contents = models.TextField(default='')
+    short_contents = models.TextField(default='')
