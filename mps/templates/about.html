@@ -344,6 +344,20 @@ about/global_search.jpg
             </ul>
         </div>
 
+        <div id="anchor_what_is_new">&nbsp;</div>
+        <div id="about_what_is_new" class="well padded-bottom large-padding-top">
+            <h1 class="sub1-bars">
+                What's New
+                <small>Last updated {{ what_is_new_entries.0.modified_on }}</small>
+            </h1>
+
+            <ul style="font-size: 125%;">
+                {% for entry in what_is_new_entries %}
+                    <li>{{ entry.contents|safe }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
         <div id="anchor_recent_releases">&nbsp;</div>
         <div id="about_recent_releases" class="padded-bottom large-padding-top">
             <h1 class="sub1-bars">Recently Released Studies (Most Recent First)</h1>

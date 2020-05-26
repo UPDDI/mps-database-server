@@ -22,7 +22,7 @@ import os
 
 from mps.settings import MEDIA_ROOT
 
-from resources.models import Definition, ComingSoonEntry
+from resources.models import Definition, ComingSoonEntry, WhatIsNewEntry
 from django.views.generic.base import TemplateView
 
 from microdevices.models import MicrophysiologyCenter
@@ -246,7 +246,8 @@ def mps_about(request):
         'about_studies': signed_off_restricted_studies,
         'about_models_distinct': reduce_distinct_to_list,
         'recently_released_studies': recently_released_studies,
-        'coming_soon_entries': ComingSoonEntry.objects.all().order_by('-modified_on')
+        'coming_soon_entries': ComingSoonEntry.objects.all().order_by('-modified_on'),
+        'what_is_new_entries': WhatIsNewEntry.objects.all().order_by('-modified_on')
     }
 
     return render(request, 'about.html', full_context)
