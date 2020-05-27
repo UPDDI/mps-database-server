@@ -42,8 +42,15 @@ def main(request):
     else:
         form = SearchForm(initial={'app': 'Global'})
 
+    about_six_months_ago = datetime.now().replace(tzinfo=pytz.UTC) - timedelta(days=180)
+
     context = {
         'form': form,
+        'what_is_new': WhatIsNewEntry.objects.filter(
+            modified_on__gt=about_six_months_ago
+        ).order_by(
+            'modified_on'
+        )
     }
 
     return render(request, 'index.html', context)
