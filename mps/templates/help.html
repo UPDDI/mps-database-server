@@ -182,8 +182,6 @@
             <div class="collapse navbar-collapse" id="myNavbar">
                 <ul class="nav navbar-nav">
 
-                    <li><a href="#recentupgrades">What's New</a></li>
-
                     <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Overview<span class="caret"></span></a>
                         <ul class="dropdown-menu">
@@ -334,56 +332,6 @@
         </div>
     </div>
 {% endcomment %}
-
-    <div id="recentupgrades_section" class="container">
-        <h1 class="sub1-bars"> What's New in the MPS-Db (MPS-Db)</h1>
-        <div id="recentupgrades">
-            <button name="my_buttons" class="collapsible1">Recent Updates and Enhancements</button>
-            <div class="content1">
-                <div id="recentupgradesviewer" class="viewersubtainer">
-                    <ul class="list-group">
-{#TODO:                        compuatational modeling #}
-                        <li class="list-group-item"> <b><em> Study Setup by Group </em></b> - An enhancement to the previous method of setting up a study that acquires information for the selected MPS model and MPS model version and enables streamlined study setup by group.
-                            For more information on study setup by group (sometimes referred to as the "new workflow" or the "streamlined workflow"), <a href="#studies_editor">click here</a>. </li>
-                        <li class="list-group-item"> <b><em> Recorded Presentations </em></b> - Recordings from various demonstrations of the MPS-Db have been added to the Help.
-                            For more information on the video presentations, <a href="#video_presentation_section">click here</a>.   </li>
-                        <li class="list-group-item"> <b><em> Power Analysis </em></b> - A statistical power analysis methodology has been implemented in the MPS-Db to estimate the probability that a statistical test will find a significant difference between two different data groups, such as control and compound treatment groups (post hoc two-sample power analysis), or a significance difference from one treatment group (a priori one-sample power analysis) for an MPS model.
-                            For more information on the power analysis feature, <a href="#power_analysis">click here</a>.   </li>
-                        <li class="list-group-item"> <b><em> References </em></b> - Allows studies, MPS models, study sets, and other study components to be linked to one or more publications.
-                            For more information on the references feature, <a href="#reference">click here</a>.   </li>
-                        <li class="list-group-item"> <b><em> Study Sets </em></b> - Designed so that multiple studies can be grouped and referenced together with one URL.
-                            For more information on study sets, <a href="#studyset">click here</a>. </li>
-                        <li class="list-group-item"> <b><em> Data Sharing Collaborators </em></b> - Collaborator groups allow data providers (those contributing experimentally derived assay study data) to share their data with a small group of collaborators. For example, if colleagues from two different universities are working on a joint publication using data from both groups, they can join a collaborator group and share their data with each other, but no one else. Currently, collaborator groups are managed by MPS-Db administrators. If you have added study data to the MPS-Db and would like to set up a collaborator group, send an email to MPSHELP@pitt.edu with subject line "I want to make a collaborator group".</li>
-                        <li class="list-group-item"> <b><em>Enhanced Options for Overriding the Built-in Grouping/Filtering, Plotting, and Reproducibility Analysis of Assay Data</em></b> - Grouping and filtering options enhanced and moved to a left-sidebar. The left-sidebar offers a wide variety of options for dynamically changing data aggregation grouping and filtering. The sidebar can be toggled on and off to allow flexible use of screen space. An option to manually refresh data aggregation has been provided to allow users to make multiple changes without waiting for the refresh after each change. Filter buttons are highlighted when active. The sidebars are targeted to the displayed feature (i.e. the options for the reproducibility plots are different than the options for the study summary plots). Customization can be applied to all plots or to individual plots.
-                            For more information on intra-study customization, <a href="#intrastudy">click here</a>.
-                            For more information on inter-study customization, <a href="#interstudy">click here</a>.
-                        </li>
-                        <li class="list-group-item"> <b><em>Integrated Reproducibility Analysis</em></b> - An intra- and inter-study reproducibility analysis tool is now available in the MPS-Db. The inter-study tool can be accessed through the <b>Data Analysis</b> icon or tab. This tool offers the user a wide range of options for grouping and filtering data prior to performing graphing and/or reproducibility analysis. The intra-study tool can be accessed through the <b>Study Summary</b> page of the MPS-GUI.
-                            For more information intra-study reproducibility analysis, <a href="#intrastudy">click here</a>.
-                            For more information on the inter-study reproducibility analysis, <a href="#interstudy">click here</a>.
-                        </li>
-                        <li class="list-group-item"> <b><em>MPS Models can be Grouped into a Matrix</em></b> - MPS models (i.e. matrix items), tested as part of a study, can now be assigned to a matrix, and data can be summarized by matrix. Matrices can be accessed from the <b>Study Matrices and Items</b> list page of a specific study.
-                            For more information on assigning MPS models to a matrix, <a href="#intrastudy">click here</a> and click the <b>Built-in Default Grouping/Filtering by Matrix</b> button.
-                        </li>
-                        <li class="list-group-item"> <b><em>Integration of Images and Videos</em></b> - Images and videos can now be associated to a MPS model (i.e. a matrix item) within a study. Images and videos are auto-scaled for optimal viewing online and the unaltered image/video is available for download to facilitate performing relative comparisons. Images and videos can be accessed from the <b>Study Matrices and Items</b> list page of a specific study.
-                            For more information on images and videos, <a href="#intrastudy">click here</a>.
-                        </li>
-                        <li class="list-group-item"> <b><em>Inter-Study Analysis with Grouping and Filtering</em></b> - Grouping and filtering is a powerful tool that offers the user a wide range of options for grouping and filtering data. The tool can be accessed in several places throughout the database, including: through the <b>Data Analysis</b> icon or tab and the <b>Study Summary</b> page. The tool can be used to customize what data are used (via the filtering feature) and how data will be grouped (via the grouping feature) in subsequent graphing and analysis.
-                            For more information on grouping and filtering, <a href="#interstudy">click here</a>.
-                        </li>
-                        <li class="list-group-item"> <b><em>View Diseases</em></b> - The <b>View Diseases</b> feature allows users to quickly find information regarding a specific disease. Users can drill down on data stored in the MPS-Db (study data and data extracted from the clinicaltrials.gov website), and link to clinicaltrials.gov where additional drug trial information can be obtained. The <b>View Diseases</b> feature can be accessed through the <b>MPS Models</b> icon or tab.
-                            For more information viewing diseases, <a href="#diseasemodels">click here</a>.
-                        </li>
-                        <li class="list-group-item"> <b><em>Add Experimental Variables as Settings</em></b> - This feature allows data providers the ability to enter treatments and/or experimental parameters (such as instrument settings) that impact assay data measurements. These, along with information about cells and compounds, can be used to group and filter data in preparation for visualization and analysis.
-                            For more information on adding settings, <a href="#matrixitems_editor">click here</a>.
-                            For more information on using settings in grouping and filtering, <a href="#intrastudy">click here</a>.
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-    </div>
 
     <div id="overview_section" class="container">
 
