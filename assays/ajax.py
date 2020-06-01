@@ -4587,7 +4587,7 @@ def fetch_information_for_plate_map_layout(request):
         #     print(matrix_item.stringify_settings())
         #     print(matrix_item.matrix.name)
 
-        # search term - change if CHIP SETUP changes todo-sck I think this is the only place in plate map stuff
+        # search term - change if CHIP SETUP changes todo-sck here here I think this is the only place in plate map stuff
         for each in matrix_items:
             short_compound = ""
             short_cell = ""
@@ -5025,11 +5025,24 @@ def fetch_information_for_value_set_of_plate_map_for_data_block(request):
     elif not this_data_file_block.isnumeric():
         return HttpResponseServerError()
 
+    # 20200522 changing schema since do not need to allow edit after plate map association
+    # this_queryset = AssayPlateReaderMapItemValue.objects.filter(
+    #     assayplatereadermapdatafileblock_id=this_data_file_block
+    # ).filter(
+    #     assayplatereadermap_id=this_platemap
+    # ).order_by('plate_index', )
+
+    # 20200522 update
     this_queryset = AssayPlateReaderMapItemValue.objects.filter(
         assayplatereadermapdatafileblock_id=this_data_file_block
     ).filter(
         assayplatereadermap_id=this_platemap
-    ).order_by('plate_index', )
+    ).prefetch_related(
+        'assayplatereadermap',
+    ).order_by(
+        'assayplatereadermapitem__plate_index',
+    )
+    # print("this_queryset ", this_queryset)
 
     min_raw_value = this_queryset.aggregate(Min('raw_value')).get('raw_value__min')
     max_raw_value = this_queryset.aggregate(Max('raw_value')).get('raw_value__max')
@@ -5109,14 +5122,16 @@ def fetch_information_for_study_platemap_standard_file_blocks(request):
         study_id=this_study
     ).filter(
         assayplatereadermapdatafileblock__isnull=False
-    ).filter(
-        well_use='standard'
     ).prefetch_related(
         'assayplatereadermapdatafileblock',
         'assayplatereadermap',
+        'assayplatereadermapitem',
+    ).filter(
+        assayplatereadermapitem__well_use='standard'
     ).order_by(
         'assayplatereadermapdatafileblock__id', 'well_use'
     )
+    # here here make sure gets well_use after change schema
 
     # print(as_value_formset_with_file_block_standard)
 
@@ -5820,6 +5835,22 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
     except:
         molecular_weight = 0.0
 
+    # there were added to show the steps of the multiplier because of the difficulty of explaining how it worked
+    multiplier_value_short = 1
+    multiplier_string_short = '1'
+
+    multiplier_string1 = '1'
+    multiplier_string2 = '1'
+    multiplier_string3 = '1'
+    multiplier_string4 = '1'
+    multiplier_string5 = '1'
+    multiplier_string6 = '1'
+    multiplier_string7 = '1'
+    multiplier_string8 = '1'
+    multiplier_string9 = '1'
+    rmultiplier_step_string = '1'
+    rmultiplier_step = 1
+
     # limit option of mole units for all
     # print("**0A standard_unit: ", standard_unit)
     # print("**0A reportin_unit: ", reportin_unit)
@@ -5847,42 +5878,91 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
     rmultiplier_string = long_list_of_things[2]
     rmultiplier_string_display = long_list_of_things[3]
 
+    rmultiplier_step_string = long_list_of_things[6]
+
+    # initial base unit conversion - first in the string, so not accumulating
+    if rmultiplier_step_string == '-':
+        multiplier_string1 = '1'
+        multiplier_value_short = rmultiplier
+        multiplier_string_short = "1 * "
+    else:
+        multiplier_string1 = rmultiplier_step_string
+        multiplier_value_short = rmultiplier
+        multiplier_string_short = str(sandrasGeneralFormatNumberFunction(rmultiplier)) + " * "
+
+    # print("**0 first send: ", rmultiplier_string)
+    # print("**0 first send: ", rmultiplier)
+    # print("**0 standard_unit: ", standard_unit)
+
     if more_conversions_needed == "error" or more_conversions_needed == "done":
         multiplier = multiplier * rmultiplier
         multiplier_string = multiplier_string + rmultiplier_string
-        multiplier_string_display = multiplier_string_display + " " + rmultiplier_string_display
+        multiplier_string_display = multiplier_string_display + rmultiplier_string_display
         more_conversions_needed = "STOP"
+        # add the rest of the 1s to the string
+        multiplier_string_short = multiplier_string_short + "1 * 1 * 1 * 1 * 1 * 1 * 1"
+
         # print("**1A first send: ", multiplier_string)
+        # print("**1A first send: ", multiplier)
         # print("**1A standard_unit: ", standard_unit)
+
     elif more_conversions_needed == "yes":
+
         # print("**1B first send: ", multiplier_string)
+        # print("**1B first send:  ", multiplier)
         # print("**1B standard_unit: ", standard_unit)
+
         # did not fail but need more conversion
         # try seeing if a mole to mass conversion is needed (only works one way - mole to mass)
         # print("re.search(r'mol', standard_base_unit_unit) ",re.search(r'mol', standard_base_unit_unit))
+
+        mysubstring = ''
+        mysubmultiplier = 1
+
         if re.search(r'pmol', standard_unit) and re.search(r'g', reportin_unit):
             standard_unit = re.sub('mol', 'g', standard_unit)
             multiplier = multiplier * (1/10**12) * molecular_weight
             multiplier_string = multiplier_string + "*(1g/10^12pg)*(" + str(molecular_weight) + "g/mol)"
+            mysubmultiplier = (1/10**12) * molecular_weight
+            mysubstring = "(1g/10^12pg)*(" + str(molecular_weight) + "g/mol)"
         elif re.search(r'nmol', standard_unit) and re.search(r'g', reportin_unit):
             standard_unit = re.sub('mol', 'g', standard_unit)
             multiplier = multiplier * (1/10**9) * molecular_weight
             multiplier_string = multiplier_string + "*(1g/10^9ng)*(" + str(molecular_weight) + "g/mol)"
+            mysubmultiplier = (1/10**9) * molecular_weight
+            mysubstring = "(1g/10^9ng)*(" + str(molecular_weight) + "g/mol)"
         elif re.search(r'µmol', standard_unit) and re.search(r'g', reportin_unit):
             standard_unit = re.sub('mol', 'g', standard_unit)
             multiplier = multiplier * (1/10**6) * molecular_weight
             multiplier_string = multiplier_string + "*(1g/10^6µg)*(" + str(molecular_weight) + "g/mol)"
+            mysubmultiplier = (1/10**6) * molecular_weight
+            mysubstring = "(1g/10^6µg)*(" + str(molecular_weight) + "g/mol)"
         elif re.search(r'mmol', standard_unit) and re.search(r'g', reportin_unit):
             standard_unit = re.sub('mol', 'g', standard_unit)
             multiplier = multiplier * (1/10**3) * molecular_weight
             multiplier_string = multiplier_string + "*(1g/10^3mg)*(" + str(molecular_weight) + "g/mol)"
+            mysubmultiplier = (1/10**3) * molecular_weight
+            mysubstring = "(1g/10^3mg)*(" + str(molecular_weight) + "g/mol)"
         elif re.search(r'mol', standard_unit) and re.search(r'g', reportin_unit):
             standard_unit = re.sub('mol', 'g', standard_unit)
             multiplier = multiplier * molecular_weight
             #multiplier_string = multiplier_string + " * (1g/1g) * (" + str(molecular_weight) + "g/mol)"
             multiplier_string = multiplier_string + "*(" + str(molecular_weight) + "g/mol)"
+            mysubmultiplier = molecular_weight
+            mysubstring = "(1g/1g) * (" + str(molecular_weight) + "g/mol)"
+
+        # Molar to Mass
+        if mysubstring == '':
+            multiplier_string2 = '1'
+            multiplier_value_short = multiplier_value_short
+            multiplier_string_short = multiplier_string_short + "1 * "
+        else:
+            multiplier_string2 = str(sandrasGeneralFormatNumberFunction(mysubmultiplier)) + " = " + mysubstring
+            multiplier_value_short = multiplier_value_short * mysubmultiplier
+            multiplier_string_short = multiplier_string_short + str(sandrasGeneralFormatNumberFunction(mysubmultiplier)) + " * "
 
         # if there was a 'well', there will be a need to divide by the well volume, so that before checking next
+
         # print("1B.1** after mole to mass string: ", multiplier_string)
         # print("1B.1** after mole to mass value: ", multiplier)
         # print("1B.1** standard_unit: ", standard_unit)
@@ -5900,6 +5980,10 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
 
         # print("locationWellStart ", locationWellStart)
         # print("locationWellEnd ", locationWellEnd)
+
+        mysubstring = ''
+        mysubmultiplier = 1
+
         if locationWellStart >= 0:
             # print("stardard_unit[:locationWellStart] ", standard_unit[:locationWellStart])
             # print("stardard_unit[locationWellEnd:] ", standard_unit[locationWellEnd:])
@@ -5909,6 +5993,16 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
             multiplier_string = multiplier_string + "*(well/" + str(well_volume) + " " + volume_unit + ")"
             # print("multiplier string ", multiplier_string)
             # print("standard_unit ", standard_unit)
+            mysubstring = "well/" + str(well_volume) + " " + volume_unit
+            # Well volume adjustment
+            mysubmultiplier = 1 / well_volume
+            multiplier_string3 = str(sandrasGeneralFormatNumberFunction(mysubmultiplier)) + " = " + mysubstring
+            multiplier_value_short = multiplier_value_short * mysubmultiplier
+            multiplier_string_short = multiplier_string_short + str(sandrasGeneralFormatNumberFunction(mysubmultiplier)) + " * "
+        else:
+            multiplier_string3 = '1'
+            multiplier_value_short = multiplier_value_short
+            multiplier_string_short = multiplier_string_short + "1 * "
 
         # now, check and see if, with the mol to g and the well to well volume if base unit will convert
         # are we down to just a base unit conversion?
@@ -5917,6 +6011,18 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
         rmultiplier = long_list_of_things[1]
         rmultiplier_string = long_list_of_things[2]
         rmultiplier_string_display = long_list_of_things[3]
+        rmultiplier_step_string = long_list_of_things[6]
+
+        # Secondary base unit conversion
+        if rmultiplier_step_string == '-':
+            multiplier_string4 = '1'
+            multiplier_value_short = multiplier_value_short * rmultiplier
+            multiplier_string_short = multiplier_string_short + "1 * "
+        else:
+            multiplier_string4 = rmultiplier_step_string
+            multiplier_value_short = multiplier_value_short * rmultiplier
+            multiplier_string_short = multiplier_string_short + str(sandrasGeneralFormatNumberFunction(rmultiplier)) + " * "
+
         # print("1B.2** after mole to mass: ", multiplier_string)
         # print("1B.2** after mole to mass: ", multiplier)
         # print("1B.2** standard_unit: ", standard_unit)
@@ -5928,12 +6034,17 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
         multiplier_string = multiplier_string + rmultiplier_string
         multiplier_string_display = multiplier_string_display + " " + rmultiplier_string_display
         more_conversions_needed = "STOP"
+        # add the rest of the 1s to the string
+        multiplier_string_short = multiplier_string_short + "1 * 1 * 1 * 1 "
+
         # print("2A** after per mol to mass and /well: ", multiplier_string)
         # print("2A** after per mol to mass and /well: ", multiplier)
         # print("2A** standard_unit: ", standard_unit)
+
     elif more_conversions_needed == "yes":
         # print("2B** after per mol to mass and /well: ", multiplier_string)
         # print("2B** standard_unit: ", standard_unit)
+
         # did not fail but need more conversion
         # see if need to multiple by the efflux volume
 
@@ -5942,49 +6053,89 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
         # print(re.search(r'L', standard_unit))
         # print(re.search(r'L', reportin_unit))
         # put into L
+
+        mysubstring = ''
+        mysubmultiplier = 1
+
         if re.search(r'L', standard_unit) and not re.search(r'L', reportin_unit):
             if re.search(r'/pL', standard_unit):
                 standard_unit = re.sub('/pL', '', standard_unit)
                 multiplier = multiplier * 10**12
                 multiplier_string = multiplier_string + "*(efflux " + volume_unit + ")*(10^12pL/1L)"
+                mysubmultiplier = 10**12
+                mysubstring = volume_unit + " * (10^12pL/1L) "
             elif re.search(r'/nL', standard_unit):
                 standard_unit = re.sub('/nL', '', standard_unit)
                 multiplier = multiplier * 10**9
                 multiplier_string = multiplier_string + "*(efflux " + volume_unit + ")*(10^9nL/1L)"
+                mysubmultiplier = 10**9
+                mysubstring = volume_unit + " * (10^9nL/1L) "
             elif re.search(r'/µL', standard_unit):
                 standard_unit = re.sub('/µL', '', standard_unit)
                 multiplier = multiplier * 10**6
                 multiplier_string = multiplier_string + "*(efflux " + volume_unit + ")*(10^6µL/1L)"
+                mysubmultiplier = 10**6
+                mysubstring = volume_unit + " * (10^6µL/1L) "
             elif re.search(r'/mL', standard_unit):
                 standard_unit = re.sub('/mL', '', standard_unit)
                 multiplier = multiplier * 10**3
                 multiplier_string = multiplier_string + "*(efflux " + volume_unit + ")*(10^3mL/1L)"
+                mysubmultiplier = 10**3
+                mysubstring = volume_unit + " * (10^3mL/1L) "
             elif re.search(r'/L', standard_unit):
                 standard_unit = re.sub('/L', '', standard_unit)
                 multiplier = multiplier
                 # multiplier_string = multiplier_string + " *(efflux " + volume_unit + " * (1L/1L)"
                 multiplier_string = multiplier_string + "*(efflux " + volume_unit + ")"
+                mysubmultiplier = 1
+                mysubstring = volume_unit + " * (1L/1L) "
+
 
             if re.search(r'pL', volume_unit):
                 multiplier = multiplier / 10**12
                 multiplier_string = multiplier_string + "*(1L/10^12pL)"
+                mysubmultiplier = mysubmultiplier / 10**12
+                mysubstring = mysubstring + "*(1L/1L) "
             elif re.search(r'nL', volume_unit):
                 multiplier = multiplier / 10**9
                 multiplier_string = multiplier_string + "*(1L/10^9nL)"
+                mysubmultiplier = mysubmultiplier / 10**9
+                mysubstring = mysubstring + "*(1L/10^9nL) "
             elif re.search(r'µL', volume_unit):
                 multiplier = multiplier / 10**6
                 multiplier_string = multiplier_string + "*(1L/10^6µL)"
+                mysubmultiplier = mysubmultiplier / 10**6
+                mysubstring = mysubstring + "*(1L/10^6µL)"
             elif re.search(r'mL', volume_unit):
                 multiplier = multiplier / 10**3
                 multiplier_string = multiplier_string + "*(1L/10^3mL)"
+                mysubmultiplier = mysubmultiplier / 10**3
+                mysubstring = mysubstring + "*(1L/10^3mL)"
             elif re.search(r'L', volume_unit):
                 multiplier = multiplier
                 # multiplier_string = multiplier_string + " * (1L/1L) "
                 multiplier_string = multiplier_string
+                mysubmultiplier = mysubmultiplier / 1
+                mysubstring = mysubstring + "*(1L/1L) "
+
+            # Well volume adjustment when efflux volume used
+            if mysubstring == '':
+                multiplier_string5 = '1'
+                multiplier_value_short = multiplier_value_short
+                multiplier_string_short = multiplier_string_short + "1 * "
+            else:
+                mysubmultiplier = mysubmultiplier
+                multiplier_string5 = str(sandrasGeneralFormatNumberFunction(mysubmultiplier)) + " = " + mysubstring
+                multiplier_value_short = multiplier_value_short * mysubmultiplier
+                multiplier_string_short = multiplier_string_short + str(
+                    sandrasGeneralFormatNumberFunction(mysubmultiplier)) + " * "
 
         # print("2B.1** after volume prep: ", multiplier_string)
         # print("2B.1** after volume prep: ", multiplier)
         # print("2B.1** standard_unit: ", standard_unit)
+
+        mysubstring = ''
+        mysubmultiplier = 1
 
         if re.search(r'y', reportin_unit) or re.search(r'h', reportin_unit) or re.search(r'min', reportin_unit):
             if re.search(r'y', reportin_unit):
@@ -5993,38 +6144,69 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
                     multiplier = multiplier * 1
                     # multiplier_string = multiplier_string + " * (1/efflux collection day) * (1day/1day)"
                     multiplier_string = multiplier_string + "*(1/efflux collection day)"
+                    mysubmultiplier = 1
+                    mysubstring = "(1/day)*(1day/1day)"
                 elif time_unit == "hour":
                     multiplier = multiplier * 24
                     multiplier_string = multiplier_string + "*(1/efflux collection hour)*(24hour/1day)"
+                    mysubmultiplier = 24
+                    mysubstring = "(1/hour)*(24hour/1day)"
                 else:
                     multiplier = multiplier * 1440
                     multiplier_string = multiplier_string + "*(1/efflux collection minute)*(1440minute/1day)"
+                    mysubmultiplier = 1440
+                    mysubstring = "(1/minute)*(1440minute/1day)"
 
             elif re.search(r'h', reportin_unit):
                 standard_unit = standard_unit + "/hour"
                 if time_unit == "day":
                     multiplier = multiplier * 1/24
                     multiplier_string = multiplier_string + "*(1/efflux collection day)*(1day/24hour)"
+                    mysubmultiplier = 1/24
+                    mysubstring = "(1/day)*(1day/24hour)"
                 elif time_unit == "hour":
                     multiplier = multiplier * 1
                     # multiplier_string = multiplier_string + " * (1/efflux collection hour) * (1hour/1hour)"
                     multiplier_string = multiplier_string + "*(1/efflux collection hour)"
+                    mysubmultiplier = 1
+                    mysubstring = "(1/hour)*(1hour/1hour)"
                 else:
                     multiplier = multiplier * 60
                     multiplier_string = multiplier_string + "*(1/efflux collection minute)*(60minute/1hour)"
+                    mysubmultiplier = 60
+                    mysubstring = "(1/minute)*(60minute/1hour)"
 
             elif re.search(r'min', reportin_unit):
                 standard_unit = standard_unit + "/minute"
                 if time_unit == "day":
                     multiplier = multiplier / 1440
                     multiplier_string = multiplier_string + "*(1/efflux collection day)*(1day/1440minute)"
+                    mysubmultiplier = 1 / 1440
+                    mysubstring = "(1/day)*(1day/1440minute)"
                 elif time_unit == "hour":
                     multiplier = multiplier / 60
                     multiplier_string = multiplier_string + "*(1/efflux collection hour)*(1hour/60minute)"
+                    mysubmultiplier = 1 / 60
+                    mysubstring = "(1/hour)*(1hour/60minute)"
                 else:
                     multiplier = multiplier * 1
                     # multiplier_string = multiplier_string + "*(1/efflux collection minute)*(1minute/1minute)"
                     multiplier_string = multiplier_string + "*(1/efflux collection minute)"
+                    mysubmultiplier = 1
+                    mysubstring = "(1/minute)*(1minute/1minute)"
+
+            # Time adjustment for efflux time unit
+            if mysubstring == '':
+                multiplier_string6 = '1'
+                multiplier_value_short = multiplier_value_short
+                multiplier_string_short = multiplier_string_short + "1 * "
+            else:
+                mysubmultiplier = mysubmultiplier
+                multiplier_string6 = str(sandrasGeneralFormatNumberFunction(mysubmultiplier)) + " = " + mysubstring
+                multiplier_value_short = multiplier_value_short * mysubmultiplier
+                multiplier_string_short = multiplier_string_short + str(
+                    sandrasGeneralFormatNumberFunction(mysubmultiplier)) + " * "
+
 
         # print("2B.2** after time prep: ", multiplier_string)
         # print("2B.2** after time prep: ", multiplier)
@@ -6050,6 +6232,7 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
         # print("location10hatEnd ",location10hatEnd)
         # print("heading back: ", multiplier_string)
 
+
         if locationCellsStart >= 0 and location10hatStart >= 0:
             # reportin unit has cells and 10^ in it; making assumption that the standard unit does not and need conversion
             cellNumberExponent = reportin_unit[location10hatEnd:locationCellsStart].strip()
@@ -6064,16 +6247,33 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
             # cellNumberExponent = reportin_unit[location10hatEnd:locationCellsStart].strip()   6
             # cellString = reportin_unit[location10hatStart:].strip()  10^6 cells
 
+            mysubstring = ''
+            mysubmultiplier = 1
+
             try:
                 intcellNumberExponent = int(cellNumberExponent)
                 multiplier = multiplier * (10 ** intcellNumberExponent) / cell_count
-
                 multiplier_string = multiplier_string + "*(10^" + str(intcellNumberExponent) + ")/(" + str(cell_count) + "*10^" + str(intcellNumberExponent) + " cells)"
+                mysubstring = "(10^" + str(intcellNumberExponent) + ")/(" + str(cell_count) + "*10^" + str(intcellNumberExponent) + " cells)"
+                              # + " Note: 10^" + str(intcellNumberExponent) + " will remain in the denominator."
+                mysubmultiplier = (10 ** intcellNumberExponent) / cell_count
             except:
                 multiplier = 0.0
                 multiplier_string = multiplier_string + " PROBLEM with Cell Number division."
                 multiplier_string_display = multiplier_string_display + " [This is not a complete multiplier]"
 
+
+            # Adjust for the number of cells when normalizing
+            if mysubstring == '':
+                multiplier_string7 = '1'
+                multiplier_value_short = multiplier_value_short
+                multiplier_string_short = multiplier_string_short + "1 * "
+            else:
+                mysubmultiplier = mysubmultiplier
+                multiplier_string7 = str(sandrasGeneralFormatNumberFunction(mysubmultiplier)) + " = " + mysubstring
+                multiplier_value_short = multiplier_value_short * mysubmultiplier
+                multiplier_string_short = multiplier_string_short + str(
+                    sandrasGeneralFormatNumberFunction(mysubmultiplier)) + " * "
 
             # there is an assumption here that the 'cells' was last in the string
             standard_unit = standard_unit + "/" + cellString
@@ -6089,6 +6289,17 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
             rmultiplier = long_list_of_things[1]
             rmultiplier_string = long_list_of_things[2]
             rmultiplier_string_display = long_list_of_things[3]
+            rmultiplier_step_string = long_list_of_things[6]
+
+            # Tert base unit conversion
+            if rmultiplier_step_string == '-':
+                multiplier_string8 = '1'
+                multiplier_value_short = multiplier_value_short * rmultiplier
+                multiplier_string_short = multiplier_string_short + "1"
+            else:
+                multiplier_string8 = rmultiplier_step_string
+                multiplier_value_short = multiplier_value_short * rmultiplier
+                multiplier_string_short = multiplier_string_short + str(sandrasGeneralFormatNumberFunction(rmultiplier))
 
     if more_conversions_needed == "error" or more_conversions_needed == "done":
         # either error or done
@@ -6118,6 +6329,17 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
         'multiplier': str(multiplier),
         'multiplier_string': multiplier_string,
         'multiplier_string_display': multiplier_string_display,
+        'multiplier_string_short': multiplier_string_short,
+        'multiplier_value_short': str(sandrasGeneralFormatNumberFunction(multiplier_value_short)),
+        'multiplier_string1': multiplier_string1,
+        'multiplier_string2': multiplier_string2,
+        'multiplier_string3': multiplier_string3,
+        'multiplier_string4': multiplier_string4,
+        'multiplier_string5': multiplier_string5,
+        'multiplier_string6': multiplier_string6,
+        'multiplier_string7': multiplier_string7,
+        'multiplier_string8': multiplier_string8,
+        'multiplier_string9': multiplier_string9,
     }
     data_to_return.append(data_fields)
 
@@ -6135,6 +6357,7 @@ def sub_to_fetch_multiplier_for_data_processing_plate_map_integration(more_conve
     standard_base_unit_unit = "unk"
     reportin_scale_factor = 0
     reportin_base_unit_unit = "unk"
+    multiplier_step_string = "-"
 
     # check to see if the standard_unit is now equal to the reporting_unit
     if reportin_unit == standard_unit:
@@ -6186,6 +6409,10 @@ def sub_to_fetch_multiplier_for_data_processing_plate_map_integration(more_conve
                 multiplier_string = "( (scale factor base to standard: " + str(standard_scale_factor) + ")(base: " + standard_base_unit_unit + ")/(standard: "+standard_unit+") )" + "/( (scale factor base to reporting: " + str(reportin_scale_factor) + ")(base: " + reportin_base_unit_unit + ")/(reporting: "+reportin_unit+") )"
                 more_conversions_needed = "done"
 
+                multiplier_step_string = str(sandrasGeneralFormatNumberFunction(multiplier)) + " = " + "[ ( " + str(
+                    standard_scale_factor) + " " + standard_base_unit_unit + ") / (" + standard_unit + ") ]" + " / [ (" + str(
+                    reportin_scale_factor) + " " + reportin_base_unit_unit + ") / (" + reportin_unit + ") ]"
+
     # print("")
     # print("----SUB")
     # print("--multiplier ", multiplier)
@@ -6197,8 +6424,14 @@ def sub_to_fetch_multiplier_for_data_processing_plate_map_integration(more_conve
     # print("----SUB")
     # print("")
 
-    return [more_conversions_needed, multiplier, multiplier_string, multiplier_string_display, standard_base_unit_unit, reportin_base_unit_unit]
-
+    return [more_conversions_needed,
+            multiplier,
+            multiplier_string,
+            multiplier_string_display,
+            standard_base_unit_unit,
+            reportin_base_unit_unit,
+            multiplier_step_string,
+            ]
 
 # sck - the main function for processing data - pass to a utils.py funciton
 def fetch_data_processing_for_plate_map_integration(request):

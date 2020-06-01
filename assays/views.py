@@ -92,7 +92,7 @@ from assays.forms import (
     AssaySupplierForm,
     AssayPlateReaderMapForm,
     AssayPlateReaderMapItemFormSetFactory,
-    AssayPlateReaderMapItemValueFormSetFactory,
+    # AssayPlateReaderMapItemValueFormSetFactory,
     AssayPlateReadMapAdditionalInfoForm,
     AssayPlateReaderMapDataFileAddForm,
     AssayPlateReaderMapDataFileForm,
@@ -3836,7 +3836,7 @@ class AssayStudyComponents(TemplateView):
 
 # Plate map list, add, update, view and delete section
 class AssayPlateReaderMapIndex(StudyViewerMixin, DetailView):
-    """Assay plate map"""
+    """Assay plate map index (list) page class """
     model = AssayStudy
     context_object_name = 'assayplatereadermap_index'
     template_name = 'assays/assayplatereadermap_index.html'
@@ -3986,7 +3986,7 @@ class AssayPlateReaderMapAdd(StudyGroupMixin, CreateView):
     template_name = 'assays/assayplatereadermap_add.html'
     form_class = AssayPlateReaderMapForm
 
-    # used in ADD, not in UPDATE - check carefully if copy - changing, use partial in update
+    # used in ADD, not same in UPDATE - check carefully if copy - changing, use partial in update
     def get_form(self, form_class=None):
         form_class = self.get_form_class()
         study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
@@ -4020,19 +4020,21 @@ class AssayPlateReaderMapAdd(StudyGroupMixin, CreateView):
                     study=study,
                     user=self.request.user
                 )
-        # get the values (0 to many for each item)
-        if 'value_formset' not in context:
-            if self.request.POST:
-                context['value_formset'] = AssayPlateReaderMapItemValueFormSetFactory(
-                    self.request.POST,
-                    study=study,
-                    user=self.request.user
-                )
-            else:
-                context['value_formset'] = AssayPlateReaderMapItemValueFormSetFactory(
-                    study=study,
-                    user=self.request.user
-                )
+
+        # 20200522 getting rid of the value formset in the plate map form
+        # # get the values (0 to many for each item)
+        # if 'value_formset' not in context:
+        #     if self.request.POST:
+        #         context['value_formset'] = AssayPlateReaderMapItemValueFormSetFactory(
+        #             self.request.POST,
+        #             study=study,
+        #             user=self.request.user
+        #         )
+        #     else:
+        #         context['value_formset'] = AssayPlateReaderMapItemValueFormSetFactory(
+        #             study=study,
+        #             user=self.request.user
+        #         )
 
         # print("formset")
         # print(len(context['formset']))
@@ -4067,14 +4069,18 @@ class AssayPlateReaderMapAdd(StudyGroupMixin, CreateView):
             instance=form.instance,
             study=study
         )
+
+        # 20200522 getting rid of the value formset in the plate map form
         # print("b")
         # this is the add page, so yes, we want to call the value_formset
-        value_formset = AssayPlateReaderMapItemValueFormSetFactory(
-            self.request.POST,
-            instance=form.instance,
-            study=study
-        )
-        formsets = [formset, value_formset, ]
+        # value_formset = AssayPlateReaderMapItemValueFormSetFactory(
+        #     self.request.POST,
+        #     instance=form.instance,
+        #     study=study
+        # )
+        # formsets = [formset, value_formset, ]
+
+        formsets = [formset, ]
         formsets_are_valid = True
 
         # print("c")
@@ -4086,31 +4092,35 @@ class AssayPlateReaderMapAdd(StudyGroupMixin, CreateView):
         if form.is_valid() and formsets_are_valid:
             save_forms_with_tracking(self, form, formset=formsets, update=False)
 
-            # ONLY NEED if ADD - START
-            # because the instances of the item do not yet exist, the pk from item can not be added to value on save
-            # so, in the ADD, formsets are saved, add the pk of the item table to the value table
-            # note that, these protect from a break in || between plate_index in item and item value
-            # specify where null so it ONLY happens to the first time adding
-            # This could perhaps be avoided by nesting forms....
-            this_platemap_id = form.instance.id
-            v = 'assays_assayplatereadermapitemvalue'
-            i = 'assays_assayplatereadermapitem'
-            c1 = 'assayplatereadermapitem_id'
-            c2 = 'id'
-            c3 = 'assayplatereadermap_id'
-            w1 = 'plate_index'
-            mysql = ""
-            mysql = mysql + "UPDATE " + v + " "
-            mysql = mysql + "SET " + c1 + " = " + i + "." + c2 + " "
-            mysql = mysql + "FROM " + i + " "
-            mysql = mysql + "WHERE " + i + "." + w1 + "=" + v + "." + w1 + " "
-            mysql = mysql + "AND " + v + "." + c3 + "=" + str(this_platemap_id) + " "
-            mysql = mysql + "AND " + v + "." + c1 + " is null"
-            # print(mysql)
-            cursor = connection.cursor()
-            cursor.execute(mysql)
-            # ONLY NEED if ADD - END
-            # print("e")
+
+            # 20200522 getting rid of the value formset in the plate map form
+            # # ONLY NEED if ADD - START
+            # # because the instances of the item do not yet exist, the pk from item can not be added to value on save
+            # # so, in the ADD, formsets are saved, add the pk of the item table to the value table
+            # # note that, these protect from a break in || between plate_index in item and item value
+            # # specify where null so it ONLY happens to the first time adding
+            # # This could perhaps be avoided by nesting forms....
+            # this_platemap_id = form.instance.id
+            # v = 'assays_assayplatereadermapitemvalue'
+            # i = 'assays_assayplatereadermapitem'
+            # c1 = 'assayplatereadermapitem_id'
+            # c2 = 'id'
+            # c3 = 'assayplatereadermap_id'
+            # w1 = 'plate_index'
+            # mysql = ""
+            # mysql = mysql + "UPDATE " + v + " "
+            # mysql = mysql + "SET " + c1 + " = " + i + "." + c2 + " "
+            # mysql = mysql + "FROM " + i + " "
+            # mysql = mysql + "WHERE " + i + "." + w1 + "=" + v + "." + w1 + " "
+            # mysql = mysql + "AND " + v + "." + c3 + "=" + str(this_platemap_id) + " "
+            # mysql = mysql + "AND " + v + "." + c1 + " is null"
+            # # print(mysql)
+            # cursor = connection.cursor()
+            # cursor.execute(mysql)
+            # # ONLY NEED if ADD - END
+            # # print("e")
+
+
             return redirect(self.object.get_post_submission_url())
         else:
             # print("f")
@@ -4161,30 +4171,32 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
                     user=self.request.user
                 )
 
-        # adding 20200113
-        value_formsets_include_template = AssayPlateReaderMapItemValue.objects.filter(
-            assayplatereadermap=self.object
-        ).filter(
-            plate_index=0
-        )
-        # one is the empty set (no file/block attached) - the template value set
-        if len(value_formsets_include_template) == 1:
+        # 20200522 getting rid of the value formset in the plate map form
+        # # adding 20200113
+        # value_formsets_include_template = AssayPlateReaderMapItemValue.objects.filter(
+        #     assayplatereadermap=self.object
+        # ).filter(
+        #     plate_index=0
+        # )
+        # # one is the empty set (no file/block attached) - the template value set
+        # if len(value_formsets_include_template) == 1:
+        #
+        #     if 'value_formset' not in context:
+        #         if self.request.POST:
+        #             context['value_formset'] = AssayPlateReaderMapItemValueFormSetFactory(
+        #                     self.request.POST,
+        #                     instance=self.object,
+        #                     user=self.request.user
+        #             )
+        #         else:
+        #             context['value_formset'] = AssayPlateReaderMapItemValueFormSetFactory(
+        #                 instance=self.object,
+        #                 user=self.request.user
+        #             )
+        # else:
+        #     context['value_formset'] = "None"
+        # # end update fo 20200113
 
-            if 'value_formset' not in context:
-                if self.request.POST:
-                    context['value_formset'] = AssayPlateReaderMapItemValueFormSetFactory(
-                            self.request.POST,
-                            instance=self.object,
-                            user=self.request.user
-                    )
-                else:
-                    context['value_formset'] = AssayPlateReaderMapItemValueFormSetFactory(
-                        instance=self.object,
-                        user=self.request.user
-                    )
-        else:
-            context['value_formset'] = "None"
-        # end update fo 20200113
 
         # print("back")
         # move to ajax for performance reasons
@@ -4214,25 +4226,30 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
             self.request.POST,
             instance=self.object
         )
-        # adding 20200113
-        value_formsets_include_template = AssayPlateReaderMapItemValue.objects.filter(
-            assayplatereadermap=self.object
-        ).filter(
-            plate_index=0
-        )
-        # one is the empty set (no file/block attached) - the template value set
-        if len(value_formsets_include_template) == 1:
 
-            value_formset = AssayPlateReaderMapItemValueFormSetFactory(
-                self.request.POST,
-                instance=self.object
-            )
-            formsets = [formset, value_formset, ]
-            formsets_are_valid = True
-        else:
-            formsets = [formset, ]
-            formsets_are_valid = True
-        # end update of 20200113
+        # 20200522 getting rid of the value formset in the plate map form
+        # # adding 20200113
+        # value_formsets_include_template = AssayPlateReaderMapItemValue.objects.filter(
+        #     assayplatereadermap=self.object
+        # ).filter(
+        #     plate_index=0
+        # )
+        # # one is the empty set (no file/block attached) - the template value set
+        # if len(value_formsets_include_template) == 1:
+        #
+        #     value_formset = AssayPlateReaderMapItemValueFormSetFactory(
+        #         self.request.POST,
+        #         instance=self.object
+        #     )
+        #     formsets = [formset, value_formset, ]
+        #     formsets_are_valid = True
+        # else:
+        #     formsets = [formset, ]
+        #     formsets_are_valid = True
+        # # end update of 20200113
+
+        formsets = [formset, ]
+        formsets_are_valid = True
 
         for formset in formsets:
             if not formset.is_valid():
@@ -4244,6 +4261,9 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
             # form_calibration_curve_method_used = form.cleaned_data.get('form_calibration_curve_method_used')
             # print("form_calibration_curve_method_used ", form_calibration_curve_method_used)
 
+
+            #### START When saving AssayPlateReaderMapUpdate after a calibration
+            # if user checked the box to send to study summary, make that happen
 
             data = form.cleaned_data
             # study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
@@ -4301,7 +4321,8 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
                     'select_one': 'Select One',
                     'no_calibration': 'No Calibration',
                     'best_fit': 'Best Fit',
-                    'logistic4': '4 Parameter Logistic',
+                    'logistic4': '4 Parameter Logistic w/fitted lower bound',
+                    'logistic4a0': '4 Parameter Logistic w/lower bound = 0',
                     'linear': 'Linear w/fitted intercept',
                     'linear0': 'Linear w/intercept = 0',
                     'log': 'Logarithmic',
@@ -4314,6 +4335,8 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
                 # µg / mL
                 # .id
                 # 6
+                # print(".unit ",data.get('standard_unit').unit)
+                # print(".id ", data.get('standard_unit').id)
 
                 if data.get('form_block_standard_borrow_pk_single_for_storage') == None:
                     borrowed_block_pk = -1
@@ -4331,6 +4354,7 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
                 if use_curve == 'select_one':
                     use_curve = 'no_calibration'
 
+                # here here  prefer to get plate and study from form...fix this
                 # make a dictionary to send to the utils.py when call the function
                 set_dict = {
                     'called_from': 'form_save',
@@ -4376,6 +4400,7 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
                         utils_dict_header = find_a_key_by_value_in_dictionary(utils_key_column_header,
                                                                               this_mifc_header)
                         # print("utils_dict_header ", utils_dict_header)
+                        # print("this_mifc_header ", this_mifc_header)
                         # get the value that is associated with this header in the dict
                         this_value = each_dict_in_list.get(utils_dict_header)
                         # print("this_value ", this_value)
@@ -4389,14 +4414,13 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
                 # print("  ")
                 # print('list_of_lists_mifc_headers_row_0')
                 # print(list_of_lists_mifc_headers_row_0)
+                # print("  ")
 
                 # First make a csv from the list_of_lists (using list_of_lists_mifc_headers_row_0)
 
                 # or self.objects.study
                 my_study = form.instance.study
                 my_user = self.request.user
-
-
 
                 # Specify the file for use with the file uploader class
                 bulk_location = upload_file_location(
@@ -4422,7 +4446,10 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
                 # Add the UTF-8 BOM
                 list_of_lists_mifc_headers_row_0[0][0] = '\ufeff' + list_of_lists_mifc_headers_row_0[0][0]
 
-                # Write the lines
+                # print("!!!!!!!!")
+                # print("at views.py 3168 - turn this back on later!!!!!")
+                # print("!!!!!!!!")
+                # Write the lines here here uncomment this
                 for one_line_of_data in list_of_lists_mifc_headers_row_0:
                     csv_writer.writerow(one_line_of_data)
 
@@ -4436,6 +4463,10 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
                 # Process the file
                 file_processor.process_file()
 
+            #### END When saving AssayPlateReaderMapUpdate after a calibration
+
+            # here here todo do redirect to study summary
+
             save_forms_with_tracking(self, form, formset=formsets, update=True)
 
             return redirect(self.object.get_post_submission_url())
@@ -4444,6 +4475,7 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
 
 # this finds the key for the value provided as thisHeader
 def find_a_key_by_value_in_dictionary(this_dict, this_header):
+    """This is a function to find a key by value."""
     my_key = ''
     for key, value in this_dict.items():
         if value == this_header:
@@ -4479,30 +4511,31 @@ class AssayPlateReaderMapView(StudyGroupMixin, UpdateView):
                     user=self.request.user
                 )
 
+        #  20200522 getting rid of the value_formset
         # adding/changed 20200113
-        value_formsets_include_template = AssayPlateReaderMapItemValue.objects.filter(
-            assayplatereadermap=self.object
-        ).filter(
-            plate_index=0
-        )
-        # one is the empty set (no file/block attached) - the template value set
-        if len(value_formsets_include_template) == 1:
-
-            if 'value_formset' not in context:
-                if self.request.POST:
-                    context['value_formset'] = AssayPlateReaderMapItemValueFormSetFactory(
-                            self.request.POST,
-                            instance=self.object,
-                            user=self.request.user
-                    )
-                else:
-                    context['value_formset'] = AssayPlateReaderMapItemValueFormSetFactory(
-                        instance=self.object,
-                        user=self.request.user
-                    )
-        else:
-            context['value_formset'] = "None"
-        # end update fo 20200113
+        # value_formsets_include_template = AssayPlateReaderMapItemValue.objects.filter(
+        #     assayplatereadermap=self.object
+        # ).filter(
+        #     plate_index=0
+        # )
+        # # one is the empty set (no file/block attached) - the template value set
+        # if len(value_formsets_include_template) == 1:
+        #
+        #     if 'value_formset' not in context:
+        #         if self.request.POST:
+        #             context['value_formset'] = AssayPlateReaderMapItemValueFormSetFactory(
+        #                     self.request.POST,
+        #                     instance=self.object,
+        #                     user=self.request.user
+        #             )
+        #         else:
+        #             context['value_formset'] = AssayPlateReaderMapItemValueFormSetFactory(
+        #                 instance=self.object,
+        #                 user=self.request.user
+        #             )
+        # else:
+        #     context['value_formset'] = "None"
+        # # end update fo 20200113
 
         # move to ajax for performance reasons
         # return_list = get_matrix_item_information_for_plate_map(self.object.study_id)
@@ -4532,6 +4565,7 @@ class AssayPlateReaderMapDelete(StudyViewerMixin, DeleteView):
 
 # function used in plate reader map app (add, view, and update) to get associated matrix item setup for display
 # do not think need this anymore, code that called got moved
+# here here todo remove this ..not needed, but do it separately to make sure no error generated
 def get_matrix_item_information_for_plate_map(study_id):
 
     # # moved some of this function to ajax call instead

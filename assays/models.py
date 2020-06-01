@@ -4029,9 +4029,8 @@ class AssayCategory(FlaggableModel):
 # sck - ASSAY PLATE MAP SECTION
 assay_plate_reader_time_unit_choices = [
     ('day', 'Day'),
-    ('minute', 'Minute'),
-    ('hour', 'Hour')
-
+    ('hour', 'Hour'),
+    ('minute', 'Minute')
 ]
 assay_plate_reader_main_well_use_choices = [
     ('sample', 'Sample'),
@@ -4137,9 +4136,9 @@ class AssayPlateReaderMap(FlaggableModel):
 
     class Meta(object):
         verbose_name_plural = 'Assay Plate Reader Map'
-        unique_together = [
-            ('study', 'name')
-        ]
+        # unique_together = [
+        #     ('study', 'name')
+        # ]
 
     study = models.ForeignKey(
         AssayStudy,
@@ -4448,7 +4447,7 @@ class AssayPlateReaderMapItemValue(models.Model):
     class Meta(object):
         verbose_name = 'Assay Plate Reader Map Raw Value'
         unique_together = [
-            ('study', 'assayplatereadermap', 'assayplatereadermapdatafile', 'assayplatereadermapdatafileblock', 'plate_index', 'time'),
+            ('study', 'assayplatereadermap', 'assayplatereadermapdatafile', 'assayplatereadermapdatafileblock', 'assayplatereadermapitem', 'time'),
         ]
 
     study = models.ForeignKey(
@@ -4478,17 +4477,20 @@ class AssayPlateReaderMapItemValue(models.Model):
         blank=True,
         on_delete=models.CASCADE
     )
-    plate_index = models.IntegerField(
-        default=999,
-        blank=True
-    )
-    well_use = models.CharField(
-        verbose_name='Well Use',
-        max_length=8,
-        default='empty',
-        blank=True,
-        choices=assay_plate_reader_cumulative_well_use_choices
-    )
+
+    # 20200522 removing since redid logic
+    # plate_index = models.IntegerField(
+    #     default=999,
+    #     blank=True
+    # )
+    # well_use = models.CharField(
+    #     verbose_name='Well Use',
+    #     max_length=8,
+    #     default='empty',
+    #     blank=True,
+    #     choices=assay_plate_reader_cumulative_well_use_choices
+    # )
+
     # raw value read from the plate for all wells in this plate
     raw_value = models.FloatField(
         null=True,

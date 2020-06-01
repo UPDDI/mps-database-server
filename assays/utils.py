@@ -68,7 +68,8 @@ from rpy2.robjects import FloatVector
 from collections import Counter
 import operator
 import re
-
+import time
+from django.db.models import Q
 from scipy.optimize import leastsq
 
 # from sklearn.linear_model import LinearRegression
@@ -3630,15 +3631,14 @@ def sub_function_inside_utils_plate_reader_map_file_guess_plate_size(
 
     return plate_size
 
-# sck adds the plate data to the map item table when file form submitted
+# sck adds the plate data to the map item value table when file form submitted
 def add_update_plate_reader_data_map_item_values_from_file(
         pk_for_file,
         block_dict):
     """
     Assay PLATE READER FILE UPDATE puts information in the value item table extracted from the file (utility).
     """
-    # unlike other plate map and plate map file functions here in the utils file
-    # this one is called from views.py, not from ajax calls in the javascript files
+    # this is called from views.py, not from ajax calls in the javascript files
 
     # What is sent into the function?
     # print('pk_for_file')
@@ -3695,6 +3695,7 @@ def add_update_plate_reader_data_map_item_values_from_file(
             true_to_overwrite_sample_time = True
 
         try:
+            # remember that this is in a loop for each data block in the file
             # if there are data in the map item value table related to this file, remove them all
             instance = AssayPlateReaderMapItemValue.objects.filter(assayplatereadermapdatafileblock=pk_this_block)
             instance.delete()
@@ -3707,7 +3708,7 @@ def add_update_plate_reader_data_map_item_values_from_file(
             pass
         else:
             # this is the guts of the adding data to the AssayPlateReaderMapItemValue table
-
+            # remember, working in a loop for each block at a time
             # for the block, open the file and get the values and order them so they will match the plate index
             this_queryset = AssayPlateReaderMapDataFile.objects.get(
                 id=pk_this_file
@@ -3739,21 +3740,26 @@ def add_update_plate_reader_data_map_item_values_from_file(
 
                     raw_value_list.append(this_raw_value)
 
-            # NOTE: after MUCH self debate, decided to leave a set of value items with NULL assayplatereadermapdatafileblock_id
-            # get a copy of the value item set for each plate map
-            # where the AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock is null
-            # this gets the default set of map item values
-
-            this_set_value_items = AssayPlateReaderMapItemValue.objects.filter(
-                assayplatereadermap=platemap_id
-            ).filter(
-                assayplatereadermapdatafileblock__isnull=True
-            ).order_by('plate_index',)
-
             # print("raw_value_list")
             # print(raw_value_list)
             # print(len(raw_value_list))
-            # print(len(this_set_value_items))
+
+            # OLD - NOTE: after MUCH self debate, decided to leave a set of value items with NULL assayplatereadermapdatafileblock_id
+            # get a copy of the value item set for each plate map
+            # where the AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock is null
+            # this gets the default set of map item values
+            # this_set_value_items = AssayPlateReaderMapItemValue.objects.filter(
+            #     assayplatereadermap=platemap_id
+            # ).filter(
+            #     assayplatereadermapdatafileblock__isnull=True
+            # ).order_by('plate_index',)
+
+            # 20200522 changing schema since do not need to allow edit after plate map association
+            this_set_value_items = AssayPlateReaderMapItem.objects.filter(
+                assayplatereadermap=platemap_id
+            ).order_by(
+                'plate_index',
+            )
 
             if len(raw_value_list) == len(this_set_value_items):
                 true_to_continue = True
@@ -3764,10 +3770,14 @@ def add_update_plate_reader_data_map_item_values_from_file(
 
             if true_to_continue:
                 pidx = 0
+                # go through each item of this platemap and make an
+                # instance for this data block
                 for item in this_set_value_items:
                     # will be sorted by plate index and should go from 0 to size of plate minus 1
                     # check for corruption
-                    if item.plate_index == pidx:
+                    # if item.plate_index == pidx:
+                    if 5==5:
+
                         # all is well, continue
                         # build the instance and append it
 
@@ -3775,20 +3785,46 @@ def add_update_plate_reader_data_map_item_values_from_file(
                         if true_to_overwrite_sample_time:
                             use_time = o_time
                         else:
-                            use_time = item.time
+                            use_time = item.default_time
+
+                        # print("~plate_index: ", pidx)
+                        # print("study: ", item.study_id)
+                        # print("map: ", item.assayplatereadermap_id)
+                        # print(pk_this_file)
+                        # print(pk_this_block)
+                        # print("item id: ", item.id)
+                        # print("raw: ", raw_value_list[pidx])
+                        # print("time: ", use_time)
+
+
+                        # pay special attention to the reference to the assayplatereadermapitem_id=item.assayplatereadermapitem_id - this got corrupted before!
+                        # pre 20200522
+                        # instance = AssayPlateReaderMapItemValue(
+                        #     plate_index=item.plate_index,
+                        #     well_use=item.well_use,
+                        #     raw_value=raw_value_list[pidx],
+                        #     time=use_time,
+                        #     assayplatereadermap_id=item.assayplatereadermap_id,
+                        #     assayplatereadermapdatafile_id=pk_this_file,
+                        #     assayplatereadermapdatafileblock_id=pk_this_block,
+                        #     assayplatereadermapitem_id=item.assayplatereadermapitem_id,
+                        #     study_id=item.study_id,
+                        # )
+
 
                         instance = AssayPlateReaderMapItemValue(
-                            plate_index=item.plate_index,
-                            well_use=item.well_use,
-                            raw_value=raw_value_list[pidx],
-                            time=use_time,
+                            study_id=item.study_id,
                             assayplatereadermap_id=item.assayplatereadermap_id,
                             assayplatereadermapdatafile_id=pk_this_file,
                             assayplatereadermapdatafileblock_id=pk_this_block,
-                            assayplatereadermapitem_id=item.assayplatereadermapitem_id,
-                            study_id=item.study_id,
+                            assayplatereadermapitem_id=item.id,
+                            raw_value=raw_value_list[pidx],
+                            time=use_time,
                         )
-                        # print(instance)
+                        # print(instance.assayplatereadermapitem)
+
+
+
                         # add this list to the list of lists
                         list_of_instances.append(instance)
                         true_to_continue = True
@@ -3806,10 +3842,15 @@ def add_update_plate_reader_data_map_item_values_from_file(
         # http://stefano.dissegna.me/django-pg-bulk-insert.html
         # https://stackoverflow.com/questions/15128705/how-to-insert-a-row-of-data-to-a-table-using-djangos-orm
         # add the data to AssayPlateReaderMapItemValue
+        # print('list_of_instances')
         # print(list_of_instances)
         # duplicating the pks when do all at once....
         # this is much faster, but it only increments the pks for the first block...then, duplicate error!
+
+
         AssayPlateReaderMapItemValue.objects.bulk_create(list_of_instances)
+
+
         # with transaction.atomic():
         #     # Loop over each store and invoke save() on each entry
         #     for each in list_of_instances:
@@ -4241,10 +4282,7 @@ def plate_reader_data_file_process_data(set_dict):
     """
     Assay PLATE READER FILE Data Processing (utility) - called from web page and form save.
     """
-    # print(" in utils.py")
-    # print(set_dict)
 
-    # get passed IN (from ajax) info into variables
     study = int(set_dict.get('study'))
     pk_platemap = int(set_dict.get('pk_platemap'))
     pk_data_block = int(set_dict.get('pk_data_block'))
@@ -4270,19 +4308,9 @@ def plate_reader_data_file_process_data(set_dict):
     user_omits = set_dict.get('user_omits')
     plate_size = set_dict.get('plate_size')
 
-    # if python - in form save, use the form fields for users and omits
-    # if change_average - need to pull the user_omits and user_notes
-    # else - redo all omits and notes - starting over
-    # javascript or form_submit
-
-    # print("called_from")
-    # print(called_from)
-    # print("user_notes")
-    # print(user_notes)
-    # print("user_omits")
-    # print(user_omits)
-
-    sendmessage1 = ''
+    sendGeneralQcErrorMessage = ''
+    sendFitStandardsMessage = ''
+    sendSampleProcessingMessage = ''
 
     # check for injection of invalid values
     try:
@@ -4302,16 +4330,17 @@ def plate_reader_data_file_process_data(set_dict):
     except:
         use_plate_size = 96
 
-    # check for injection of invalid values
+    # check for injection of invalid values and set to default if not in list
+    # for the valid lists, search the forms.py for se_form_calibration_curve
     if radio_replicate_handling_average_or_not_0 not in ['average', 'each']:
         radio_replicate_handling_average_or_not_0 = 'each'
-        sendmessage1 = "Invalid entry - defaults used;  "
+        sendGeneralQcErrorMessage = "Invalid entry - defaults used;  "
     if radio_standard_option_use_or_not not in ['pick_block', 'no_calibration']:
         radio_standard_option_use_or_not = 'no_calibration'
-        sendmessage1 = "Invalid entry - defaults used;  "
-    if form_calibration_curve not in ['no_calibration', 'best_fit', 'linear', 'linear0', 'log', 'poly2', 'logistic4', 'log5']:
+        sendGeneralQcErrorMessage = "Invalid entry - defaults used;  "
+    if form_calibration_curve not in ['no_calibration', 'best_fit', 'linear', 'linear0', 'log', 'poly2', 'logistic4', 'logistic4a0', 'log5']:
         form_calibration_curve = 'no_calibration'
-        sendmessage1 = "Invalid entry - defaults used;  "
+        sendGeneralQcErrorMessage = "Invalid entry - defaults used;  "
     if form_blank_handling not in [
             'subtracteachfromeach',
             'subtractstandardfromstandard',
@@ -4320,7 +4349,7 @@ def plate_reader_data_file_process_data(set_dict):
             'subtractsamplefromall',
             'ignore']:
         form_blank_handling = 'ignore'
-        sendmessage1 = "Invalid entry - defaults used;  "
+        sendGeneralQcErrorMessage = "Invalid entry - defaults used;  "
 
     # set defaults
     yes_to_continue = 'yes'
@@ -4346,6 +4375,7 @@ def plate_reader_data_file_process_data(set_dict):
 
     y_preds = []
     y_predStandards_logistic4 = []
+    y_predStandards_logistic4a0 = []
     y_predStandards_linear = []
     y_predStandards_linear0 = []
     y_predStandards_log = []
@@ -4358,33 +4388,68 @@ def plate_reader_data_file_process_data(set_dict):
     B4 = 0
     C4 = 0
     D4 = 0
+    A4a0 = 0
+    B4a0 = 0
+    C4a0 = 0
+    D4a0 = 0
     A_log = 0
     B_log = 0
     A_poly2 = 0
     B_poly2 = 0
     C_poly2 = 0
-    # since the log case had the 0s removed, may not have the same number of points in the 100 array, deal with
     adj_mid = 0
     con_mid = 0
+    number_standard_values_including_0 = 0
+    number_standard_values_excluding_0 = 0
+    special_note_when_excluding_0_and_curve_change_needed = ""
+    # just declare these so can use the same fitting call that was made from later on in the code.
+    caution_flag = ''
+    df = 1
+    cv = 1
+    ct = 1
 
-    # Prelim QC SECTION Some QC that will cause errors if not detected up front
+    # START Prelim QC SECTION Some QC that will cause errors if not detected up front
+    # Important Note: 'ERROR' is searched in the js to decide if the graph should be shown!!!!
 
-    # deal with the reporting unit containing /cells
-    # print("re.search(r'cells', standard_unit.lower()) ",re.search(r'cells', standard_unit.lower()) )
-    # print("re.search(r'cells', unit.lower()) ", re.search(r'cells', unit.lower()))
-
-    # Note: ERROR is searched in the js to decide if the graph should be shown!!!!
-
-    # look for missing collection volume or time when normalizing
+    # use to look for missing collection volume or time when normalizing
     standardunitCellsStart = re.search(r'cells', standard_unit.lower())
     unitCellsStart = re.search(r'cells', unit.lower())
 
-    # are there samples on this plate?
+    # use this from and join over and over again
+    sqlsFromJoinMapItemID = " FROM ( assays_AssayPlateReaderMapItem "
+    sqlsFromJoinMapItemID = sqlsFromJoinMapItemID + " INNER JOIN assays_AssayPlateReaderMapItemValue ON "
+    sqlsFromJoinMapItemID = sqlsFromJoinMapItemID + " assays_AssayPlateReaderMapItem.id=assays_AssayPlateReaderMapItemValue.assayplatereadermapitem_id) "
+    # use for QC over and over
+    sFromWhereSAMPLEItem = " FROM assays_AssayPlateReaderMapItem "
+    sFromWhereSAMPLEItem = sFromWhereSAMPLEItem + " WHERE assays_AssayPlateReaderMapItem.well_use = 'sample' "
+    sFromWhereSAMPLEItem = sFromWhereSAMPLEItem + " and assays_AssayPlateReaderMapItem.assayplatereadermap_id = "
+    sFromWhereSAMPLEItem = sFromWhereSAMPLEItem + str(pk_platemap)
+
+    sAndRawValueNull = " and concat(trim(assays_AssayPlateReaderMapItemValue.raw_value::varchar(255)),'zz') = 'zz' "
+    sAndMatrixItemNull = " and ( concat(trim(assays_AssayPlateReaderMapItem.matrix_item_id::varchar(255)),'zz') = 'zz' "
+    sAndMatrixItemNull = sAndMatrixItemNull + " or assays_AssayPlateReaderMapItem.matrix_item_id = 0)"
+    sAndLocationNull = " and ( concat(trim(assays_AssayPlateReaderMapItem.location_id::varchar(255)),'zz') = 'zz' "
+    sAndLocationNull = sAndLocationNull + " or assays_AssayPlateReaderMapItem.location_id = 0)"
+    sStandardValueNull = " and concat(trim(assays_AssayPlateReaderMapItem.standard_value::varchar(255)),'zz') = 'zz' "
+
+    # QC - are there samples on this plate?
+    # django orm - time compare for single table
+    # start_time = time.time()
+    # any_of_these = AssayPlateReaderMapItem.objects.filter(
+    #     assayplatereadermap=pk_platemap
+    # ).filter(
+    #     well_use='sample'
+    # )
+    # if len(any_of_these) == 0:
+    #     sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + "ERROR: There are no samples on this plate - no data to process. "
+    #     sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + goBackToFileBlockRemovePlateMapToFixMessage
+    #     yes_to_continue = 'no'
+    # print("e1 time orm ",  time.time() - start_time)
+    # sql - time compare
+    # start_time = time.time()
     with connection.cursor() as cursor:
-        sqls = "SELECT COUNT(*)"
-        sqls = sqls + " FROM assays_AssayPlateReaderMapItem "
-        sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.well_use = 'sample' "
-        sqls = sqls + " and assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(pk_platemap)
+        sqls =        " SELECT COUNT(*) "
+        sqls = sqls + sFromWhereSAMPLEItem
         # print("0: ", sqls)
         cursor.execute(sqls)
         results = cursor.fetchall()
@@ -4393,44 +4458,70 @@ def plate_reader_data_file_process_data(set_dict):
         # print("missing samples if == 0? ", results00)
 
         if results00 == 0:
-            sendmessage1 = sendmessage1 + "ERROR: There are no samples on this plate - no data to process. "
-            sendmessage1 = sendmessage1 + goBackToFileBlockRemovePlateMapToFixMessage
+            sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + "ERROR: There are no samples on this plate - no data to process. "
+            sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + goBackToFileBlockRemovePlateMapToFixMessage
             yes_to_continue = 'no'
+    # print("e1 time sql ", time.time() - start_time)
 
-    # Tongying asked for this one to be removed - plus I changed the default for these from 0 to 1
-    # so it really is not helpful anymore
-    # # Check if results are to be normalized (no cells in standard unit but cells in processed unit)
-    # # if so, is the collection time and collection volume provided?
-    # if standardunitCellsStart == None and unitCellsStart != None:
-    #     with connection.cursor() as cursor:
-    #         sqls = "SELECT COUNT(*)"
-    #         sqls = sqls + " FROM assays_AssayPlateReaderMapItem "
-    #         sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.well_use = 'sample' "
-    #         sqls = sqls + " and assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(pk_platemap)
-    #         sqls = sqls + " and ( concat(trim(assays_AssayPlateReaderMapItem.collection_volume::varchar(255)),'zz') = 'zz' "
-    #         sqls = sqls + " or   assays_AssayPlateReaderMapItem.collection_volume = 0 "
-    #         sqls = sqls + " or    concat(trim(assays_AssayPlateReaderMapItem.collection_time::varchar(255)),'zz') = 'zz' "
-    #         sqls = sqls + " or   assays_AssayPlateReaderMapItem.collection_time = 0 )"
-    #         # print("1: ", sqls)
-    #         cursor.execute(sqls)
-    #         results = cursor.fetchall()
-    #         # print(results)
-    #         results00 = results[0][0]
-    #         # print("missing normalization information? ", results00)
-    #
-    #         if results00 > 0:
-    #             sendmessage1 = sendmessage1 + "ERROR: Samples are to be normalized, but one or more collection time or collection volume is Null or 0. "
-    #             sendmessage1 = sendmessage1 + goBackToFileBlockRemovePlateMapToFixMessage
-    #             yes_to_continue = 'no'
+    # QC - look for samples, standards, or blanks with missing raw values (null)
+    # django orm - compare time with link two tables
+    # start_time = time.time()
+    # any_of_these = AssayPlateReaderMapItemValue.objects.filter(
+    #     assayplatereadermap=pk_platemap
+    # ).filter(
+    #     assayplatereadermapdatafileblock=pk_data_block
+    # ).prefetch_related(
+    #     'assayplatereadermapitem'
+    # ).filter(
+    #     Q(assayplatereadermapitem__well_use='sample') |
+    #     Q(assayplatereadermapitem__well_use='blank') |
+    #     Q(assayplatereadermapitem__well_use='standard') |
+    #     Q(assayplatereadermapitem__well_use='standard_blank') |
+    #     Q(assayplatereadermapitem__well_use='sample_blank')
+    # )
+    # if len(any_of_these) > 0:
+    #         sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + "ERROR: One or more samples, standards, or blanks have a null raw value in the file. "
+    #         sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + goBackToFileBlockToFixFileBlockMessage
+    #         yes_to_continue = 'no'
+    # print("e2 time orm ",  time.time() - start_time)
+    # sql - time compare
+    # start_time = time.time()
+    with connection.cursor() as cursor:
+        sqls =        " SELECT COUNT(*) "
+        sqls = sqls + sqlsFromJoinMapItemID
+        sqls = sqls + " WHERE assays_AssayPlateReaderMapItemValue.assayplatereadermap_id = "
+        sqls = sqls + str(pk_platemap) + " "
+        sqls = sqls + " and (assays_AssayPlateReaderMapItem.well_use = 'sample' "
+        sqls = sqls + " or assays_AssayPlateReaderMapItem.well_use = 'standard' "
+        sqls = sqls + " or assays_AssayPlateReaderMapItem.well_use = 'sample_blank' "
+        sqls = sqls + " or assays_AssayPlateReaderMapItem.well_use = 'standard_blank' "
+        sqls = sqls + " or assays_AssayPlateReaderMapItem.well_use = 'blank') "
+        sqls = sqls + " and assays_AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock_id = "
+        sqls = sqls + str(pk_data_block) + " "
+        sqls = sqls + sAndRawValueNull
+        # print("3998 look for null raws: ", sqls)
+        cursor.execute(sqls)
+        results = cursor.fetchall()
+        # print(results)
+        results00 = results[0][0]
+        # print("missing sample raw values? ", results00)
+
+        if results00 > 0:
+            sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + "ERROR: One or more samples, standards, or blanks have a null raw value in the file. "
+            sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + goBackToFileBlockToFixFileBlockMessage
+            yes_to_continue = 'no'
+    # print("e2 time sql ", time.time() - start_time)
+    # in a test on a 96 well plate...that's a compelling reason
+    # e1 time orm  0.011256933212280273
+    # e1 time sql  0.0007350444793701172
+    # e2 time orm  0.012610912322998047
+    # e2 time sql  0.0013592243194580078
 
     # look for samples with missing matrix items
     with connection.cursor() as cursor:
-        sqls = "SELECT COUNT(*)"
-        sqls = sqls + " FROM assays_AssayPlateReaderMapItem "
-        sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.well_use = 'sample' "
-        sqls = sqls + " and assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(pk_platemap)
-        sqls = sqls + " and ( concat(trim(assays_AssayPlateReaderMapItem.matrix_item_id::varchar(255)),'zz') = 'zz' "
-        sqls = sqls + " or assays_AssayPlateReaderMapItem.matrix_item_id = 0)"
+        sqls =        " SELECT COUNT(*) "
+        sqls = sqls + sFromWhereSAMPLEItem
+        sqls = sqls + sAndMatrixItemNull
         # print("2: ", sqls)
         cursor.execute(sqls)
         results = cursor.fetchall()
@@ -4439,18 +4530,15 @@ def plate_reader_data_file_process_data(set_dict):
         # print("missing matrix items? ", results00)
 
         if results00 > 0:
-            sendmessage1 = sendmessage1 + "ERROR: One or more samples are missing a matrix item label. This will cause them to omitted from data processing. "
-            sendmessage1 = sendmessage1 + goBackToFileBlockRemovePlateMapToFixMessage
+            sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + "ERROR: One or more samples are missing a matrix item label. This will cause them to omitted from data processing. "
+            sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + goBackToFileBlockRemovePlateMapToFixMessage
             yes_to_continue = 'no'
 
     # look for samples with missing sample locations
     with connection.cursor() as cursor:
-        sqls = "SELECT COUNT(*)"
-        sqls = sqls + " FROM assays_AssayPlateReaderMapItem "
-        sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.well_use = 'sample' "
-        sqls = sqls + " and assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(pk_platemap)
-        sqls = sqls + " and ( concat(trim(assays_AssayPlateReaderMapItem.location_id::varchar(255)),'zz') = 'zz' "
-        sqls = sqls + " or assays_AssayPlateReaderMapItem.location_id = 0)"
+        sqls =        " SELECT COUNT(*) "
+        sqls = sqls + sFromWhereSAMPLEItem
+        sqls = sqls + sAndLocationNull
         # print("3: ", sqls)
         cursor.execute(sqls)
         results = cursor.fetchall()
@@ -4459,39 +4547,10 @@ def plate_reader_data_file_process_data(set_dict):
         # print("missing sample locations? ", results00)
 
         if results00 > 0:
-            sendmessage1 = sendmessage1 + "ERROR: One or more samples are missing a matrix item label. This will cause them to be omitted from data processing. "
-            sendmessage1 = sendmessage1 + goBackToFileBlockRemovePlateMapToFixMessage
+            sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + "ERROR: One or more samples are missing a matrix item label. This will cause them to be omitted from data processing. "
+            sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + goBackToFileBlockRemovePlateMapToFixMessage
             yes_to_continue = 'no'
 
-    # look for samples, standards, or blanks with missing raw values (null)
-    with connection.cursor() as cursor:
-        sqls = "SELECT COUNT(*)"
-        sqls = sqls + " FROM ( assays_AssayPlateReaderMapItem "
-        sqls = sqls + " INNER JOIN assays_AssayPlateReaderMapItemValue ON "
-        sqls = sqls + " assays_AssayPlateReaderMapItem.plate_index=assays_AssayPlateReaderMapItemValue.plate_index) "
-
-        # get this plate map, the samples, the selected (at the top) File/Block
-        sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(pk_platemap) + " "
-        sqls = sqls + " and (assays_AssayPlateReaderMapItem.well_use = 'sample' "
-        sqls = sqls + " or assays_AssayPlateReaderMapItem.well_use = 'standard' "
-        # adding other blank options 20200427 - to keep previous functionality 'blank' = 'sample_blank'
-        sqls = sqls + " or assays_AssayPlateReaderMapItem.well_use = 'sample_blank' "
-        sqls = sqls + " or assays_AssayPlateReaderMapItem.well_use = 'standard_blank' "
-        sqls = sqls + " or assays_AssayPlateReaderMapItem.well_use = 'blank') "
-        sqls = sqls + " and assays_AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock_id = " + str(
-            pk_data_block) + " "
-        sqls = sqls + " and concat(trim(assays_AssayPlateReaderMapItemValue.raw_value::varchar(255)),'zz') = 'zz' "
-        # print("look for null raws: ", sqls)
-        cursor.execute(sqls)
-        results = cursor.fetchall()
-        # print(results)
-        results00 = results[0][0]
-        # print("missing sample raw values? ", results00)
-
-        if results00 > 0:
-            sendmessage1 = sendmessage1 + "ERROR: One or more samples, standards, or blanks have a null raw value in the file. "
-            sendmessage1 = sendmessage1 + goBackToFileBlockToFixFileBlockMessage
-            yes_to_continue = 'no'
 
     # need to know what plate has standards for next QC check
     if form_calibration_curve == 'no_calibration':
@@ -4506,15 +4565,27 @@ def plate_reader_data_file_process_data(set_dict):
         use_platemap_pk_for_standards = pk_platemap
 
     if yes_to_calibrate == 'yes':
+        
+        # need and use several times to get info for standards and standard blanks
+        # Make sure these are AFTER the use plate map for standards is set
+        sFromWhereSTNDItem = " FROM assays_AssayPlateReaderMapItem "
+        sFromWhereSTNDItem = sFromWhereSTNDItem + " WHERE (assays_AssayPlateReaderMapItem.well_use = 'standard' "
+        sFromWhereSTNDItem = sFromWhereSTNDItem + " or assays_AssayPlateReaderMapItem.well_use = 'standard_blank') "
+        sFromWhereSTNDItem = sFromWhereSTNDItem + " and assays_AssayPlateReaderMapItem.assayplatereadermap_id = "
+        sFromWhereSTNDItem = sFromWhereSTNDItem + str(use_platemap_pk_for_standards) + " "
+
+        sWhereSTNDValue = " WHERE assays_AssayPlateReaderMapItemValue.assayplatereadermap_id = "
+        sWhereSTNDValue = sWhereSTNDValue + str(use_platemap_pk_for_standards)
+        sWhereSTNDValue = sWhereSTNDValue + " and (assays_AssayPlateReaderMapItem.well_use = 'standard' "
+        sWhereSTNDValue = sWhereSTNDValue + " or assays_AssayPlateReaderMapItem.well_use = 'standard_blank') "
+        sWhereSTNDValue = sWhereSTNDValue + " and assays_AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock_id = "
+        sWhereSTNDValue = sWhereSTNDValue + str(use_file_pk_for_standards) + " "
+
         # look for missing standard concentrations from the plate selected to use for standards
         with connection.cursor() as cursor:
-            sqls = "SELECT COUNT(*)"
-            sqls = sqls + " FROM assays_AssayPlateReaderMapItem "
-            sqls = sqls + " WHERE (assays_AssayPlateReaderMapItem.well_use = 'standard' "
-            # added 20200227
-            sqls = sqls + "  or assays_AssayPlateReaderMapItem.well_use = 'standard_blank') "
-            sqls = sqls + " and assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(use_platemap_pk_for_standards)
-            sqls = sqls + " and concat(trim(assays_AssayPlateReaderMapItem.standard_value::varchar(255)),'zz') = 'zz' "
+            sqls =        " SELECT COUNT(*) "
+            sqls = sqls + sFromWhereSTNDItem
+            sqls = sqls + sStandardValueNull
             # print("5: ", sqls)
             cursor.execute(sqls)
             results = cursor.fetchall()
@@ -4523,58 +4594,34 @@ def plate_reader_data_file_process_data(set_dict):
             # print("missing standard concentrations for well use == standard on selected plate? ",results00)
 
             if results00 > 0:
-                sendmessage1 = sendmessage1 + "ERROR: One or more of the wells in the plate map selected for standards are missing a standard concentration. "
-                sendmessage1 = sendmessage1 + goBackToFileBlockRemovePlateMapToFixMessage
+                sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + "ERROR: One or more of the wells in the plate map selected for standards are missing a standard concentration. "
+                sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + goBackToFileBlockRemovePlateMapToFixMessage
                 yes_to_continue = 'no'
 
         # look for missing standard raw values from the plate selected to use for standards
         with connection.cursor() as cursor:
-            sqls = "SELECT COUNT(*)"
-            sqls = sqls + " FROM ( assays_AssayPlateReaderMapItem "
-            sqls = sqls + " INNER JOIN assays_AssayPlateReaderMapItemValue ON "
-            sqls = sqls + " assays_AssayPlateReaderMapItem.plate_index=assays_AssayPlateReaderMapItemValue.plate_index) "
-
-            # get this plate map, the samples, the selected (at the top) File/Block
-            sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(use_platemap_pk_for_standards) + " "
-            sqls = sqls + " and (assays_AssayPlateReaderMapItem.well_use = 'standard' "
-            # added 20200227
-            sqls = sqls + "  or assays_AssayPlateReaderMapItem.well_use = 'standard_blank') "
-            sqls = sqls + " and assays_AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock_id = " + str(
-                use_file_pk_for_standards) + " "
-            sqls = sqls + " and concat(trim(assays_AssayPlateReaderMapItemValue.raw_value::varchar(255)),'zz') = 'zz' "
+            sqls =        " SELECT COUNT(*) "
+            sqls = sqls + sqlsFromJoinMapItemID
+            sqls = sqls + sWhereSTNDValue
+            sqls = sqls + sAndRawValueNull
             # print("look for null raws: ", sqls)
             cursor.execute(sqls)
             results = cursor.fetchall()
             # print(results)
             results00 = results[0][0]
             # print("missing raw standard values? ", results00)
-
+            # print("4091 sqls ", sqls)
             if results00 > 0:
-                sendmessage1 = sendmessage1 + "ERROR: One or more of the wells in the plate selected for standards have a null raw value in the file. "
-                sendmessage1 = sendmessage1 + goBackToFileBlockRemovePlateMapToFixMessage
+                sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + "ERROR: One or more of the wells in the plate selected for standards have a null raw value in the file. "
+                sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + goBackToFileBlockRemovePlateMapToFixMessage
                 yes_to_continue = 'no'
 
-    # Prelim QC SECTION end
+    # END Prelim QC SECTION end
 
     # if passed the preliminary QC, keep going, else, just send back the error message
     # all the other defaults (including the dictionaries) were set to empty above
 
-    # print("cont ", yes_to_continue)
-
     if yes_to_continue == 'yes':
-
-        # need and use several times to get info for standards and standard blanks
-        sqlsFrom = " FROM ( assays_AssayPlateReaderMapItem "
-        sqlsFrom = sqlsFrom + " INNER JOIN assays_AssayPlateReaderMapItemValue ON "
-        sqlsFrom = sqlsFrom + " assays_AssayPlateReaderMapItem.plate_index=assays_AssayPlateReaderMapItemValue.plate_index) "
-
-        sqlsWhere = " WHERE assays_AssayPlateReaderMapItem.assayplatereadermap_id = "
-        sqlsWhere = sqlsWhere + str(use_platemap_pk_for_standards)
-        sqlsWhere = sqlsWhere + " and (assays_AssayPlateReaderMapItem.well_use = 'standard' "
-        # added 20200227
-        sqlsWhere = sqlsWhere + "  or assays_AssayPlateReaderMapItem.well_use = 'standard_blank') "
-        sqlsWhere = sqlsWhere + " and assays_AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock_id = "
-        sqlsWhere = sqlsWhere + str(use_file_pk_for_standards) + " "
 
         # EXTRA FOR CALIBRATION
         if yes_to_calibrate == 'yes':
@@ -4585,14 +4632,21 @@ def plate_reader_data_file_process_data(set_dict):
             if form_blank_handling in ['subtracteachfromeach', 'subtractsamplefromsample', 'subtractsamplefromall']:
                 # get the average of the sample blanks
                 with connection.cursor() as cursor:
-                    sqls = "SELECT AVG(raw_value)"
-                    sqls = sqls + " FROM assays_AssayPlateReaderMapItemValue "
-                    sqls = sqls + " WHERE assayplatereadermapdatafileblock_id = "
+                    sqls = "SELECT AVG(assays_AssayPlateReaderMapItemValue.raw_value)"
+                    sqls = sqls + sqlsFromJoinMapItemID
+                    sqls = sqls + " WHERE assays_AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock_id = "
+
                     # NOTE: the sample blanks MUST be on the same plate as the standards or this code needs to change!!
                     # this is the plate we are using for standards, if the assumption is that sample blanks
-                    # would be on the sample plate, we could change this, but need to QC ALL if do that!
+                    # would be on the sample plate, we could change this.
+                    # I think it can just be changed back and forth, but, CHECK IT when someone actually does this.
+                    # 20200528 Richard indicated he typically puts his standards, sample, and standard blanks on the same plate
+                    # so, if borrowing standards from another plate, assume he is also borrowing sample blanks.
+                    # sqls = sqls + str(pk_platemap)
                     sqls = sqls + str(use_file_pk_for_standards)
-                    sqls = sqls + " and (well_use = 'blank' or well_use = 'sample_blank') "
+                    sqls = sqls + " and (assays_AssayPlateReaderMapItem.well_use = 'blank' "
+                    sqls = sqls + "  or assays_AssayPlateReaderMapItem.well_use = 'sample_blank') "
+
                     # print("blank average sql: ", sqls)
                     cursor.execute(sqls)
                     results = cursor.fetchall()
@@ -4611,10 +4665,9 @@ def plate_reader_data_file_process_data(set_dict):
                 # find the values we should use
                 with connection.cursor() as cursor:
                     sqls = "SELECT "
-                    sqls = sqls + "  MIN(assays_AssayPlateReaderMapItem.standard_value) "
-                    sqls = sqls + sqlsFrom
-                    sqls = sqls + sqlsWhere
-                    # print("all standards sql: ", sqls)
+                    sqls = sqls + " MIN(assays_AssayPlateReaderMapItem.standard_value) "
+                    sqls = sqls + sFromWhereSTNDItem
+                    # print("all standards sql1: ", sqls)
                     cursor.execute(sqls)
                     results = cursor.fetchall()
                     use_form_min = results[0][0]
@@ -4625,10 +4678,9 @@ def plate_reader_data_file_process_data(set_dict):
                 # find the values we should use
                 with connection.cursor() as cursor:
                     sqls = "SELECT "
-                    sqls = sqls + "  MAX(assays_AssayPlateReaderMapItem.standard_value) "
-                    sqls = sqls + sqlsFrom
-                    sqls = sqls + sqlsWhere
-                    # print("all standards sql: ", sqls)
+                    sqls = sqls + " MAX(assays_AssayPlateReaderMapItem.standard_value) "
+                    sqls = sqls + sFromWhereSTNDItem
+                    # print("all standards sql2: ", sqls)
                     cursor.execute(sqls)
                     results = cursor.fetchall()
                     use_form_max = results[0][0]
@@ -4643,9 +4695,9 @@ def plate_reader_data_file_process_data(set_dict):
 
                 # get the standard blank average
                 with connection.cursor() as cursor:
-                    sqls = "SELECT AVG(assays_AssayPlateReaderMapItemValue.raw_value)"
-                    sqls = sqls + sqlsFrom
-                    sqls = sqls + sqlsWhere
+                    sqls = "SELECT AVG(assays_AssayPlateReaderMapItemValue.raw_value) "
+                    sqls = sqls + sqlsFromJoinMapItemID
+                    sqls = sqls + sWhereSTNDValue
                     sqls = sqls + " and assays_AssayPlateReaderMapItem.standard_value = 0"
 
                     # print("standard average sql: ", sqls)
@@ -4663,44 +4715,31 @@ def plate_reader_data_file_process_data(set_dict):
             # print("sample_blank_average: ", sample_blank_average)
             # print("standard_blank_average: ", standard_blank_average)
 
-            # 4/14/2020 added an option to subtract average standard from samples
-            # this option is accommodate here - assumes that sample_blank_average was computed above
-            # we will overwrite it here, if needed
-            # 4/26/2020 added options for blank handling...here is the logic that will overwrite what to subtract from
-            # what based on the users choices
-            # Note: before this, sample_blank_average = average of sample blanks or 0, depending on user selection
-            # Note: before this, standard_blank_average = average of standard blanks or 0, depending on user selection
+            # There is a two level assignment of what is subtracted from what
+            # first:
+            #  -  a standard and sample blank average are calculated OR set to 0
+            #     based on user selection of blank handling and if blanks on plate(s)
+            # second:
+            #  - if the user selected to use the standard blank average for all,
+            #    or to use sample blanks for all, the calculated average is overwritten (below)
 
-            # this will overwrite the previous selection, depending on the user's choices
-            # could put these above in the original selections, but just easier to do it here
+            # NOTE: the logic here will OVERWRITE what to subtract from samples/standards based on user choices
+            # These will be used for now on and will show in the parameter details in the GUI
             if form_blank_handling == 'subtractstandardfromall':
                 sample_blank_average = standard_blank_average
             elif form_blank_handling == 'subtractsamplefromall':
                 standard_blank_average = sample_blank_average
 
-            # Summarizing:
-            # Two level assignment of what to subtract,
-            # first:
-            # a standard and sample blank average were calculated OR set to 0
-            # (based on user selection of blank handling).
-            # second:
-            # if the user selected to use the standard blank average for all,
-            # or to use sample blanks for all,
-            # the caculated average is overwritten
-            # note that, these are the values that will be used from now on,
-            # all based on the user selection of blank handling
-            # these will also be what shows in the analysis details for what is subtacted from blanks.
-
             # for graphing - get all adjusted standards (POINTS)
-            # Note, based on how the standard_blank_average had be set above
+            # Note, based on how the standard_blank_average had been set above
             # it is okay to treat all the blank handling conditions this way
             with connection.cursor() as cursor:
                 sqls = "SELECT "
                 sqls = sqls + "   assays_AssayPlateReaderMapItem.standard_value "
                 sqls = sqls + ", (assays_AssayPlateReaderMapItemValue.raw_value-" + str(standard_blank_average) + ") as aRaw "
                 sqls = sqls + ",  assays_AssayPlateReaderMapItemValue.raw_value "
-                sqls = sqls + sqlsFrom
-                sqls = sqls + sqlsWhere
+                sqls = sqls + sqlsFromJoinMapItemID
+                sqls = sqls + sWhereSTNDValue
                 sqls = sqls + " ORDER BY assays_AssayPlateReaderMapItem.standard_value"
                 # print("all standards sql: ", sqls)
                 cursor.execute(sqls)
@@ -4717,8 +4756,8 @@ def plate_reader_data_file_process_data(set_dict):
                 sqls = sqls + ", AVG(assays_AssayPlateReaderMapItemValue.raw_value-" + str(standard_blank_average) + ") as aRaw "
                 sqls = sqls + ", AVG(assays_AssayPlateReaderMapItemValue.raw_value) "
 
-                sqls = sqls + sqlsFrom
-                sqls = sqls + sqlsWhere
+                sqls = sqls + sqlsFromJoinMapItemID
+                sqls = sqls + sWhereSTNDValue
                 sqls = sqls + " and assays_AssayPlateReaderMapItem.standard_value >= "
                 sqls = sqls + str(use_form_min) + " "
                 sqls = sqls + " and assays_AssayPlateReaderMapItem.standard_value <= "
@@ -4744,8 +4783,8 @@ def plate_reader_data_file_process_data(set_dict):
                 xi = each[0]
                 yi = each[1]
 
-                this_row.update({'Concentration': xi })
-                this_row.update({'Adjusted Observed Signal': yi })
+                this_row.update({'Concentration': xi})
+                this_row.update({'Adjusted Observed Signal': yi})
                 this_row.update({'Observed Signal': each[2]})
                 # we will populate this field later
                 this_row.update({'Fitted Signal': 0})
@@ -4770,8 +4809,15 @@ def plate_reader_data_file_process_data(set_dict):
             # print("N ",N)
             # print("S ",S)
 
+            number_standard_values_including_0 = len(N)
+            number_standard_values_excluding_0 = len(N)
+
+            for each in N:
+                if each == 0:
+                    number_standard_values_excluding_0 = number_standard_values_excluding_0 - 1
+
             if len(N) < 4:
-                sendmessage1 = sendmessage1 + "ERROR: There are not enough concentrations of standards in bounds (minimum of 4 needed for calibration);  "
+                sendGeneralQcErrorMessage = sendGeneralQcErrorMessage + "ERROR: There are not enough concentrations of standards in bounds (minimum of 4 needed for calibration);  "
                 yes_to_continue = 'no'
 
     if yes_to_continue == 'yes':
@@ -4786,121 +4832,141 @@ def plate_reader_data_file_process_data(set_dict):
             # https://www.abcam.com/ps/products/102/ab102526/documents/ab102526%20LDH%20Assay%20Kit%20Colorimetric%20protocol%20v13d%20(website).pdf
             # on page 15, the concentration is x and the OD is y. The equation is y = mx + b
             # with that in mind, the fitting was done with concentration as the x and signal as the y.
-            # 20200518 - some differences in poly2 with TS. TS indicated she fitted with x as signal and y as concentration.
-            # Emailed team to determine which is the independant and which is the dependant variable.
-
-            # set here so can flip back and forth signal and conc
-            sig_or_con = "signal"
-
 
             r2 = {}
 
-            if form_calibration_curve in ['linear', 'best_fit']:
-                # avg standard concentration - adjusted raw
-                # N = []
-                # S = []
+            if number_standard_values_including_0 >= 4:
+                # if this condition is not met, it should have be caught in the the QC above
 
-                # A is INTERCEPT!!!!!
-                # B is SLOPE!!!
+                if form_calibration_curve in ['linear', 'best_fit', 'log', 'logistic4', 'logistic4a0']:
+                    # avg standard concentration - adjusted raw
+                    # N = []
+                    # S = []
 
-                # Initial guess for parameters A, B
-                A = 0
-                B = (Smax-Smin)/(Nmax-Nmin)
-                p0 = [A, B]
+                    # A is INTERCEPT!!!!!
+                    # B is SLOPE!!!
 
-                # Fit using least squares optimization
-                Sfitted, cost, info, msg, success = leastsq(plateMapResidualsLinear, p0, args=(S, N), full_output=1)
+                    # Initial guess for parameters A, B
+                    A = 0
+                    B = (Smax-Smin)/(Nmax-Nmin)
+                    p0 = [A, B]
 
-                A_linear = Sfitted[0]
-                B_linear = Sfitted[1]
+                    # Fit using least squares optimization
+                    Sfitted, cost, info, msg, success = leastsq(plateMapResidualsLinear, p0, args=(S, N), full_output=1)
 
-                y_predStandards_linear = plateMapLinear(N, A_linear, B_linear)
+                    A_linear = Sfitted[0]
+                    B_linear = Sfitted[1]
 
-                # y_predStandards = [None] * len(N)
-                # i = 0
-                # for n in N:
-                #     y_predStandards[i] = plateMapLinear(n, A_linear, B_linear)
-                #     i = i + 1
+                    y_predStandards_linear = plateMapLinear(N, A_linear, B_linear)
 
-                # print("calling linear rsquared")
-                rsquared_linear = plateMapRsquared(N, S, y_predStandards_linear)
-                r2['linear'] = rsquared_linear
+                    # print("calling linear rsquared")
+                    rsquared_linear = plateMapRsquared(N, S, y_predStandards_linear)
+                    r2['linear'] = rsquared_linear
 
-            if form_calibration_curve in ['linear0', 'best_fit']:
-                # B is SLOPE!!!
-                A = 0
-                B = (Smax - Smin) / (Nmax - Nmin)
-                p0 = [A, B]
-                Sfitted, cost, info, msg, success = leastsq(plateMapResidualsLinear0, p0, args=(S, N), full_output=1)
-                A_linear0 = Sfitted[0]
-                B_linear0 = Sfitted[1]
-                y_predStandards_linear0 = plateMapLinear(N, A_linear0, B_linear0)
-                rsquared_linear0 = plateMapRsquared(N, S, y_predStandards_linear0)
-                r2['linear0'] = rsquared_linear0
+                if form_calibration_curve in ['linear0', 'best_fit']:
+                    # B is SLOPE!!!
+                    A = 0
+                    B = (Smax - Smin) / (Nmax - Nmin)
+                    p0 = [A, B]
+                    Sfitted, cost, info, msg, success = leastsq(plateMapResidualsLinear0, p0, args=(S, N), full_output=1)
+                    A_linear0 = Sfitted[0]
+                    B_linear0 = Sfitted[1]
+                    y_predStandards_linear0 = plateMapLinear(N, A_linear0, B_linear0)
+                    rsquared_linear0 = plateMapRsquared(N, S, y_predStandards_linear0)
+                    r2['linear0'] = rsquared_linear0
 
-            if form_calibration_curve in ['logistic4', 'best_fit']:
-                A = (Smax-Smin)/len(S)
-                B = (Smax-Smin)/(Nmax-Nmin)
-                C = (Nmax-Nmin)/2
-                D = Smax
-                # print("## A, B, C, D ", A, " ", B, " ", C, " ", D, " ")
-                p0 = [A, B, C, D]
+                if form_calibration_curve in ['poly2', 'best_fit']:
+                    A = (Smax - Smin) / len(S)
+                    B = (Smax - Smin) / (Nmax - Nmin)
+                    C = (Nmax - Nmin) / 2
+                    D = Smax
+                    p0 = [A, B, C, D]
+                    Sfitted, cost, info, msg, success = leastsq(plateMapResidualsPoly2, p0, args=(S, N), full_output=1)
+                    A_poly2 = Sfitted[0]
+                    B_poly2 = Sfitted[1]
+                    C_poly2 = Sfitted[2]
+                    D_poly2 = Sfitted[3]
+                    y_predStandards_poly2 = plateMapPoly2(N, A_poly2, B_poly2, C_poly2, D_poly2)
+                    rsquared_poly2 = plateMapRsquared(N, S, y_predStandards_poly2)
+                    r2['poly2'] = rsquared_poly2
 
-                # need to do some work to prep for logistic4 1) n cannot be 0 in fitting
-                if N[0] == 0:
-                    Nno0 = np.delete(N, 0)
-                    Sno0 = np.delete(S, 0)
-                else:
-                    Nno0 = N
-                    Sno0 = S
+            if number_standard_values_excluding_0 >= 4:
+                # this would not have been caught in the QC above, because the 0's were included for the general QC
 
-                Sfitted, cost, info, msg, success = leastsq(plateMapResidualsLogistic4, p0, args=(Sno0, Nno0), full_output=1)
-                A4 = Sfitted[0]
-                B4 = Sfitted[1]
-                C4 = Sfitted[2]
-                D4 = Sfitted[3]
-                y_predStandards_logistic4 = plateMapLogistic4(Nno0, A4, B4, C4, D4)
-                rsquared_logistic4 = plateMapRsquared(Nno0, Sno0, y_predStandards_logistic4)
-                r2['logistic4'] = rsquared_logistic4
+                if form_calibration_curve in ['logistic4', 'best_fit']:
+                    A = (Smax-Smin)/len(S)
+                    B = (Smax-Smin)/(Nmax-Nmin)
+                    C = (Nmax-Nmin)/2
+                    D = Smax
+                    # print("## A, B, C, D ", A, " ", B, " ", C, " ", D, " ")
+                    p0 = [A, B, C, D]
 
-            if form_calibration_curve in ['log', 'best_fit']:
-                A = (Smax-Smin)/len(S)
-                B = (Smax-Smin)/(Nmax-Nmin)
-                p0 = [A, B]
+                    # need to do some work to prep for logistic4 1) n cannot be 0 in fitting
+                    if N[0] == 0:
+                        Nno0 = np.delete(N, 0)
+                        Sno0 = np.delete(S, 0)
+                    else:
+                        Nno0 = N
+                        Sno0 = S
 
-                # need to do some work to prep for log 1) no 0 allowed, and 2) could not take log in the fitting
-                if N[0] == 0:
-                    Nno0 = np.delete(N, 0)
-                    Sno0 = np.delete(S, 0)
-                else:
-                    Nno0 = N
-                    Sno0 = S
+                    Sfitted, cost, info, msg, success = leastsq(plateMapResidualsLogistic4, p0, args=(Sno0, Nno0), full_output=1)
+                    A4 = Sfitted[0]
+                    B4 = Sfitted[1]
+                    C4 = Sfitted[2]
+                    D4 = Sfitted[3]
+                    y_predStandards_logistic4 = plateMapLogistic4(Nno0, A4, B4, C4, D4)
+                    rsquared_logistic4 = plateMapRsquared(Nno0, Sno0, y_predStandards_logistic4)
+                    r2['logistic4'] = rsquared_logistic4
 
-                Sfitted, cost, info, msg, success = leastsq(plateMapResidualsLinear, p0, args=(Sno0, np.log(Nno0)), full_output=1)
-                A_log = Sfitted[0]
-                B_log = Sfitted[1]
-                y_predStandards_log = plateMapLinear(np.log(Nno0), A_log, B_log)
+                if form_calibration_curve in ['logistic4a0', 'best_fit']:
+                    A = 0
+                    B = (Smax-Smin)/(Nmax-Nmin)
+                    C = (Nmax-Nmin)/2
+                    D = Smax
+                    # print("## A, B, C, D ", A, " ", B, " ", C, " ", D, " ")
+                    p0 = [A, B, C, D]
 
-                # print(Nno0)
-                # print(Sno0)
+                    # need to do some work to prep for logistic4a0 1) n cannot be 0 in fitting
+                    if N[0] == 0:
+                        Nno0 = np.delete(N, 0)
+                        Sno0 = np.delete(S, 0)
+                    else:
+                        Nno0 = N
+                        Sno0 = S
 
-                rsquared_log = plateMapRsquared(Nno0, Sno0, y_predStandards_log)
-                r2['log'] = rsquared_log
+                    Sfitted, cost, info, msg, success = leastsq(plateMapResidualsLogistic4a0, p0, args=(Sno0, Nno0), full_output=1)
+                    A4a0 = Sfitted[0]
+                    B4a0 = Sfitted[1]
+                    C4a0 = Sfitted[2]
+                    D4a0 = Sfitted[3]
+                    y_predStandards_logistic4a0 = plateMapLogistic4a0(Nno0, A4a0, B4a0, C4a0, D4a0)
+                    rsquared_logistic4a0 = plateMapRsquared(Nno0, Sno0, y_predStandards_logistic4a0)
+                    r2['logistic4a0'] = rsquared_logistic4a0
 
-            if form_calibration_curve in ['poly2', 'best_fit']:
-                A = (Smax-Smin)/len(S)
-                B = (Smax-Smin)/(Nmax-Nmin)
-                C = (Nmax-Nmin)/2
-                D = Smax
-                p0 = [A, B, C, D]
-                Sfitted, cost, info, msg, success = leastsq(plateMapResidualsPoly2, p0, args=(S, N), full_output=1)
-                A_poly2 = Sfitted[0]
-                B_poly2 = Sfitted[1]
-                C_poly2 = Sfitted[2]
-                D_poly2 = Sfitted[3]
-                y_predStandards_poly2 = plateMapPoly2(N, A_poly2, B_poly2, C_poly2, D_poly2)
-                rsquared_poly2 = plateMapRsquared(N, S, y_predStandards_poly2)
-                r2['poly2'] = rsquared_poly2
+                if form_calibration_curve in ['log', 'best_fit']:
+                    A = (Smax-Smin)/len(S)
+                    B = (Smax-Smin)/(Nmax-Nmin)
+                    p0 = [A, B]
+
+                    # need to do some work to prep for log 1) no 0 allowed, and 2) could not take log in the fitting
+                    if N[0] == 0:
+                        Nno0 = np.delete(N, 0)
+                        Sno0 = np.delete(S, 0)
+                    else:
+                        Nno0 = N
+                        Sno0 = S
+
+                    Sfitted, cost, info, msg, success = leastsq(plateMapResidualsLinear, p0, args=(Sno0, np.log(Nno0)), full_output=1)
+                    A_log = Sfitted[0]
+                    B_log = Sfitted[1]
+                    y_predStandards_log = plateMapLinear(np.log(Nno0), A_log, B_log)
+
+                    # print(Nno0)
+                    # print(Sno0)
+
+                    rsquared_log = plateMapRsquared(Nno0, Sno0, y_predStandards_log)
+                    r2['log'] = rsquared_log
+
 
             # if best fit, find higheset rsquared
             if form_calibration_curve == 'best_fit':
@@ -4909,12 +4975,16 @@ def plate_reader_data_file_process_data(set_dict):
             else:
                 use_calibration_curve = form_calibration_curve
 
-            # do not move this into a place that it happens for best_fit
+            if number_standard_values_excluding_0 < 4 and use_calibration_curve in ['log', 'logistic4', 'logistic4a0']:
+                use_calibration_curve = 'linear'
+                special_note_when_excluding_0_and_curve_change_needed = " - IMPORTANT: Not enough standard concentrations for log or logistic."
 
-            if use_calibration_curve == 'log' or use_calibration_curve == 'logistic4':
+            # do not move this into a place that it happens before selection of best fit!
+            if use_calibration_curve in ['log', 'logistic4', 'logistic4a0']:
                 use_form_min = Nno0[0]
 
-            # make an array of Ns so that there will be 100 fitted points on the graph
+            # make an array of Ns so that there will be 100ish fitted points on the graph
+            # some fitting methods will get their 0 popped off
             theTop = use_form_max-use_form_min
             # print("theTop ",theTop)
             step = theTop/100.0
@@ -4950,7 +5020,7 @@ def plate_reader_data_file_process_data(set_dict):
                     {'p1': icept, 'p2': slope, 'p3': 0, 'p4': 0, 'p5': 0})
 
                 dict_of_curve_info_linear = (
-                    {'method': 'Linear w/fitted intercept', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve})
+                    {'method': 'Linear w/fitted intercept' + special_note_when_excluding_0_and_curve_change_needed, 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve})
                 dict_of_standard_info_linear = (
                     {'min': use_form_min, 'max': use_form_max, 'standard0average': standard_blank_average,
                      'blankaverage': sample_blank_average})
@@ -4986,7 +5056,7 @@ def plate_reader_data_file_process_data(set_dict):
                     {'p1': A_logistic4, 'p2': B_logistic4, 'p3': C_logistic4, 'p4': D_logistic4, 'p5': 0})
 
                 dict_of_curve_info_logistic4 = (
-                    {'method': '4-Parameter Logistic', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
+                    {'method': '4-Parameter Logistic w/fitted lower bound', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
                 dict_of_standard_info_logistic4 = (
                     {'min': use_form_min, 'max': use_form_max, 'standard0average': standard_blank_average,
                      'blankaverage': sample_blank_average})
@@ -5001,6 +5071,38 @@ def plate_reader_data_file_process_data(set_dict):
                 # print("(araw - D4) ", str(araw - D4))
                 # print("(1 / B4) ", str(1 / B4))
                 # print("(((A4 - D4) / (araw - D4)) - 1) ", str(((A4 - D4) / (araw - D4)) - 1))
+
+            elif use_calibration_curve == 'logistic4a0':
+                if N100[0] == 0:
+                    N100no0 = np.delete(N100, 0)
+                else:
+                    N100no0 = N100
+
+                y_predStandards100 = plateMapLogistic4a0(N100no0, A4a0, B4a0, C4a0, D4a0)
+
+                A_logistic4a0 = sandrasGeneralFormatNumberFunction(A4a0)
+                B_logistic4a0 = sandrasGeneralFormatNumberFunction(B4a0)
+                C_logistic4a0 = sandrasGeneralFormatNumberFunction(C4a0)
+                D_logistic4a0 = sandrasGeneralFormatNumberFunction(D4a0)
+
+                rsquared = '{:.5f}'.format(rsquared_logistic4a0)
+                equation = "signal = (0-D)/(1.0 + {[concentration/C]**B}) + D"
+
+                dict_of_parameter_labels_logistic4a0 = (
+                    {'p1': 'Theoretical response at zero concentration (A)', 'p2': 'Slope factor (B)', 'p3': 'Mid-range concentration (inflection point) (C)', 'p4': 'Theoretical response at infinite concentration (D)', 'p5': '-'})
+                dict_of_parameter_values_logistic4a0 = (
+                    {'p1': A_logistic4a0, 'p2': B_logistic4a0, 'p3': C_logistic4a0, 'p4a0': D_logistic4a0, 'p5': 0})
+
+                dict_of_curve_info_logistic4a0 = (
+                    {'method': '4-Parameter Logistic w/lower bound = 0', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
+                dict_of_standard_info_logistic4a0 = (
+                    {'min': use_form_min, 'max': use_form_max, 'standard0average': standard_blank_average,
+                     'blankaverage': sample_blank_average})
+
+                dict_of_parameter_labels = dict_of_parameter_labels_logistic4a0
+                dict_of_parameter_values = dict_of_parameter_values_logistic4a0
+                dict_of_curve_info = dict_of_curve_info_logistic4a0
+                dict_of_standard_info = dict_of_standard_info_logistic4a0
 
             elif use_calibration_curve == 'log':
                 if N100[0] == 0:
@@ -5099,7 +5201,7 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_curve_info = dict_of_curve_info_linear0
                 dict_of_standard_info = dict_of_standard_info_linear0
 
-            if use_calibration_curve == 'log' or use_calibration_curve == 'logistic4':
+            if use_calibration_curve == 'log' or use_calibration_curve == 'logistic4' or use_calibration_curve == 'logistic4a0':
                 i = 0
                 for each in N100no0:
                     this_row = {}
@@ -5129,29 +5231,10 @@ def plate_reader_data_file_process_data(set_dict):
 
             adj_mid = y_predStandards100[50]
 
-            # 202004221 - decided to put a fitted value in the average standards for table display
-            # I left a null spot in the list of dictionaries that we can now fill in
-            # remember, what we generated for the curve had 100 points...
-            # here, we want just our concentration with a fitted point
-            # this_row.update({'Concentration': xi})
-            # this_row.update({'Ave Adjusted Observed Signal': yi})
-            # this_row.update({'Ave Observed Signal': each[2]})
-            # this_row.update({'Fitted Signal': 0})
-            # list_of_dicts_of_each_standard_row_ave_points.append(this_row)
-            # list_of_dicts_of_each_standard_row_ave_points.append(this_row)
-
-            # now that we know which one, fill in the fitted concentration
-            # y_predStandards_linear = plateMapLinear(N, A_linear, B_linear)
-            # y_predStandards_linear0 = plateMapLinear(N, A_linear0, B_linear0)
-            # y_predStandards_logistic4 = plateMapLogistic4(Nno0, A4, B4, C4, D4)
-            # y_predStandards_log = plateMapLinear(np.log(Nno0), A_log, B_log)
-            # y_predStandards_poly2 = plateMapPoly2(N, A_poly2, B_poly2, C_poly2, D_poly2)
-
             p = 0
             for each in list_of_dicts_of_each_standard_row_ave_points:
                 CONC = each['Concentration']
                 # print(p , "   ",CONC)
-
                 if use_calibration_curve == 'linear':
                     myFit = plateMapLinear(CONC, A_linear, B_linear)
                 elif use_calibration_curve == 'linear0':
@@ -5161,6 +5244,11 @@ def plate_reader_data_file_process_data(set_dict):
                         myFit = ''
                     else:
                         myFit = plateMapLogistic4(CONC, A4, B4, C4, D4)
+                elif use_calibration_curve == 'logistic4a0':
+                    if CONC == 0:
+                        myFit = ''
+                    else:
+                        myFit = plateMapLogistic4a0(CONC, A4a0, B4a0, C4a0, D4a0)
                 elif use_calibration_curve == 'log':
                     if CONC == 0:
                         myFit = ''
@@ -5176,31 +5264,6 @@ def plate_reader_data_file_process_data(set_dict):
                 each['Fitted Signal'] = myFit
                 p = p + 1
 
-            # # replacing with an N that is 100 long - just keep in hold for now
-            # if form_calibration_curve == 'linear':
-            #     y_predStandards100 = regressor_linear.predict(NN)
-            # elif form_calibration_curve == 'linear0':
-            #     y_predStandards100 = regressor_linear0.predict(NN)
-            # else:
-            #     y_predStandards100 = regressor_linear0.predict(NN)
-            #
-            # # FYI y_predStandards100[i] returns an array of 1
-            # i = 0
-            # for each in N:
-            #     this_row = {}
-            #     this_row.update({'Average Concentration': N[i]})
-            #     this_row.update({'Observed Signal': S[i]})
-            #     this_row.update({'Predicted Signal': y_predStandards100[i][0]})
-            #     list_of_dicts_of_each_standard_row_curve.append(this_row)
-            #     i = i + 1
-
-            # just declare these so can use the same fitting call that was made from later on in the code.
-            caution_flag = ''
-            sendmessage1 = ''
-            df = 1
-            cv = 1
-            ct = 1
-
             # load up the standards (points) row dictionary
             for each in mystandardsAll:
                 this_row = {}
@@ -5209,17 +5272,18 @@ def plate_reader_data_file_process_data(set_dict):
                 this_row.update({'Observed Signal': each[2]})
                 # what would the fitted concentration be at this signal?
                 araw = each[1]
-                fitted_ftv_pdv_flags_sendmessage1 = plate_map_sub_return_the_fitted_and_other_info(
-                    araw, df, cv, ct, caution_flag, notes, omits, sendmessage1, standardunitCellsStart, unitCellsStart,
+                fitted_ftv_pdv_flags_sendFitStandardsMessage = plate_map_sub_return_the_fitted_and_other_info(
+                    araw, df, cv, ct, caution_flag, notes, omits, sendFitStandardsMessage, standardunitCellsStart, unitCellsStart,
                     yes_to_calibrate, use_calibration_curve, multiplier, use_form_max, use_form_min,
                     slope_linear, icept_linear,
                     slope_linear0, icept_linear0,
                     A4, B4, C4, D4,
+                    A4a0, B4a0, C4a0, D4a0,
                     A_log, B_log,
                     A_poly2, B_poly2, C_poly2,
                     adj_mid, con_mid)
-                # [ftv, pdv, caution_flag, sendmessage1]
-                ftv = fitted_ftv_pdv_flags_sendmessage1[0]
+                # [ftv, pdv, caution_flag, sendFitStandardsMessage]
+                ftv = fitted_ftv_pdv_flags_sendFitStandardsMessage[0]
                 # print("ftv ",ftv)
                 this_row.update({'Fitted Concentration': ftv})
                 list_of_dicts_of_each_standard_row_points.append(this_row)
@@ -5227,7 +5291,12 @@ def plate_reader_data_file_process_data(set_dict):
         # END EXTRA FOR CALIBRATION
 
     if yes_to_continue == 'yes':
-        # load up the sample row dictionary
+        # same for all rows
+        cross_reference = "Plate Reader Tool"
+        subtarget = 'none'
+        a_space = ' '
+
+        # get info to load up the sample row dictionary
         with connection.cursor() as cursor:
             # 0, 1, 2, 3, 4
             sqls = "SELECT assays_AssayPlateReaderMapItem.plate_index"
@@ -5235,39 +5304,37 @@ def plate_reader_data_file_process_data(set_dict):
             sqls = sqls + ", assays_AssayPlateReaderMapItem.location_id"
             sqls = sqls + ", assays_AssayPlateReaderMapItem.matrix_item_id"
             sqls = sqls + ", assays_AssayPlateReaderMapItem.collection_volume"
-
             # 5, 6, 7, 8, 9
             sqls = sqls + ", assays_AssayPlateReaderMapItem.collection_time"
             sqls = sqls + ", assays_AssayPlateReaderMapItem.name"
             sqls = sqls + ", assays_AssayPlateReaderMapItem.well_use"
             sqls = sqls + ", assays_AssayPlateReaderMapItemValue.time"
             sqls = sqls + ", assays_AssayPlateReaderMapItemValue.raw_value"
-
             # 10, 11
             sqls = sqls + ", assays_AssaySampleLocation.name"
             sqls = sqls + ", assays_AssayMatrixItem.name"
-
             # 12 adjusted value(sample_blank_average will be 0 if not adjusting by sample blank
             # could also be overwritten with the standard blank average depending on selected blank handling
-            # so do not need an if conditions
+            # so do not need an if conditions here)
             sqls = sqls + ", (assays_AssayPlateReaderMapItemValue.raw_value"
             sqls = sqls + "-" + str(sample_blank_average) + ")"
 
             sqls = sqls + " FROM ((( assays_AssayPlateReaderMapItem "
             sqls = sqls + " INNER JOIN assays_AssayPlateReaderMapItemValue ON "
-            sqls = sqls + " assays_AssayPlateReaderMapItem.plate_index=assays_AssayPlateReaderMapItemValue.plate_index) "
-
+            sqls = sqls + " assays_AssayPlateReaderMapItem.id="
+            sqls = sqls + " assays_AssayPlateReaderMapItemValue.assayplatereadermapitem_id) "
             sqls = sqls + " INNER JOIN assays_AssayMatrixItem ON "
             sqls = sqls + " assays_AssayPlateReaderMapItem.matrix_item_id=assays_AssayMatrixItem.id) "
-
             sqls = sqls + " INNER JOIN assays_AssaySampleLocation ON "
             sqls = sqls + " assays_AssayPlateReaderMapItem.location_id=assays_AssaySampleLocation.id) "
 
             # get this plate map, the samples, the selected (at the top) File/Block
-            sqls = sqls + " WHERE assays_AssayPlateReaderMapItem.assayplatereadermap_id = " + str(pk_platemap) + " "
+            sqls = sqls + " WHERE assays_AssayPlateReaderMapItemValue.assayplatereadermap_id = "
+            sqls = sqls + str(pk_platemap) + " "
             sqls = sqls + " and assays_AssayPlateReaderMapItem.well_use = 'sample' "
-            sqls = sqls + " and assays_AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock_id = " + str(pk_data_block) + " "
-            # sqls = sqls + " ORDER by assays_AssayPlateReaderMapItem.plate_index "
+            sqls = sqls + " and assays_AssayPlateReaderMapItemValue.assayplatereadermapdatafileblock_id = "
+            sqls = sqls + str(pk_data_block) + " "
+
             # need to order to find the replicates - use the key fields
             sqls = sqls + " ORDER by assays_AssayPlateReaderMapItem.well_use "
             sqls = sqls + " , assays_AssayPlateReaderMapItem.matrix_item_id "
@@ -5275,28 +5342,20 @@ def plate_reader_data_file_process_data(set_dict):
             sqls = sqls + " , assays_AssayPlateReaderMapItem.location_id"
             sqls = sqls + " , assays_AssayMatrixItem.name"
 
-            # print(sqls)
+            # print("4770 sqls ", sqls)
             cursor.execute(sqls)
             # cursor.fetchone() or cursor.fetchall()
             myquery = cursor.fetchall()
 
             # print(myquery)
 
-            sendmessage1 = sendmessage1 + "Fitting method: " + use_calibration_curve + ";  Standard minimum: " + str(use_form_min) + ";  Standard maximum: " + str(use_form_max) + ";  "
-
-        #  WATCH CAREFUL - this order is important below
-        # if any of these are null, they cause problems when making table in javascript
-        # it is like they just get skipped (eg. an array that should be 30 is only 29)
-        # try passin all as strings
-        replicate = 1
-        prevWellUse = ""
-        prevMatrixItemId = -1
-        prevTime = -1
-        prevLocationId = -1
+            # this will be a message for each row - so far, sendFitStandardsMessage is empty 20200530
+            # sendFitStandardsMessage = sendFitStandardsMessage + "Fitting method: " + use_calibration_curve + ";  Standard minimum: " + str(use_form_min) + ";  Standard maximum: " + str(use_form_max) + ";  "
+            sendFitStandardsMessage = "Fitting method: " + use_calibration_curve + ";  Standard minimum: " + str(use_form_min) + ";  Standard maximum: " + str(use_form_max) + ";  "
 
         # need the string info to get the notes and true/false if omit box is checked
         # need whenever processing, but only need to use if called when the replicate handling is average
-        # which means, the user made changes to the each, then clicked to average
+        # which means, the user made changes to the Each table manually, then clicked the button to average
         # these lists index should be the plate index
         average_notes_list = []
         average_omits_list = []
@@ -5316,28 +5375,34 @@ def plate_reader_data_file_process_data(set_dict):
         # print('average_omits_list')
         # print(average_omits_list)
 
-        # set some previous of the key fields for the replicates
+        # start for EACH, will always be 1 for average
+        replicate = 1
+
+        ######## s REPLICATES-GROUPING
+        # set some previous of the key fields to use for first look at grouping
         # the key fields for determining a replicate (these should only be samples)
-        prevMatrixItemId = -1
-        prevTime = -1
-        prevLocationId = -1
+        # these are reset AFTER the group changes
+        prevMxii = -1
+        prevMxin = ""
+        prevSt = -1
+        prevLoci = -1
+        prevLocn = ""
+        prevWelln = ""
+        # these are recalulated for each row and, when needed reset after the group changes
         cumNotes = ''
         cumWelln = ''
         cumCautionFlag = ''
+        omitsFalseSum = 0
         valueSum = 0
         valueCount = 1
 
-        # what if all the replicates are marked for omit?
+        # omitsFalseSum - what if all the replicates are marked for omit?
         # and/or, if there are not replicates but the one was marked for omit
-        omitsFalseSum = 0
+        ####### e REPLICATES-GROUPING
 
-        # same for all rows
-        cross_reference = "Plate Reader Tool"
-        subtarget = 'none'
-        a_space = ' '
-
-        # print("called_from ",called_from)
-
+        # For EACH row in the EACH table
+        number_rows = len(myquery)
+        row_counter = 1
         for each in myquery:
             # fields coming directly for sql queries
             pi = each[0]
@@ -5355,32 +5420,42 @@ def plate_reader_data_file_process_data(set_dict):
             # adjusted raw value
             araw = each[12]
 
-            # get for this row, sendmessage1 will cum, and that's fine
+            # get for this row
+            ftv = 0
+            pdv = 0
             caution_flag = ''
+            sendSampleProcessingMessage = ''
             notes = ''
             omits = 'false'
-            sendmessage2 = ''
+            notesPassed = 0
+            omitsPassed = 0
 
+            # process data (fitted and final value) for each row
             fitted_ftv_pdv_flags_sendmessage = plate_map_sub_return_the_fitted_and_other_info(
-                araw, df, cv, ct, caution_flag, notes, omits, sendmessage2, standardunitCellsStart, unitCellsStart,
+                araw, df, cv, ct, caution_flag, notes, omits, sendSampleProcessingMessage, standardunitCellsStart, unitCellsStart,
                 yes_to_calibrate, use_calibration_curve, multiplier, use_form_max, use_form_min,
                 slope_linear, icept_linear,
                 slope_linear0, icept_linear0,
                 A4, B4, C4, D4,
+                A4a0, B4a0, C4a0, D4a0,
                 A_log, B_log,
                 A_poly2, B_poly2, C_poly2,
                 adj_mid, con_mid)
 
-            # [ftv, pdv, caution_flag, sendmessage1]
+            # [ftv, pdv, caution_flag, sendmessage]
             ftv = fitted_ftv_pdv_flags_sendmessage[0]
             pdv = fitted_ftv_pdv_flags_sendmessage[1]
             caution_flag = fitted_ftv_pdv_flags_sendmessage[2]
-            sendmessage2 = fitted_ftv_pdv_flags_sendmessage[3]
+            sendSampleProcessingMessage = fitted_ftv_pdv_flags_sendmessage[3]
             notes = fitted_ftv_pdv_flags_sendmessage[4]
             omits = fitted_ftv_pdv_flags_sendmessage[5]
 
             notesPassed = average_notes_list[pi]
             omitsPassed = average_omits_list[pi]
+
+            # print ("~~~~  ", pi, a_space,  df, a_space,  loci, a_space,  mxii, a_space,  cv, a_space,  ct, a_space,  welln)
+            # print(wellu, a_space,  st, a_space,  raw, a_space,  locn, a_space,  mxin, a_space,  araw, a_space,  locn, a_space,  mxin, a_space,  araw)
+            # print (ftv, a_space,  pdv, a_space,  caution_flag, a_space,  sendSampleProcessingMessage, a_space,  notes, a_space,  omits, a_space, notesPassed, a_space, omitsPassed)
 
             # print('---pi ', pi)
             # print('notes       ', notes)
@@ -5394,8 +5469,8 @@ def plate_reader_data_file_process_data(set_dict):
                 notes = notesPassed
                 omits = omitsPassed
 
-            # when doing each, get the replicate number right
-            if prevMatrixItemId == mxii and prevTime == st and prevLocationId == loci:
+            # when doing EACH sample, get the replicate number right
+            if prevMxii == mxii and prevSt == st and prevLoci == loci:
                 # this is a replicate of the previous
                 replicate = replicate + 1
             else:
@@ -5410,86 +5485,113 @@ def plate_reader_data_file_process_data(set_dict):
                 cross_reference, subtarget, a_space,
                 wellu, use_calibration_curve, time_unit, target, plate_name, method,
                 standard_unit, sample_blank_average, volume_unit, multiplier,
-                unit, caution_flag, sendmessage1+sendmessage2
+                unit, caution_flag, sendFitStandardsMessage+sendSampleProcessingMessage
             )
             # add the dictionary to the list for each
             list_of_dicts_of_each_sample_row_each.append(this_row_each)
 
-            # deal with the replicates grouping and averaging
+            ######## s REPLICATES-GROUPING
+            # print("Cumulating")
             # print("-----replicate number ", replicate)
-            # print('**welln ', welln)
-            # print('omits ', omits)
-            # print('omitsFalseSum ', omitsFalseSum)
-            # print("prevMatrixItemId ",prevMatrixItemId)
-            # print("mxii ", mxii)
-            # print("prevTime ", prevTime)
-            # print("st ", st)
-            # print("prevLocationId ", prevLocationId )
-            # print("loci ", loci)
-            if prevMatrixItemId == mxii and prevTime == st and prevLocationId == loci:
-                # this is a replicate of the previous, if it is included, continue
+            # print("prevMxii ",prevMxii, "  # current mxii ", mxii)
+            # print("prevMxin ",prevMxin, "  # current mxin ", mxin)
+            # print("prevSt ", prevSt, "  # current st ", st)
+            # print("prevLoci ", prevLoci, "  # current loci ", loci)
+            # print("prevLocn ", prevLocn, "  # current locn ", locn)
+            # print("prevWelln ", prevWelln, "  # current welln ", welln)
+            # print("cumNotes ", cumNotes, "  # currents notes ", notes)
+            # print("cumCautionFlag ", cumCautionFlag, "  # current caution_flag ",caution_flag )
+            # print('omitsFalseSum ', omitsFalseSum, "  # current omits ", omits)
+            # print("current value ", pdv)
+            # print("valueSum ", valueSum)
+            # print("valueCount ", valueCount)
 
-                # for the last, need to know if any in this group were unchecked (to include)
+            if prevMxii == mxii and prevSt == st and prevLoci == loci:
+                # print("this is a replicate of the previous")
+                # if it is included, continue
+
                 if omits == 'false':
+                    # for the last row in the table,
+                    # need to know if ANY in this group were unchecked (to include)
+                    # keep track with this variable
                     omitsFalseSum = omitsFalseSum + 1
 
+                    # is the current caution flag already in the string?
+                    # only add if not in the string already
                     if cumCautionFlag.find(caution_flag) < 0:
                         cumCautionFlag = cumCautionFlag + caution_flag
 
+                    # add the well name to the string A2 B2 etc
                     cumWelln = welln + " " + cumWelln
-                    if (len(notes.strip()) > 0):
-                        cumNotes = cumNotes + ' | ' + notes
 
+                    if len(notes.strip()) > 0:
+                        cumNotes = cumNotes + ' | ' + notes.strip()
 
                     valueSum = valueSum + pdv
                     valueCount = valueCount + 1
+
             else:
-                # this is the row AFTER the last in a replicate or last when no replicate
-                # write the average info to the average list of rows
-                # load the average to the dict
-                # print('-Start New Group pi ', pi)
+                # print("this is the row AFTER the last in a replicate or last when no replicate")
                 # print('omitsFalseSum ', omitsFalseSum)
+                # where ANY in this group we are working with included? (eg not omitted)
                 if omitsFalseSum > 0:
+                    # at least one row in group was to be included
                     this_row_average = sub_to_load_processed_data_to_dict_limited(
                         1,
-                        mxin, locn, st,
+                        prevMxin, prevLocn, prevSt,
                         cumWelln, cumNotes, valueSum/valueCount,
                         cross_reference, subtarget, a_space,
                         time_unit, target, plate_name, method,
-                        unit, cumCautionFlag, sendmessage1+sendmessage2
+                        unit, cumCautionFlag, sendFitStandardsMessage+sendSampleProcessingMessage
                     )
-                    # print("this row average ", this_row_average)
                     # add the dictionary to the list for average
                     list_of_dicts_of_each_sample_row_average.append(this_row_average)
+                # else:
+                #     .print("omitsFalseSum not > 0")
 
-                # reset to start for next time
-                if (omits == 'false'):
-                    # the point we are sitting on WILL be included, so set with this points info
-                    cumCautionFlag = caution_flag
-                    cumNotes = notes
-                    cumWelln = welln
-                    valueSum = pdv
-                    valueCount = 1
-                    omitsFalseSum = 1
-                else:
-                    # the point we are sitting on will NOT be included, so do not set its info
-                    cumCautionFlag = ''
-                    cumNotes = ''
-                    cumWelln = ''
-                    valueSum = 0
-                    valueCount = 0
-                    omitsFalseSum = 0
+                # IF this is NOT the last row, reset to start for NEXT loop through
+                # in the SAME group as sitting on, or a complete different group if no replicates of one sitting on
+                # If the last row, want to keep the last settings
+                if (row_counter < number_rows):
+                    if (omits == 'false'):
+                        # the point we are sitting on WILL be included, so set with this points info
+                        cumNotes = notes
+                        cumWelln = welln
+                        cumCautionFlag = caution_flag
+                        omitsFalseSum = 1
+                        valueSum = pdv
+                        valueCount = 1
 
-            # print('cumWelln ', cumWelln)
-            # print('valueCount ', valueCount)
+                    else:
+                        # the point we are sitting on will NOT be included, so do not set its info
+                        cumNotes = ''
+                        cumWelln = ''
+                        cumCautionFlag = ''
+                        omitsFalseSum = 0
+                        valueSum = 0
+                        valueCount = 0
 
-            # reset the previous - the key fields for determining a replicate (these should only be samples)
-            prevMatrixItemId = mxii
-            prevTime = st
-            prevLocationId = loci
+            # always reset the previous key fields for determining a replicate (these should only be samples)
+            prevMxii = mxii
+            prevSt = st
+            prevLoci = loci
+            prevWelln = welln
+            prevLocn = locn
+            prevMxin = mxin
+            row_counter = row_counter + 1
 
-        # get values needed and load the LAST average to the dict after the loop
-        # print("on last record: ", omitsFalseSum)
+        # Now, out of the loop of rows.
+        # Need to add information, multiple conditions:
+        # - last row was last in a replicate group
+        # --there could be none that are included in the group, so don't write
+        # --there could be some included, but not this one, write
+        # --there could be none but this one included, write
+        # --this one is include, but none others, write
+        # - an individual row, not part of a replicte group
+        # --if included, write
+        # --if not included, don't write
+        # in all cases where writing is required, omitsFalseSum > 0
+        # print("on last record, what is omitsFalseSum: ", omitsFalseSum)
         if omitsFalseSum > 0:
             this_row_average = sub_to_load_processed_data_to_dict_limited(
                 1,
@@ -5497,10 +5599,12 @@ def plate_reader_data_file_process_data(set_dict):
                 cumWelln, cumNotes, valueSum / valueCount,
                 cross_reference, subtarget, a_space,
                 time_unit, target, plate_name, method,
-                unit, cumCautionFlag, sendmessage1+sendmessage2
+                unit, cumCautionFlag, sendFitStandardsMessage+sendSampleProcessingMessage
             )
+            # print("sum > 0 last row average ", this_row_average)
             # add the dictionary to the list for average
             list_of_dicts_of_each_sample_row_average.append(this_row_average)
+        ######## s REPLICATES-GROUPING - what started in the loop ends here
 
         # print('***list_of_dicts_of_each_sample_row_each going back to ajax')
         # print(list_of_dicts_of_each_sample_row_each)
@@ -5509,10 +5613,8 @@ def plate_reader_data_file_process_data(set_dict):
         # print("list_of_dicts_of_each_sample_row_average ")
         # print(list_of_dicts_of_each_sample_row_average)
 
-    # regardless of errors, return the sendmessage1
-
-    # if failed one or more of QC, only the sendmessage1 should be populated
-    return [sendmessage1,
+    # if failed one or more of QC, only the sendGeneralQcErrorMessage should be populated
+    return [sendGeneralQcErrorMessage,
             list_of_dicts_of_each_sample_row_each,
             list_of_dicts_of_each_standard_row_points,
             list_of_dicts_of_each_standard_row_ave_points,
@@ -5568,6 +5670,7 @@ def sub_to_load_processed_data_to_dict(
     mxin = str(mxin)
     araw = str(araw)
     ftv = str(ftv)
+    # print("pdv before string ",pdv)
     pdv = str(pdv)
     multiplier = str(multiplier)
 
@@ -5585,11 +5688,11 @@ def sub_to_load_processed_data_to_dict(
     this_row.update({'well_name'                : welln                 })
     this_row.update({'well_use'                 : wellu                  })
     # 7,8,9
-    if (time_unit == 'Day'):
+    if (time_unit == 'Day' or time_unit == 'day'):
         this_row.update({'day'                  : st                    })
         this_row.update({'hour': '0'     })
         this_row.update({'minute': '0'     })
-    elif (time_unit == 'Hour'):
+    elif (time_unit == 'Hour' or time_unit == 'hour'):
         this_row.update({'day': '0'})
         this_row.update({'hour'                 : st                    })
         this_row.update({'minute': '0'     })
@@ -5639,7 +5742,7 @@ def sub_to_load_processed_data_to_dict(
 # cumWelln, cumNotes, valueSum / valueCount,
 # cross_reference, subtarget, a_space,
 # time_unit, target, plate_name, method,
-# unit, cumCautionFlag, sendmessage1
+# unit, cumCautionFlag, sendFitStandardsMessage
 # search term MIFC - if MIFC changes, this will need changed
 def sub_to_load_processed_data_to_dict_limited(
         replicate,
@@ -5686,11 +5789,11 @@ def sub_to_load_processed_data_to_dict_limited(
     this_row.update({'well_name'                : welln                 })
     # this_row.update({'well_use'                 : wellu                  })
     # 7,8,9
-    if (time_unit == 'Day'):
+    if (time_unit == 'Day' or time_unit == 'day'):
         this_row.update({'day'                  : st                    })
         this_row.update({'hour': '0'     })
         this_row.update({'minute': '0'     })
-    elif (time_unit == 'Hour'):
+    elif (time_unit == 'Hour' or time_unit == 'hour'):
         this_row.update({'day': '0'})
         this_row.update({'hour'                 : st                    })
         this_row.update({'minute': '0'     })
@@ -5740,6 +5843,7 @@ def plate_map_sub_return_the_fitted_and_other_info(
     slope_linear, icept_linear,
     slope_linear0, icept_linear0,
     A4, B4, C4, D4,
+    A4a0, B4a0, C4a0, D4a0,
     A_log, B_log,
     A_poly2, B_poly2, C_poly2,
     adj_mid, con_mid):
@@ -5785,6 +5889,36 @@ def plate_map_sub_return_the_fitted_and_other_info(
                 ftv = " "
                 caution_flag = 'F'
                 sendmessage = sendmessage + " Cannot calculate fitted value. Likely due to very large exponent."
+
+    elif use_calibration_curve == 'logistic4a0':
+        if araw - D4a0 == 0 or B4a0 == 0:
+            ftv = " "
+            caution_flag = 'F'
+            sendmessage = sendmessage + " A denominator is 0. Cannot calculate fitted value."
+        else:
+            try:
+                ftv = C4a0 * (((A4a0 - D4a0) / (araw - D4a0)) - 1) ** (1 / B4a0)
+                if str(ftv).lower().strip() == 'nan':
+
+                    if araw < A4a0:
+                        ftv = " "
+                        caution_flag = 'F'
+                        sendmessage = sendmessage + " Sample value too small to calculate."
+                        # here here if change their mind and want the theoretical response at 0
+                        # ftv = A4a0
+                        # caution_flag = 'e'
+                        # sendmessage = sendmessage + " Sample value too small to calculate; set to theoretical response at zero concentration (A)."
+                    else:
+                        # print("araw,    A,    B,    C,    D ")
+                        # print(str(araw), " ", str(A4a0), " ", str(B4a0), " ", str(C4a0), " ", str(D4a0))
+                        ftv = " "
+                        caution_flag = 'F'
+                        sendmessage = sendmessage + " Cannot calculate fitted value."
+            except:
+                ftv = " "
+                caution_flag = 'F'
+                sendmessage = sendmessage + " Cannot calculate fitted value. Likely due to very large exponent."
+
 
     elif use_calibration_curve == 'log':
         if B_log == 0:
@@ -5934,6 +6068,24 @@ def plateMap_pevalLogistic4(n, p):
     A, B, C, D = p
     return plateMapLogistic4(n, A, B, C, D)
 
+
+# Logistic 4a0 Parameter Set of Functions
+def plateMapLogistic4a0(n, A, B, C, D):
+    """4PL logistic equation."""
+    signal = ((0-D)/(1.0+((n/C)**B))) + D
+    return signal
+
+def plateMapResidualsLogistic4a0(p, r, n):
+    """Deviations of data from fitted 4PL curve"""
+    A, B, C, D = p
+    err = r - plateMapLogistic4a0(n, 0, B, C, D)
+    return err
+
+def plateMap_pevalLogistic4a0(n, p):
+    """Evaluated value (signal) at concentration n with current parameters."""
+    A, B, C, D = p
+    return plateMapLogistic4a0(n, 0, B, C, D)
+
 # Power Set of Functions
 # https://stackoverflow.com/questions/3433486/how-to-do-exponential-and-logarithmic-curve-fitting-in-python-i-found-only-poly
 def plateMapPoly2(n, A, B, C, D):
@@ -6060,6 +6212,24 @@ def plateMap_pevalLinear(n, p):
 #     dict_of_curve_info = dict_of_curve_info_linear0
 #     dict_of_standard_info = dict_of_standard_info_linear0
 #
+#
+# some more of the other way of fitting (I think), save for now incase go back
+# if form_calibration_curve == 'linear':
+#     y_predStandards100 = regressor_linear.predict(NN)
+# elif form_calibration_curve == 'linear0':
+#     y_predStandards100 = regressor_linear0.predict(NN)
+# else:
+#     y_predStandards100 = regressor_linear0.predict(NN)
+#
+# # FYI y_predStandards100[i] returns an array of 1
+# i = 0
+# for each in N:
+#     this_row = {}
+#     this_row.update({'Average Concentration': N[i]})
+#     this_row.update({'Observed Signal': S[i]})
+#     this_row.update({'Predicted Signal': y_predStandards100[i][0]})
+#     list_of_dicts_of_each_standard_row_curve.append(this_row)
+#     i = i + 1
 # END save for now in case go back
 
 
@@ -6075,32 +6245,33 @@ def sandrasGeneralFormatNumberFunction(this_number_in):
         x = float(this_number_in)
         if x == 0:
             formatted_number = '{:.0f}'.format(x)
-        elif x <= 0.00001:
+        elif x < 0.00001:
             formatted_number = '{:.4e}'.format(x)
             #formatted_number = '{:.8f}'.format(x)
-        elif x <= 0.0001:
+        elif x < 0.0001:
+            formatted_number = '{:.4e}'.format(x)
+            # formatted_number = '{:.5f}'.format(x)
+        elif x < 0.001:
             formatted_number = '{:.5f}'.format(x)
-        elif x <= 0.001:
-            formatted_number = '{:.5f}'.format(x)
-        elif x <= 0.01:
+        elif x < 0.01:
             formatted_number = '{:.3f}'.format(x)
-        elif x <= 0.1:
+        elif x < 0.1:
             formatted_number = '{:.3f}'.format(x)
-        elif x <= 1.0:
+        elif x < 1.0:
             formatted_number = '{:.3f}'.format(x)
-        elif x <= 10:
+        elif x < 10:
             formatted_number = '{:.1f}'.format(x)
-        elif x <= 30:
+        elif x < 30:
             formatted_number = '{:.1f}'.format(x)
-        elif x <= 100:
+        elif x < 100:
             formatted_number = '{:.0f}'.format(x)
-        elif x <= 1000:
+        elif x < 1000:
             formatted_number = '{:,.0f}'.format(x)
-        elif x <= 10000:
+        elif x < 10000:
             formatted_number = '{:,.0f}'.format(x)
-        elif x <= 100000:
+        elif x < 100000:
             formatted_number = '{:,.0f}'.format(x)
-        elif x <= 1000000:
+        elif x < 1000000:
             formatted_number = '{:,.0f}'.format(x)
         else:
             formatted_number = '{:.3e}'.format(x)

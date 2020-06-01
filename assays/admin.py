@@ -1309,7 +1309,7 @@ admin.site.register(AssayDataFileUpload, AssayDataFileUploadAdmin)
 # the relationship between the item and item value tables needs to be controlled by the GUI
 class AssayPlateReaderMapAdmin(ImportExportModelAdmin):
     model = AssayPlateReaderMap
-    list_display = ('name', 'description', 'device', 'study_assay', 'time_unit', 'study_assay', 'volume_unit', 'cell_count')
+    list_display = ('name', 'description', 'device', 'study_assay', 'time_unit', 'volume_unit', 'cell_count')
     search_fields = ('name', 'description')
 
 admin.site.register(AssayPlateReaderMap, AssayPlateReaderMapAdmin)

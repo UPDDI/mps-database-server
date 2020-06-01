@@ -29,7 +29,7 @@
         <div>
             <div class="container">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         {# Hide setup add buttons if the study is marked reviewed #}
                         {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
                             {% if not review %}
@@ -39,7 +39,12 @@
                             {%  endif %}
                         {% endif %}
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <div>
+                            <a href="{{ object.get_absolute_url }}summary/" class="btn btn-primary" role="button">Jump to Study Summary</a>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
                         <div>
                 {#            <a href="{% url 'assayplatereadermap-index' object.id %}" class="btn btn-primary" role="button">Jump to Assay Plate Reader Map List</a>#}
                             <a href="{% url 'assayplatereaderfile-index' object.id %}" class="btn btn-primary" role="button">Jump to Assay Plate Reader File List</a>

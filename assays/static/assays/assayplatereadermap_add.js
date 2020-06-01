@@ -191,7 +191,7 @@ $(document).ready(function () {
         , "Points that are marked for exclusion are available for use in the study summary if the appropriate selections are made by the user, but they are hidden by default."
         , "This plate map has no standards. To calibrate, a block of data with standards must be selected. Note that, it is assumed that standards and their associated standard blanks will be on the same plate. Thus, if standards are 'borrowed', standard blanks are also borrowed."
 
-        , "If calibrating, this is the multiplier that will be applied to the calibrated values. If not calibrating, this is the multiplier that will be applied to the raw values. Click to show the details for more information about how this multiplier was obtained."
+        , "If calibrating, this is the multiplier that will be applied to the calibrated values. If not calibrating, this is the multiplier that will be applied to the raw values. This can be set manually, if needed."
         , "Use Copy to copy sections of the assay plate map to other wells in the plate. A popular method of using this feature is to start from an Existing Study Matrix, then copy the matrix items from that plate, change to Start From a Blank Assay Plate Map, select the desired plate size, then paste that matrix items on the plate. "
         , "To make these data available in the Study Summary, check the box and click the Submit button. If these data have already been sent to the Study Summary, it is recommended that these data be removed from the study prior to resubmitting them (remove associated data file on the Upload Data File page).  If replicates are present, the average of unchecked replicates will be sent to the Study Summary."
 
@@ -377,10 +377,11 @@ $(document).ready(function () {
     // in this feature, I am working with inlines - to see another option, see the assay plate file update feature
     let global_plate_first_item_form = $('#formset').find('.inline').first()[0].outerHTML;
 
-    let global_plate_first_value_form = null;
-    if (document.getElementById("id_form_number_file_block_combos").value == 0) {
-        global_plate_first_value_form = $('#value_formset').find('.inline').first()[0].outerHTML;
-    }
+    // 20200522 getting rid of the value formset
+    // let global_plate_first_value_form = null;
+    // if (document.getElementById("id_form_number_file_block_combos").value == 0) {
+    //     global_plate_first_value_form = $('#value_formset').find('.inline').first()[0].outerHTML;
+    // }
 
     // load-function
     // don't worry about the extra formset in the update or view page since it won't be populated or saved
@@ -389,11 +390,13 @@ $(document).ready(function () {
         $('#formset').find('.inline').first().remove();
     }
 
-    if (document.getElementById("id_form_number_file_block_combos").value == 0) {
-        if ($('#value_formset').find('.inline').length === 1 && $("#check_load").html().trim() === 'add') {
-            $('#value_formset').find('.inline').first().remove();
-        }
-    }
+    // 20200522 getting rid of the value formset
+    // if (document.getElementById("id_form_number_file_block_combos").value == 0) {
+    //     if ($('#value_formset').find('.inline').length === 1 && $("#check_load").html().trim() === 'add') {
+    //         $('#value_formset').find('.inline').first().remove();
+    //     }
+    // }
+
     // NOTE: when added the following code here (after the above), made 2x forms, so moved it back to the loop
     // $('#id_assayplatereadermapitem_set-TOTAL_FORMS').val(global_plate_size_form_device);
     //}).trigger('change');
@@ -591,7 +594,7 @@ $(document).ready(function () {
         {"targets": [21], "visible": false,},
         {"targets": [22], "visible": false,},
         {"targets": [23], "visible": false,},
-        {"targets": [24], "visible": true,},
+        {"targets": [24], "visible": false,},
 
         {"targets": [25], "visible": true,},
         {"targets": [26], "visible": false,},
@@ -784,6 +787,8 @@ $(document).ready(function () {
      * This is triggered with the user changes that choice.
     */
     $("#id_se_block_select_string").change(function () {
+        $('.data-processing-errors').addClass('hidden');
+
         global_calibrate_se_form_calibration_curve = 'select_one';
         //this will trigger the change event for recalibrating - want that if there was an error so the page does not sit on previous results
         $("#id_se_form_calibration_curve").selectize()[0].selectize.setValue(global_calibrate_se_form_calibration_curve);
@@ -1179,7 +1184,7 @@ $(document).ready(function () {
 
         //HANDY get the text from selectized
         global_calibrate_form_block_standard_borrow_pk_platemap_single_for_storage = $("#id_ns_block_standard_borrow_string_to_block_pk_back_to_platemap_pk").selectize()[0].selectize.options[global_calibrate_form_block_standard_borrow_pk_single_for_storage]['text'];
-        console.log("global_calibrate_form_block_standard_borrow_pk_platemap_single_for_storage ",global_calibrate_form_block_standard_borrow_pk_platemap_single_for_storage)
+        //console.log("global_calibrate_form_block_standard_borrow_pk_platemap_single_for_storage ",global_calibrate_form_block_standard_borrow_pk_platemap_single_for_storage)
         $("#id_form_block_standard_borrow_pk_single_for_storage").val(         global_calibrate_form_block_standard_borrow_pk_single_for_storage);
         $("#id_form_block_standard_borrow_pk_platemap_single_for_storage").val(global_calibrate_form_block_standard_borrow_pk_platemap_single_for_storage);
 
@@ -1532,6 +1537,35 @@ $(document).ready(function () {
 
         prepGraphInfoOfStandardsDataCurve_ajax(list_of_dicts_of_each_standard_row_curve);
 
+        //console.log("before ",global_table_column_defs_each[7].visible);
+        if ($("#id_time_unit").val() === 'hour') {
+            global_table_column_defs_each[7].visible = false;
+            global_table_column_defs_each[8].visible = true;
+            global_table_column_defs_each[9].visible = false;
+            global_table_column_defs_each[7].bVisible = false;
+            global_table_column_defs_each[8].bVisible = true;
+            global_table_column_defs_each[9].bVisible = false;
+        } else if ($("#id_time_unit").val() === 'minute') {
+            global_table_column_defs_each[7].visible = false;
+            global_table_column_defs_each[8].visible = false;
+            global_table_column_defs_each[9].visible = true;
+            global_table_column_defs_each[7].bVisible = false;
+            global_table_column_defs_each[8].bVisible = false;
+            global_table_column_defs_each[9].bVisible = true;
+        } else {
+            // console.log(global_table_column_defs_each);
+            // console.log(global_table_column_defs_each[7]);
+            // console.log(global_table_column_defs_each[7].visible);
+            global_table_column_defs_each[7].visible = true;
+            global_table_column_defs_each[8].visible = false;
+            global_table_column_defs_each[9].visible = false;
+            global_table_column_defs_each[7].bVisible = true;
+            global_table_column_defs_each[8].bVisible = false;
+            global_table_column_defs_each[9].bVisible = false;
+        }
+        //console.log("after ",global_table_column_defs_each[7].visible);
+        //console.log("a ",global_table_column_defs_each);
+
         prepGraphInfoOfProcessedDataEach_ajax(list_of_dicts_of_each_sample_row_each);
         buildADataTable_ajax(
             list_of_dicts_of_each_sample_row_each,
@@ -1591,7 +1625,8 @@ $(document).ready(function () {
         $.each(list_of_dicts_of_each_sample_row_each, function (index, eachrow) {
             let adjusted_raw = eachrow['adjusted_raw'];
             let fitted_value = eachrow['fitted_value'];
-            //console.log("adj raw, fitted con ",adjusted_raw,", ", fitted_value)
+            // console.log("adj raw, fitted con ",adjusted_raw,", ", fitted_value)
+            // console.log("value ",eachrow['processed_value'])
             if (String(fitted_value).trim().length == 0) {
                 //don't push this because it will graph at 0 and don't want that
             } else {
@@ -1601,7 +1636,7 @@ $(document).ready(function () {
     }
     /**
      * part of packProcessedData's post ajax processing
-     * prepares data to build the points for graph
+     * prepares data to build the points for graph - but not offering this option currently
     */
     function prepGraphInfoOfProcessedDataAverage_ajax(list_of_dicts_of_each_sample_row_average) {
         global_lol_samples_for_graph_average = [];
@@ -1704,8 +1739,11 @@ $(document).ready(function () {
         var each_plate_index = 0;
 
         $.each(lol_processed, function (ir, row) {
-            // console.log("rowcounter ", rowcounter)
-            // console.log("--row ", row)
+
+            if (each_or_average === 'average') {
+                // console.log("rowcounter ", rowcounter)
+                // console.log("--row ", row)
+            }
 
             var tr = document.createElement('TR');
             $(tr).attr('row-index', rowcounter);
@@ -1722,10 +1760,15 @@ $(document).ready(function () {
                 }
                 let myUtilsName = findTheUtilsKeyFromMIFCHeader(col);
                 let passedIn = row[myUtilsName];
-                // console.log("colcounter ", colcounter)
-                // console.log("--col ", col)
-                // console.log("--myUtilsName ", myUtilsName)
-                // console.log("--passedIn ", passedIn)
+
+                //console.log("passedIn ", passedIn)
+
+                if (each_or_average === 'average') {
+                    // console.log("colcounter ", colcounter)
+                    // console.log("--col ", col)
+                    // console.log("--myUtilsName ", myUtilsName)
+                    // console.log("--passedIn ", passedIn)
+                }
 
                 var td = document.createElement('TD');
                 $(td).attr('col-index', colcounter);
@@ -1760,19 +1803,26 @@ $(document).ready(function () {
                     // else leave unchecked, which is default
                     td.appendChild(myCellContent);
                 } else {
-                    // console.log("passedIn1 ",passedIn)
+                    //console.log("passedIn1 ",passedIn)
                     passedIn = passedIn.toString().trim();
                     // console.log("passedIn2 ",passedIn)
                     if (passedIn.length == 0) {
                         myCellContent = " ";
                     } else if (global_utils_integers.includes(myUtilsName)) {
+                        // in the integer list
                         myCellContent = parseInt(passedIn);
                     } else if (global_utils_strings.includes(myUtilsName)) {
+                        // in the string list
                         myCellContent = passedIn;
                     } else {
+                        // left over is the float list
+                        // console.log("passed in ", passedIn)
+                        // console.log("passed to the number format ", parseFloat(passedIn))
                         passedIn = generalFormatNumber(parseFloat(passedIn));
+                        // console.log("passed to the comma separator ", passedIn)
                         passedIn = thousands_separators(passedIn);
                         myCellContent = passedIn;
+                        // console.log("back from the number format ", myCellContent)
                     }
                     // console.log("passedIn3 ",passedIn)
                     td.appendChild(document.createTextNode(myCellContent));
@@ -1970,7 +2020,7 @@ $(document).ready(function () {
                             },
                         },
                         legend: {position: 'bottom'},
-                        vAxis: {title: 'Signal'},
+                        vAxis: {title: 'Signal (Adjusted)'},
                         hAxis: {title: global_floater_model_standard_unit},
                         colors: ['MidnightBlue', 'MediumBlue', 'SteelBlue', 'FireBrick'],
                     };
@@ -2453,7 +2503,7 @@ $(document).ready(function () {
                 error: function (xhr, errmsg, err) {
                     window.spinner.stop();
                     // $("#test_me1").text("error happened");
-                    console.log("return error....")
+                    // console.log("return error....")
                     alert('An error has occurred (starting from another plate map), try a different matrix, assay plate map, or start from an empty plate.');
                     console.log(xhr.status + ": " + xhr.responseText);
                 }
@@ -2986,7 +3036,10 @@ $(document).ready(function () {
                 let c_cell =                   $('#id_assayplatereadermapitem_set-' + formset_number + '-cell').val();
                 let c_setting =                $('#id_assayplatereadermapitem_set-' + formset_number + '-setting').val();
                 let c_default_time =           $('#id_assayplatereadermapitem_set-' + formset_number + '-default_time').val();
-                let c_time =                   $('#id_assayplatereadermapitemvalue_set-' + formset_number + '-time').val();
+
+                // 20200522 getting rid of the value formset
+                // let c_time =                   $('#id_assayplatereadermapitemvalue_set-' + formset_number + '-time').val();
+                let c_time = d_time;
                 let c_block_raw_value =        d_block_raw_value;
 
                 // overwrite the current with conditional changes, when needed
@@ -3238,8 +3291,11 @@ $(document).ready(function () {
                 global_plate_mems_default_time.push($('#id_assayplatereadermapitem_set-' + formsetidx + '-default_time').val());
 
                 if (document.getElementById("id_form_number_file_block_combos").value == 0) {
-                    d_time = $('#id_assayplatereadermapitemvalue_set-' + formsetidx + '-time').val();
-                    d_block_raw_value = $('#id_assayplatereadermapitemvalue_set-' + formsetidx + '-raw_value').val();
+
+                    // 20200522 getting rid of the value formset
+                    // d_time = $('#id_assayplatereadermapitemvalue_set-' + formsetidx + '-time').val();
+                    // d_block_raw_value = $('#id_assayplatereadermapitemvalue_set-' + formsetidx + '-raw_value').val();
+
                 } else {
                     d_time = global_plate_block_time_imatches[formsetidx];
 
@@ -3939,17 +3995,22 @@ $(document).ready(function () {
                     $('#formset').append(global_plate_first_item_form.replace(/-0-/g, '-' + formsetidx + '-'));
                     $('#id_assayplatereadermapitem_set-TOTAL_FORMS').val(formsetidx + 1);
 
-                    if (document.getElementById("id_form_number_file_block_combos").value == 0) {
-                        $('#value_formset').append(global_plate_first_value_form.replace(/-0-/g, '-' + formsetidx + '-'));
-                        $('#id_assayplatereadermapitemvalue_set-TOTAL_FORMS').val(formsetidx + 1);
-                    }
+                    // 20200522 getting rid of the value formset
+                    // if (document.getElementById("id_form_number_file_block_combos").value == 0) {
+                    //     $('#value_formset').append(global_plate_first_value_form.replace(/-0-/g, '-' + formsetidx + '-'));
+                    //     $('#id_assayplatereadermapitemvalue_set-TOTAL_FORMS').val(formsetidx + 1);
+                    // }
+
                     // this auto fills the fields that are needed to join the items and the items values tables
                     // the platemap id will be the same in both since they are two formsets to the main assay plate map table
                     // these (item and associated values) MUST stay parallel or problems WILL happen
                     $('#id_assayplatereadermapitem_set-' + formsetidx + '-row_index').val(ridx);
                     $('#id_assayplatereadermapitem_set-' + formsetidx + '-column_index').val(cidx);
                     $('#id_assayplatereadermapitem_set-' + formsetidx + '-plate_index').val(formsetidx);
-                    $('#id_assayplatereadermapitemvalue_set-' + formsetidx + '-plate_index').val(formsetidx);
+
+                    // 20200522 getting rid of the value formset
+                    // $('#id_assayplatereadermapitemvalue_set-' + formsetidx + '-plate_index').val(formsetidx);
+
                 }
                 $('#id_assayplatereadermapitem_set-' + formsetidx + '-name').val(el);
                 div_label.appendChild(document.createTextNode(el));
@@ -4037,13 +4098,15 @@ $(document).ready(function () {
                     $('#id_assayplatereadermapitem_set-' + formsetidx + '-setting').val(ret_setting);
                     $('#id_assayplatereadermapitem_set-' + formsetidx + '-default_time').val(ret_default_time);
 
-                    if (document.getElementById("id_form_number_file_block_combos").value > 0) {
-                        // do not need to change the value formset because it is not pulled in,
-                        // only the data are pulled in for display
-                    } else {
-                        $('#id_assayplatereadermapitemvalue_set-' + formsetidx + 'well_use').val(ret_well_use);
-                        $('#id_assayplatereadermapitemvalue_set-' + formsetidx + '-time').val(ret_time);
-                    }
+                    // 20200522 getting rid of the value formset
+                    // if (document.getElementById("id_form_number_file_block_combos").value > 0) {
+                    //     // do not need to change the value formset because it is not pulled in,
+                    //     // only the data are pulled in for display
+                    // } else {
+                    //     $('#id_assayplatereadermapitemvalue_set-' + formsetidx + 'well_use').val(ret_well_use);
+                    //     $('#id_assayplatereadermapitemvalue_set-' + formsetidx + '-time').val(ret_time);
+                    // }
+
                 }
                 // else, the map was previously saved and we are not changing the formsets
 
@@ -4073,15 +4136,17 @@ $(document).ready(function () {
                 tdbodycell.appendChild(div_well_use);
                 tdbodycell.appendChild(div_block_raw_value);
                 tdbodycell.appendChild(div_time);
-                tdbodycell.appendChild(div_default_time);
-                tdbodycell.appendChild(div_dilution_factor);
+
                 tdbodycell.appendChild(div_matrix_item);
                 tdbodycell.appendChild(div_location);
+                tdbodycell.appendChild(div_dilution_factor);
+                tdbodycell.appendChild(div_default_time);
                 tdbodycell.appendChild(div_compound);
                 tdbodycell.appendChild(div_cell);
                 tdbodycell.appendChild(div_setting);
                 tdbodycell.appendChild(div_collection_volume);
                 tdbodycell.appendChild(div_collection_time);
+
                 tdbodycell.appendChild(div_standard_value);
                 trbodyrow.appendChild(tdbodycell);
 
@@ -4224,13 +4289,14 @@ $(document).ready(function () {
                 $('#id_assayplatereadermapitem_set-' + formset_number + '-setting').val(ret_setting);
                 $('#id_assayplatereadermapitem_set-' + formset_number + '-default_time').val(ret_default_time);
 
-                if (document.getElementById("id_form_number_file_block_combos").value > 0) {
-                    // do not need to change the value formset because it is not pulled in,
-                    // only the data are pulled in for display
-                } else {
-                    $('#id_assayplatereadermapitemvalue_set-' + formset_number + '-well_use').val(ret_well_use);
-                    $('#id_assayplatereadermapitemvalue_set-' + formset_number + '-time').val(ret_time);
-                }
+                // 20200522 getting rid of the value formset
+                // if (document.getElementById("id_form_number_file_block_combos").value > 0) {
+                //     // do not need to change the value formset because it is not pulled in,
+                //     // only the data are pulled in for display
+                // } else {
+                //     $('#id_assayplatereadermapitemvalue_set-' + formset_number + '-well_use').val(ret_well_use);
+                //     $('#id_assayplatereadermapitemvalue_set-' + formset_number + '-time').val(ret_time);
+                // }
 
                 // Make the changes to the plate
                 $('#well_use-' + formset_number).text(ret_well_use);
@@ -4299,12 +4365,29 @@ $(document).ready(function () {
             && $('#id_form_calibration_unit').val().search('g') >= 0 ) {
 
             global_calibration_form_data_processing_multiplier = 0.0;
-            global_calibration_form_data_processing_multiplier_string = "This unit conversion is beyond my capability.";
+            global_calibration_form_data_processing_multiplier_string = "There is no automatic conversion for this combination of units. Select different units or review the unit convresion details.";
             global_calibration_form_data_processing_multiplier_string_display = global_calibration_form_data_processing_multiplier_string;
             $('#id_form_data_processing_multiplier').val(generalFormatNumber(global_calibration_form_data_processing_multiplier));
             $('#id_form_data_processing_multiplier_string').val(global_calibration_form_data_processing_multiplier_string);
+            //$('#id_unit_multiplier').text("[" + $('#id_form_calibration_unit').val()+ "] / [" + global_floater_model_standard_unit + "]")
+            $('#id_unit_multiplier').text(global_floater_model_standard_unit +  "  ➞  "  + $('#id_form_calibration_unit').val());
+
             $('#id_display_multiplier_message').text(global_calibration_form_data_processing_multiplier_string_display);
             result = 'no'
+
+            $('#id_form_data_processing_multiplier_string_short').val('-');
+            $('#id_form_data_processing_multiplier_value_short').val('-');
+            $('#id_form_data_processing_multiplier_string1').val('-');
+            $('#id_form_data_processing_multiplier_string2').val('-');
+            $('#id_form_data_processing_multiplier_string3').val('-');
+            $('#id_form_data_processing_multiplier_string4').val('-');
+            $('#id_form_data_processing_multiplier_string5').val('-');
+            $('#id_form_data_processing_multiplier_string6').val('-');
+            $('#id_form_data_processing_multiplier_string7').val('-');
+            $('#id_form_data_processing_multiplier_string8').val('-');
+            $('#id_form_data_processing_multiplier_string9').val('-');
+            $('#id_multiplier_breakdown').addClass('hidden');
+
         } else {
             if (
                 ((global_floater_model_standard_unit.search('mol') >= 0
@@ -4365,9 +4448,26 @@ $(document).ready(function () {
             global_calibration_form_data_processing_multiplier_string_display = global_calibration_form_data_processing_multiplier_string;
             $('#id_form_data_processing_multiplier').val(generalFormatNumber(global_calibration_form_data_processing_multiplier));
             $('#id_form_data_processing_multiplier_string').val(global_calibration_form_data_processing_multiplier_string);
+            //$('#id_unit_multiplier').text("[" + $('#id_form_calibration_unit').val()+ "] / [" + global_floater_model_standard_unit + "]")
+            $('#id_unit_multiplier').text(global_floater_model_standard_unit + "  ➞  " + $('#id_form_calibration_unit').val());
+
             $('#id_display_multiplier_message').text(global_calibration_form_data_processing_multiplier_string_display);
 
             $('#refresh_needed_indicator').text('missed');
+
+            $('#id_form_data_processing_multiplier_string_short').val('-');
+            $('#id_form_data_processing_multiplier_value_short').val('-');
+            $('#id_form_data_processing_multiplier_string1').val('-');
+            $('#id_form_data_processing_multiplier_string2').val('-');
+            $('#id_form_data_processing_multiplier_string3').val('-');
+            $('#id_form_data_processing_multiplier_string4').val('-');
+            $('#id_form_data_processing_multiplier_string5').val('-');
+            $('#id_form_data_processing_multiplier_string6').val('-');
+            $('#id_form_data_processing_multiplier_string7').val('-');
+            $('#id_form_data_processing_multiplier_string8').val('-');
+            $('#id_form_data_processing_multiplier_string9').val('-');
+            $('#id_multiplier_breakdown').addClass('hidden');
+
         } else {
             dataProcessingFindTheMultiplier(mycounter);
         }
@@ -4386,7 +4486,23 @@ $(document).ready(function () {
             global_calibration_form_data_processing_multiplier_string_display = global_calibration_form_data_processing_multiplier_string;
             $('#id_form_data_processing_multiplier').val(generalFormatNumber(global_calibration_form_data_processing_multiplier));
             $('#id_form_data_processing_multiplier_string').val(global_calibration_form_data_processing_multiplier_string);
+            //$('#id_unit_multiplier').text("[" + $('#id_form_calibration_unit').val()+ "] / [" + global_floater_model_standard_unit + "]")
+            $('#id_unit_multiplier').text(global_floater_model_standard_unit +  "  ➞  "  + $('#id_form_calibration_unit').val());
+
             $('#id_display_multiplier_message').text(global_calibration_form_data_processing_multiplier_string_display);
+
+            $('#id_form_data_processing_multiplier_string_short').val('-');
+            $('#id_form_data_processing_multiplier_value_short').val('-');
+            $('#id_form_data_processing_multiplier_string1').val('-');
+            $('#id_form_data_processing_multiplier_string2').val('-');
+            $('#id_form_data_processing_multiplier_string3').val('-');
+            $('#id_form_data_processing_multiplier_string4').val('-');
+            $('#id_form_data_processing_multiplier_string5').val('-');
+            $('#id_form_data_processing_multiplier_string6').val('-');
+            $('#id_form_data_processing_multiplier_string7').val('-');
+            $('#id_form_data_processing_multiplier_string8').val('-');
+            $('#id_form_data_processing_multiplier_string9').val('-');
+            $('#id_multiplier_breakdown').addClass('hidden');
 
         } else {
             // do after functions in call since ajax race issues
@@ -4453,7 +4569,38 @@ $(document).ready(function () {
         global_calibration_form_data_processing_multiplier_string_display = returnedMultiplierStringDisplay;
         $('#id_form_data_processing_multiplier').val(generalFormatNumber(parseFloat(global_calibration_form_data_processing_multiplier)));
         $('#id_form_data_processing_multiplier_string').val(global_calibration_form_data_processing_multiplier_string);
+        //$('#id_unit_multiplier').text("[" + $('#id_form_calibration_unit').val()+ "] / [" + global_floater_model_standard_unit + "]")
+        $('#id_unit_multiplier').text(global_floater_model_standard_unit + "  ➞  " + $('#id_form_calibration_unit').val());
+
         $('#id_display_multiplier_message').text(global_calibration_form_data_processing_multiplier_string_display);
+
+        if (returnedMultiplier == 0) {
+            $('#id_form_data_processing_multiplier_string_short').val('-');
+            $('#id_form_data_processing_multiplier_value_short').val('-');
+            $('#id_form_data_processing_multiplier_string1').val('-');
+            $('#id_form_data_processing_multiplier_string2').val('-');
+            $('#id_form_data_processing_multiplier_string3').val('-');
+            $('#id_form_data_processing_multiplier_string4').val('-');
+            $('#id_form_data_processing_multiplier_string5').val('-');
+            $('#id_form_data_processing_multiplier_string6').val('-');
+            $('#id_form_data_processing_multiplier_string7').val('-');
+            $('#id_form_data_processing_multiplier_string8').val('-');
+            $('#id_form_data_processing_multiplier_string9').val('-');
+            $('#id_multiplier_breakdown').addClass('hidden');
+        } else {
+            $('#id_form_data_processing_multiplier_string_short').val(multiplier_data[0].multiplier_string_short);
+            $('#id_form_data_processing_multiplier_value_short').val(multiplier_data[0].multiplier_value_short);
+            $('#id_form_data_processing_multiplier_string1').val(multiplier_data[0].multiplier_string1);
+            $('#id_form_data_processing_multiplier_string2').val(multiplier_data[0].multiplier_string2);
+            $('#id_form_data_processing_multiplier_string3').val(multiplier_data[0].multiplier_string3);
+            $('#id_form_data_processing_multiplier_string4').val(multiplier_data[0].multiplier_string4);
+            $('#id_form_data_processing_multiplier_string5').val(multiplier_data[0].multiplier_string5);
+            $('#id_form_data_processing_multiplier_string6').val(multiplier_data[0].multiplier_string6);
+            $('#id_form_data_processing_multiplier_string7').val(multiplier_data[0].multiplier_string7);
+            $('#id_form_data_processing_multiplier_string8').val(multiplier_data[0].multiplier_string8);
+            $('#id_form_data_processing_multiplier_string9').val(multiplier_data[0].multiplier_string9);
+            $('#id_multiplier_breakdown').removeClass('hidden');
+        }
 
     };
 
@@ -4522,14 +4669,15 @@ $(document).ready(function () {
             formatted_number = this_number.toFixed(0);
         } else if (this_number < 10000) {
             formatted_number = this_number.toFixed(0);
-        } else if (this_number < 100000) {
-            formatted_number = this_number.toFixed(0);
-        } else if (this_number < 1000000) {
-            formatted_number = this_number.toFixed(0);
-        } else if (this_number < 10000000) {
-            formatted_number = this_number.toFixed(0);
+        // these were causing a problem in the table with rounding in a way that looked wrong
+        // } else if (this_number < 100000) {
+        //     formatted_number = this_number.toExponential(2);
+        // } else if (this_number < 1000000) {
+        //     formatted_number = this_number.toExponential(2);
+        // } else if (this_number < 10000000) {
+        //     formatted_number = this_number.toExponential(2);
         } else {
-            formatted_number = this_number.toExponential(2);
+            formatted_number = this_number.toFixed(0);
         }
 
         return formatted_number*sign;
@@ -4552,10 +4700,13 @@ $(document).ready(function () {
             $('#formset').find('.inline').first().remove();
         }
         $('#id_assayplatereadermapitem_set-TOTAL_FORMS').val(0);
-        while ($('#value_formset').find('.inline').length > 0) {
-            $('#value_formset').find('.inline').first().remove();
-        }
-        $('#id_assayplatereadermapitemvalue_set-TOTAL_FORMS').val(0);
+
+        // 20200522 getting rid of the value formset
+        // while ($('#value_formset').find('.inline').length > 0) {
+        //     $('#value_formset').find('.inline').first().remove();
+        // }
+        // $('#id_assayplatereadermapitemvalue_set-TOTAL_FORMS').val(0);
+
     }
 
     // functions for the tooltips - keep
