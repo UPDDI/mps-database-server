@@ -612,6 +612,11 @@ $(document).ready(function () {
         {responsivePriority: 4, targets: 30},
         {responsivePriority: 5, targets: 27},
         {responsivePriority: 6, targets: 32},
+        {responsivePriority: 7, targets: 7},
+        {responsivePriority: 8, targets: 25},
+        {responsivePriority: 9, targets: 20},
+        {responsivePriority: 10, targets: 30},
+        {responsivePriority: 11, targets: 27},
         {'sortable': false, 'targets': [30, 32]},
         //may need the following later - if pursue sorting on these fields
         //https://datatables.net/reference/option/columns.orderDataType
@@ -1773,7 +1778,12 @@ $(document).ready(function () {
                 var td = document.createElement('TD');
                 $(td).attr('col-index', colcounter);
                 $(td).attr('row-index', rowcounter);
-                $(td).attr('id', each_or_average + '_' + myUtilsName+'_'+each_plate_index);
+
+                if (each_or_average == 'average') {
+                    $(td).attr('id', each_or_average + '_' + myUtilsName + '_' + rowcounter);
+                } else {
+                    $(td).attr('id', each_or_average + '_' + myUtilsName + '_' + each_plate_index);
+                }
 
                 if (myUtilsName === 'notes' && each_or_average === 'each') {
                     passedIn = passedIn.toString().trim();

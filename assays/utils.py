@@ -5490,6 +5490,14 @@ def plate_reader_data_file_process_data(set_dict):
             # add the dictionary to the list for each
             list_of_dicts_of_each_sample_row_each.append(this_row_each)
 
+            ######## Note about Replicates-Grouping
+            # I considered using a string_agg for the postgres tables, BUT, the problem is,
+            # the manually entered notes and the manually changed omit check box
+            # 1: are not saved in table, and 2: even if they were saved in the table,
+            # they would not have been saved yet when being called from the web page.
+            # So, used the old stand-bye of accumulating the fields as we go.
+            # I don't love it because it is error prone.
+
             ######## s REPLICATES-GROUPING
             # print("Cumulating")
             # print("-----replicate number ", replicate)
