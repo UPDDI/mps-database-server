@@ -189,5 +189,14 @@
         </table>
     {% endif %}
 
+    {# Please note the added anchor #}
+    {% if user_is_group_editor and not object.signed_off_by %}
+        <div class="row padded-bottom">
+            <div class="col-xs-12">
+                <a href="{% url 'assays-assaystudy-upload' object.id %}#data_file_upload_table" class="btn btn-primary" role="button">Edit Data for This Study</a>
+            </div>
+        </div>
+    {% endif %}
+
     {% include 'assays/assaydatafileupload_table.html' %}
 {% endblock %}

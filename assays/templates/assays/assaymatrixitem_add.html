@@ -673,6 +673,15 @@
 
     <div id="charts" class="padded-bottom"></div>
 
+    {# Please note the added anchor #}
+    {% if user|is_group_editor:object.study.group.name and not object.study.signed_off_by %}
+    <div class="row padded-bottom">
+        <div class="col-xs-12">
+            <a href="{% url 'assays-assaystudy-upload' object.study.id %}#data_file_upload_table" class="btn btn-primary" role="button">Edit Data for This Study</a>
+        </div>
+    </div>
+    {% endif %}
+
     <div>
         <table class="table cell-border" id="current_data_table">
             <thead>
