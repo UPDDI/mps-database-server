@@ -4939,6 +4939,7 @@ def plate_reader_data_file_process_data(set_dict):
                     B4a0 = Sfitted[1]
                     C4a0 = Sfitted[2]
                     D4a0 = Sfitted[3]
+
                     y_predStandards_logistic4a0 = plateMapLogistic4a0(Nno0, A4a0, B4a0, C4a0, D4a0)
                     rsquared_logistic4a0 = plateMapRsquared(Nno0, Sno0, y_predStandards_logistic4a0)
                     r2['logistic4a0'] = rsquared_logistic4a0
@@ -5091,7 +5092,7 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_parameter_labels_logistic4a0 = (
                     {'p1': 'Theoretical response at zero concentration (A)', 'p2': 'Slope factor (B)', 'p3': 'Mid-range concentration (inflection point) (C)', 'p4': 'Theoretical response at infinite concentration (D)', 'p5': '-'})
                 dict_of_parameter_values_logistic4a0 = (
-                    {'p1': A_logistic4a0, 'p2': B_logistic4a0, 'p3': C_logistic4a0, 'p4a0': D_logistic4a0, 'p5': 0})
+                    {'p1': A_logistic4a0, 'p2': B_logistic4a0, 'p3': C_logistic4a0, 'p4': D_logistic4a0, 'p5': 0})
 
                 dict_of_curve_info_logistic4a0 = (
                     {'method': '4-Parameter Logistic w/lower bound = 0', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })

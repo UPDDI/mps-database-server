@@ -1700,7 +1700,7 @@ $(document).ready(function () {
      * part of packProcessedData's post ajax processing
      * builds the tables (builds all the calibration related tables based on parameters passed in).
      * For this (dataTable) to work, the table must be destroyed before it can be rebuilt.
-     * There are two primary conditions, controlled by a toggle:
+     * Note: if go back to toggle, There are two primary conditions, controlled by a toggle:
      * display the average or display each (global_calibrate_radio_replicate_handling_average_or_not_0)
     */
     function buildADataTable_ajax(
@@ -1711,6 +1711,7 @@ $(document).ready(function () {
         table_column_defs)
 
         {
+
         // HANDY delete child node
         var elem = document.getElementById('div_for_'+thisTableName);
         elem.removeChild(elem.childNodes[0]);
@@ -1857,29 +1858,42 @@ $(document).ready(function () {
             table_order = [[0, "asc"], [1, "asc"]];
         }
 
-        sampleDataTable = $('#'+thisTableName).DataTable({
+        // When I did not have the var before the variable name, the table headers acted all kinds of crazy
+        var sampleDataTable = $('#'+thisTableName).DataTable({
             "iDisplayLength": 25,
             "sDom": '<B<"row">lfrtip>',
+            //do not do the fixed header here...only want for two of the tables
+            //https://datatables.net/forums/discussion/30879/removing-fixedheader-from-a-table
+            //https://datatables.net/forums/discussion/33860/destroying-a-fixed-header
             fixedHeader: {headerOffset: 50},
             responsive: true,
             "order": table_order,
             "columnDefs": table_column_defs
         });
 
-        // if (each_or_average === 'each') {
-        //     // change what see columns are shown by default based on if calibration or not
-        //     // overwrites what was set above for the general case
-        //     if (global_calibrate_se_form_calibration_curve === 'no_calibration') {
-        //         global_table_column_defs_each[18]['visible'] = false;
-        //         global_table_column_defs_each[19]['visible'] = false;
-        //     } else {
-        //         global_table_column_defs_each[18]['visible'] = true;
-        //         global_table_column_defs_each[19]['visible'] = true;
-        //     }
-        // }
-
         return myTable;
     }
+
+    // $(document).on('mouseover', '#div_for_processed_samples_table_each', function () {
+    //     console.log("over each")
+    //
+    //     var table = $('#processed_samples_table_each').DataTable();
+    //     new $.fn.dataTable.FixedHeader( table, { headerOffset: 50 });
+    // });
+    // $(document).on('mouseover', '#div_for_processed_samples_table_average', function () {
+    //     console.log("over average")
+    //     var table = $('#processed_samples_table_average').DataTable();
+    //     new $.fn.dataTable.FixedHeader( table, { headerOffset: 50 });
+    // });
+    //
+    // $(document).on('mouseout', '#div_for_processed_samples_table_each', function () {
+    //     console.log("out each")
+    //     $('.fixedHeader-locked').remove();
+    // });
+    // $(document).on('mouseout', '#div_for_processed_samples_table_average', function () {
+    //     console.log("out average")
+    //     $('.fixedHeader-locked').remove();
+    // });
 
     /**
      * Function to draw the calibration curve graph.
