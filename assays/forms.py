@@ -3823,8 +3823,9 @@ class AssayPlateReaderMapForm(BootstrapForm):
             ('select_one', 'Select One'),
             ('no_calibration', 'No Calibration'),
             ('best_fit', 'Best Fit'),
-            ('logistic4', '4 Parameter Logistic w/fitted lower bound'),
+            ('logistic4', '4 Parameter Logistic w/fitted bounds'),
             ('logistic4a0', '4 Parameter Logistic w/lower bound = 0'),
+            ('logistic4f', '4 Parameter Logistic w/user specified bound(s)'),
             ('linear', 'Linear w/fitted intercept'),
             ('linear0', 'Linear w/intercept = 0'),
             ('log', 'Logarithmic'),
@@ -3862,6 +3863,17 @@ class AssayPlateReaderMapForm(BootstrapForm):
 
     )
     form_max_standard.widget.attrs.update({'class': 'form-control'})
+
+    form_logistic4_A = forms.DecimalField(
+        required=False,
+
+    )
+    form_logistic4_A.widget.attrs.update({'class': 'form-control'})
+
+    form_logistic4_D = forms.DecimalField(
+        required=False,
+    )
+    form_logistic4_D.widget.attrs.update({'class': 'form-control'})
 
     form_data_processing_multiplier = forms.DecimalField(
         required=False,
@@ -4421,7 +4433,7 @@ class AssayPlateReaderMapDataFileAddForm(BootstrapForm):
         if file_extension not in ['.csv', '.tsv', '.txt']:
             if '.xl' in file_extension or '.wk' in file_extension or '.12' in file_extension:
                 raise ValidationError(
-                     "This appears to be an spreadsheet file. To upload, add ~blank to the first column below every block of data and export to a tab delimited file and try again.",
+                     "This appears to be an spreadsheet file. To upload, export to a tab delimited file and try again.",
                      code='invalid'
                 )
             else:

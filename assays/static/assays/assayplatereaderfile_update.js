@@ -1,9 +1,15 @@
 $(document).ready(function () {
     // START SECTION TO SET GLOBAL MOST VARIABLES
     // set global variables
+    let global_check_load = $("#check_load").html().trim();
+    if (global_check_load === 'review') {
+        // HANDY - to make everything on a page read only
+        $('.selectized').each(function() { this.selectize.disable() });
+        $(':input').attr('disabled', 'disabled')
+    }
+
     let global_counter_to_check_loopA = 0;
     let global_counter_to_check_loopB = 0;
-
 
     let global_file_plate_this_file_id = 0;
     
@@ -53,16 +59,17 @@ $(document).ready(function () {
 
     // load the para||el plate map doc id, time unit doc id, and plate map pk id for all formsets
     for ( var idx = 0, ls = global_file_formset_count; idx < ls; idx++ ) {
-        let get_this = "#id_assayplatereadermapdatafileblock_set-" + idx + "-assayplatereadermap";
         let set_this = "#id_assayplatereadermapdatafileblock_set-" + idx + "-form_selected_plate_map_time_unit";
         global_file_formset_time_unit_id_list.push(set_this);
+
+        let get_this = "#id_assayplatereadermapdatafileblock_set-" + idx + "-assayplatereadermap";
         global_file_formset_platemap_id_list.push(get_this);
-        // console.log($(get_this))
-        // another get method - HANDY
-        let get_pk_id = $(get_this)[0].value;
+
+        let get_pk_id = 0;
+        // another get method - HANDY - but doesn't work if turned to .value form field
+        get_pk_id = $(get_this)[0].value;
         global_file_formset_platemap_value_list.push(get_pk_id);
     }
-
 
     // set a default different than in the forms.py as per PI request - but do it here so easy to change again in future
     // keep in mind it is not on the web page if the page is not editable
@@ -344,11 +351,12 @@ $(document).ready(function () {
     }
 
     // apply styles/formatting to formsets - JSCSS
-    // tried other ways of doing this, including css and form widget, but this worked the best/easiest
-    // these fields should not be edited by the user
+    // tried other ways of doing this, including css and form widget,
+    // but this worked the best/easiest
     let index_css = 0;
     while (index_css < global_file_formset_count) {
         // console.log(index_css)
+        // I tried moving this stuff into a class, but it did not work as anticipated
         let element_id1 = 'id_assayplatereadermapdatafileblock_set-' + index_css + '-data_block';
         document.getElementById(element_id1).style.borderStyle = 'none';
         document.getElementById(element_id1).readOnly = true;
@@ -359,11 +367,9 @@ $(document).ready(function () {
         let element_id3 = 'id_assayplatereadermapdatafileblock_set-' + index_css + '-line_end';
         document.getElementById(element_id3).style.borderStyle = 'none';
         document.getElementById(element_id3).style.backgroundColor = 'lightgrey';
-        // document.getElementById(element_id3).readOnly = true;
         let element_id4 = 'id_assayplatereadermapdatafileblock_set-' + index_css + '-delimited_end';
         document.getElementById(element_id4).style.borderStyle = 'none';
         document.getElementById(element_id4).style.backgroundColor = 'lightgrey';
-        // document.getElementById(element_id4).readOnly = true;
         index_css = index_css + 1;
     }
     // apply style, tried other ways, this worked best
@@ -1047,7 +1053,11 @@ $(document).ready(function () {
         }
         catch(err) { global_file_plate_this_file_id = $("#this_file_id").val();
         }
+
         global_file_setting_box_delimiter = $("#id_readonly_file_delimiter").text().trim();
+        // if (global_file_setting_box_delimiter.length < 1) {
+        //     global_file_setting_box_delimiter = $("#id_readonly_file_delimiter").value;
+        // }
 
         // console.log("setting data")
         // console.log("this_file_id: ",global_file_plate_this_file_id)
@@ -1181,7 +1191,6 @@ $(document).ready(function () {
                 try {
                     my_line_list = global_file_iblock_file_list[ridx].line_list;
 
-
                 } catch (err) {
                     continue_if_true = 'false';
                     alert('The requested block is out of bounds of the file. Try setting the plate size. If that does not work, set the bounds manually for block ' + this_dblock + ' or try another file format. \n');
@@ -1206,7 +1215,7 @@ $(document).ready(function () {
 
                         $(td).attr('width', column_width);
                         ret_block_raw_value = "-";
-                        //console.log("my_line_list[cidx].trim().length--",my_line_list[cidx].trim().length, "--")
+                        //console.log("my_line_list ",my_line_list)
                         try {
                             if (my_line_list[cidx].trim().length > 0) {
                                 ret_block_raw_value = my_line_list[cidx];
@@ -1216,6 +1225,7 @@ $(document).ready(function () {
                         } catch (err) {
                         }
 
+                        //console.log("ret_block_raw_value ", ret_block_raw_value)
                         td.appendChild(document.createTextNode(ret_block_raw_value));
                         trbodyrow.appendChild(td);
                     }

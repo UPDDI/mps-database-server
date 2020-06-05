@@ -4293,6 +4293,8 @@ def plate_reader_data_file_process_data(set_dict):
     standard_unit = set_dict.get('standard_unit')
     form_min_standard = set_dict.get('form_min_standard')
     form_max_standard = set_dict.get('form_max_standard')
+    form_logistic4_A = set_dict.get('form_logistic4_A')
+    form_logistic4_D = set_dict.get('form_logistic4_D')
     form_blank_handling = set_dict.get('form_blank_handling')
     radio_standard_option_use_or_not = set_dict.get('radio_standard_option_use_or_not')
     radio_replicate_handling_average_or_not_0 = set_dict.get('radio_replicate_handling_average_or_not_0')
@@ -4329,6 +4331,14 @@ def plate_reader_data_file_process_data(set_dict):
         use_plate_size = int(plate_size)
     except:
         use_plate_size = 96
+    try:
+        passed_logistic4_A = float(form_logistic4_A)
+    except:
+        passed_logistic4_A = -1.0
+    try:
+        passed_logistic4_D = float(form_logistic4_D)
+    except:
+        passed_logistic4_D = -1.0
 
     # check for injection of invalid values and set to default if not in list
     # for the valid lists, search the forms.py for se_form_calibration_curve
@@ -4338,7 +4348,7 @@ def plate_reader_data_file_process_data(set_dict):
     if radio_standard_option_use_or_not not in ['pick_block', 'no_calibration']:
         radio_standard_option_use_or_not = 'no_calibration'
         sendGeneralQcErrorMessage = "Invalid entry - defaults used;  "
-    if form_calibration_curve not in ['no_calibration', 'best_fit', 'linear', 'linear0', 'log', 'poly2', 'logistic4', 'logistic4a0', 'log5']:
+    if form_calibration_curve not in ['no_calibration', 'best_fit', 'linear', 'linear0', 'log', 'poly2', 'logistic4', 'logistic4a0', 'logistic4f', 'log5']:
         form_calibration_curve = 'no_calibration'
         sendGeneralQcErrorMessage = "Invalid entry - defaults used;  "
     if form_blank_handling not in [
@@ -4376,6 +4386,7 @@ def plate_reader_data_file_process_data(set_dict):
     y_preds = []
     y_predStandards_logistic4 = []
     y_predStandards_logistic4a0 = []
+    y_predStandards_logistic4f = []
     y_predStandards_linear = []
     y_predStandards_linear0 = []
     y_predStandards_log = []
@@ -4392,6 +4403,10 @@ def plate_reader_data_file_process_data(set_dict):
     B4a0 = 0
     C4a0 = 0
     D4a0 = 0
+    A4f = 0
+    B4f = 0
+    C4f = 0
+    D4f = 0
     A_log = 0
     B_log = 0
     A_poly2 = 0
@@ -4625,6 +4640,36 @@ def plate_reader_data_file_process_data(set_dict):
 
         # EXTRA FOR CALIBRATION
         if yes_to_calibrate == 'yes':
+            # what inner function for this case so can send global (this function) scope variables
+
+            # Logistic 4 set bottom Parameter Set of Functions
+            def plateMapLogistic4f(n, A, B, C, D):
+                """4PL logistic equation."""
+                if passed_logistic4_A == -1:
+                    A
+                else:
+                    A = passed_logistic4_A
+                if passed_logistic4_D == -1:
+                    D = D
+                else:
+                    D = passed_logistic4_D
+                signal = ((A - D) / (1.0 + ((n / C) ** B))) + D
+                return signal
+
+            def plateMapResidualsLogistic4f(p, r, n):
+                """Deviations of data from fitted 4PL curve"""
+                A, B, C, D = p
+                if passed_logistic4_A == -1:
+                    A
+                else:
+                    A = passed_logistic4_A
+                if passed_logistic4_D == -1:
+                    D = D
+                else:
+                    D = passed_logistic4_D
+                err = r - plateMapLogistic4f(n, A, B, C, D)
+                return err
+
             # need to deal with sample blanks
 
             # if subtracting (anything) by average of sample blanks,
@@ -4838,7 +4883,7 @@ def plate_reader_data_file_process_data(set_dict):
             if number_standard_values_including_0 >= 4:
                 # if this condition is not met, it should have be caught in the the QC above
 
-                if form_calibration_curve in ['linear', 'best_fit', 'log', 'logistic4', 'logistic4a0']:
+                if form_calibration_curve in ['linear', 'best_fit', 'log', 'logistic4', 'logistic4a0', 'logistic4f']:
                     # avg standard concentration - adjusted raw
                     # N = []
                     # S = []
@@ -4918,7 +4963,9 @@ def plate_reader_data_file_process_data(set_dict):
                     rsquared_logistic4 = plateMapRsquared(Nno0, Sno0, y_predStandards_logistic4)
                     r2['logistic4'] = rsquared_logistic4
 
-                if form_calibration_curve in ['logistic4a0', 'best_fit']:
+                if form_calibration_curve in ['logistic4a0']:
+                    # the should never be best fit, so don't bother to compute
+                    # this was made before the option to set A and D, could redo to use that, but leave it for now
                     A = 0
                     B = (Smax-Smin)/(Nmax-Nmin)
                     C = (Nmax-Nmin)/2
@@ -4942,7 +4989,42 @@ def plate_reader_data_file_process_data(set_dict):
 
                     y_predStandards_logistic4a0 = plateMapLogistic4a0(Nno0, A4a0, B4a0, C4a0, D4a0)
                     rsquared_logistic4a0 = plateMapRsquared(Nno0, Sno0, y_predStandards_logistic4a0)
-                    r2['logistic4a0'] = rsquared_logistic4a0
+                    # r2['logistic4a0'] = rsquared_logistic4a0
+
+                # this really isn't a best file option because the A and D are only available if they pick logistic4f
+                if form_calibration_curve in ['logistic4f']:
+                    if passed_logistic4_A == -1:
+                        A = (Smax - Smin) / len(S)
+                    else:
+                        A = passed_logistic4_A
+                    if passed_logistic4_D == -1:
+                        D = Smax
+                    else:
+                        D = passed_logistic4_D
+
+                    B = (Smax-Smin)/(Nmax-Nmin)
+                    C = (Nmax-Nmin)/2
+
+                    # print("## A, B, C, D ", A, " ", B, " ", C, " ", D, " ")
+                    p0 = [A, B, C, D]
+
+                    # need to do some work to prep for logistic4 1) n cannot be 0 in fitting
+                    if N[0] == 0:
+                        Nno0 = np.delete(N, 0)
+                        Sno0 = np.delete(S, 0)
+                    else:
+                        Nno0 = N
+                        Sno0 = S
+
+                    Sfitted, cost, info, msg, success = leastsq(plateMapResidualsLogistic4f, p0, args=(Sno0, Nno0), full_output=1)
+                    A4f = Sfitted[0]
+                    B4f = Sfitted[1]
+                    C4f = Sfitted[2]
+                    D4f = Sfitted[3]
+                    y_predStandards_logistic4f = plateMapLogistic4f(Nno0, A4f, B4f, C4f, D4f)
+                    rsquared_logistic4f = plateMapRsquared(Nno0, Sno0, y_predStandards_logistic4f)
+                    # do not want to consider for best fit
+                    # r2['logistic4f'] = rsquared_logistic4
 
                 if form_calibration_curve in ['log', 'best_fit']:
                     A = (Smax-Smin)/len(S)
@@ -4976,12 +5058,12 @@ def plate_reader_data_file_process_data(set_dict):
             else:
                 use_calibration_curve = form_calibration_curve
 
-            if number_standard_values_excluding_0 < 4 and use_calibration_curve in ['log', 'logistic4', 'logistic4a0']:
+            if number_standard_values_excluding_0 < 4 and use_calibration_curve in ['log', 'logistic4', 'logistic4a0', 'logistic4f']:
                 use_calibration_curve = 'linear'
                 special_note_when_excluding_0_and_curve_change_needed = " - IMPORTANT: Not enough standard concentrations for log or logistic."
 
             # do not move this into a place that it happens before selection of best fit!
-            if use_calibration_curve in ['log', 'logistic4', 'logistic4a0']:
+            if use_calibration_curve in ['log', 'logistic4', 'logistic4a0', 'logistic4f']:
                 use_form_min = Nno0[0]
 
             # make an array of Ns so that there will be 100ish fitted points on the graph
@@ -5057,7 +5139,7 @@ def plate_reader_data_file_process_data(set_dict):
                     {'p1': A_logistic4, 'p2': B_logistic4, 'p3': C_logistic4, 'p4': D_logistic4, 'p5': 0})
 
                 dict_of_curve_info_logistic4 = (
-                    {'method': '4-Parameter Logistic w/fitted lower bound', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
+                    {'method': '4-Parameter Logistic w/fitted bounds', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
                 dict_of_standard_info_logistic4 = (
                     {'min': use_form_min, 'max': use_form_max, 'standard0average': standard_blank_average,
                      'blankaverage': sample_blank_average})
@@ -5095,7 +5177,7 @@ def plate_reader_data_file_process_data(set_dict):
                     {'p1': A_logistic4a0, 'p2': B_logistic4a0, 'p3': C_logistic4a0, 'p4': D_logistic4a0, 'p5': 0})
 
                 dict_of_curve_info_logistic4a0 = (
-                    {'method': '4-Parameter Logistic w/lower bound = 0', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
+                    {'method': '4-Parameter Logistic w/user specified bound(s)', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
                 dict_of_standard_info_logistic4a0 = (
                     {'min': use_form_min, 'max': use_form_max, 'standard0average': standard_blank_average,
                      'blankaverage': sample_blank_average})
@@ -5104,6 +5186,38 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_parameter_values = dict_of_parameter_values_logistic4a0
                 dict_of_curve_info = dict_of_curve_info_logistic4a0
                 dict_of_standard_info = dict_of_standard_info_logistic4a0
+
+            elif use_calibration_curve == 'logistic4f':
+                if N100[0] == 0:
+                    N100no0 = np.delete(N100, 0)
+                else:
+                    N100no0 = N100
+
+                y_predStandards100 = plateMapLogistic4f(N100no0, A4f, B4f, C4f, D4f)
+
+                A_logistic4f = sandrasGeneralFormatNumberFunction(A4f)
+                B_logistic4f = sandrasGeneralFormatNumberFunction(B4f)
+                C_logistic4f = sandrasGeneralFormatNumberFunction(C4f)
+                D_logistic4f = sandrasGeneralFormatNumberFunction(D4f)
+
+                rsquared = '{:.5f}'.format(rsquared_logistic4f)
+                equation = "signal = (A-D)/(1.0 + {[concentration/C]**B}) + D"
+
+                dict_of_parameter_labels_logistic4f = (
+                    {'p1': 'Theoretical response at zero concentration (A)', 'p2': 'Slope factor (B)', 'p3': 'Mid-range concentration (inflection point) (C)', 'p4': 'Theoretical response at infinite concentration (D)', 'p5': '-'})
+                dict_of_parameter_values_logistic4f = (
+                    {'p1': A_logistic4f, 'p2': B_logistic4f, 'p3': C_logistic4f, 'p4': D_logistic4f, 'p5': 0})
+
+                dict_of_curve_info_logistic4f = (
+                    {'method': '4-Parameter Logistic w/user specified bound(s)', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
+                dict_of_standard_info_logistic4f = (
+                    {'min': use_form_min, 'max': use_form_max, 'standard0average': standard_blank_average,
+                     'blankaverage': sample_blank_average})
+
+                dict_of_parameter_labels = dict_of_parameter_labels_logistic4f
+                dict_of_parameter_values = dict_of_parameter_values_logistic4f
+                dict_of_curve_info = dict_of_curve_info_logistic4f
+                dict_of_standard_info = dict_of_standard_info_logistic4f
 
             elif use_calibration_curve == 'log':
                 if N100[0] == 0:
@@ -5202,7 +5316,7 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_curve_info = dict_of_curve_info_linear0
                 dict_of_standard_info = dict_of_standard_info_linear0
 
-            if use_calibration_curve == 'log' or use_calibration_curve == 'logistic4' or use_calibration_curve == 'logistic4a0':
+            if use_calibration_curve == 'log' or use_calibration_curve == 'logistic4' or use_calibration_curve == 'logistic4a0' or use_calibration_curve == 'logistic4f':
                 i = 0
                 for each in N100no0:
                     this_row = {}
@@ -5250,6 +5364,11 @@ def plate_reader_data_file_process_data(set_dict):
                         myFit = ''
                     else:
                         myFit = plateMapLogistic4a0(CONC, A4a0, B4a0, C4a0, D4a0)
+                elif use_calibration_curve == 'logistic4f':
+                    if CONC == 0:
+                        myFit = ''
+                    else:
+                        myFit = plateMapLogistic4f(CONC, A4f, B4f, C4f, D4f)
                 elif use_calibration_curve == 'log':
                     if CONC == 0:
                         myFit = ''
@@ -5280,6 +5399,7 @@ def plate_reader_data_file_process_data(set_dict):
                     slope_linear0, icept_linear0,
                     A4, B4, C4, D4,
                     A4a0, B4a0, C4a0, D4a0,
+                    A4f, B4f, C4f, D4f,
                     A_log, B_log,
                     A_poly2, B_poly2, C_poly2,
                     adj_mid, con_mid)
@@ -5439,6 +5559,7 @@ def plate_reader_data_file_process_data(set_dict):
                 slope_linear0, icept_linear0,
                 A4, B4, C4, D4,
                 A4a0, B4a0, C4a0, D4a0,
+                A4f, B4f, C4f, D4f,
                 A_log, B_log,
                 A_poly2, B_poly2, C_poly2,
                 adj_mid, con_mid)
@@ -5853,6 +5974,7 @@ def plate_map_sub_return_the_fitted_and_other_info(
     slope_linear0, icept_linear0,
     A4, B4, C4, D4,
     A4a0, B4a0, C4a0, D4a0,
+    A4f, B4f, C4f, D4f,
     A_log, B_log,
     A_poly2, B_poly2, C_poly2,
     adj_mid, con_mid):
@@ -5928,6 +6050,34 @@ def plate_map_sub_return_the_fitted_and_other_info(
                 caution_flag = 'F'
                 sendmessage = sendmessage + " Cannot calculate fitted value. Likely due to very large exponent."
 
+    elif use_calibration_curve == 'logistic4f':
+        if araw - D4f == 0 or B4f == 0:
+            ftv = " "
+            caution_flag = 'F'
+            sendmessage = sendmessage + " A denominator is 0. Cannot calculate fitted value."
+        else:
+            try:
+                ftv = C4f * (((A4f - D4f) / (araw - D4f)) - 1) ** (1 / B4f)
+                if str(ftv).lower().strip() == 'nan':
+
+                    if araw < A4f:
+                        ftv = " "
+                        caution_flag = 'F'
+                        sendmessage = sendmessage + " Sample value too small to calculate."
+                        # here here if change their mind and want the theoretical response at 0
+                        # ftv = A4f
+                        # caution_flag = 'e'
+                        # sendmessage = sendmessage + " Sample value too small to calculate; set to theoretical response at zero concentration (A)."
+                    else:
+                        # print("araw,    A,    B,    C,    D ")
+                        # print(str(araw), " ", str(A4f), " ", str(B4f), " ", str(C4f), " ", str(D4f))
+                        ftv = " "
+                        caution_flag = 'F'
+                        sendmessage = sendmessage + " Cannot calculate fitted value."
+            except:
+                ftv = " "
+                caution_flag = 'F'
+                sendmessage = sendmessage + " Cannot calculate fitted value. Likely due to very large exponent."
 
     elif use_calibration_curve == 'log':
         if B_log == 0:
@@ -6051,6 +6201,11 @@ def plateMapRsquared(N, S, y_predStandards):
 # https://people.duke.edu/~ccc14/pcfb/analysis.html
 # equations sck using for fitting in plate reader calibration
 #  n is concentration, returns Signal
+# when this is called with the leastsq wrapper, r is the signal array, n is the concentration array
+# these come down in the wrapper
+# s  [ 0.0125  0.0425  1.0475  2.4975  4.9975 10.1475]
+# n  [  31.3   62.5  125.   250.   500.  1000. ]
+# r  [ 0.0125  0.0425  1.0475  2.4975  4.9975 10.1475]
 def plateMapLogistic4(n, A, B, C, D):
     """4PL logistic equation."""
     # print("A, B, C, D ", str(A), " ", str(B), " ", str(C), " ", str(D), " ")
@@ -6071,12 +6226,11 @@ def plateMapResidualsLogistic4(p, r, n):
     err = r - plateMapLogistic4(n, A, B, C, D)
     return err
 
-# takes concentration and returns signal
-def plateMap_pevalLogistic4(n, p):
-    """Evaluated value (signal) at concentration n with current parameters."""
-    A, B, C, D = p
-    return plateMapLogistic4(n, A, B, C, D)
-
+# # takes concentration and returns signal
+# def plateMap_pevalLogistic4(n, p):
+#     """Evaluated value (signal) at concentration n with current parameters."""
+#     A, B, C, D = p
+#     return plateMapLogistic4(n, A, B, C, D)
 
 # Logistic 4a0 Parameter Set of Functions
 def plateMapLogistic4a0(n, A, B, C, D):
@@ -6090,10 +6244,12 @@ def plateMapResidualsLogistic4a0(p, r, n):
     err = r - plateMapLogistic4a0(n, 0, B, C, D)
     return err
 
-def plateMap_pevalLogistic4a0(n, p):
-    """Evaluated value (signal) at concentration n with current parameters."""
-    A, B, C, D = p
-    return plateMapLogistic4a0(n, 0, B, C, D)
+# def plateMap_pevalLogistic4a0(n, p):
+#     """Evaluated value (signal) at concentration n with current parameters."""
+#     A, B, C, D = p
+#     return plateMapLogistic4a0(n, 0, B, C, D)
+
+# NOTE: def plateMapLogistic4f(n, A, B, C, D): was moved to an inner function so could pass different variables inside
 
 # Power Set of Functions
 # https://stackoverflow.com/questions/3433486/how-to-do-exponential-and-logarithmic-curve-fitting-in-python-i-found-only-poly
@@ -6106,9 +6262,9 @@ def plateMapResidualsPoly2(p, r, n):
     err = r-plateMapPoly2(n, A, B, C, D)
     return err
 
-def plateMap_pevalPoly2(n, p):
-    A, B, C, D = p
-    return plateMapPoly2(n, A, B, C, D)
+# def plateMap_pevalPoly2(n, p):
+#     A, B, C, D = p
+#     return plateMapPoly2(n, A, B, C, D)
 
 # Linear0 Set of Functions
 # B is SLOPE!!!
@@ -6121,10 +6277,9 @@ def plateMapResidualsLinear0(p, r, n):
     err = r - plateMapLinear0(n, A, B)
     return err
 
-def plateMap_pevalLinear0(n, p):
-    A, B = p
-    return plateMapLinear0(n, A, B)
-
+# def plateMap_pevalLinear0(n, p):
+#     A, B = p
+#     return plateMapLinear0(n, A, B)
 
 # Linear Set of Functions
 # and Log Set of Functions when talk log before sending (base determined outside of the fitting
@@ -6140,9 +6295,9 @@ def plateMapResidualsLinear(p, r, n):
     err = r-plateMapLinear(n, A, B)
     return err
 
-def plateMap_pevalLinear(n, p):
-    A, B = p
-    return plateMapLinear(n, A, B)
+# def plateMap_pevalLinear(n, p):
+#     A, B = p
+#     return plateMapLinear(n, A, B)
 
 # START - save for now in case change mind and go back to this way.
 # using a different fitting method

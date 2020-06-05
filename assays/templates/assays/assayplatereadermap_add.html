@@ -70,39 +70,39 @@
             </div>
 
             {# pass to js file #}
-            <div class="hidden">
+            <div>
                 {# need this in javascript #}
-                <div>
+                <div class="hidden">
                     {{ assay_map_additional_info.ns_matrix_item }}
                     {{ assay_map_additional_info.ns_location }}
                     {{ form.form_number_file_block_combos }}
                 </div>
                 {# need this in javascript #}
-                <div id="this_platemap_id">
+                <div id="this_platemap_id" class="hidden">
                     {{ object.id }}
                 </div>
                 {# need this in javascript #}
-                <div id="check_load">
+                <div id="check_load" class="hidden">
                     {{ page_called }}
                 </div>
                 {# need this in javascript pass to ajax#}
-                <div id="this_study_id">
+                <div id="this_study_id" class="hidden">
                     {% if object %}
                         {{ object.study.id }}
                     {% else %}
                         {{form.instance.study_id}}
                     {% endif %}
                 </div>
-                <div>{{form.form_calibration_method}}</div>
-                <div>{{form.form_calibration_target}}</div>
-                <div>{{form.form_calibration_unit}}</div>
-                <div>{{form.form_number_standards_this_plate}}</div>
-                <div>{{form.form_hold_the_study_id}}</div>
-                <div>{{form.form_hold_the_platemap_id}}</div>
+                <div class="hidden">{{form.form_calibration_method}}</div>
+                <div class="hidden">{{form.form_calibration_target}}</div>
+                <div class="hidden">{{form.form_calibration_unit}}</div>
+                <div class="hidden">{{form.form_number_standards_this_plate}}</div>
+                <div class="hidden">{{form.form_hold_the_study_id}}</div>
+                <div class="hidden">{{form.form_hold_the_platemap_id}}</div>
 
-                <div>{{form.form_hold_the_data_block_metadata_string}}</div>
-                <div>{{form.form_hold_the_omits_string}}</div>
-                <div>{{form.form_hold_the_notes_string}}</div>
+                <div class="hidden">{{form.form_hold_the_data_block_metadata_string}}</div>
+                <div class="hidden">{{form.form_hold_the_omits_string}}</div>
+                <div class="hidden">{{form.form_hold_the_notes_string}}</div>
                 <p id="id_used_curve" class="hidden"></p>
             </div>
 
@@ -1441,23 +1441,8 @@
 
             </div>
 
-            {# submit bar and errors#}
-            <div>
-                <div>
-                    {% if not review %}
-                        {% include "submit.html" with flag="y" creator=object.created_by.id %}
-                    {% endif %}
-                </div>
-
-
-
-                {% comment %}  <h6>tracking begin</h6>
-                {% include 'tracking.html' %}
-                <h6>tracking end</h6>{% endcomment %}
-            </div>
-
             {# START THE PROCESSING DATA SECTION #}
-            <div>
+            <div id="data_processing_section">
                 <div class="container">
                     {% if form.form_number_file_block_combos.value > 0 %}
                         {# pick the processing details #}
@@ -1503,9 +1488,9 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-1">
+                                <div class="col-md-2">
                                     <div class="plate-map-page-field-contents-large">
-                                        Minimum:
+                                        Minimum Concentration:
                                     </div>
                                 </div>
                                 <div class="col-md-2">
@@ -1513,9 +1498,9 @@
                                         {{ form.form_min_standard}}
                                     </div>
                                 </div>
-                                <div class="col-md-1">
+                                <div class="col-md-2">
                                     <div class="plate-map-page-field-contents-large">
-                                        Maximum:
+                                        Maximum Concentration:
                                     </div>
                                 </div>
                                 <div class="col-md-2">
@@ -1523,10 +1508,41 @@
                                         {{ form.form_max_standard}}
                                     </div>
                                 </div>
-                                <div class="col-md-3"></div>
+                                <div class="col-md-1"></div>
                             </div>
 
-
+                            <div class="logistic-set-bounds hidden">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="plate-map-page-field-labels-small">
+                                            <div><p id="logistic_bounds_set_tooltip"></p>
+                                                <label for="logistic_bounds_set_tooltip">Logistic 4P Bounds &nbsp;</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="plate-map-page-field-contents-large">
+                                            Response at 0 (A):
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="plate-map-page-field-contents-medium">
+                                            {{ form.form_logistic4_A}}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="plate-map-page-field-contents-large">
+                                            Response at Infinity (D):
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="plate-map-page-field-contents-medium">
+                                            {{ form.form_logistic4_D}}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1"></div>
+                                </div>
+                            </div>
 
                             <div class="row">
                                 <div class="col-md-3">
@@ -2066,6 +2082,19 @@
 {#                        {{ value_formset.errors }}<br>#}
 {#                    </div>#}
 {#                {% endif %}#}
+{#            </div>#}
+
+            {# submit bar #}
+            <div>
+                <div>
+                    {% if not review %}
+                        {% include "submit.html" with flag="y" creator=object.created_by.id %}
+                    {% endif %}
+                </div>
+
+                {% comment %}  <h6>tracking begin</h6>
+                {% include 'tracking.html' %}
+                <h6>tracking end</h6>{% endcomment %}
             </div>
 
         </div>

@@ -6448,8 +6448,10 @@ def fetch_data_processing_for_plate_map_integration(request):
     multiplier =                       request.POST.get('multiplier', '0')
     unit =                             request.POST.get('unit', '0')
     standard_unit =                    request.POST.get('standard_unit', '0')
-    form_min_standard =                request.POST.get('form_min_standard', '0')
-    form_max_standard =                request.POST.get('form_max_standard', '0')
+    form_min_standard =                request.POST.get('form_min_standard', '-1')
+    form_max_standard =                request.POST.get('form_max_standard', '-1')
+    form_logistic4_A =                 request.POST.get('form_logistic4_A', '-1')
+    form_logistic4_D =                 request.POST.get('form_logistic4_D', '-1')
     form_blank_handling =              request.POST.get('form_blank_handling', '0')
     radio_standard_option_use_or_not = request.POST.get('radio_standard_option_use_or_not', '0')
     radio_replicate_handling_average_or_not_0 = request.POST.get('radio_replicate_handling_average_or_not_0', '0')
@@ -6480,6 +6482,8 @@ def fetch_data_processing_for_plate_map_integration(request):
         'standard_unit'                   : standard_unit                           ,
         'form_min_standard'               : form_min_standard                       ,
         'form_max_standard'               : form_max_standard                       ,
+        'form_logistic4_A'                : form_logistic4_A                        ,
+        'form_logistic4_D'                : form_logistic4_D                        ,
         'form_blank_handling'             : form_blank_handling                     ,
         'radio_standard_option_use_or_not': radio_standard_option_use_or_not        ,
         'radio_replicate_handling_average_or_not_0': radio_replicate_handling_average_or_not_0,

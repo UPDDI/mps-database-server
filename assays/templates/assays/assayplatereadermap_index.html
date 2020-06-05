@@ -32,7 +32,7 @@
                     <div class="col-md-3">
                         {# Hide setup add buttons if the study is marked reviewed #}
                         {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
-                            {% if not review %}
+                            {% if not view %}
                             <div>
                                 <a href="{% url 'assayplatereadermap-add' object.id %}" class="btn btn-success" role="button">Add Plate Map</a>
                             </div>

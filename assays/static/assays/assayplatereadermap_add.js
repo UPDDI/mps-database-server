@@ -19,7 +19,9 @@ $(document).ready(function () {
     /**
      * Global counter that is used for testing.
     */
+
     let global_counter = 0;
+    let global_check_load = $("#check_load").html().trim();
 
     /**
      * Color Ramps
@@ -148,6 +150,7 @@ $(document).ready(function () {
         , '#plate_map_multiplier_for_processing'
         , '#copys_pastes_tooltip'
         , '#submit_to_study_summary_tooltip'
+        , '#logistic_bounds_set_tooltip'
         ,];
 
     /**
@@ -194,6 +197,7 @@ $(document).ready(function () {
         , "If calibrating, this is the multiplier that will be applied to the calibrated values. If not calibrating, this is the multiplier that will be applied to the raw values. This can be set manually, if needed."
         , "Use Copy to copy sections of the assay plate map to other wells in the plate. A popular method of using this feature is to start from an Existing Study Matrix, then copy the matrix items from that plate, change to Start From a Blank Assay Plate Map, select the desired plate size, then paste that matrix items on the plate. "
         , "To make these data available in the Study Summary, check the box and click the Submit button. If these data have already been sent to the Study Summary, it is recommended that these data be removed from the study prior to resubmitting them (remove associated data file on the Upload Data File page).  If replicates are present, the average of unchecked replicates will be sent to the Study Summary."
+        , "Set the theoretical response at zero (A) and/or the theoretical response at infinite concentration (D). If empty, no bound will be applied."
 
         ,];
 
@@ -269,7 +273,7 @@ $(document).ready(function () {
     } catch (err) {
     }
 
-    // if review or update, need the correct defaults of fancy check box adjustments
+    // if view or update, need the correct defaults of fancy check box adjustments
     if ($("#check_load").html().trim() !== 'add') {
         global_plate_start_map = 'a_platemap';
     }
@@ -765,6 +769,19 @@ $(document).ready(function () {
             findValueSetInsteadOfValueFormsetPackPlateLabelsBuildPlate_ajax("update_or_view_first_load");
         }
     }
+
+    if (global_check_load === 'review') {
+        //turn these visible
+        $("#platemap_checkbox_section").addClass('hidden');
+        $("#data_processing_section").addClass('hidden');
+        $("#multiplierDetailsButton").addClass('hidden');
+        $("#checkboxButton").addClass('hidden');
+        // HANDY - to make everything on a page read only
+        $('.selectized').each(function() { this.selectize.disable() });
+        $(':input').attr('disabled', 'disabled');
+
+    }
+
     // END SECTION TO SET GLOBAL VARIABLES plus some functions
 
     // SECTION - ON CHANGE or CLICK
@@ -1124,6 +1141,20 @@ $(document).ready(function () {
     });
 
     /**
+     * Change event for minimum bound of logistic 4
+    */
+    $("#id_form_logistic4_A").change(function () {
+        changedTheCalibrationCurveAndOtherChangesThatMightCauseRunCalibrate('change_min');
+    });
+
+    /**
+     * Change event for maximum bound of logistic 4
+    */
+    $("#id_form_logistic4_D").change(function () {
+        changedTheCalibrationCurveAndOtherChangesThatMightCauseRunCalibrate('change_max');
+    });
+
+    /**
      * Click event - when there are no standards on a plate and the user wants to calibrate
      * they need to borrow standards from another plate or change to no calibrate.
      * This is the change event for the user to pick a plate to borrow form or
@@ -1216,6 +1247,13 @@ $(document).ready(function () {
     $("#id_se_form_calibration_curve").change(function () {
         global_calibrate_se_form_calibration_curve_prev = global_calibrate_se_form_calibration_curve;
         global_calibrate_se_form_calibration_curve = $("#id_se_form_calibration_curve").selectize()[0].selectize.items[0];
+        if (global_calibrate_se_form_calibration_curve == 'logistic4f'){
+            $('.logistic-set-bounds').removeClass('hidden');
+        } else {
+            $('.logistic-set-bounds').addClass('hidden');
+            $("#id_form_logistic4_A").val("");
+            $("#id_form_logistic4_D").val("");
+        }
         changedTheCalibrationCurveAndOtherChangesThatMightCauseRunCalibrate('change_curve');
     });
 
@@ -1448,6 +1486,8 @@ $(document).ready(function () {
             standard_unit: global_floater_model_standard_unit,
             form_min_standard: $("#id_form_min_standard").val(),
             form_max_standard: $("#id_form_max_standard").val(),
+            form_logistic4_A: $("#id_form_logistic4_A").val(),
+            form_logistic4_D: $("#id_form_logistic4_D").val(),
             // use for form save for min: self.fields['form_calibration_standard_fitted_min_for_e'].required = False
             // use for form save for max: self.fields['form_calibration_standard_fitted_max_for_e'].required = False
             form_blank_handling: $("#id_se_form_blank_handling").selectize()[0].selectize.items[0],
@@ -2482,7 +2522,12 @@ $(document).ready(function () {
     // https:// www.geeksforgeeks.org/how-to-change-selected-value-of-a-drop-down-list-using-jquery/
     // https:// stackoverflow.com/questions/8978328/get-the-value-of-a-dropdown-in-jquery
     function selectableDragOnPlateMaster() {
-        callChangeSelectedByDragOnPlate()
+        if (global_check_load === 'review' ||
+        document.getElementById("id_form_number_file_block_combos").value > 0) {
+        // do not let the drag do anything!
+        } else {
+            callChangeSelectedByDragOnPlate()
+        }
     }
     // END - secondary changes to assay plate map (Apply and Drag)
 
@@ -3462,6 +3507,58 @@ $(document).ready(function () {
 
         let call_hide_by_welluse = true;
 
+        //20200604 to deal with the view page
+        if (global_check_load === 'review') {
+            if (document.getElementById("id_form_number_file_block_combos").value < 1) {
+                // get the default check boxes to show
+                x_show_fancy_list = [
+                    '#show_matrix_item',
+                    '#show_default_time',
+                    '#show_location',
+                    '#show_standard_value',
+                    '#show_well_use',
+                    '#show_dilution_factor',
+                    '#show_collection_volume',
+                    '#show_collection_time',
+                ];
+                x_show_cell_list = [
+                    '.plate-cells-matrix-item',
+                    '.plate-cells-default-time',
+                    '.plate-cells-location',
+                    '.plate-cells-standard-value',
+                    '.plate-cells-well-use',
+                    '.plate-cells-dilution-factor',
+                    '.plate-cells-collection-volume',
+                    '.plate-cells-collection-time',
+                ];
+            } else {
+                // note that this is the value item time, not the default time
+                x_show_fancy_list = [
+                    '#show_matrix_item',
+                    '#show_time',
+                    '#show_location',
+                    '#show_standard_value',
+                    '#show_well_use',
+                    '#show_dilution_factor',
+                    '#show_collection_volume',
+                    '#show_collection_time',
+                    '#show_well_use',
+                    '#show_block_raw_value',
+                ];
+                x_show_cell_list = [
+                    '.plate-cells-matrix-item',
+                    '.plate-cells-time',
+                    '.plate-cells-location',
+                    '.plate-cells-standard-value',
+                    '.plate-cells-well-use',
+                    '.plate-cells-dilution-factor',
+                    '.plate-cells-collection-volume',
+                    '.plate-cells-collection-time',
+                    '.plate-cells-well-use',
+                    '.plate-cells-block-raw-value',
+                ];
+            }
+        } else
         // on page load, set to defaults to show in the plate based  on well use selected
         if (build_or_change_or_clear_or_show === "build" && global_plate_start_map === "a_plate") {
             call_hide_by_welluse = false;
@@ -3677,15 +3774,31 @@ $(document).ready(function () {
             if (my_well_use === 'blank') {
                 $('#standard_value-' + idx).addClass('hidden');
                 $('#default_time-' + idx).addClass('hidden');
+                $('#well_use-' + idx).addClass('plate-map-well-use-blank');
+                $('#well_use-' + idx).removeClass('plate-map-well-use-empty');
+                $('#well_use-' + idx).removeClass('plate-map-well-use-standard');
+                $('#well_use-' + idx).removeClass('plate-map-well-use-sample');
             } else if (my_well_use === 'empty') {
                 $('#standard_value-' + idx).addClass('hidden');
                 $('#default_time-' + idx).addClass('hidden');
                 $('#time-' + idx).addClass('hidden');
+                $('#well_use-' + idx).removeClass('plate-map-well-use-blank');
+                $('#well_use-' + idx).addClass('plate-map-well-use-empty');
+                $('#well_use-' + idx).removeClass('plate-map-well-use-standard');
+                $('#well_use-' + idx).removeClass('plate-map-well-use-sample');
                 // $('#well_use-' + idx).addClass('hidden');
             } else if (my_well_use === 'standard') {
                 $('#default_time-' + idx).addClass('hidden');
+                $('#well_use-' + idx).removeClass('plate-map-well-use-blank');
+                $('#well_use-' + idx).removeClass('plate-map-well-use-empty');
+                $('#well_use-' + idx).addClass('plate-map-well-use-standard');
+                $('#well_use-' + idx).removeClass('plate-map-well-use-sample');
             } else if (my_well_use === 'sample') {
                 $('#standard_value-' + idx).addClass('hidden');
+                $('#well_use-' + idx).removeClass('plate-map-well-use-blank');
+                $('#well_use-' + idx).removeClass('plate-map-well-use-empty');
+                $('#well_use-' + idx).removeClass('plate-map-well-use-standard');
+                $('#well_use-' + idx).addClass('plate-map-well-use-sample');
             } else {
             }
         }
