@@ -376,7 +376,7 @@ about/global_search.jpg
                         <td><a class="btn btn-primary" href="{% url 'assays-assaystudy-index' study.id %}">View</a></td>
                         <td>{{ study.name }}</td>
                         <td>{{ study.description }}</td>
-                        <td>{{ study.signed_off_date|date:"M d, Y" }}</td>
+                        <td>{{ study.signed_off_date|date:"Y-m-d" }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -401,7 +401,7 @@ about/global_search.jpg
                         <td>{{ each3.name }}</td>
                         <td>{{ each3.description }}</td>
                         <td>{{ each3.organ_models|default:"-No MPS Models-" }}</td>
-                        <td>{{ each3.scheduled_release_date|date:'m-d-Y' }}</td>
+                        <td>{{ each3.scheduled_release_date|date:"Y-m-d" }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

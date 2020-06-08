@@ -45,7 +45,7 @@
                     {# May seem odd, but including the id can help demystify the ID that appears in add interface #}
                     <td>{{ cellsample.id }}</td>
                     {# Adding a link to this row converts it from date to HTML = Really, REALLY annoying #}
-                    <td>{{ cellsample.receipt_date|date:"M d, Y" }}</td>
+                    <td>{{ cellsample.receipt_date|date:"Y-m-d" }}</td>
                     <td>{{ cellsample.barcode }}</td>
                     <td>
                         <a href="/cellsamples/celltype/{{ cellsample.cell_type.id }}">

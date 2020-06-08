@@ -24,7 +24,7 @@
                         <button id="cell_sample_{{ cellsample.id }}" type="button" class="cellsample-selector btn btn-xs btn-primary" data-cell-sample-id="{{ cellsample.id }}" data-name="{{ cellsample }}">Select</button>
                     </td>
                     <td>{{ cellsample.id }}</td>
-                    <td>{{ cellsample.receipt_date|date:"M d, Y" }}</td>
+                    <td>{{ cellsample.receipt_date|date:"Y-m-d" }}</td>
                     <td>{{ cellsample.cell_type }}</td>
                     <td>{{ cellsample.cell_subtype }}</td>
                     <td>{{ cellsample.supplier }}</td>
