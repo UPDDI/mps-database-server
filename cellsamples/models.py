@@ -82,7 +82,7 @@ class CellSubtype(FrontEndModel, LockableModel):
     """
     class Meta(object):
         ordering = ('cell_subtype', )
-        verbose_name = 'Cell Subtype'
+        verbose_name = 'Cell Origin'
 
     # Unsemantic name (should just be name)
     cell_subtype = models.CharField(

@@ -8,7 +8,8 @@ $(document).ready(function() {
         "aoColumnDefs": [
             {
                 "className": "dt-center",
-                "targets": [0, 1, 2, 5]
+                // Do not center description
+                "targets": [0, 1, 2, 4]
             },
             {
                 "bSortable": false,
@@ -18,27 +19,31 @@ $(document).ready(function() {
                 "responsivePriority": 1,
                 "bSortable": false,
                 "width": '5%',
-                "aTargets": [0]
+                "aTargets": [0, 1]
             },
+            // ?
+            // {
+            //     "responsivePriority": 1,
+            //     "width": '15%',
+            //     "aTargets": [3]
+            // },
             {
                 "responsivePriority": 1,
-                "width": '15%',
-                "aTargets": [1,3]
-            },
-            {
-                "responsivePriority": 3,
-                "width": '10%',
+                "width": '20%',
                 "aTargets": [2]
             },
             {
                 "responsivePriority": 4,
-                "bSortable": false,
-                "width": '45%',
+                // Why isn't the supplier sortable?
+                // "bSortable": false,
+                // Why is the supplier so huge?
+                // "width": '45%',
                 "aTargets": [4]
             },
             {
                 "responsivePriority": 2,
-                "width": '5%',
+                // Increase width of description
+                "width": '45%',
                 "aTargets": [5]
             }
         ]

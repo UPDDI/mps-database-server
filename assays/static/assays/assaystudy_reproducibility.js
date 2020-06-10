@@ -223,7 +223,7 @@ $(document).ready(function () {
                     }
                     return '';
                 },
-                "className": "dt-body-center",
+                "className": "dt-center",
                 "createdCell": function (td, cellData, rowData, row, col) {
                     if (cellData) {
                         $(td).css('vertical-align', 'middle')

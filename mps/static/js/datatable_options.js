@@ -85,7 +85,17 @@ $(document).ready(function () {
 
             // CRUDE!
             // Trigger resize
-            $(window).trigger('resize');
+            // Even cruder, trigger the resize after a delay
+            // setTimeout(function() {
+            //     $(window).trigger('resize');
+            // }, 1000);
+
+            // Let's try to remove the resize trigger
+            setTimeout(function() {
+                // $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+                $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
+                $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+            }, 1000);
         }
     });
 
@@ -100,13 +110,13 @@ $(document).ready(function () {
 
     // Fix some issues with column width on resize.
     // BAD
-    window.onresize = function() {
-        setTimeout(function() {
-            $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
-            $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
-            $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
-        }, 250);
-    }
+    // window.onresize = function() {
+    //     setTimeout(function() {
+    //         $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+    //         $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
+    //         $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+    //     }, 250);
+    // }
 
     // Jump to top after page change
     // CRUDE

@@ -69,7 +69,7 @@ $(document).ready(function () {
                 }
                 return '';
             },
-            "className": "dt-body-center",
+            "className": "dt-center",
             "createdCell": function (td, cellData, rowData, row, col) {
                 if (cellData) {
                     $(td).css('vertical-align', 'middle');
@@ -124,7 +124,7 @@ $(document).ready(function () {
                 }
                 return '';
             },
-            "className": "dt-body-center",
+            "className": "dt-center",
             "createdCell": function (td, cellData, rowData, row, col) {
                 if (cellData) {
                     $(td).css('vertical-align', 'middle');
@@ -166,7 +166,7 @@ $(document).ready(function () {
                 }
                 return '';
             },
-            "className": "dt-body-center",
+            "className": "dt-center",
             "createdCell": function (td, cellData, rowData, row, col) {
                 if (cellData) {
                     $(td).css('vertical-align', 'middle');
@@ -180,7 +180,7 @@ $(document).ready(function () {
             "render": function (data, type, row) {
                 return row.replace("Day ", "");
             },
-            "className": "dt-body-center",
+            "className": "dt-center",
         }
     ];
 
@@ -193,7 +193,7 @@ $(document).ready(function () {
                 }
                 return '';
             },
-            "className": "dt-body-center",
+            "className": "dt-center",
             "createdCell": function (td, cellData, rowData, row, col) {
                 if (cellData) {
                     $(td).css('vertical-align', 'middle');
@@ -207,7 +207,7 @@ $(document).ready(function () {
             "render": function (data, type, row) {
                 return row[1];
             },
-            "className": "dt-body-center",
+            "className": "dt-center",
         }
     ];
 
