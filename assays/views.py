@@ -4150,7 +4150,27 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
         context['page_called'] = 'update'
         #####
 
-        context['assay_map_additional_info'] = AssayPlateReadMapAdditionalInfoForm(study_id=self.object.study_id)
+        # using the form field for conditional logic was making the query file multiple times
+        # let's just send a boolean
+        block_combos = AssayPlateReaderMapItemValue.objects.filter(
+            assayplatereadermap=self.object
+        ).prefetch_related(
+            'assayplatereadermapitem',
+        ).filter(
+            assayplatereadermapitem__plate_index=0
+        ).filter(
+            assayplatereadermapdatafileblock__isnull=False
+        )
+        if len(block_combos) > 0:
+            data_attached = True
+        else:
+            data_attached = False
+        context['data_attached'] = data_attached
+
+        if data_attached:
+            context['assay_map_additional_info'] = ""
+        else:
+            context['assay_map_additional_info'] = AssayPlateReadMapAdditionalInfoForm(study_id=self.object.study_id)
 
         # print("calling formset")
         if 'formset' not in context:
@@ -4214,6 +4234,7 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
         # context['matrix_list_pk'] = return_list[1]
         # context['matrix_column_size'] = return_list[2]
         # print("returning context map update")
+
         return context
 
     def form_valid(self, form):
@@ -4257,240 +4278,248 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
             # print("form_calibration_curve_method_used ", form_calibration_curve_method_used)
 
 
-            #### START When saving AssayPlateReaderMapUpdate after a calibration
-            # if user checked the box to send to study summary, make that happen
+            # MOVING BACK TO FORMS.PY
+            # #### START When saving AssayPlateReaderMapUpdate after a calibration
+            # # if user checked the box to send to study summary, make that happen
+            #
+            # data = form.cleaned_data
+            # # study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
+            #
+            # if data.get('form_make_mifc_on_submit'):
+            #     # search term MIFC - if MIFC changes, this will need changed
+            #     # make a list of column headers for the mifc file
+            #     column_table_headers_average = [
+            #         'Chip ID',
+            #         'Cross Reference',
+            #         'Assay Plate ID',
+            #         'Assay Well ID',
+            #         'Day',
+            #
+            #         'Hour',
+            #         'Minute',
+            #         'Target/Analyte',
+            #         'Subtarget',
+            #         'Method/Kit',
+            #
+            #         'Sample Location',
+            #         'Value',
+            #         'Value Unit',
+            #         'Replicate',
+            #         'Caution Flag',
+            #
+            #         'Exclude',
+            #         'Notes',
+            #         'Processing Details',
+            #     ]
+            #     # search term MIFC - if MIFC changes, this will need changed
+            #     # Make a dictionary of headers in utils and header needed in the mifc file
+            #     utils_key_column_header = {
+            #         'matrix_item_name': 'Chip ID',
+            #         'cross_reference': 'Cross Reference',
+            #         'plate_name': 'Assay Plate ID',
+            #         'well_name': 'Assay Well ID',
+            #         'day': 'Day',
+            #         'hour': 'Hour',
+            #         'minute': 'Minute',
+            #         'target': 'Target/Analyte',
+            #         'subtarget': 'Subtarget',
+            #         'method': 'Method/Kit',
+            #         'location_name': 'Sample Location',
+            #         'processed_value': 'Value',
+            #         'unit': 'Value Unit',
+            #         'replicate': 'Replicate',
+            #         'caution_flag': 'Caution Flag',
+            #         'exclude': 'Exclude',
+            #         'notes': 'Notes',
+            #         'sendmessage': 'Processing Details'}
+            #
+            #     # these should match what is in the forms.py...could make a generic dict, but leave for now WATCH BE CAREFUL
+            #     calibration_curve_xref = {
+            #         'select_one': 'Select One',
+            #         'no_calibration': 'No Calibration',
+            #         'best_fit': 'Best Fit',
+            #         'logistic4': '4 Parameter Logistic w/fitted bounds',
+            #         'logistic4a0': '4 Parameter Logistic w/user specified bound(s)',
+            #         'linear': 'Linear w/fitted intercept',
+            #         'linear0': 'Linear w/intercept = 0',
+            #         'log': 'Logarithmic',
+            #         'poly2': 'Quadratic Polynomial'
+            #     }
+            #
+            #     # print(".unit ",data.get('standard_unit').unit)
+            #     # print(".id ", data.get('standard_unit').id)
+            #     # .unit
+            #     # µg / mL
+            #     # .id
+            #     # 6
+            #     # print(".unit ",data.get('standard_unit').unit)
+            #     # print(".id ", data.get('standard_unit').id)
+            #
+            #     if data.get('form_block_standard_borrow_pk_single_for_storage') == None:
+            #         borrowed_block_pk = -1
+            #     else:
+            #         borrowed_block_pk = data.get('form_block_standard_borrow_pk_single_for_storage')
+            #
+            #     if data.get('form_block_standard_borrow_pk_platemap_single_for_storage') == None:
+            #         borrowed_platemap_pk = -1
+            #     else:
+            #         borrowed_platemap_pk = data.get(
+            #             'form_block_standard_borrow_pk_platemap_single_for_storage')
+            #
+            #     use_curve_long = data.get('form_calibration_curve_method_used')
+            #     use_curve = find_a_key_by_value_in_dictionary(calibration_curve_xref, use_curve_long)
+            #     if use_curve == 'select_one':
+            #         use_curve = 'no_calibration'
+            #
+            #     # here here  prefer to get plate and study from form...fix this
+            #     # make a dictionary to send to the utils.py when call the function
+            #     set_dict = {
+            #         'called_from': 'form_save',
+            #         'study': data.get('form_hold_the_study_id'),
+            #         'pk_platemap': data.get('form_hold_the_platemap_id'),
+            #         'pk_data_block': data.get('form_block_file_data_block_selected_pk_for_storage'),
+            #         'plate_name': data.get('name'),
+            #         'form_calibration_curve': use_curve,
+            #         'multiplier': data.get('form_data_processing_multiplier'),
+            #         'unit': data.get('form_calibration_unit'),
+            #         'standard_unit': data.get('standard_unit').unit,
+            #         'form_min_standard': data.get('form_calibration_standard_fitted_min_for_e'),
+            #         'form_max_standard': data.get('form_calibration_standard_fitted_max_for_e'),
+            #         'form_blank_handling': data.get('se_form_blank_handling'),
+            #         'radio_standard_option_use_or_not': data.get('radio_standard_option_use_or_not'),
+            #         'radio_replicate_handling_average_or_not_0': data.get(
+            #             'radio_replicate_handling_average_or_not'),
+            #         'borrowed_block_pk': borrowed_block_pk,
+            #         'borrowed_platemap_pk': borrowed_platemap_pk,
+            #         'count_standards_current_plate': data.get('form_number_standards_this_plate'),
+            #         'target': data.get('form_calibration_target'),
+            #         'method': data.get('form_calibration_method'),
+            #         'time_unit': data.get('time_unit'),
+            #         'volume_unit': data.get('volume_unit'),
+            #         'user_notes': data.get('form_hold_the_notes_string'),
+            #         'user_omits': data.get('form_hold_the_omits_string'),
+            #         'plate_size': data.get('device'),
+            #     }
+            #
+            #     # this function is in utils.py that returns data
+            #     data_mover = plate_reader_data_file_process_data(set_dict)
+            #     # what comes back is a dictionary of
+            #     list_of_dicts = data_mover[9]
+            #     list_of_lists_mifc_headers_row_0 = [None] * (len(list_of_dicts) + 1)
+            #     list_of_lists_mifc_headers_row_0[0] = column_table_headers_average
+            #     i = 1
+            #     # print(" ")
+            #     for each_dict_in_list in list_of_dicts:
+            #         list_each_row = []
+            #         for this_mifc_header in column_table_headers_average:
+            #             # print("this_mifc_header ", this_mifc_header)
+            #             # find the key in the dictionary that we need
+            #             utils_dict_header = find_a_key_by_value_in_dictionary(utils_key_column_header,
+            #                                                                   this_mifc_header)
+            #             # print("utils_dict_header ", utils_dict_header)
+            #             # print("this_mifc_header ", this_mifc_header)
+            #             # get the value that is associated with this header in the dict
+            #             this_value = each_dict_in_list.get(utils_dict_header)
+            #             # print("this_value ", this_value)
+            #             # add the value to the list for this dict in the list of dicts
+            #             list_each_row.append(this_value)
+            #         # when down with the dictionary, add the completely list for this row to the list of lists
+            #         # print("list_each_row ", list_each_row)
+            #         list_of_lists_mifc_headers_row_0[i] = list_each_row
+            #         i = i + 1
+            #
+            #     # print("  ")
+            #     # print('list_of_lists_mifc_headers_row_0')
+            #     # print(list_of_lists_mifc_headers_row_0)
+            #     # print("  ")
+            #
+            #     # First make a csv from the list_of_lists (using list_of_lists_mifc_headers_row_0)
+            #
+            #     # or self.objects.study
+            #     my_study = form.instance.study
+            #     my_user = self.request.user
+            #
+            #     # Specify the file for use with the file uploader class
+            #     # some of these caused errors in the file name so remove them
+            #     platenamestring = data.get('name')
+            #     platenamestring = re.sub("\\\\", '', platenamestring)
+            #     platenamestring = re.sub('/', '', platenamestring)
+            #     platenamestring = re.sub(' ', '', platenamestring)
+            #
+            #     metadatastring = data.get('form_hold_the_data_block_metadata_string')
+            #     metadatastring = re.sub("\\\\", '', metadatastring)
+            #     metadatastring = re.sub('/', '', metadatastring)
+            #     metadatastring = re.sub(' ', '', metadatastring)
+            #
+            #     # print(platenamestring)
+            #     # print(metadatastring)
+            #
+            #     bulk_location = upload_file_location(
+            #         my_study,
+            #         'PLATE-{}|METADATA-{}'.format(
+            #             platenamestring,
+            #             metadatastring
+            #         )
+            #     )
+            #
+            #     # Make sure study has directories
+            #     if not os.path.exists(MEDIA_ROOT + '/data_points/{}'.format(data.get('form_hold_the_study_id'))):
+            #         os.makedirs(MEDIA_ROOT + '/data_points/{}'.format(data.get('form_hold_the_study_id')))
+            #
+            #     # Need to import from models
+            #     # Avoid magic string, use media location
+            #     file_location = MEDIA_ROOT.replace('mps/../', '', 1) + '/' + bulk_location + '.csv'
+            #
+            #     # Should make a csv writer to avoid repetition
+            #     file_to_write = open(file_location, 'w')
+            #     csv_writer = csv.writer(file_to_write, dialect=csv.excel)
+            #
+            #     # Add the UTF-8 BOM
+            #     list_of_lists_mifc_headers_row_0[0][0] = '\ufeff' + list_of_lists_mifc_headers_row_0[0][0]
+            #
+            #     # print("!!!!!!!!")
+            #     # print("at views.py 3168 - turn this back on later!!!!!")
+            #     # print("!!!!!!!!")
+            #     # Write the lines here here uncomment this
+            #     for one_line_of_data in list_of_lists_mifc_headers_row_0:
+            #         csv_writer.writerow(one_line_of_data)
+            #
+            #     file_to_write.close()
+            #     new_mifc_file = open(file_location, 'rb')
+            #     file_processor = AssayFileProcessor(new_mifc_file,
+            #                                         my_study,
+            #                                         my_user, save=True,
+            #                                         full_path='/media/' + bulk_location + '.csv')
+            #
+            #     # Process the file
+            #     file_processor.process_file()
+            #
+            # #### END When saving AssayPlateReaderMapUpdate after a calibration
 
-            data = form.cleaned_data
-            # study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
 
-            if data.get('form_make_mifc_on_submit'):
-                # search term MIFC - if MIFC changes, this will need changed
-                # make a list of column headers for the mifc file
-                column_table_headers_average = [
-                    'Chip ID',
-                    'Cross Reference',
-                    'Assay Plate ID',
-                    'Assay Well ID',
-                    'Day',
-
-                    'Hour',
-                    'Minute',
-                    'Target/Analyte',
-                    'Subtarget',
-                    'Method/Kit',
-
-                    'Sample Location',
-                    'Value',
-                    'Value Unit',
-                    'Replicate',
-                    'Caution Flag',
-
-                    'Exclude',
-                    'Notes',
-                    'Processing Details',
-                ]
-                # search term MIFC - if MIFC changes, this will need changed
-                # Make a dictionary of headers in utils and header needed in the mifc file
-                utils_key_column_header = {
-                    'matrix_item_name': 'Chip ID',
-                    'cross_reference': 'Cross Reference',
-                    'plate_name': 'Assay Plate ID',
-                    'well_name': 'Assay Well ID',
-                    'day': 'Day',
-                    'hour': 'Hour',
-                    'minute': 'Minute',
-                    'target': 'Target/Analyte',
-                    'subtarget': 'Subtarget',
-                    'method': 'Method/Kit',
-                    'location_name': 'Sample Location',
-                    'processed_value': 'Value',
-                    'unit': 'Value Unit',
-                    'replicate': 'Replicate',
-                    'caution_flag': 'Caution Flag',
-                    'exclude': 'Exclude',
-                    'notes': 'Notes',
-                    'sendmessage': 'Processing Details'}
-
-                # these should match what is in the forms.py...could make a generic dict, but leave for now WATCH BE CAREFUL
-                calibration_curve_xref = {
-                    'select_one': 'Select One',
-                    'no_calibration': 'No Calibration',
-                    'best_fit': 'Best Fit',
-                    'logistic4': '4 Parameter Logistic w/fitted bounds',
-                    'logistic4a0': '4 Parameter Logistic w/user specified bound(s)',
-                    'linear': 'Linear w/fitted intercept',
-                    'linear0': 'Linear w/intercept = 0',
-                    'log': 'Logarithmic',
-                    'poly2': 'Quadratic Polynomial'
-                }
-
-                # print(".unit ",data.get('standard_unit').unit)
-                # print(".id ", data.get('standard_unit').id)
-                # .unit
-                # µg / mL
-                # .id
-                # 6
-                # print(".unit ",data.get('standard_unit').unit)
-                # print(".id ", data.get('standard_unit').id)
-
-                if data.get('form_block_standard_borrow_pk_single_for_storage') == None:
-                    borrowed_block_pk = -1
-                else:
-                    borrowed_block_pk = data.get('form_block_standard_borrow_pk_single_for_storage')
-
-                if data.get('form_block_standard_borrow_pk_platemap_single_for_storage') == None:
-                    borrowed_platemap_pk = -1
-                else:
-                    borrowed_platemap_pk = data.get(
-                        'form_block_standard_borrow_pk_platemap_single_for_storage')
-
-                use_curve_long = data.get('form_calibration_curve_method_used')
-                use_curve = find_a_key_by_value_in_dictionary(calibration_curve_xref, use_curve_long)
-                if use_curve == 'select_one':
-                    use_curve = 'no_calibration'
-
-                # here here  prefer to get plate and study from form...fix this
-                # make a dictionary to send to the utils.py when call the function
-                set_dict = {
-                    'called_from': 'form_save',
-                    'study': data.get('form_hold_the_study_id'),
-                    'pk_platemap': data.get('form_hold_the_platemap_id'),
-                    'pk_data_block': data.get('form_block_file_data_block_selected_pk_for_storage'),
-                    'plate_name': data.get('name'),
-                    'form_calibration_curve': use_curve,
-                    'multiplier': data.get('form_data_processing_multiplier'),
-                    'unit': data.get('form_calibration_unit'),
-                    'standard_unit': data.get('standard_unit').unit,
-                    'form_min_standard': data.get('form_calibration_standard_fitted_min_for_e'),
-                    'form_max_standard': data.get('form_calibration_standard_fitted_max_for_e'),
-                    'form_blank_handling': data.get('se_form_blank_handling'),
-                    'radio_standard_option_use_or_not': data.get('radio_standard_option_use_or_not'),
-                    'radio_replicate_handling_average_or_not_0': data.get(
-                        'radio_replicate_handling_average_or_not'),
-                    'borrowed_block_pk': borrowed_block_pk,
-                    'borrowed_platemap_pk': borrowed_platemap_pk,
-                    'count_standards_current_plate': data.get('form_number_standards_this_plate'),
-                    'target': data.get('form_calibration_target'),
-                    'method': data.get('form_calibration_method'),
-                    'time_unit': data.get('time_unit'),
-                    'volume_unit': data.get('volume_unit'),
-                    'user_notes': data.get('form_hold_the_notes_string'),
-                    'user_omits': data.get('form_hold_the_omits_string'),
-                    'plate_size': data.get('device'),
-                }
-
-                # this function is in utils.py that returns data
-                data_mover = plate_reader_data_file_process_data(set_dict)
-                # what comes back is a dictionary of
-                list_of_dicts = data_mover[9]
-                list_of_lists_mifc_headers_row_0 = [None] * (len(list_of_dicts) + 1)
-                list_of_lists_mifc_headers_row_0[0] = column_table_headers_average
-                i = 1
-                # print(" ")
-                for each_dict_in_list in list_of_dicts:
-                    list_each_row = []
-                    for this_mifc_header in column_table_headers_average:
-                        # print("this_mifc_header ", this_mifc_header)
-                        # find the key in the dictionary that we need
-                        utils_dict_header = find_a_key_by_value_in_dictionary(utils_key_column_header,
-                                                                              this_mifc_header)
-                        # print("utils_dict_header ", utils_dict_header)
-                        # print("this_mifc_header ", this_mifc_header)
-                        # get the value that is associated with this header in the dict
-                        this_value = each_dict_in_list.get(utils_dict_header)
-                        # print("this_value ", this_value)
-                        # add the value to the list for this dict in the list of dicts
-                        list_each_row.append(this_value)
-                    # when down with the dictionary, add the completely list for this row to the list of lists
-                    # print("list_each_row ", list_each_row)
-                    list_of_lists_mifc_headers_row_0[i] = list_each_row
-                    i = i + 1
-
-                # print("  ")
-                # print('list_of_lists_mifc_headers_row_0')
-                # print(list_of_lists_mifc_headers_row_0)
-                # print("  ")
-
-                # First make a csv from the list_of_lists (using list_of_lists_mifc_headers_row_0)
-
-                # or self.objects.study
-                my_study = form.instance.study
-                my_user = self.request.user
-
-                # Specify the file for use with the file uploader class
-                # some of these caused errors in the file name so remove them
-                platenamestring = data.get('name')
-                platenamestring = re.sub("\\\\", '', platenamestring)
-                platenamestring = re.sub('/', '', platenamestring)
-                platenamestring = re.sub(' ', '', platenamestring)
-
-                metadatastring = data.get('form_hold_the_data_block_metadata_string')
-                metadatastring = re.sub("\\\\", '', metadatastring)
-                metadatastring = re.sub('/', '', metadatastring)
-                metadatastring = re.sub(' ', '', metadatastring)
-
-                # print(platenamestring)
-                # print(metadatastring)
-
-                bulk_location = upload_file_location(
-                    my_study,
-                    'PLATE-{}|METADATA-{}'.format(
-                        platenamestring,
-                        metadatastring
-                    )
-                )
-
-                # Make sure study has directories
-                if not os.path.exists(MEDIA_ROOT + '/data_points/{}'.format(data.get('form_hold_the_study_id'))):
-                    os.makedirs(MEDIA_ROOT + '/data_points/{}'.format(data.get('form_hold_the_study_id')))
-
-                # Need to import from models
-                # Avoid magic string, use media location
-                file_location = MEDIA_ROOT.replace('mps/../', '', 1) + '/' + bulk_location + '.csv'
-
-                # Should make a csv writer to avoid repetition
-                file_to_write = open(file_location, 'w')
-                csv_writer = csv.writer(file_to_write, dialect=csv.excel)
-
-                # Add the UTF-8 BOM
-                list_of_lists_mifc_headers_row_0[0][0] = '\ufeff' + list_of_lists_mifc_headers_row_0[0][0]
-
-                # print("!!!!!!!!")
-                # print("at views.py 3168 - turn this back on later!!!!!")
-                # print("!!!!!!!!")
-                # Write the lines here here uncomment this
-                for one_line_of_data in list_of_lists_mifc_headers_row_0:
-                    csv_writer.writerow(one_line_of_data)
-
-                file_to_write.close()
-                new_mifc_file = open(file_location, 'rb')
-                file_processor = AssayFileProcessor(new_mifc_file,
-                                                    my_study,
-                                                    my_user, save=True,
-                                                    full_path='/media/' + bulk_location + '.csv')
-
-                # Process the file
-                file_processor.process_file()
-
-            #### END When saving AssayPlateReaderMapUpdate after a calibration
-
-            # here here todo do redirect to study summary
-
-            save_forms_with_tracking(self, form, formset=formsets, update=True)
-
+            # only save if the formSET is in "update/edit" mode, not calibrate
+            # calibrate occurs when a file block has been added to this plate map (one or more)
+            # The number of file blocks is passed in by the initialization of this form field in the forms.py
+            # Save form and formset
+            if form.cleaned_data.get('form_number_file_block_combos') == 0:
+                save_forms_with_tracking(self, form, formset=formsets, update=True)
+            # HANDY - to Save just the form and not the formset
+            else:
+                # Note that we elect NOT to send the formset
+                save_forms_with_tracking(self, form, formset=[], update=True)
             return redirect(self.object.get_post_submission_url())
         else:
             return self.render_to_response(self.get_context_data(form=form, formset=formset))
 
-# this finds the key for the value provided as thisHeader
-def find_a_key_by_value_in_dictionary(this_dict, this_header):
-    """This is a function to find a key by value."""
-    my_key = ''
-    for key, value in this_dict.items():
-        if value == this_header:
-            my_key = key
-            break
-    return my_key
+# # MOVED BACK TO Forms.py    this finds the key for the value provided as thisHeader
+# def find_a_key_by_value_in_dictionary(this_dict, this_header):
+#     """This is a function to find a key by value."""
+#     my_key = ''
+#     for key, value in this_dict.items():
+#         if value == this_header:
+#             my_key = key
+#             break
+#     return my_key
 
 
 class AssayPlateReaderMapView(StudyGroupMixin, DetailView):
@@ -4504,12 +4533,30 @@ class AssayPlateReaderMapView(StudyGroupMixin, DetailView):
         context['review'] = True
         context['page_called'] = 'review'
         #####
-        # context['assay_map_additional_info'] = AssayPlateReadMapAdditionalInfoForm(study_id=self.object.study_id)
+
+        block_combos = AssayPlateReaderMapItemValue.objects.filter(
+            assayplatereadermap=self.object
+        ).prefetch_related(
+            'assayplatereadermapitem',
+        ).filter(
+            assayplatereadermapitem__plate_index=0
+        ).filter(
+            assayplatereadermapdatafileblock__isnull=False
+        )
+        if len(block_combos) > 0:
+            data_attached = True
+        else:
+            data_attached = False
+        context['data_attached'] = data_attached
+
+        if data_attached:
+            context['assay_map_additional_info'] = ""
+        else:
+            context['assay_map_additional_info'] = AssayPlateReadMapAdditionalInfoForm(study_id=self.object.study_id)
 
         context.update({
             'form': AssayPlateReaderMapForm(instance=self.object),
             'formset': AssayPlateReaderMapItemFormSetFactory(instance=self.object, user=self.request.user),
-            'assay_map_additional_info': AssayPlateReadMapAdditionalInfoForm(study_id=self.object.study_id)
         })
 
         return context
@@ -4526,74 +4573,74 @@ class AssayPlateReaderMapDelete(StudyViewerMixin, DeleteView):
 # function used in plate reader map app (add, view, and update) to get associated matrix item setup for display
 # do not think need this anymore, code that called got moved
 # here here todo remove this ..not needed, but do it separately to make sure no error generated
-def get_matrix_item_information_for_plate_map(study_id):
-
-    # # moved some of this function to ajax call instead
-    # matrix_items_with_setup = AssayMatrixItem.objects.filter(
-    #     study_id=study_id
-    # ).prefetch_related(
-    #     'matrix',
-    #     'assaysetupcompound_set__compound_instance__compound',
-    #     'assaysetupcompound_set__concentration_unit',
-    #     'assaysetupcompound_set__addition_location',
-    #     'assaysetupcell_set__cell_sample__cell_type__organ',
-    #     'assaysetupcell_set__cell_sample__cell_subtype',
-    #     'assaysetupcell_set__cell_sample__supplier',
-    #     'assaysetupcell_set__addition_location',
-    #     'assaysetupcell_set__density_unit',
-    #     'assaysetupsetting_set__setting',
-    #     'assaysetupsetting_set__unit',
-    #     'assaysetupsetting_set__addition_location',
-    # ).order_by('matrix__name', 'name',)
-
-    matrix_list_for_size = AssayMatrix.objects.filter(
-            study_id=study_id
-        ).order_by('name',)
-
-    matrix_list_size = []
-    matrix_list_pk = []
-    matrix_column_size = []
-
-    # #  HARDCODED plate map size
-    # for record in matrix_list_for_size:
-    #     if record.number_of_rows <= 4 and record.number_of_columns <= 6:
-    #         matrix_list_size.append(24)
-    #         matrix_list_pk.append(record.id)
-    #     elif record.number_of_rows <= 8 and record.number_of_columns <= 12:
-    #         matrix_list_size.append(96)
-    #         matrix_list_pk.append(record.id)
-    #     else:
-    #         matrix_list_size.append(384)
-    #         matrix_list_pk.append(record.id)
-
-
-    # START replacing the hardcoded stuff above
-    # HANDY - must sort in place or get empty list back
-    # copy list to new variable
-    plate_sizes = assay_plate_reader_map_info_plate_size_choices_list
-    # sort in place
-    plate_sizes.sort()
-    # print("list after sorting ", plate_sizes)
-
-    for record in matrix_list_for_size:
-        my_size = plate_sizes[-1]
-        my_record_id = record.id
-        for this_size in plate_sizes:
-            row_size = assay_plate_reader_map_info_shape_row_dict.get(this_size)
-            col_size = assay_plate_reader_map_info_shape_col_dict.get(this_size)
-            if record.number_of_rows <= row_size and record.number_of_columns <= col_size:
-                my_size = this_size
-                my_record_id = record.id
-                my_col_size = col_size
-                break
-
-        matrix_list_size.append(my_size)
-        matrix_list_pk.append(my_record_id)
-        matrix_column_size.append(my_col_size)
-    # END replacing the hardcoded stuff above
-
-    # return matrix_items_with_setup, matrix_list_size, matrix_list_pk
-    return matrix_list_size, matrix_list_pk, matrix_column_size
+# def get_matrix_item_information_for_plate_map(study_id):
+#
+#     # # moved some of this function to ajax call instead
+#     # matrix_items_with_setup = AssayMatrixItem.objects.filter(
+#     #     study_id=study_id
+#     # ).prefetch_related(
+#     #     'matrix',
+#     #     'assaysetupcompound_set__compound_instance__compound',
+#     #     'assaysetupcompound_set__concentration_unit',
+#     #     'assaysetupcompound_set__addition_location',
+#     #     'assaysetupcell_set__cell_sample__cell_type__organ',
+#     #     'assaysetupcell_set__cell_sample__cell_subtype',
+#     #     'assaysetupcell_set__cell_sample__supplier',
+#     #     'assaysetupcell_set__addition_location',
+#     #     'assaysetupcell_set__density_unit',
+#     #     'assaysetupsetting_set__setting',
+#     #     'assaysetupsetting_set__unit',
+#     #     'assaysetupsetting_set__addition_location',
+#     # ).order_by('matrix__name', 'name',)
+#
+#     matrix_list_for_size = AssayMatrix.objects.filter(
+#             study_id=study_id
+#         ).order_by('name',)
+#
+#     matrix_list_size = []
+#     matrix_list_pk = []
+#     matrix_column_size = []
+#
+#     # #  HARDCODED plate map size
+#     # for record in matrix_list_for_size:
+#     #     if record.number_of_rows <= 4 and record.number_of_columns <= 6:
+#     #         matrix_list_size.append(24)
+#     #         matrix_list_pk.append(record.id)
+#     #     elif record.number_of_rows <= 8 and record.number_of_columns <= 12:
+#     #         matrix_list_size.append(96)
+#     #         matrix_list_pk.append(record.id)
+#     #     else:
+#     #         matrix_list_size.append(384)
+#     #         matrix_list_pk.append(record.id)
+#
+#
+#     # START replacing the hardcoded stuff above
+#     # HANDY - must sort in place or get empty list back
+#     # copy list to new variable
+#     plate_sizes = assay_plate_reader_map_info_plate_size_choices_list
+#     # sort in place
+#     plate_sizes.sort()
+#     # print("list after sorting ", plate_sizes)
+#
+#     for record in matrix_list_for_size:
+#         my_size = plate_sizes[-1]
+#         my_record_id = record.id
+#         for this_size in plate_sizes:
+#             row_size = assay_plate_reader_map_info_shape_row_dict.get(this_size)
+#             col_size = assay_plate_reader_map_info_shape_col_dict.get(this_size)
+#             if record.number_of_rows <= row_size and record.number_of_columns <= col_size:
+#                 my_size = this_size
+#                 my_record_id = record.id
+#                 my_col_size = col_size
+#                 break
+#
+#         matrix_list_size.append(my_size)
+#         matrix_list_pk.append(my_record_id)
+#         matrix_column_size.append(my_col_size)
+#     # END replacing the hardcoded stuff above
+#
+#     # return matrix_items_with_setup, matrix_list_size, matrix_list_pk
+#     return matrix_list_size, matrix_list_pk, matrix_column_size
 
 
 #####
@@ -4680,7 +4727,6 @@ class AssayPlateReaderMapDataFileView(StudyGroupMixin, DetailView):
             context['no_saved_blocks'] = True
 
         return context
-
 
 
 class AssayPlateReaderMapDataFileDelete(StudyViewerMixin, DeleteView):
@@ -4852,6 +4898,7 @@ class AssayPlateReaderMapDataFileUpdate(StudyGroupMixin, UpdateView):
             # this function is in utils.py
             # add_update_map_item_values =
             # call it to write to the map item value table, do not need to return anything
+            # in the utils.py file
             add_update_plate_reader_data_map_item_values_from_file(
                 pk_for_file,
                 block_dict

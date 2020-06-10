@@ -72,6 +72,8 @@ from .utils import (
     AssayFileProcessor,
     get_user_accessible_studies,
     plate_reader_data_file_process_data,
+    CALIBRATION_CURVE_MASTER_DICT,
+    calibration_choices,
 )
 
 from django.utils import timezone
@@ -84,6 +86,7 @@ from mps.settings import MEDIA_ROOT
 import ujson as json
 import os
 import csv
+import re
 
 # TODO REFACTOR WHITTLING TO BE HERE IN LIEU OF VIEW
 # TODO REFACTOR FK QUERYSETS TO AVOID N+1
@@ -3431,6 +3434,7 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
         super(AssayPlateReadMapAdditionalInfoForm, self).__init__(*args, **kwargs)
         # note that the non-selectized versions are manipulated in javascript to facilitate the plate map
         # they are not displayed to the user (they are hidden)
+        # something did very early in development...probably would do differently now
         self.fields['se_matrix_item'].queryset = AssayMatrixItem.objects.filter(study_id=study_id).order_by('name',)
         self.fields['ns_matrix_item'].queryset = AssayMatrixItem.objects.filter(study_id=study_id).order_by('name',)
         self.fields['ns_matrix_item'].widget.attrs.update({'class': 'no-selectize'})
@@ -3444,7 +3448,7 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
         ).order_by('name',)
         self.fields['se_platemap'].widget.attrs.update({'class': ' required'})
 
-    # before got to processing the data
+    # before got to development of calibration/processing the data
     ns_matrix_item = forms.ModelChoiceField(
         queryset=AssayMatrixItem.objects.none(),
         required=False,
@@ -3552,9 +3556,11 @@ class AssayPlateReaderMapForm(BootstrapForm):
         if self.study:
             self.instance.study = self.study
 
+        # plate map instance - note, based on model, this is the name, use .id for the pk
         my_instance = self.instance
 
         # note that, if leave selectize on, will need to change js file $("#id_device").val(matrix_size);
+        # for tips on working with selectize, search in path for HANDY
         # self.fields['device'].widget.attrs['class'] += ' no-selectize'
         self.fields['name'].initial = "map-" + datetime.datetime.now().strftime("%Y%m%d")+"-"+datetime.datetime.now().strftime('%H:%M:%S')
         self.fields['name'].widget.attrs['class'] += ' required'
@@ -3570,6 +3576,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
         )
         self.fields['study_assay'].widget.attrs['class'] += ' required'
         # the selectize was causing PROBLEMS, I turned it off this field
+        # HANDY - turn of selectize at the form level
         # self.fields['volume_unit'].widget.attrs.update({'class': 'no-selectize'})
         # self.fields['volume_unit'].widget.attrs['class'] += ' form-control'
         self.fields['standard_molecular_weight'].widget.attrs['class'] += ' form-control'
@@ -3590,8 +3597,6 @@ class AssayPlateReaderMapForm(BootstrapForm):
         ).order_by(
             'assayplatereadermapdatafileblock__id',
         )
-
-        # here here make sure the plate map index works after remove from value
 
         distinct_plate_map_with_select_string = []
         distinct_plate_map_with_block_pk = []
@@ -3616,6 +3621,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
                 pick_string_block_pk = data_file_block_id_str
                 distinct_plate_map_with_select_string.append((pick_value, pick_string))
                 distinct_plate_map_with_block_pk.append((pick_value, pick_string_block_pk))
+                # print("looking for unique blocks counter ", i)
                 i = i + 1
 
         # self.fields['ns_file_pk_block_pk'].widget.attrs['class'] += ' no-selectize'
@@ -3637,36 +3643,41 @@ class AssayPlateReaderMapForm(BootstrapForm):
         self.fields['radio_replicate_handling_average_or_not'].required = False
 
         # HANDY - save problems, this is likely the cause (required fields!)
-        self.fields['form_data_processing_multiplier_string'].required = False
+        # self.fields['form_data_processing_multiplier_string'].required = False
+        #
+        # self.fields['form_data_processing_multiplier_string_short'].required = False
+        # self.fields['form_data_processing_multiplier_value_short'].required = False
 
-        self.fields['form_data_processing_multiplier_string_short'].required = False
-        self.fields['form_data_processing_multiplier_value_short'].required = False
+        # these multiplier fields were added to explain the multiplier in a table
+        # the long string was unacceptable to the project PI
+        # these really don't have to be form fields (not needed for data processing), but it was just easier/faster
+        # self.fields['form_data_processing_multiplier_string1'].required = False
+        # self.fields['form_data_processing_multiplier_string2'].required = False
+        # self.fields['form_data_processing_multiplier_string3'].required = False
+        # self.fields['form_data_processing_multiplier_string4'].required = False
+        # self.fields['form_data_processing_multiplier_string5'].required = False
+        # self.fields['form_data_processing_multiplier_string6'].required = False
+        # self.fields['form_data_processing_multiplier_string7'].required = False
+        # self.fields['form_data_processing_multiplier_string8'].required = False
+        # self.fields['form_data_processing_multiplier_string9'].required = False
 
-        self.fields['form_data_processing_multiplier_string1'].required = False
-        self.fields['form_data_processing_multiplier_string2'].required = False
-        self.fields['form_data_processing_multiplier_string3'].required = False
-        self.fields['form_data_processing_multiplier_string4'].required = False
-        self.fields['form_data_processing_multiplier_string5'].required = False
-        self.fields['form_data_processing_multiplier_string6'].required = False
-        self.fields['form_data_processing_multiplier_string7'].required = False
-        self.fields['form_data_processing_multiplier_string8'].required = False
-        self.fields['form_data_processing_multiplier_string9'].required = False
-
+        # calibration fields - only a few are really needed as form fields (eg the calibration curve used, bounds)
+        # many are not really needed in the data processing and could be handled differently
         self.fields['form_data_parsable_message'].required = False
         self.fields['form_calibration_curve_method_used'].required = False
-        self.fields['form_calibration_equation'].required = False
-        self.fields['form_calibration_rsquared'].required = False
+        # self.fields['form_calibration_equation'].required = False
+        # self.fields['form_calibration_rsquared'].required = False
 
-        self.fields['form_calibration_parameter_1_string'].required = False
-        self.fields['form_calibration_parameter_2_string'].required = False
-        self.fields['form_calibration_parameter_3_string'].required = False
-        self.fields['form_calibration_parameter_4_string'].required = False
-        self.fields['form_calibration_parameter_5_string'].required = False
-        self.fields['form_calibration_parameter_1_value'].required = False
-        self.fields['form_calibration_parameter_2_value'].required = False
-        self.fields['form_calibration_parameter_3_value'].required = False
-        self.fields['form_calibration_parameter_4_value'].required = False
-        self.fields['form_calibration_parameter_5_value'].required = False
+        # self.fields['form_calibration_parameter_1_string'].required = False
+        # self.fields['form_calibration_parameter_2_string'].required = False
+        # self.fields['form_calibration_parameter_3_string'].required = False
+        # self.fields['form_calibration_parameter_4_string'].required = False
+        # self.fields['form_calibration_parameter_5_string'].required = False
+        # self.fields['form_calibration_parameter_1_value'].required = False
+        # self.fields['form_calibration_parameter_2_value'].required = False
+        # self.fields['form_calibration_parameter_3_value'].required = False
+        # self.fields['form_calibration_parameter_4_value'].required = False
+        # self.fields['form_calibration_parameter_5_value'].required = False
         self.fields['form_calibration_standard_fitted_min_for_e'].required = False
         self.fields['form_calibration_standard_fitted_max_for_e'].required = False
         self.fields['form_calibration_sample_blank_average'].required = False
@@ -3682,6 +3693,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
         # Need a valid choice field.
         # When the selected plate map has standards, the user will never see this field and will not need it.
         # If the plate does not have standards, the user will need the option to pick to borrow standards from another plate.
+        # Lab representative (ie Richard) indicated that standards, standard blanks, and sample blanks would all be borrowed from the same plate!
 
         # does this plate map have standards?
         does_this_plate_have_standards = AssayPlateReaderMapItem.objects.filter(
@@ -3704,6 +3716,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
             # if we have to borrow standards, need a list to pick from - add to choiceBorrowData
             # need to borrow standards from another plate
             # 20200510 - moving this to here from ajax call. Might move back depending on performance.
+            # most users will not do it this way....
             as_value_formset_with_file_block_standard = AssayPlateReaderMapItemValue.objects.filter(
                 study_id=self.study
             ).filter(
@@ -3718,17 +3731,14 @@ class AssayPlateReaderMapForm(BootstrapForm):
                 'assayplatereadermapdatafileblock__id', 'assayplatereadermapitem__well_use'
             )
 
-            # here here check well_use after change
-
             # print('as_value_formset_with_file_block_standard')
             # print(as_value_formset_with_file_block_standard)
 
-            number_filed_combos_standard = len(as_value_formset_with_file_block_standard)
             prev_file = "none"
             prev_data_block_file_specific_pk = 0
 
             # queryset should have one record for each value SET that HAS a file-block and at least one standard associated to it
-            if number_filed_combos_standard > 0:
+            if len(as_value_formset_with_file_block_standard) > 0:
                 for record in as_value_formset_with_file_block_standard:
 
                     short_file_name = os.path.basename(str(record.assayplatereadermapdatafile.plate_reader_file))
@@ -3765,8 +3775,6 @@ class AssayPlateReaderMapForm(BootstrapForm):
         self.fields['ns_block_standard_borrow_string_to_block_pk_back_to_platemap_pk'].required = False
         self.fields['se_block_standard_borrow_string'].widget.attrs['class'] += ' required'
         self.fields['se_block_standard_borrow_string'].required = False
-        # field below replaced with something else,...delete when sure do not need
-        # self.fields['form_file_block_pk_borrowed_for_standard'].required = False
 
     # enable the selection of a plate to borrow standards from by letting the user see a string of info about the DATA BLOCK (not just the plate map!)
     se_block_standard_borrow_string = forms.ChoiceField()
@@ -3780,13 +3788,13 @@ class AssayPlateReaderMapForm(BootstrapForm):
     form_block_standard_borrow_pk_platemap_single_for_storage = forms.IntegerField(
         required=False,
     )
-
-    form_hold_the_study_id = forms.IntegerField(
-        required=False,
-    )
-    form_hold_the_platemap_id = forms.IntegerField(
-        required=False,
-    )
+    # here here, remove these next two after checking other way works
+    # form_hold_the_study_id = forms.IntegerField(
+    #     required=False,
+    # )
+    # form_hold_the_platemap_id = forms.IntegerField(
+    #     required=False,
+    # )
     form_hold_the_data_block_metadata_string = forms.CharField(
         widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
     )
@@ -3796,7 +3804,6 @@ class AssayPlateReaderMapForm(BootstrapForm):
     form_hold_the_notes_string = forms.CharField(
         widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
     )
-
     form_block_file_data_block_selected_pk_for_storage = forms.IntegerField(
         required=False,
     )
@@ -3807,29 +3814,24 @@ class AssayPlateReaderMapForm(BootstrapForm):
     # pk of selected file block (stays lined up with the string)
     ns_block_select_pk = forms.ChoiceField()
 
-    # this field got replaced with a different one...delete when sure do not need
-    # form_file_block_pk_borrowed_for_standard = forms.IntegerField(
-    #     widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': 0})
-    # )
-    # NOTE: ns_block_select_pk is the field with the block that is being processed
-
     # END section to deal with raw data showing in the plate map after file assignment and deal with standard in a different file block
 
-    # print("MAIN FORM")
+    # print(calibration_choices)
 
     # processing the data fields added
     se_form_calibration_curve = forms.ChoiceField(
         choices=(
-            ('select_one', 'Select One'),
-            ('no_calibration', 'No Calibration'),
-            ('best_fit', 'Best Fit'),
-            ('logistic4', '4 Parameter Logistic w/fitted bounds'),
-            ('logistic4a0', '4 Parameter Logistic w/lower bound = 0'),
-            ('logistic4f', '4 Parameter Logistic w/user specified bound(s)'),
-            ('linear', 'Linear w/fitted intercept'),
-            ('linear0', 'Linear w/intercept = 0'),
-            ('log', 'Logarithmic'),
-            ('poly2', 'Quadratic Polynomial'),
+            calibration_choices
+            # ('select_one', 'Select One'),
+            # ('no_calibration', 'No Calibration'),
+            # ('best_fit', 'Best Fit'),
+            # ('logistic4', '4 Parameter Logistic w/fitted bounds'),
+            # ('logistic4a0', '4 Parameter Logistic w/lower bound = 0'),
+            # ('logistic4f', '4 Parameter Logistic w/user specified bound(s)'),
+            # ('linear', 'Linear w/fitted intercept'),
+            # ('linear0', 'Linear w/intercept = 0'),
+            # ('log', 'Logarithmic'),
+            # ('poly2', 'Quadratic Polynomial'),
 
             # ('select_one', 'Select One (n = standard concentration, s = signal)'),
             # ('no_calibration', 'No Calibration'),
@@ -3843,6 +3845,8 @@ class AssayPlateReaderMapForm(BootstrapForm):
             )
     )
 
+    # forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+    # se_form_blank_handling = forms.ChoiceField(widget=forms.RadioSelect(attrs={'disabled': 'disabled'}),
     se_form_blank_handling = forms.ChoiceField(
         choices=(('subtracteachfromeach', 'Subtracting Average STANDARD Blanks from STANDARDS and Average SAMPLE Blanks from SAMPLES'),
                  ('subtractstandardfromstandard', 'Subtracting Average STANDARD Blanks from STANDARDS (ignore sample blanks)'),
@@ -3891,33 +3895,33 @@ class AssayPlateReaderMapForm(BootstrapForm):
     # form_data_processing_multiplier_string.widget.attrs.update({'required': False, 'initial': ""})
 
     # HANDY - how to make an extra field a widget so can manipulate it eg readonly
-    form_data_processing_multiplier_string = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 3, 'readonly': 'readonly', 'required': False})
-    )
-
-    form_data_processing_multiplier_string_short = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 1, 'readonly': 'readonly'}))
-    form_data_processing_multiplier_value_short = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 1, 'readonly': 'readonly'}))
-
-    form_data_processing_multiplier_string1 = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
-    form_data_processing_multiplier_string2 = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
-    form_data_processing_multiplier_string3 = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
-    form_data_processing_multiplier_string4 = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
-    form_data_processing_multiplier_string5 = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
-    form_data_processing_multiplier_string6 = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
-    form_data_processing_multiplier_string7 = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
-    form_data_processing_multiplier_string8 = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
-    form_data_processing_multiplier_string9 = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
+    # form_data_processing_multiplier_string = forms.CharField(
+    #     widget=forms.Textarea(attrs={'rows': 3, 'readonly': 'readonly', 'required': False})
+    # )
+    #
+    # form_data_processing_multiplier_string_short = forms.CharField(
+    #     widget=forms.Textarea(attrs={'rows': 1, 'readonly': 'readonly'}))
+    # form_data_processing_multiplier_value_short = forms.CharField(
+    #     widget=forms.Textarea(attrs={'rows': 1, 'readonly': 'readonly'}))
+    #
+    # form_data_processing_multiplier_string1 = forms.CharField(
+    #     widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
+    # form_data_processing_multiplier_string2 = forms.CharField(
+    #     widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
+    # form_data_processing_multiplier_string3 = forms.CharField(
+    #     widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
+    # form_data_processing_multiplier_string4 = forms.CharField(
+    #     widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
+    # form_data_processing_multiplier_string5 = forms.CharField(
+    #     widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
+    # form_data_processing_multiplier_string6 = forms.CharField(
+    #     widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
+    # form_data_processing_multiplier_string7 = forms.CharField(
+    #     widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
+    # form_data_processing_multiplier_string8 = forms.CharField(
+    #     widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
+    # form_data_processing_multiplier_string9 = forms.CharField(
+    #     widget=forms.Textarea(attrs={'rows': 2, 'readonly': 'readonly'}))
 
     form_data_parsable_message = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 6, 'readonly': 'readonly', 'required': False})
@@ -3927,16 +3931,12 @@ class AssayPlateReaderMapForm(BootstrapForm):
         widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
     )
 
-    # form_calibration_curve_method_used = forms.CharField(
-    #     required=False,
-    #     initial="-",
+    # form_calibration_equation = forms.CharField(
+    #     widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
     # )
-    form_calibration_equation = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'required': False, 'initial': '-'})
-    )
-    form_calibration_rsquared = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
-    )
+    # form_calibration_rsquared = forms.CharField(
+    #     widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
+    # )
 
     radio_replicate_handling_average_or_not = forms.ChoiceField(
         # widget=forms.RadioSelect(attrs={'id': 'value'}),
@@ -3954,36 +3954,36 @@ class AssayPlateReaderMapForm(BootstrapForm):
     # going to need to pass some calibration parameters
     # think the max I will need is 5 for 5 parameter logistic
     # going to need to keep track of order
-    form_calibration_parameter_1_string = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
-    )
-    form_calibration_parameter_2_string = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
-    )
-    form_calibration_parameter_3_string = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
-    )
-    form_calibration_parameter_4_string = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
-    )
-    form_calibration_parameter_5_string = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
-    )
-    form_calibration_parameter_1_value = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
-    )
-    form_calibration_parameter_2_value = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
-    )
-    form_calibration_parameter_3_value = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
-    )
-    form_calibration_parameter_4_value = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
-    )
-    form_calibration_parameter_5_value = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
-    )
+    # form_calibration_parameter_1_string = forms.CharField(
+    #     widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
+    # )
+    # form_calibration_parameter_2_string = forms.CharField(
+    #     widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
+    # )
+    # form_calibration_parameter_3_string = forms.CharField(
+    #     widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
+    # )
+    # form_calibration_parameter_4_string = forms.CharField(
+    #     widget=forms.TextInput(attrs={'readonly': 'readonly', 'initial': '-'})
+    # )
+    # form_calibration_parameter_5_string = forms.CharField(
+    #     widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
+    # )
+    # form_calibration_parameter_1_value = forms.CharField(
+    #     widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
+    # )
+    # form_calibration_parameter_2_value = forms.CharField(
+    #     widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
+    # )
+    # form_calibration_parameter_3_value = forms.CharField(
+    #     widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
+    # )
+    # form_calibration_parameter_4_value = forms.CharField(
+    #     widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
+    # )
+    # form_calibration_parameter_5_value = forms.CharField(
+    #     widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
+    # )
     form_calibration_standard_fitted_min_for_e = forms.CharField(
         widget=forms.TextInput(attrs={'readonly': 'readonly','initial': '-'})
     )
@@ -4024,208 +4024,248 @@ class AssayPlateReaderMapForm(BootstrapForm):
     #
     #     return cleaned_data
 
-        # def save(self, commit=True):
-    #     print("made it here")
-    #     data = self.cleaned_data
-    #     print("data.get('form_make_mifc_on_submit') ", data.get('form_make_mifc_on_submit'))
+    def clean(self):
+        # First thing in clean
+        # Call super for data
+        data = super(AssayPlateReaderMapForm, self).clean()
+        # After initial stuff done
+        self.process_file(save=False, calledme='clean')
+        return data
 
-    # moving back to views
-    # def clean(self):
-    #     data = self.cleaned_data
-    #
-    #     if data.get('form_make_mifc_on_submit'):
-    #         # search term MIFC - if MIFC changes, this will need changed
-    #         # make a list of column headers for the mifc file
-    #         column_table_headers_average = [
-    #             'Chip ID',
-    #             'Cross Reference',
-    #             'Assay Plate ID',
-    #             'Assay Well ID',
-    #             'Day',
-    #
-    #             'Hour',
-    #             'Minute',
-    #             'Target/Analyte',
-    #             'Subtarget',
-    #             'Method/Kit',
-    #
-    #             'Sample Location',
-    #             'Value',
-    #             'Value Unit',
-    #             'Replicate',
-    #             'Caution Flag',
-    #
-    #             'Exclude',
-    #             'Notes',
-    #             'Processing Details',
-    #         ]
-    #         # search term MIFC - if MIFC changes, this will need changed
-    #         # Make a dictionary of headers in utils and header needed in the mifc file
-    #         utils_key_column_header = {
-    #             'matrix_item_name': 'Chip ID',
-    #             'cross_reference': 'Cross Reference',
-    #             'plate_name': 'Assay Plate ID',
-    #             'well_name': 'Assay Well ID',
-    #             'day': 'Day',
-    #             'hour': 'Hour',
-    #             'minute': 'Minute',
-    #             'target': 'Target/Analyte',
-    #             'subtarget': 'Subtarget',
-    #             'method': 'Method/Kit',
-    #             'location_name': 'Sample Location',
-    #             'processed_value': 'Value',
-    #             'unit': 'Value Unit',
-    #             'replicate': 'Replicate',
-    #             'caution_flag': 'Caution Flag',
-    #             'exclude': 'Exclude',
-    #             'notes': 'Notes',
-    #             'sendmessage': 'Processing Details'}
-    #
-    #         # these should match what is in the forms.py...could make a generic dict, but leave for now WATCH BE CAREFUL
-    #         calibration_curve_xref = {
-    #             'select_one': 'Select One',
-    #             'no_calibration': 'No Calibration',
-    #             'best_fit': 'Best Fit',
-    #             'logistic4': '4 Parameter Logistic',
-    #             'linear': 'Linear w/fitted intercept',
-    #             'linear0': 'Linear w/intercept = 0',
-    #             'log': 'Logarithmic',
-    #             'poly2': 'Quadratic Polynomial'
-    #         }
-    #
-    #         # print(".unit ",data.get('standard_unit').unit)
-    #         # print(".id ", data.get('standard_unit').id)
-    #         # .unit
-    #         # µg / mL
-    #         # .id
-    #         # 6
-    #
-    #         if data.get('form_block_standard_borrow_pk_single_for_storage') == None:
-    #             borrowed_block_pk = -1
-    #         else:
-    #             borrowed_block_pk = data.get('form_block_standard_borrow_pk_single_for_storage')
-    #
-    #         if data.get('form_block_standard_borrow_pk_platemap_single_for_storage') == None:
-    #             borrowed_platemap_pk = -1
-    #         else:
-    #             borrowed_platemap_pk = data.get(
-    #                 'form_block_standard_borrow_pk_platemap_single_for_storage')
-    #
-    #         use_curve_long = data.get('form_calibration_curve_method_used')
-    #         use_curve = find_a_key_by_value_in_dictionary(calibration_curve_xref, use_curve_long)
-    #         if use_curve == 'select_one':
-    #             use_curve = 'no_calibration'
-    #
-    #         # make a dictionary to send to the utils.py when call the function
-    #         set_dict = {
-    #             'called_from': 'form_save',
-    #             'study': data.get('form_hold_the_study_id'),
-    #             'pk_platemap': data.get('form_hold_the_platemap_id'),
-    #             'pk_data_block': data.get('form_block_file_data_block_selected_pk_for_storage'),
-    #             'plate_name': data.get('name'),
-    #             'form_calibration_curve': use_curve,
-    #             'multiplier': data.get('form_data_processing_multiplier'),
-    #             'unit': data.get('form_calibration_unit'),
-    #             'standard_unit': data.get('standard_unit').unit,
-    #             'form_min_standard': data.get('form_calibration_standard_fitted_min_for_e'),
-    #             'form_max_standard': data.get('form_calibration_standard_fitted_max_for_e'),
-    #             'form_blank_handling': data.get('se_form_blank_handling'),
-    #             'radio_standard_option_use_or_not': data.get('radio_standard_option_use_or_not'),
-    #             'radio_replicate_handling_average_or_not_0': data.get(
-    #                 'radio_replicate_handling_average_or_not'),
-    #             'borrowed_block_pk': borrowed_block_pk,
-    #             'borrowed_platemap_pk': borrowed_platemap_pk,
-    #             'count_standards_current_plate': data.get('form_number_standards_this_plate'),
-    #             'target': data.get('form_calibration_target'),
-    #             'method': data.get('form_calibration_method'),
-    #             'time_unit': data.get('time_unit'),
-    #             'volume_unit': data.get('volume_unit'),
-    #             'user_notes': data.get('form_hold_the_notes_string'),
-    #             'user_omits': data.get('form_hold_the_omits_string'),
-    #             'plate_size': data.get('device'),
-    #         }
-    #
-    #         # this function is in utils.py that returns data
-    #         data_mover = plate_reader_data_file_process_data(set_dict)
-    #         # what comes back is a dictionary of
-    #         list_of_dicts = data_mover[9]
-    #         list_of_lists_mifc_headers_row_0 = [None] * (len(list_of_dicts) + 1)
-    #         list_of_lists_mifc_headers_row_0[0] = column_table_headers_average
-    #         i = 1
-    #         # print(" ")
-    #         for each_dict_in_list in list_of_dicts:
-    #             list_each_row = []
-    #             for this_mifc_header in column_table_headers_average:
-    #                 # print("this_mifc_header ", this_mifc_header)
-    #                 # find the key in the dictionary that we need
-    #                 utils_dict_header = find_a_key_by_value_in_dictionary(utils_key_column_header, this_mifc_header)
-    #                 # print("utils_dict_header ", utils_dict_header)
-    #                 # get the value that is associated with this header in the dict
-    #                 this_value = each_dict_in_list.get(utils_dict_header)
-    #                 # print("this_value ", this_value)
-    #                 # add the value to the list for this dict in the list of dicts
-    #                 list_each_row.append(this_value)
-    #             # when down with the dictionary, add the completely list for this row to the list of lists
-    #             # print("list_each_row ", list_each_row)
-    #             list_of_lists_mifc_headers_row_0[i] = list_each_row
-    #             i = i + 1
-    #
-    #         # print("  ")
-    #         # print('list_of_lists_mifc_headers_row_0')
-    #         # print(list_of_lists_mifc_headers_row_0)
-    #
-    #         # First make a csv from the list_of_lists (using list_of_lists_mifc_headers_row_0)
-    #
-    #         # Specify the file for use with the file uploader class
-    #         bulk_location = upload_file_location(
-    #            self.study,
-    #             'PLATE-{}|METADATA-{}'.format(
-    #                 data.get('name'),
-    #                 data.get('form_hold_the_data_block_metadata_string')
-    #             )
-    #         )
-    #
-    #         # Make sure study has directories
-    #         if not os.path.exists(MEDIA_ROOT + '/data_points/{}'.format(data.get('form_hold_the_study_id'))):
-    #             os.makedirs(MEDIA_ROOT + '/data_points/{}'.format(data.get('form_hold_the_study_id')))
-    #
-    #         # Need to import from models
-    #         # Avoid magic string, use media location
-    #         file_location = MEDIA_ROOT.replace('mps/../', '', 1) + '/' + bulk_location + '.csv'
-    #
-    #         # Should make a csv writer to avoid repetition
-    #         file_to_write = open(file_location, 'w')
-    #         csv_writer = csv.writer(file_to_write, dialect=csv.excel)
-    #
-    #         # Add the UTF-8 BOM
-    #         list_of_lists_mifc_headers_row_0[0][0] = '\ufeff' + list_of_lists_mifc_headers_row_0[0][0]
-    #
-    #         # Write the lines
-    #         for one_line_of_data in list_of_lists_mifc_headers_row_0:
-    #             csv_writer.writerow(one_line_of_data)
-    #
-    #         file_to_write.close()
-    #         new_mifc_file = open(file_location, 'rb')
-    #         # print("self.user ",self.user)
-    #         file_processor = AssayFileProcessor(new_mifc_file,
-    #                                             self.study,
-    #                                             self.user, save=True,
-    #                                             full_path='/media/' + bulk_location + '.csv')
-    #
-    #         # Process the file
-    #         file_processor.process_file()
-    #
-    #     return data
+    def save(self, commit=True):
+                # First thing in save
+        # Make sure to pass commit to the super call (don't want accidental saves)
+        map = super(AssayPlateReaderMapForm, self).save(commit=commit)
 
-# # this finds the key for the value provided as thisHeader
-# def find_a_key_by_value_in_dictionary(this_dict, this_header):
-#     my_key = ''
-#     for key, value in this_dict.items():
-#         if value == this_header:
-#             my_key = key
-#             break
-#     return my_key
+        # Only save the file if commit is true
+        if commit:
+            self.process_file(save=True, calledme="save")
+        return map
 
+    def process_file(self, save=False, calledme="c"):
+        #### START When saving AssayPlateReaderMapUpdate after a calibration
+        # if user checked the box to send to study summary, make that happen
+
+        data = self.cleaned_data
+        # study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
+
+        if data.get('form_make_mifc_on_submit'):
+            # search term MIFC - if MIFC changes, this will need changed
+            # make a list of column headers for the mifc file
+            # could use COLUMN_HEADERS, but need to append one
+            column_table_headers_average = [
+                'Chip ID',
+                'Cross Reference',
+                'Assay Plate ID',
+                'Assay Well ID',
+                'Day',
+
+                'Hour',
+                'Minute',
+                'Target/Analyte',
+                'Subtarget',
+                'Method/Kit',
+
+                'Sample Location',
+                'Value',
+                'Value Unit',
+                'Replicate',
+                'Caution Flag',
+
+                'Exclude',
+                'Notes',
+                'Processing Details',
+            ]
+            # search term MIFC - if MIFC changes, this will need changed
+            # Make a dictionary of headers in utils and header needed in the mifc file
+            utils_key_column_header = {
+                'matrix_item_name': 'Chip ID',
+                'cross_reference': 'Cross Reference',
+                'plate_name': 'Assay Plate ID',
+                'well_name': 'Assay Well ID',
+                'day': 'Day',
+                'hour': 'Hour',
+                'minute': 'Minute',
+                'target': 'Target/Analyte',
+                'subtarget': 'Subtarget',
+                'method': 'Method/Kit',
+                'location_name': 'Sample Location',
+                'processed_value': 'Value',
+                'unit': 'Value Unit',
+                'replicate': 'Replicate',
+                'caution_flag': 'Caution Flag',
+                'exclude': 'Exclude',
+                'notes': 'Notes',
+                'sendmessage': 'Processing Details'}
+
+            # print(".unit ",data.get('standard_unit').unit)
+            # print(".id ", data.get('standard_unit').id)
+            # .unit
+            # µg / mL
+            # .id
+            # 6
+            # print(".unit ",data.get('standard_unit').unit)
+            # print(".id ", data.get('standard_unit').id)
+
+            if data.get('form_block_standard_borrow_pk_single_for_storage') == None:
+                borrowed_block_pk = -1
+            else:
+                borrowed_block_pk = data.get('form_block_standard_borrow_pk_single_for_storage')
+
+            if data.get('form_block_standard_borrow_pk_platemap_single_for_storage') == None:
+                borrowed_platemap_pk = -1
+            else:
+                borrowed_platemap_pk = data.get(
+                    'form_block_standard_borrow_pk_platemap_single_for_storage')
+
+            use_curve_long = data.get('form_calibration_curve_method_used')
+            use_curve = find_a_key_by_value_in_dictionary(CALIBRATION_CURVE_MASTER_DICT, use_curve_long)
+            if use_curve == 'select_one':
+                use_curve = 'no_calibration'
+
+            if len(use_curve.strip()) == 0:
+                err_msg = "The calibration method " + use_curve_long + " was not found in the cross reference. This is a very bad error. It must be fixed"
+                print(err_msg)
+
+            # form.instance.study
+            # make a dictionary to send to the utils.py when call the function
+            set_dict = {
+                'called_from': 'form_save',
+                'study': self.instance.study.id,
+                'pk_platemap': self.instance.id,
+                'pk_data_block': data.get('form_block_file_data_block_selected_pk_for_storage'),
+                'plate_name': data.get('name'),
+                'form_calibration_curve': use_curve,
+                'multiplier': data.get('form_data_processing_multiplier'),
+                'unit': data.get('form_calibration_unit'),
+                'standard_unit': data.get('standard_unit').unit,
+                'form_min_standard': data.get('form_calibration_standard_fitted_min_for_e'),
+                'form_max_standard': data.get('form_calibration_standard_fitted_max_for_e'),
+                'form_blank_handling': data.get('se_form_blank_handling'),
+                'radio_standard_option_use_or_not': data.get('radio_standard_option_use_or_not'),
+                'radio_replicate_handling_average_or_not_0': data.get(
+                    'radio_replicate_handling_average_or_not'),
+                'borrowed_block_pk': borrowed_block_pk,
+                'borrowed_platemap_pk': borrowed_platemap_pk,
+                'count_standards_current_plate': data.get('form_number_standards_this_plate'),
+                'target': data.get('form_calibration_target'),
+                'method': data.get('form_calibration_method'),
+                'time_unit': data.get('time_unit'),
+                'volume_unit': data.get('volume_unit'),
+                'user_notes': data.get('form_hold_the_notes_string'),
+                'user_omits': data.get('form_hold_the_omits_string'),
+                'plate_size': data.get('device'),
+            }
+
+            # this function is in utils.py that returns data
+            data_mover = plate_reader_data_file_process_data(set_dict)
+            # what comes back is a dictionary of
+            list_of_dicts = data_mover[9]
+            list_of_lists_mifc_headers_row_0 = [None] * (len(list_of_dicts) + 1)
+            list_of_lists_mifc_headers_row_0[0] = column_table_headers_average
+            i = 1
+            # print(" ")
+            for each_dict_in_list in list_of_dicts:
+                list_each_row = []
+                for this_mifc_header in column_table_headers_average:
+                    # print("this_mifc_header ", this_mifc_header)
+                    # find the key in the dictionary that we need
+                    utils_dict_header = find_a_key_by_value_in_dictionary(utils_key_column_header,
+                                                                          this_mifc_header)
+                    # print("utils_dict_header ", utils_dict_header)
+                    # print("this_mifc_header ", this_mifc_header)
+                    # get the value that is associated with this header in the dict
+                    this_value = each_dict_in_list.get(utils_dict_header)
+                    # print("this_value ", this_value)
+                    # add the value to the list for this dict in the list of dicts
+                    list_each_row.append(this_value)
+                # when down with the dictionary, add the completely list for this row to the list of lists
+                # print("list_each_row ", list_each_row)
+                list_of_lists_mifc_headers_row_0[i] = list_each_row
+                i = i + 1
+
+            # print("  ")
+            # print('list_of_lists_mifc_headers_row_0')
+            # print(list_of_lists_mifc_headers_row_0)
+            # print("  ")
+
+            # First make a csv from the list_of_lists (using list_of_lists_mifc_headers_row_0)
+
+            # or self.objects.study
+            my_study = self.instance.study
+            # my_user = self.request.user
+            my_user = self.user
+            my_platemap = self.instance
+            my_data_block_pk = data.get('form_block_file_data_block_selected_pk_for_storage')
+
+            platenamestring1 = str(my_platemap)
+            metadatastring1 = str(data.get('form_hold_the_data_block_metadata_string'))
+
+            # print("study ",my_study)
+            # print("platemap ",my_platemap)
+            # print("user ",my_user)
+            # print("data block ", my_data_block_pk)
+
+            # Specify the file for use with the file uploader class
+            # some of these caused errors in the file name so remove them
+            # Luke and Quinn voted for all the symbols out instead of a few
+
+            platenamestring = re.sub('[^a-zA-Z0-9_]', '', platenamestring1)
+            metadatastring = re.sub('[^a-zA-Z0-9_]', '', metadatastring1)
+
+            name_the_file = 'PLATE-{}-{}--METADATA-{}-{}'.format(
+                                my_platemap.id, platenamestring,
+                                my_data_block_pk, metadatastring
+                            )
+            # print("name_the_file ",name_the_file)
+
+            bulk_location = upload_file_location(
+                my_study,
+                name_the_file
+            )
+
+            # Make sure study has directories
+            if not os.path.exists(MEDIA_ROOT + '/data_points/{}'.format(my_study.id)):
+                os.makedirs(MEDIA_ROOT + '/data_points/{}'.format(my_study.id))
+
+            # Need to import from models
+            # Avoid magic string, use media location
+            file_location = MEDIA_ROOT.replace('mps/../', '', 1) + '/' + bulk_location + '.csv'
+
+            # Should make a csv writer to avoid repetition
+            file_to_write = open(file_location, 'w')
+            csv_writer = csv.writer(file_to_write, dialect=csv.excel)
+
+            # Add the UTF-8 BOM
+            list_of_lists_mifc_headers_row_0[0][0] = '\ufeff' + list_of_lists_mifc_headers_row_0[0][0]
+
+            # print("!!!!!!!!")
+            # Write the lines here here uncomment this
+            for one_line_of_data in list_of_lists_mifc_headers_row_0:
+                csv_writer.writerow(one_line_of_data)
+
+            file_to_write.close()
+            new_mifc_file = open(file_location, 'rb')
+
+            file_processor = AssayFileProcessor(new_mifc_file,
+                                                my_study,
+                                                my_user, save=save,
+                                                full_path='/media/' + bulk_location + '.csv')
+
+            # Process the file
+            file_processor.process_file()
+        #### END When saving AssayPlateReaderMapUpdate after a calibration
+
+
+# this finds the key for the value provided as thisHeader
+def find_a_key_by_value_in_dictionary(this_dict, this_header):
+    """This is a function to find a key by value."""
+    my_key = ''
+    for key, value in this_dict.items():
+        if value == this_header:
+            my_key = key
+            break
+    return my_key
 
 # There should be a complete set of items for each saved plate map (one for each well in the selected plate)
 class AssayPlateReaderMapItemForm(forms.ModelForm):
@@ -4239,8 +4279,8 @@ class AssayPlateReaderMapItemForm(forms.ModelForm):
             'matrix_item',
             'location',
             'name',
-            'row_index',
-            'column_index',
+            # 'row_index',
+            # 'column_index',
             'plate_index',
             'standard_value',
             'dilution_factor',
@@ -4255,13 +4295,14 @@ class AssayPlateReaderMapItemForm(forms.ModelForm):
     #     super(AssayPlateReaderMapItemForm, self).__init__(*args, **kwargs)
     #     self.fields['name'].widget.attrs.update({'class': ' no-selectize'})
 
-    # 20200428 for user entered information
-    form_user_entered_notes = forms.CharField(
-        initial='-',
-        required=False,
-        widget=forms.Textarea(attrs={'cols': 10, 'rows': 1}),
-    )
-    form_user_entered_omit_from_average = forms.BooleanField(required=False, )
+    # # 20200428 for user entered information
+    # # 20200609 these are adding too much overhead, and did not use in data process, so remove these
+    # form_user_entered_notes = forms.CharField(
+    #     initial='-',
+    #     required=False,
+    #     widget=forms.Textarea(attrs={'cols': 10, 'rows': 1}),
+    # )
+    # form_user_entered_omit_from_average = forms.BooleanField(required=False, )
 
 ###########
 # 20200522 getting rid of the value form all together since not allowing editing after values attached to plate map.
@@ -4310,7 +4351,7 @@ class AssayPlateReaderMapItemFormSet(BaseInlineFormSetForcedUniqueness):
             self.study = self.instance.study
 
         # use the filter to get matrix items in this study ONLY - makes the dic much smaller
-        # this speed up the custom_fields
+        # HANDY - this speed up the custom_fields
         filters = {'matrix_item': {'study_id': self.study.id}}
         self.dic = get_dic_for_custom_choice_field(self, filters=filters)
         for form in self.forms:
@@ -4568,30 +4609,6 @@ class AssayPlateReaderMapDataFileBlockForm(forms.ModelForm):
         # this made the dropdown behave when copied with the formset!
         # SUPER IMPORTANT and HANDY when need to copy formsets with dropdowns - if have selectized, it is a big mess
         self.fields['assayplatereadermap'].widget.attrs.update({'class': ' no-selectize required'})
-
-    # move to the java script...it will be better for the user
-    # def clean(self):
-    #     # print("self",self)
-    #     # this goes through each formset and evaluates
-    #     # put things here that need to check before save
-    #     cleaned_data = self.cleaned_data
-    #
-    #     c_data_block = self.cleaned_data.get('data_block')
-    #     print('c_data_block ', c_data_block)
-    #     c_line_start = self.cleaned_data.get('line_start')
-    #     c_line_end = self.cleaned_data.get('line_end')
-    #     c_delimited_start = self.cleaned_data.get('delimited_start')
-    #     c_delimited_end = self.cleaned_data.get('delimited_end')
-    #
-    #     if c_data_block is not None:
-    #         if c_line_end < c_line_start:
-    #             raise forms.ValidationError("The line end ("+str(c_line_end)+") is less than or equal to the line start ("+str(c_line_start)+") in DATA BLOCK: "+str(c_data_block)+". That means no lines were selected. Fix it."
-    #                                         , code="invalid",)
-    #         if c_delimited_end < c_delimited_start:
-    #             raise forms.ValidationError("The column end is less than or equal to the column start in DATA BLOCK: "+str(c_data_block)+". That means no columns were selected. Fix it."
-    #                                         , code="invalid",)
-    #
-    #     return cleaned_data
 
     # not currently using to limit what is removed from the map item table - consider added this feature later
     form_changed_something_in_block = forms.IntegerField(

@@ -4050,7 +4050,7 @@ assay_plate_reader_cumulative_well_use_choices = [
     ('standard', 'Standard'),
     ('blank', 'Blank'),
     ('empty', 'Empty/Unused'),
-    # here here if decide to do this
+    # here here if decide to do this - this will degrade form load performance
     # ('sample_blank', 'Sample Blank'),
     # ('standard_blank', 'Standard Blank')
 ]
@@ -4379,14 +4379,15 @@ class AssayPlateReaderMapItem(models.Model):
         blank=True,
         default="none"
     )
-    row_index = models.IntegerField(
-        default=999,
-        blank=True
-    )
-    column_index = models.IntegerField(
-        default=999,
-        blank=True
-    )
+    # legacy - remove when ready (column and row)
+    # row_index = models.IntegerField(
+    #     default=999,
+    #     blank=True
+    # )
+    # column_index = models.IntegerField(
+    #     default=999,
+    #     blank=True
+    # )
     plate_index = models.IntegerField(
         default=999,
         blank=True

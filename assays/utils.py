@@ -218,6 +218,28 @@ MATRIX_PREFETCH = (
     'device',
 )
 
+# calibration curve master dictionary
+# should be able to change values but NOT THE KEYS or much will get messed up
+CALIBRATION_CURVE_MASTER_DICT = {
+    'select_one': 'Select One',
+    'no_calibration': 'No Calibration',
+    'best_fit': 'Best Fit',
+    'logistic4': '4 Parameter Logistic w/fitted bounds',
+    'logistic4a0': '4 Parameter Logistic w/lower bound = 0',
+    'logistic4f': '4 Parameter Logistic w/user specified bound(s)',
+    'linear': 'Linear w/fitted intercept',
+    'linear0': 'Linear w/intercept = 0',
+    'log': 'Logarithmic',
+    'poly2': 'Quadratic Polynomial'
+}
+calibration_choices = []
+calibration_keys_list = []
+for item in CALIBRATION_CURVE_MASTER_DICT.items():
+    calibration_choices.append(item)
+    calibration_keys_list.append(item[0])
+calibration_keys_list.pop(0)
+
+
 # STRINGS FOR WHEN NONE OF THE ENTITY IN QUESTION
 NO_COMPOUNDS_STRING = '-No Compounds-'
 NO_CELLS_STRING = '-No Cells-'
@@ -3775,9 +3797,7 @@ def add_update_plate_reader_data_map_item_values_from_file(
                 for item in this_set_value_items:
                     # will be sorted by plate index and should go from 0 to size of plate minus 1
                     # check for corruption
-                    # if item.plate_index == pidx:
-                    if 5==5:
-
+                    if item.plate_index == pidx:
                         # all is well, continue
                         # build the instance and append it
 
@@ -4348,7 +4368,7 @@ def plate_reader_data_file_process_data(set_dict):
     if radio_standard_option_use_or_not not in ['pick_block', 'no_calibration']:
         radio_standard_option_use_or_not = 'no_calibration'
         sendGeneralQcErrorMessage = "Invalid entry - defaults used;  "
-    if form_calibration_curve not in ['no_calibration', 'best_fit', 'linear', 'linear0', 'log', 'poly2', 'logistic4', 'logistic4a0', 'logistic4f', 'log5']:
+    if form_calibration_curve not in calibration_keys_list:
         form_calibration_curve = 'no_calibration'
         sendGeneralQcErrorMessage = "Invalid entry - defaults used;  "
     if form_blank_handling not in [
@@ -4501,7 +4521,7 @@ def plate_reader_data_file_process_data(set_dict):
     # print("e2 time orm ",  time.time() - start_time)
     # sql - time compare
     # start_time = time.time()
-    with connection.cursor() as cursor:
+    # with connection.cursor() as cursor:
         sqls =        " SELECT COUNT(*) "
         sqls = sqls + sqlsFromJoinMapItemID
         sqls = sqls + " WHERE assays_AssayPlateReaderMapItemValue.assayplatereadermap_id = "
@@ -4533,7 +4553,7 @@ def plate_reader_data_file_process_data(set_dict):
     # e2 time sql  0.0013592243194580078
 
     # look for samples with missing matrix items
-    with connection.cursor() as cursor:
+    # with connection.cursor() as cursor:
         sqls =        " SELECT COUNT(*) "
         sqls = sqls + sFromWhereSAMPLEItem
         sqls = sqls + sAndMatrixItemNull
@@ -4550,7 +4570,7 @@ def plate_reader_data_file_process_data(set_dict):
             yes_to_continue = 'no'
 
     # look for samples with missing sample locations
-    with connection.cursor() as cursor:
+    # with connection.cursor() as cursor:
         sqls =        " SELECT COUNT(*) "
         sqls = sqls + sFromWhereSAMPLEItem
         sqls = sqls + sAndLocationNull
@@ -4614,7 +4634,7 @@ def plate_reader_data_file_process_data(set_dict):
                 yes_to_continue = 'no'
 
         # look for missing standard raw values from the plate selected to use for standards
-        with connection.cursor() as cursor:
+        # with connection.cursor() as cursor:
             sqls =        " SELECT COUNT(*) "
             sqls = sqls + sqlsFromJoinMapItemID
             sqls = sqls + sWhereSTNDValue
@@ -4795,7 +4815,7 @@ def plate_reader_data_file_process_data(set_dict):
             # for fitting - get the average at each concentration that is IN user specified bounds
             # will subtract 0 in not adjusting, so okay to treat all the same
             # bounds should be set correctly if treat all the same (include all or some some subset of user selection)
-            with connection.cursor() as cursor:
+            # with connection.cursor() as cursor:
                 sqls = "SELECT "
                 sqls = sqls + "  assays_AssayPlateReaderMapItem.standard_value "
                 sqls = sqls + ", AVG(assays_AssayPlateReaderMapItemValue.raw_value-" + str(standard_blank_average) + ") as aRaw "
@@ -5060,7 +5080,7 @@ def plate_reader_data_file_process_data(set_dict):
 
             if number_standard_values_excluding_0 < 4 and use_calibration_curve in ['log', 'logistic4', 'logistic4a0', 'logistic4f']:
                 use_calibration_curve = 'linear'
-                special_note_when_excluding_0_and_curve_change_needed = " - IMPORTANT: Not enough standard concentrations for log or logistic."
+                special_note_when_excluding_0_and_curve_change_needed = " IMPORTANT: Not enough standard concentrations for log or logistic."
 
             # do not move this into a place that it happens before selection of best fit!
             if use_calibration_curve in ['log', 'logistic4', 'logistic4a0', 'logistic4f']:
@@ -5103,7 +5123,7 @@ def plate_reader_data_file_process_data(set_dict):
                     {'p1': icept, 'p2': slope, 'p3': 0, 'p4': 0, 'p5': 0})
 
                 dict_of_curve_info_linear = (
-                    {'method': 'Linear w/fitted intercept' + special_note_when_excluding_0_and_curve_change_needed, 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve})
+                    {'method': CALIBRATION_CURVE_MASTER_DICT.get(use_calibration_curve), 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve})
                 dict_of_standard_info_linear = (
                     {'min': use_form_min, 'max': use_form_max, 'standard0average': standard_blank_average,
                      'blankaverage': sample_blank_average})
@@ -5139,7 +5159,7 @@ def plate_reader_data_file_process_data(set_dict):
                     {'p1': A_logistic4, 'p2': B_logistic4, 'p3': C_logistic4, 'p4': D_logistic4, 'p5': 0})
 
                 dict_of_curve_info_logistic4 = (
-                    {'method': '4-Parameter Logistic w/fitted bounds', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
+                    {'method': CALIBRATION_CURVE_MASTER_DICT.get(use_calibration_curve), 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
                 dict_of_standard_info_logistic4 = (
                     {'min': use_form_min, 'max': use_form_max, 'standard0average': standard_blank_average,
                      'blankaverage': sample_blank_average})
@@ -5177,7 +5197,7 @@ def plate_reader_data_file_process_data(set_dict):
                     {'p1': A_logistic4a0, 'p2': B_logistic4a0, 'p3': C_logistic4a0, 'p4': D_logistic4a0, 'p5': 0})
 
                 dict_of_curve_info_logistic4a0 = (
-                    {'method': '4-Parameter Logistic w/user specified bound(s)', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
+                    {'method': CALIBRATION_CURVE_MASTER_DICT.get(use_calibration_curve), 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
                 dict_of_standard_info_logistic4a0 = (
                     {'min': use_form_min, 'max': use_form_max, 'standard0average': standard_blank_average,
                      'blankaverage': sample_blank_average})
@@ -5209,7 +5229,7 @@ def plate_reader_data_file_process_data(set_dict):
                     {'p1': A_logistic4f, 'p2': B_logistic4f, 'p3': C_logistic4f, 'p4': D_logistic4f, 'p5': 0})
 
                 dict_of_curve_info_logistic4f = (
-                    {'method': '4-Parameter Logistic w/user specified bound(s)', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
+                    {'method': CALIBRATION_CURVE_MASTER_DICT.get(use_calibration_curve), 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
                 dict_of_standard_info_logistic4f = (
                     {'min': use_form_min, 'max': use_form_max, 'standard0average': standard_blank_average,
                      'blankaverage': sample_blank_average})
@@ -5242,7 +5262,7 @@ def plate_reader_data_file_process_data(set_dict):
                     {'p1': A_logs, 'p2': B_logs, 'p3': 0, 'p4': 0, 'p5': 0})
 
                 dict_of_curve_info_log = (
-                    {'method': 'Logarithmic', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
+                    {'method': CALIBRATION_CURVE_MASTER_DICT.get(use_calibration_curve), 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
                 dict_of_standard_info_log = (
                     {'min': use_form_min, 'max': use_form_max, 'standard0average': standard_blank_average,
                      'blankaverage': sample_blank_average})
@@ -5275,7 +5295,7 @@ def plate_reader_data_file_process_data(set_dict):
                 # print('C_poly2s ', C_poly2s)
 
                 dict_of_curve_info_poly2 = (
-                    {'method': 'Quadratic Polynomial', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
+                    {'method': CALIBRATION_CURVE_MASTER_DICT.get(use_calibration_curve), 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve })
                 dict_of_standard_info_poly2 = (
                     {'min': use_form_min, 'max': use_form_max, 'standard0average': standard_blank_average,
                      'blankaverage': sample_blank_average})
@@ -5306,7 +5326,7 @@ def plate_reader_data_file_process_data(set_dict):
                     {'p1': icept, 'p2': slope, 'p3': 0, 'p4': 0, 'p5': 0})
 
                 dict_of_curve_info_linear0 = (
-                    {'method': 'Linear w/intercept = 0', 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve})
+                    {'method': CALIBRATION_CURVE_MASTER_DICT.get(use_calibration_curve), 'equation': equation, 'rsquared': rsquared, 'used_curve': use_calibration_curve})
                 dict_of_standard_info_linear0 = (
                     {'min': use_form_min, 'max': use_form_max, 'standard0average': standard_blank_average,
                      'blankaverage': sample_blank_average})
@@ -5744,7 +5764,7 @@ def plate_reader_data_file_process_data(set_dict):
         # print(list_of_dicts_of_each_sample_row_average)
 
     # if failed one or more of QC, only the sendGeneralQcErrorMessage should be populated
-    return [sendGeneralQcErrorMessage,
+    return [sendGeneralQcErrorMessage + special_note_when_excluding_0_and_curve_change_needed,
             list_of_dicts_of_each_sample_row_each,
             list_of_dicts_of_each_standard_row_points,
             list_of_dicts_of_each_standard_row_ave_points,

@@ -91,7 +91,7 @@
             {# include error and submit #}
             <div>
                 <div>
-                    {% if not view %}
+                    {% if not review %}
                         {% include "submit.html" with flag="y" creator=object.created_by.id %}
                     {% endif %}
                 </div>

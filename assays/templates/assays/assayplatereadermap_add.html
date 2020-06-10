@@ -43,7 +43,7 @@
                 <h1 class="text-center">
                     <em><b>
                     {% if update %}
-                        {% if form.form_number_file_block_combos.value > 0 %}
+                        {% if data_attached %}
                             Calibrate/Process/Export Data Using
                         {% else %}
                             Update
@@ -97,8 +97,8 @@
                 <div class="hidden">{{form.form_calibration_target}}</div>
                 <div class="hidden">{{form.form_calibration_unit}}</div>
                 <div class="hidden">{{form.form_number_standards_this_plate}}</div>
-                <div class="hidden">{{form.form_hold_the_study_id}}</div>
-                <div class="hidden">{{form.form_hold_the_platemap_id}}</div>
+{#                <div class="hidden">{{form.form_hold_the_study_id}}</div>#}
+{#                <div class="hidden">{{form.form_hold_the_platemap_id}}</div>#}
 
                 <div class="hidden">{{form.form_hold_the_data_block_metadata_string}}</div>
                 <div class="hidden">{{form.form_hold_the_omits_string}}</div>
@@ -263,7 +263,7 @@
 
                 {% if not add %}
                     {# if not add and this plate map is in use by a file block #}
-                    {% if form.form_number_file_block_combos.value > 0 %}
+                    {% if data_attached %}
                         {# the form_number_file_block_combos is based on the AssayPlateReaderMapItemValue #}
                         {# not on the AssayPlateReaderMapDataFileBlock #}
                         {# if everything works correctly, they should match, but, values may be added AFTER file is added #}
@@ -282,7 +282,7 @@
 {#                                    </div>#}
 {#                                    <div class="col-md-9">#}
 {#                                        <div class="plate-map-page-field-contents-medium">#}
-{#                                            {{ form.form_number_file_block_combos.value }}#}
+{#                                            {{ data_attached }}#}
 {#                                        </div>#}
 {#                                    </div>#}
 {#                                    <div class="col-md-2"></div>#}
@@ -488,7 +488,11 @@
                                                 <td>The database's base units were used to perform unit conversion. To review base units and associated scale factors, go to Studies, Study Components, View Units. Not all conversions are possible with this tool. Some tips: Units including a number of cells must use exponential format (i.e. 10^# cells), measurement units that include /well must be molar (not mass), and reporting units with /time/10^# cells should have the time in 'day', 'hour', or 'minute', NOT other representations of time (i.e. 'days'). If necessary, the multiplier can be edited manually, but do so with care.</td>
                                             </tr>
                                             <tr class="hidden">
-                                                <td> {{ form.form_data_processing_multiplier_string }} </td>
+                                                <td>
+{#                                                    {{ form.form_data_processing_multiplier_string }} #}
+                                                    <div id="id_data_processing_multiplier_string">
+                                                    </div>
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -531,8 +535,16 @@
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td> {{ form.form_data_processing_multiplier_value_short }} </td>
-                                                <td> {{ form.form_data_processing_multiplier_string_short }} </td>
+                                                <td>
+{#                                                    {{ form.form_data_processing_multiplier_value_short }} #}
+                                                    <div id="id_data_processing_multiplier_value_short">
+                                                    </div>
+                                                </td>
+                                                <td>
+{#                                                    {{ form.form_data_processing_multiplier_string_short }} #}
+                                                    <div id="id_data_processing_multiplier_string_short">
+                                                    </div>
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -557,7 +569,11 @@
                                                     <br>
                                                     Multiplier = [( 1e-06 mg/mL)/(ng/mL)] / [(1e-09 mg/mL)/(pg/mL)]
                                                 </td>
-                                                <td> {{ form.form_data_processing_multiplier_string1 }} </td>
+                                                <td>
+{#                                                    {{ form.form_data_processing_multiplier_string1 }} #}
+                                                    <div id="id_data_processing_multiplier_string1">
+                                                    </div>
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <td> When the Measurement Unit is molar and the Reporting Unit is mass
@@ -566,7 +582,11 @@
                                                     <br>
                                                     Multiplier = (1g/10^9ng)*(Molecular Weight in g/mol)
                                                 </td>
-                                                <td> {{ form.form_data_processing_multiplier_string2 }} </td>
+                                                <td>
+{#                                                    {{ form.form_data_processing_multiplier_string2 }} #}
+                                                    <div id="id_data_processing_multiplier_string2">
+                                                    </div>
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <td> When Measurement Unit is per well and the Reporting Unit is mass or molar
@@ -575,7 +595,11 @@
                                                     <br>
                                                     Multiplier = well/Well Volume in mL
                                                 </td>
-                                                <td> {{ form.form_data_processing_multiplier_string3 }} </td>
+                                                <td>
+{#                                                    {{ form.form_data_processing_multiplier_string3 }} #}
+                                                    <div id="id_data_processing_multiplier_string3">
+                                                    </div>
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <td> After adjustments above, the Unit Conversion is through a Base Unit
@@ -584,7 +608,11 @@
                                                     <br>
                                                     Multiplier = [( 1e-06 mg/mL)/(ng/mL)] / [(1e-09 mg/mL)/(pg/mL)]
                                                 </td>
-                                                <td> {{ form.form_data_processing_multiplier_string4 }} </td>
+                                                <td>
+{#                                                    {{ form.form_data_processing_multiplier_string4 }} #}
+                                                    <div id="id_data_processing_multiplier_string4">
+                                                    </div>
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <td> When normalizing, convert Efflux Volume Unit to Measurement Unit's Volume Unit
@@ -593,7 +621,11 @@
                                                     <br>
                                                     Multiplier = µL * (10^3mL/1L)*(1L/10^6µL)
                                                 </td>
-                                                <td> {{ form.form_data_processing_multiplier_string5 }} </td>
+                                                <td>
+{#                                                    {{ form.form_data_processing_multiplier_string5 }} #}
+                                                    <div id="id_data_processing_multiplier_string5">
+                                                    </div>
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <td> When normalizing, convert Efflux Collection Time Unit to Reporting Time Unit
@@ -602,7 +634,11 @@
                                                     <br>
                                                     Multiplier = (1/minute)*(1440minute/1day)
                                                 </td>
-                                                <td> {{ form.form_data_processing_multiplier_string6 }} </td>
+                                                <td>
+{#                                                    {{ form.form_data_processing_multiplier_string6 }} #}
+                                                    <div id="id_data_processing_multiplier_string6">
+                                                    </div>
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <td> When normalizing, adjust for the Number of Cells in the device
@@ -611,7 +647,11 @@
                                                     <br>
                                                     Multiplier = (10^6)/(# Cells * 10^6 cells)
                                                 </td>
-                                                <td> {{ form.form_data_processing_multiplier_string7 }} </td>
+                                                <td>
+{#                                                    {{ form.form_data_processing_multiplier_string7 }} #}
+                                                    <div id="id_data_processing_multiplier_string7">
+                                                    </div>
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <td> After all other adjustments, the Unit Conversion is through a Base Unit
@@ -620,11 +660,19 @@
                                                     <br>
                                                     Multiplier = [(1 µg/day/10^6 cells)/(µg/day/10^6 cells)]/[(0.001 µg/day/10^6 cells)/(ng/day/10^6 cells)]
                                                 </td>
-                                                <td> {{ form.form_data_processing_multiplier_string8 }} </td>
+                                                <td>
+{#                                                    {{ form.form_data_processing_multiplier_string8 }} #}
+                                                    <div id="id_data_processing_multiplier_string8">
+                                                    </div>
+                                                </td>
                                             </tr>
 {#                                            <tr>#}
 {#                                                <td> ...</td>#}
-{#                                                <td> {{ form.form_data_processing_multiplier_string9 }} </td>#}
+{#                                               <td> #}
+{#                                                        {{ form.form_data_processing_multiplier_string9 }} #}
+{#                                                    <div id="id_data_processing_multiplier_string9">#}
+{#                                                    </div>  #}
+{#                                                  </td>#}
 {#                                            </tr>#}
                                         </tbody>
                                     </table>
@@ -675,7 +723,7 @@
             {# since well use is in the value formset, this made editing after loading files very complicated #}
             {# well use is in item, and could be removed from item value, but do not want to do that for processing reasons #}
             {# consider it if requested, or make a SQL update in form save...consider #}
-                {% if form.form_number_file_block_combos.value < 1 %}
+                {% if not data_attached %}
                     {# Selecting what to work with #}
                     <div>
                         {# Selecting what to work on #}
@@ -814,7 +862,7 @@
 
         {#                            add back and build functionality to change sample time after file block add if requested by users#}
                                         <div class="col-md-2 plate-map-page-field-contents-medium">
-                                            {% if form.form_number_file_block_combos.value < 1 %}
+                                            {% if not data_attached %}
                                                 {{ assay_map_additional_info.form_number_default_time }}
                                             {% else %}
                                                 <p>Edit not currently allowed.</p>
@@ -823,7 +871,7 @@
                                         <div class="col-md-1">
                                             <div>
                                                 {#  <label class="sample-section hidden"><input type="radio" name="sample_change" value="default_time"> Apply </label> #}
-                                            {% if form.form_number_file_block_combos.value < 1 %}
+                                            {% if not data_attached %}
                                                 <input id="checkbox_default_time" class="big-checkbox plate-map-check-box" type="checkbox" name="change_default_time" value="default_time" >
                                             {% endif %}
                                             </div>
@@ -836,7 +884,7 @@
                                         <div class="col-md-1">
                                             <div>
                                                 {#  <label class="sample-section hidden"><input type="radio" name="sample_change" value="time"> Apply </label>#}
-                                                {% if form.form_number_file_block_combos.value > 0 %}
+                                                {% if data_attached %}
         {#                                            <input id="checkbox_time" class="big-checkbox plate-map-check-box" type="checkbox" name="change_time" value="time" />#}
                                                 {% endif %}
                                             </div>
@@ -1444,7 +1492,7 @@
             {# START THE PROCESSING DATA SECTION #}
             <div id="data_processing_section">
                 <div class="container">
-                    {% if form.form_number_file_block_combos.value > 0 %}
+                    {% if data_attached %}
                         {# pick the processing details #}
                         <div>
                             <div class="data-processing-errors hidden">
@@ -1681,18 +1729,23 @@
                                                 <td>Fitting Method Used </td>
                                                 <td>
                                                    {{ form.form_calibration_curve_method_used }}
+                                                    <div id="id_special_message" class="alert alert-danger"></div>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td>Equation</td>
                                                 <td>
-                                                    {{ form.form_calibration_equation }}
+{#                                                    {{ form.form_calibration_equation }}#}
+                                                    <div id="id_calibration_equation">
+                                                    </div>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td>R squared</td>
                                                 <td>
-                                                    {{ form.form_calibration_rsquared }}
+{#                                                    {{ form.form_calibration_rsquared }}#}
+                                                    <div id="id_calibration_rsquared">
+                                                    </div>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -1740,26 +1793,46 @@
                                                                 </thead>
                                                                 <tbody>
                                                                     <tr>
-                                                                        <td>{{ form.form_calibration_parameter_1_string }}</td>
-                                                                        <td>{{ form.form_calibration_parameter_1_value }}</td>
+{#                                                                        <td>{{ form.form_calibration_parameter_1_string }}</td>#}
+{#                                                                        <td>{{ form.form_calibration_parameter_1_value }}</td>#}
+                                                                        <td><div id="id_calibration_parameter_1_string">
+                                                                        </div></td>
+                                                                        <td><div id="id_calibration_parameter_1_value">
+                                                                        </div></td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td>{{ form.form_calibration_parameter_2_string }}</td>
-                                                                        <td>{{ form.form_calibration_parameter_2_value }}</td>
+{#                                                                        <td>{{ form.form_calibration_parameter_2_string }}</td>#}
+{#                                                                        <td>{{ form.form_calibration_parameter_2_value }}</td>#}
+                                                                        <td><div id="id_calibration_parameter_2_string">
+                                                                        </div></td>
+                                                                        <td><div id="id_calibration_parameter_2_value">
+                                                                        </div></td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td>{{ form.form_calibration_parameter_3_string }}</td>
-                                                                        <td>{{ form.form_calibration_parameter_3_value }}</td>
+{#                                                                        <td>{{ form.form_calibration_parameter_3_string }}</td>#}
+{#                                                                        <td>{{ form.form_calibration_parameter_3_value }}</td>#}
+                                                                        <td><div id="id_calibration_parameter_3_string">
+                                                                        </div></td>
+                                                                        <td><div id="id_calibration_parameter_3_value">
+                                                                        </div></td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td>{{ form.form_calibration_parameter_4_string }}</td>
-                                                                        <td>{{ form.form_calibration_parameter_4_value }}</td>
+{#                                                                        <td>{{ form.form_calibration_parameter_4_string }}</td>#}
+{#                                                                        <td>{{ form.form_calibration_parameter_4_value }}</td>#}
+                                                                        <td><div id="id_calibration_parameter_4_string">
+                                                                        </div></td>
+                                                                        <td><div id="id_calibration_parameter_4_value">
+                                                                        </div></td>
                                                                     </tr>
 {#                                                                    Not using since did not do 5P logistic#}
 {#                                                                    <tr>#}
 {#                                                                        <td>{{ form.form_calibration_parameter_5_string }}</td>#}
 {#                                                                        <td>{{ form.form_calibration_parameter_5_value }}</td>#}
 {#                                                                    </tr>#}
+{#                                                                        <td><div id="id_calibration_parameter_5_string">#}
+{#                                                                        </div></td>  #}
+{#                                                                        <td><div id="id_calibration_parameter_5_value">#}
+{#                                                                        </div></td>  #}
                                                                 </tbody>
                                                             </table>
                                                         </td>
@@ -2018,7 +2091,7 @@
                 </div>
 
 {#            20200522 getting rid of the formset for the values#}
-{#                {% if form.form_number_file_block_combos.value == 0 %}#}
+{#                {% if not data_attached %}#}
 {#                    {{ value_formset.management_form }}#}
 {#                    <div class="">#}
 {#                        <div class="no-selectize">#}
@@ -2038,8 +2111,8 @@
             </div>
 
 
-            {# these are the ones that show to user  #}
-            <div>
+            {# these are the ones that show to user, but they are moved to the top  #}
+            <div class="hidden">
                 {% if formset.errors %}
                     {% for field, error in formset.errors.items %}
                         <div class="alert alert-danger" role="alert">
@@ -2053,7 +2126,7 @@
 
 {#            getting rid of value formset 20200522#}
                 {# this is not tested as of 20200107  #}
-{#                {% if form.form_number_file_block_combos.value == 0 %}#}
+{#                {% if data_attached.value == 0 %}#}
 {#                    {% if value_formset.errors %}#}
 {#                        {% for field, error in value_formset.errors.items %}#}
 {#                            <div class="alert alert-danger" role="alert">#}
@@ -2068,21 +2141,21 @@
             </div>
 
 {#        HANDY any save problems turn this on#}
-{#            <div class="hidden">#}
-{#                {% if not review %}#}
-{#                    <div>#}
-{#                        <h2>For Development Testing</h2>#}
-{#                        Use for error checking#}
-{#                        For testing<br>#}
-{#                        form.errors<br>#}
-{#                        {{ form.errors }}<br>#}
-{#                        formset.errors<br>#}
-{#                        {{ formset.errors }}<br>#}
+            <div class="hidden">
+                {% if not review %}
+                    <div>
+                        <h2>For Development Testing</h2>
+                        Use for error checking
+                        For testing<br>
+                        form.errors<br>
+                        {{ form.errors }}<br>
+                        formset.errors<br>
+                        {{ formset.errors }}<br>
 {#                        value_formset.errors<br>#}
 {#                        {{ value_formset.errors }}<br>#}
-{#                    </div>#}
-{#                {% endif %}#}
-{#            </div>#}
+                    </div>
+                {% endif %}
+            </div>
 
             {# submit bar #}
             <div>

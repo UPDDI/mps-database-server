@@ -218,8 +218,8 @@ $(document).ready(function () {
     */
     // START SECTION TO SET GLOBAL VARIABLES plus some logic when needed
     // HANDY another way to get the selectized value
-    $("#id_form_hold_the_study_id").val(parseInt(document.getElementById("this_study_id").innerText.trim()));
-    $("#id_form_hold_the_platemap_id").val(parseInt(document.getElementById('this_platemap_id').innerText.trim()));
+    // $("#id_form_hold_the_study_id").val(parseInt(document.getElementById("this_study_id").innerText.trim()));
+    // $("#id_form_hold_the_platemap_id").val(parseInt(document.getElementById('this_platemap_id').innerText.trim()));
 
     let global_calibration_form_data_processing_multiplier = null;
     let global_calibration_form_data_processing_multiplier_string = "Not computed yet.";
@@ -437,6 +437,8 @@ $(document).ready(function () {
     let global_list_sample_with_caution_flags = [];
     let global_list_plate_holding_user_omits = [];
     let global_list_plate_holding_user_notes = [];
+    let psudo_formset_user_omits = [];
+    let psudo_formset_user_notes = [];
     let global_list_plate_holding_user_omits_string = "";
     let global_list_plate_holding_user_notes_string = "";
 
@@ -779,6 +781,9 @@ $(document).ready(function () {
         // HANDY - to make everything on a page read only
         $('.selectized').each(function() { this.selectize.disable() });
         $(':input').attr('disabled', 'disabled');
+        // HANDY - to make on thing re enabled
+        $('#id_se_block_select_string').removeAttr('disabled');
+        $('#id_se_block_select_string')[0].selectize.enable();
 
     }
 
@@ -844,15 +849,17 @@ $(document).ready(function () {
         // use instead console.log(t.target.id)
         // the ids are: each_text_notes_20 and contain the plate map index
         global_checkbox_platemap_index_working_notes = t.target.id.substring(16);
-        let inMyFormFieldNow = $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working_notes
-            + '-form_user_entered_notes').val();
+        // let inMyFormFieldNow = $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working_notes
+        //     + '-form_user_entered_notes').val();
+        let inMyFormFieldNow = psudo_formset_user_notes[global_checkbox_platemap_index_working_notes];
 
         let thisRowIndex = $(this).attr('row-index');
         //the following is something Luke suggested for managing dataTable, but went a different direction
         //sampleDataTable.data()[thisRowIndex][30] = sampleDataTable.data()[thisRowIndex][30];
 
-        $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working_notes
-            + '-form_user_entered_notes').val($(this).val());
+        // $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working_notes
+        //     + '-form_user_entered_notes').val($(this).val());
+        psudo_formset_user_notes[global_checkbox_platemap_index_working_notes] = $(this).val();
 
         // if notes are changed and there is a toggle between average and each, need to reprocess data
         changeMadeToOmitsOrNotesChangeReplicateHandling();
@@ -885,8 +892,9 @@ $(document).ready(function () {
                 $(this).prop('checked', true)
                 alert("No value to include.\n");
             } else {
-                $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working_omits
-                    + '-form_user_entered_omit_from_average').prop('checked', false)
+                // $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working_omits
+                //     + '-form_user_entered_omit_from_average').prop('checked', false)
+                psudo_formset_user_omits[global_checkbox_platemap_index_working_omits] = false;
 
                 if (thisCautionFlagLength > 0) {
                     // when omit with a caution flag is unchecked, make them add a note
@@ -900,10 +908,12 @@ $(document).ready(function () {
             if (thisCautionFlagLength > 0) {
                 $('#each_text_notes_'+global_checkbox_platemap_index_working_omits).val("");
                 //do not need here since the notes change will trigger and take care of it
-                //$('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working_omits + '-form_user_entered_notes').val("");
+                /////$('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working_omits + '-form_user_entered_notes').val("");
             }
-            $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working_omits
-                + '-form_user_entered_omit_from_average').prop('checked', true)
+            // $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working_omits
+            //     + '-form_user_entered_omit_from_average').prop('checked', true)
+            psudo_formset_user_omits[global_checkbox_platemap_index_working_omits] = true;
+
         }
         changeMadeToOmitsOrNotesChangeReplicateHandling();
     });
@@ -971,9 +981,11 @@ $(document).ready(function () {
         } else {
             $('#each_text_notes_' + global_checkbox_platemap_index_working_omits).val(note2);
         }
-        $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working_omits
-            + '-form_user_entered_notes').val($('#each_text_notes_'
-            + global_checkbox_platemap_index_working_omits).val());
+        // $('#id_assayplatereadermapitem_set-' + global_checkbox_platemap_index_working_omits
+        //     + '-form_user_entered_notes').val($('#each_text_notes_'
+        //     + global_checkbox_platemap_index_working_omits).val());
+        psudo_formset_user_notes[global_checkbox_platemap_index_working_omits] =
+            $('#each_text_notes_' + global_checkbox_platemap_index_working_omits).val();
 
         fillTheStringsOfOmitsAndNotesForTheForm();
     }
@@ -1384,9 +1396,13 @@ $(document).ready(function () {
         global_list_plate_holding_user_omits_string = "";
         global_list_plate_holding_user_notes_string = "";
         for(i = 0; i < global_plate_size_form_device; i++) {
-            let formFieldUserNotes = $('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_notes').val();
+            //let formFieldUserNotes = $('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_notes').val();
+            let formFieldUserNotes = psudo_formset_user_notes[i];
+
             global_list_plate_holding_user_notes.push(formFieldUserNotes);
-            let formFieldUserOmitsIsChecked = $('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_omit_from_average').is(':checked');
+            // let formFieldUserOmitsIsChecked = $('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_omit_from_average').is(':checked');
+            let formFieldUserOmitsIsChecked = psudo_formset_user_omits[i];
+
             global_list_plate_holding_user_omits.push(formFieldUserOmitsIsChecked);
 
             if (i == 0) {
@@ -1415,8 +1431,10 @@ $(document).ready(function () {
         let holding_user_notes_string = "";
 
         for(i = 0; i < global_plate_size_form_device; i++) {
-            let formFieldUserNotes = $('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_notes').val();
-            let formFieldUserOmitsIsChecked = $('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_omit_from_average').is(':checked');
+            //let formFieldUserNotes = $('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_notes').val();
+            let formFieldUserNotes = psudo_formset_user_notes[i];
+            //let formFieldUserOmitsIsChecked = $('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_omit_from_average').is(':checked');
+            let formFieldUserOmitsIsChecked = psudo_formset_user_omits[i];
 
             if (i == 0) {
                 holding_user_notes_string = formFieldUserNotes;
@@ -1438,8 +1456,10 @@ $(document).ready(function () {
     function clearTheOmitAndNoteFieldsBeforeRecalibration(called_from) {
         // since getting ready to recalibrate from the page, clear the form fields of notes and omit boxes
         for(i = 0; i < global_plate_size_form_device; i++) {
-            $('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_notes').val("");
-            $('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_omit_from_average').prop('checked', false)
+            //$('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_notes').val("");
+            psudo_formset_user_notes[i] = "";
+            //$('#id_assayplatereadermapitem_set-' + i + '-form_user_entered_omit_from_average').prop('checked', false)
+            psudo_formset_user_omits[i] = false;
         }
     }
 
@@ -1544,6 +1564,17 @@ $(document).ready(function () {
         let sendmessage = json.sendmessage;
         // console.log(sendmessage)
         $("#id_form_data_parsable_message").val(sendmessage);
+        $("#id_special_message").text(sendmessage);
+
+        //console.log("sendmessage.trim().length ",sendmessage.trim().length)
+
+        if (sendmessage.trim().length == 0){
+            $('#id_special_message').removeClass('alert');
+            $('#id_special_message').removeClass('alert-danger');
+        } else {
+            $('#id_special_message').addClass('alert');
+            $('#id_special_message').addClass('alert-danger');
+        }
 
         let list_of_dicts_of_each_sample_row_each = json.list_of_dicts_of_each_sample_row_each;
         let list_of_dicts_of_each_sample_row_average = json.list_of_dicts_of_each_sample_row_average;
@@ -1555,8 +1586,10 @@ $(document).ready(function () {
         // console.log('dict_of_curve_info ', dict_of_curve_info)
         // console.log('dict_of_curve_info.method ', dict_of_curve_info.method)
         $("#id_form_calibration_curve_method_used").val(dict_of_curve_info.method);
-        $("#id_form_calibration_equation").val(dict_of_curve_info.equation);
-        $("#id_form_calibration_rsquared").val(dict_of_curve_info.rsquared);
+        //$("#id_form_calibration_equation").val(dict_of_curve_info.equation);
+        $("#id_calibration_equation").text(dict_of_curve_info.equation);
+        //$("#id_form_calibration_rsquared").val(dict_of_curve_info.rsquared);
+        $("#id_calibration_rsquared").text(dict_of_curve_info.rsquared);
         $("#id_used_curve").val(dict_of_curve_info.used_curve);
 
         let dict_of_standard_info = json.dict_of_standard_info;
@@ -1567,18 +1600,29 @@ $(document).ready(function () {
 
         let dict_of_parameter_labels = json.dict_of_parameter_labels;
         let dict_of_parameter_values = json.dict_of_parameter_values;
-        $("#id_form_calibration_parameter_1_string").val(dict_of_parameter_labels.p1);
-        $("#id_form_calibration_parameter_2_string").val(dict_of_parameter_labels.p2);
-        $("#id_form_calibration_parameter_3_string").val(dict_of_parameter_labels.p3);
-        $("#id_form_calibration_parameter_4_string").val(dict_of_parameter_labels.p4);
-        $("#id_form_calibration_parameter_5_string").val(dict_of_parameter_labels.p5);
+        // $("#id_form_calibration_parameter_1_string").val(dict_of_parameter_labels.p1);
+        // $("#id_form_calibration_parameter_2_string").val(dict_of_parameter_labels.p2);
+        // $("#id_form_calibration_parameter_3_string").val(dict_of_parameter_labels.p3);
+        // $("#id_form_calibration_parameter_4_string").val(dict_of_parameter_labels.p4);
+        // $("#id_form_calibration_parameter_5_string").val(dict_of_parameter_labels.p5);
         //when these were not parseFloat ed if they had a comma, an error on form save
         //they were not interpreted as numbers. If this happens again, just make the string fields in the form.
-        $("#id_form_calibration_parameter_1_value").val(dict_of_parameter_values.p1);
-        $("#id_form_calibration_parameter_2_value").val(dict_of_parameter_values.p2);
-        $("#id_form_calibration_parameter_3_value").val(dict_of_parameter_values.p3);
-        $("#id_form_calibration_parameter_4_value").val(dict_of_parameter_values.p4);
-        $("#id_form_calibration_parameter_5_value").val(dict_of_parameter_values.p5);
+        // $("#id_form_calibration_parameter_1_value").val(dict_of_parameter_values.p1);
+        // $("#id_form_calibration_parameter_2_value").val(dict_of_parameter_values.p2);
+        // $("#id_form_calibration_parameter_3_value").val(dict_of_parameter_values.p3);
+        // $("#id_form_calibration_parameter_4_value").val(dict_of_parameter_values.p4);
+        // $("#id_form_calibration_parameter_5_value").val(dict_of_parameter_values.p5);
+
+        $("#id_calibration_parameter_1_string").text(dict_of_parameter_labels.p1);
+        $("#id_calibration_parameter_2_string").text(dict_of_parameter_labels.p2);
+        $("#id_calibration_parameter_3_string").text(dict_of_parameter_labels.p3);
+        $("#id_calibration_parameter_4_string").text(dict_of_parameter_labels.p4);
+        $("#id_calibration_parameter_5_string").text(dict_of_parameter_labels.p5);
+        $("#id_calibration_parameter_1_value").text(dict_of_parameter_values.p1);
+        $("#id_calibration_parameter_2_value").text(dict_of_parameter_values.p2);
+        $("#id_calibration_parameter_3_value").text(dict_of_parameter_values.p3);
+        $("#id_calibration_parameter_4_value").text(dict_of_parameter_values.p4);
+        $("#id_calibration_parameter_5_value").text(dict_of_parameter_values.p5);
 
         prepGraphInfoOfStandardsDataCurve_ajax(list_of_dicts_of_each_standard_row_curve);
 
@@ -1848,8 +1892,9 @@ $(document).ready(function () {
                     if (passedIn === 'true') {
                         // console.log("ready to check")
                         $(myCellContent).attr('checked', 'checked');
-                        $('#id_assayplatereadermapitem_set-' + each_plate_index
-                        + '-form_user_entered_omit_from_average').prop('checked', true)
+                        //$('#id_assayplatereadermapitem_set-' + each_plate_index
+                        //+ '-form_user_entered_omit_from_average').prop('checked', true)
+                        psudo_formset_user_omits[each_plate_index] = true;
                     }
                     // else leave unchecked, which is default
                     td.appendChild(myCellContent);
@@ -2477,6 +2522,7 @@ $(document).ready(function () {
         }
         for (var idx = 0, ls = global_plate_size_form_device; idx < ls; idx++) {
             global_plate_whole_plate_index_list.push(idx);
+            // console.log("idx ", idx)
         }
         // console.log("changed device what size is plate: ", global_plate_size_form_device)
         // set to only fire on change plate size IF the selection is a_plate (an empty plate)
@@ -4142,7 +4188,9 @@ $(document).ready(function () {
                     // the platemap id will be the same in both since they are two formsets to the main assay plate map table
                     // these (item and associated values) MUST stay parallel or problems WILL happen
                     $('#id_assayplatereadermapitem_set-' + formsetidx + '-row_index').val(ridx);
-                    $('#id_assayplatereadermapitem_set-' + formsetidx + '-column_index').val(cidx);
+                    // actually do not really need these, removed from formset to make quicker 20200609
+                    //$('#id_assayplatereadermapitem_set-' + formsetidx + '-column_index').val(cidx);
+
                     $('#id_assayplatereadermapitem_set-' + formsetidx + '-plate_index').val(formsetidx);
 
                     // 20200522 getting rid of the value formset
@@ -4505,24 +4553,37 @@ $(document).ready(function () {
             global_calibration_form_data_processing_multiplier_string = "There is no automatic conversion for this combination of units. Select different units or review the unit convresion details.";
             global_calibration_form_data_processing_multiplier_string_display = global_calibration_form_data_processing_multiplier_string;
             $('#id_form_data_processing_multiplier').val(generalFormatNumber(global_calibration_form_data_processing_multiplier));
-            $('#id_form_data_processing_multiplier_string').val(global_calibration_form_data_processing_multiplier_string);
+            // $('#id_form_data_processing_multiplier_string').val(global_calibration_form_data_processing_multiplier_string);
+            $('#id_data_processing_multiplier_string').text(global_calibration_form_data_processing_multiplier_string);
+
             //$('#id_unit_multiplier').text("[" + $('#id_form_calibration_unit').val()+ "] / [" + global_floater_model_standard_unit + "]")
             $('#id_unit_multiplier').text(global_floater_model_standard_unit +  "  ➞  "  + $('#id_form_calibration_unit').val());
 
             $('#id_display_multiplier_message').text(global_calibration_form_data_processing_multiplier_string_display);
             result = 'no'
 
-            $('#id_form_data_processing_multiplier_string_short').val('-');
-            $('#id_form_data_processing_multiplier_value_short').val('-');
-            $('#id_form_data_processing_multiplier_string1').val('-');
-            $('#id_form_data_processing_multiplier_string2').val('-');
-            $('#id_form_data_processing_multiplier_string3').val('-');
-            $('#id_form_data_processing_multiplier_string4').val('-');
-            $('#id_form_data_processing_multiplier_string5').val('-');
-            $('#id_form_data_processing_multiplier_string6').val('-');
-            $('#id_form_data_processing_multiplier_string7').val('-');
-            $('#id_form_data_processing_multiplier_string8').val('-');
-            $('#id_form_data_processing_multiplier_string9').val('-');
+            // $('#id_form_data_processing_multiplier_string_short').val('-');
+            // $('#id_form_data_processing_multiplier_value_short').val('-');
+            // $('#id_form_data_processing_multiplier_string1').val('-');
+            // $('#id_form_data_processing_multiplier_string2').val('-');
+            // $('#id_form_data_processing_multiplier_string3').val('-');
+            // $('#id_form_data_processing_multiplier_string4').val('-');
+            // $('#id_form_data_processing_multiplier_string5').val('-');
+            // $('#id_form_data_processing_multiplier_string6').val('-');
+            // $('#id_form_data_processing_multiplier_string7').val('-');
+            // $('#id_form_data_processing_multiplier_string8').val('-');
+            // $('#id_form_data_processing_multiplier_string9').val('-');
+            $('#id_data_processing_multiplier_string_short').text('-');
+            $('#id_data_processing_multiplier_value_short').text('-');
+            $('#id_data_processing_multiplier_string1').text('-');
+            $('#id_data_processing_multiplier_string2').text('-');
+            $('#id_data_processing_multiplier_string3').text('-');
+            $('#id_data_processing_multiplier_string4').text('-');
+            $('#id_data_processing_multiplier_string5').text('-');
+            $('#id_data_processing_multiplier_string6').text('-');
+            $('#id_data_processing_multiplier_string7').text('-');
+            $('#id_data_processing_multiplier_string8').text('-');
+            $('#id_data_processing_multiplier_string9').text('-');
             $('#id_multiplier_breakdown').addClass('hidden');
 
         } else {
@@ -4584,7 +4645,10 @@ $(document).ready(function () {
             global_calibration_form_data_processing_multiplier_string = "The sample time unit and/or information that is required for unit conversion is missing.";
             global_calibration_form_data_processing_multiplier_string_display = global_calibration_form_data_processing_multiplier_string;
             $('#id_form_data_processing_multiplier').val(generalFormatNumber(global_calibration_form_data_processing_multiplier));
-            $('#id_form_data_processing_multiplier_string').val(global_calibration_form_data_processing_multiplier_string);
+            // $('#id_form_data_processing_multiplier_string').val(global_calibration_form_data_processing_multiplier_string);
+            $('#id_data_processing_multiplier_string').text(global_calibration_form_data_processing_multiplier_string);
+
+
             //$('#id_unit_multiplier').text("[" + $('#id_form_calibration_unit').val()+ "] / [" + global_floater_model_standard_unit + "]")
             $('#id_unit_multiplier').text(global_floater_model_standard_unit + "  ➞  " + $('#id_form_calibration_unit').val());
 
@@ -4592,17 +4656,28 @@ $(document).ready(function () {
 
             $('#refresh_needed_indicator').text('missed');
 
-            $('#id_form_data_processing_multiplier_string_short').val('-');
-            $('#id_form_data_processing_multiplier_value_short').val('-');
-            $('#id_form_data_processing_multiplier_string1').val('-');
-            $('#id_form_data_processing_multiplier_string2').val('-');
-            $('#id_form_data_processing_multiplier_string3').val('-');
-            $('#id_form_data_processing_multiplier_string4').val('-');
-            $('#id_form_data_processing_multiplier_string5').val('-');
-            $('#id_form_data_processing_multiplier_string6').val('-');
-            $('#id_form_data_processing_multiplier_string7').val('-');
-            $('#id_form_data_processing_multiplier_string8').val('-');
-            $('#id_form_data_processing_multiplier_string9').val('-');
+            // $('#id_form_data_processing_multiplier_string_short').val('-');
+            // $('#id_form_data_processing_multiplier_value_short').val('-');
+            // $('#id_form_data_processing_multiplier_string1').val('-');
+            // $('#id_form_data_processing_multiplier_string2').val('-');
+            // $('#id_form_data_processing_multiplier_string3').val('-');
+            // $('#id_form_data_processing_multiplier_string4').val('-');
+            // $('#id_form_data_processing_multiplier_string5').val('-');
+            // $('#id_form_data_processing_multiplier_string6').val('-');
+            // $('#id_form_data_processing_multiplier_string7').val('-');
+            // $('#id_form_data_processing_multiplier_string8').val('-');
+            // $('#id_form_data_processing_multiplier_string9').val('-');
+            $('#id_data_processing_multiplier_string_short').text('-');
+            $('#id_data_processing_multiplier_value_short').text('-');
+            $('#id_data_processing_multiplier_string1').text('-');
+            $('#id_data_processing_multiplier_string2').text('-');
+            $('#id_data_processing_multiplier_string3').text('-');
+            $('#id_data_processing_multiplier_string4').text('-');
+            $('#id_data_processing_multiplier_string5').text('-');
+            $('#id_data_processing_multiplier_string6').text('-');
+            $('#id_data_processing_multiplier_string7').text('-');
+            $('#id_data_processing_multiplier_string8').text('-');
+            $('#id_data_processing_multiplier_string9').text('-');
             $('#id_multiplier_breakdown').addClass('hidden');
 
         } else {
@@ -4622,23 +4697,37 @@ $(document).ready(function () {
             global_calibration_form_data_processing_multiplier_string = "No unit conversion is required.";
             global_calibration_form_data_processing_multiplier_string_display = global_calibration_form_data_processing_multiplier_string;
             $('#id_form_data_processing_multiplier').val(generalFormatNumber(global_calibration_form_data_processing_multiplier));
-            $('#id_form_data_processing_multiplier_string').val(global_calibration_form_data_processing_multiplier_string);
+            // $('#id_form_data_processing_multiplier_string').val(global_calibration_form_data_processing_multiplier_string);
+            $('#id_data_processing_multiplier_string').text(global_calibration_form_data_processing_multiplier_string);
+
+
             //$('#id_unit_multiplier').text("[" + $('#id_form_calibration_unit').val()+ "] / [" + global_floater_model_standard_unit + "]")
             $('#id_unit_multiplier').text(global_floater_model_standard_unit +  "  ➞  "  + $('#id_form_calibration_unit').val());
 
             $('#id_display_multiplier_message').text(global_calibration_form_data_processing_multiplier_string_display);
 
-            $('#id_form_data_processing_multiplier_string_short').val('-');
-            $('#id_form_data_processing_multiplier_value_short').val('-');
-            $('#id_form_data_processing_multiplier_string1').val('-');
-            $('#id_form_data_processing_multiplier_string2').val('-');
-            $('#id_form_data_processing_multiplier_string3').val('-');
-            $('#id_form_data_processing_multiplier_string4').val('-');
-            $('#id_form_data_processing_multiplier_string5').val('-');
-            $('#id_form_data_processing_multiplier_string6').val('-');
-            $('#id_form_data_processing_multiplier_string7').val('-');
-            $('#id_form_data_processing_multiplier_string8').val('-');
-            $('#id_form_data_processing_multiplier_string9').val('-');
+            // $('#id_form_data_processing_multiplier_string_short').val('-');
+            // $('#id_form_data_processing_multiplier_value_short').val('-');
+            // $('#id_form_data_processing_multiplier_string1').val('-');
+            // $('#id_form_data_processing_multiplier_string2').val('-');
+            // $('#id_form_data_processing_multiplier_string3').val('-');
+            // $('#id_form_data_processing_multiplier_string4').val('-');
+            // $('#id_form_data_processing_multiplier_string5').val('-');
+            // $('#id_form_data_processing_multiplier_string6').val('-');
+            // $('#id_form_data_processing_multiplier_string7').val('-');
+            // $('#id_form_data_processing_multiplier_string8').val('-');
+            // $('#id_form_data_processing_multiplier_string9').val('-');
+            $('#id_data_processing_multiplier_string_short').text('-');
+            $('#id_data_processing_multiplier_value_short').text('-');
+            $('#id_data_processing_multiplier_string1').text('-');
+            $('#id_data_processing_multiplier_string2').text('-');
+            $('#id_data_processing_multiplier_string3').text('-');
+            $('#id_data_processing_multiplier_string4').text('-');
+            $('#id_data_processing_multiplier_string5').text('-');
+            $('#id_data_processing_multiplier_string6').text('-');
+            $('#id_data_processing_multiplier_string7').text('-');
+            $('#id_data_processing_multiplier_string8').text('-');
+            $('#id_data_processing_multiplier_string9').text('-');
             $('#id_multiplier_breakdown').addClass('hidden');
 
         } else {
@@ -4705,37 +4794,61 @@ $(document).ready(function () {
         global_calibration_form_data_processing_multiplier_string = returnedMultiplierString;
         global_calibration_form_data_processing_multiplier_string_display = returnedMultiplierStringDisplay;
         $('#id_form_data_processing_multiplier').val(generalFormatNumber(parseFloat(global_calibration_form_data_processing_multiplier)));
-        $('#id_form_data_processing_multiplier_string').val(global_calibration_form_data_processing_multiplier_string);
+        // $('#id_form_data_processing_multiplier_string').val(global_calibration_form_data_processing_multiplier_string);
+        $('#id_data_processing_multiplier_string').text(global_calibration_form_data_processing_multiplier_string);
+
         //$('#id_unit_multiplier').text("[" + $('#id_form_calibration_unit').val()+ "] / [" + global_floater_model_standard_unit + "]")
         $('#id_unit_multiplier').text(global_floater_model_standard_unit + "  ➞  " + $('#id_form_calibration_unit').val());
 
         $('#id_display_multiplier_message').text(global_calibration_form_data_processing_multiplier_string_display);
 
         if (returnedMultiplier == 0) {
-            $('#id_form_data_processing_multiplier_string_short').val('-');
-            $('#id_form_data_processing_multiplier_value_short').val('-');
-            $('#id_form_data_processing_multiplier_string1').val('-');
-            $('#id_form_data_processing_multiplier_string2').val('-');
-            $('#id_form_data_processing_multiplier_string3').val('-');
-            $('#id_form_data_processing_multiplier_string4').val('-');
-            $('#id_form_data_processing_multiplier_string5').val('-');
-            $('#id_form_data_processing_multiplier_string6').val('-');
-            $('#id_form_data_processing_multiplier_string7').val('-');
-            $('#id_form_data_processing_multiplier_string8').val('-');
-            $('#id_form_data_processing_multiplier_string9').val('-');
+            // $('#id_form_data_processing_multiplier_string_short').val('-');
+            // $('#id_form_data_processing_multiplier_value_short').val('-');
+            // $('#id_form_data_processing_multiplier_string1').val('-');
+            // $('#id_form_data_processing_multiplier_string2').val('-');
+            // $('#id_form_data_processing_multiplier_string3').val('-');
+            // $('#id_form_data_processing_multiplier_string4').val('-');
+            // $('#id_form_data_processing_multiplier_string5').val('-');
+            // $('#id_form_data_processing_multiplier_string6').val('-');
+            // $('#id_form_data_processing_multiplier_string7').val('-');
+            // $('#id_form_data_processing_multiplier_string8').val('-');
+            // $('#id_form_data_processing_multiplier_string9').val('-');
+            $('#id_data_processing_multiplier_string_short').text('-');
+            $('#id_data_processing_multiplier_value_short').text('-');
+            $('#id_data_processing_multiplier_string1').text('-');
+            $('#id_data_processing_multiplier_string2').text('-');
+            $('#id_data_processing_multiplier_string3').text('-');
+            $('#id_data_processing_multiplier_string4').text('-');
+            $('#id_data_processing_multiplier_string5').text('-');
+            $('#id_data_processing_multiplier_string6').text('-');
+            $('#id_data_processing_multiplier_string7').text('-');
+            $('#id_data_processing_multiplier_string8').text('-');
+            $('#id_data_processing_multiplier_string9').text('-');
             $('#id_multiplier_breakdown').addClass('hidden');
         } else {
-            $('#id_form_data_processing_multiplier_string_short').val(multiplier_data[0].multiplier_string_short);
-            $('#id_form_data_processing_multiplier_value_short').val(multiplier_data[0].multiplier_value_short);
-            $('#id_form_data_processing_multiplier_string1').val(multiplier_data[0].multiplier_string1);
-            $('#id_form_data_processing_multiplier_string2').val(multiplier_data[0].multiplier_string2);
-            $('#id_form_data_processing_multiplier_string3').val(multiplier_data[0].multiplier_string3);
-            $('#id_form_data_processing_multiplier_string4').val(multiplier_data[0].multiplier_string4);
-            $('#id_form_data_processing_multiplier_string5').val(multiplier_data[0].multiplier_string5);
-            $('#id_form_data_processing_multiplier_string6').val(multiplier_data[0].multiplier_string6);
-            $('#id_form_data_processing_multiplier_string7').val(multiplier_data[0].multiplier_string7);
-            $('#id_form_data_processing_multiplier_string8').val(multiplier_data[0].multiplier_string8);
-            $('#id_form_data_processing_multiplier_string9').val(multiplier_data[0].multiplier_string9);
+            // $('#id_form_data_processing_multiplier_string_short').val(multiplier_data[0].multiplier_string_short);
+            // $('#id_form_data_processing_multiplier_value_short').val(multiplier_data[0].multiplier_value_short);
+            // $('#id_form_data_processing_multiplier_string1').val(multiplier_data[0].multiplier_string1);
+            // $('#id_form_data_processing_multiplier_string2').val(multiplier_data[0].multiplier_string2);
+            // $('#id_form_data_processing_multiplier_string3').val(multiplier_data[0].multiplier_string3);
+            // $('#id_form_data_processing_multiplier_string4').val(multiplier_data[0].multiplier_string4);
+            // $('#id_form_data_processing_multiplier_string5').val(multiplier_data[0].multiplier_string5);
+            // $('#id_form_data_processing_multiplier_string6').val(multiplier_data[0].multiplier_string6);
+            // $('#id_form_data_processing_multiplier_string7').val(multiplier_data[0].multiplier_string7);
+            // $('#id_form_data_processing_multiplier_string8').val(multiplier_data[0].multiplier_string8);
+            // $('#id_form_data_processing_multiplier_string9').val(multiplier_data[0].multiplier_string9);
+            $('#id_data_processing_multiplier_string_short').text(multiplier_data[0].multiplier_string_short);
+            $('#id_data_processing_multiplier_value_short').text(multiplier_data[0].multiplier_value_short);
+            $('#id_data_processing_multiplier_string1').text(multiplier_data[0].multiplier_string1);
+            $('#id_data_processing_multiplier_string2').text(multiplier_data[0].multiplier_string2);
+            $('#id_data_processing_multiplier_string3').text(multiplier_data[0].multiplier_string3);
+            $('#id_data_processing_multiplier_string4').text(multiplier_data[0].multiplier_string4);
+            $('#id_data_processing_multiplier_string5').text(multiplier_data[0].multiplier_string5);
+            $('#id_data_processing_multiplier_string6').text(multiplier_data[0].multiplier_string6);
+            $('#id_data_processing_multiplier_string7').text(multiplier_data[0].multiplier_string7);
+            $('#id_data_processing_multiplier_string8').text(multiplier_data[0].multiplier_string8);
+            $('#id_data_processing_multiplier_string9').text(multiplier_data[0].multiplier_string9);
             $('#id_multiplier_breakdown').removeClass('hidden');
         }
 
