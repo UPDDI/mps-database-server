@@ -781,10 +781,19 @@ $(document).ready(function () {
         // HANDY - to make everything on a page read only
         $('.selectized').each(function() { this.selectize.disable() });
         $(':input').attr('disabled', 'disabled');
-        // HANDY - to make on thing re enabled
-        $('#id_se_block_select_string').removeAttr('disabled');
-        $('#id_se_block_select_string')[0].selectize.enable();
-
+        try {
+            //field is only present in calibrate mode
+            // HANDY - to make on thing re enabled
+            $('#id_se_block_select_string').removeAttr('disabled');
+            $('#id_se_block_select_string')[0].selectize.enable();
+        } catch (err) {
+        }
+        //optional method for conditional
+        // Have a conditional to make sure the field exists
+        // if ($('#id_se_block_select_string')[0] && $('#id_se_block_select_string')[0].selectize) {
+        //     // Re-enable
+        //      $('#id_se_block_select_string')[0].selectize.enable();
+        // }
     }
 
     // END SECTION TO SET GLOBAL VARIABLES plus some functions

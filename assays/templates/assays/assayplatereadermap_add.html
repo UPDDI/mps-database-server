@@ -2112,17 +2112,17 @@
 
 
             {# these are the ones that show to user, but they are moved to the top  #}
-            <div class="hidden">
-                {% if formset.errors %}
-                    {% for field, error in formset.errors.items %}
-                        <div class="alert alert-danger" role="alert">
-                            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                            <span class="sr-only">Error:</span>
-                            {{ error }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-                <br>
+{#            <div class="hidden">#}
+{#                {% if formset.errors %}#}
+{#                    {% for field, error in formset.errors.items %}#}
+{#                        <div class="alert alert-danger" role="alert">#}
+{#                            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>#}
+{#                            <span class="sr-only">Error:</span>#}
+{#                            {{ error }}#}
+{#                        </div>#}
+{#                    {% endfor %}#}
+{#                {% endif %}#}
+{#                <br>#}
 
 {#            getting rid of value formset 20200522#}
                 {# this is not tested as of 20200107  #}
@@ -2137,8 +2137,7 @@
 {#                        {% endfor %}#}
 {#                    {% endif %}#}
 {#                {% endif %}#}
-
-            </div>
+{#            </div>#}
 
 {#        HANDY any save problems turn this on#}
             <div class="hidden">
