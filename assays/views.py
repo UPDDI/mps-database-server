@@ -4501,7 +4501,8 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
             # calibrate occurs when a file block has been added to this plate map (one or more)
             # The number of file blocks is passed in by the initialization of this form field in the forms.py
             # Save form and formset
-            if form.cleaned_data.get('form_number_file_block_combos') == 0:
+            # print("form.cleaned_data.get('form_number_file_block_combos') ",form.cleaned_data.get('form_number_file_block_combos'))
+            if int(form.cleaned_data.get('form_number_file_block_combos')) == 0:
                 save_forms_with_tracking(self, form, formset=formsets, update=True)
             # HANDY - to Save just the form and not the formset
             else:
