@@ -42,15 +42,17 @@ def main(request):
     else:
         form = SearchForm(initial={'app': 'Global'})
 
-    about_six_months_ago = datetime.now().replace(tzinfo=pytz.UTC) - timedelta(days=180)
+    # DO NOT BOTHER WITH WHAT IS NEW ON THE INDEX PAGE FOR NOW
+    # about_six_months_ago = datetime.now().replace(tzinfo=pytz.UTC) - timedelta(days=180)
 
     context = {
         'form': form,
-        'what_is_new': WhatIsNewEntry.objects.filter(
-            modified_on__gt=about_six_months_ago
-        ).order_by(
-            'modified_on'
-        )
+        # REMOVED FOR NOW
+        # 'what_is_new': WhatIsNewEntry.objects.filter(
+        #     modified_on__gt=about_six_months_ago
+        # ).order_by(
+        #     'modified_on'
+        # )
     }
 
     return render(request, 'index.html', context)
