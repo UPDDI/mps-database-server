@@ -52,6 +52,7 @@ import csv
 import io
 from statistics import mean, mode
 import os
+import warnings
 
 import pandas as pd
 import numpy as np
@@ -4600,7 +4601,7 @@ def plate_reader_data_file_process_data(set_dict):
         use_platemap_pk_for_standards = pk_platemap
 
     if yes_to_calibrate == 'yes':
-        
+
         # need and use several times to get info for standards and standard blanks
         # Make sure these are AFTER the use plate map for standards is set
         sFromWhereSTNDItem = " FROM assays_AssayPlateReaderMapItem "
@@ -5304,6 +5305,11 @@ def plate_reader_data_file_process_data(set_dict):
                 dict_of_parameter_values = dict_of_parameter_values_poly2
                 dict_of_curve_info = dict_of_curve_info_poly2
                 dict_of_standard_info = dict_of_standard_info_poly2
+
+                # print(dict_of_parameter_labels)
+                # print(dict_of_parameter_values)
+                # print(dict_of_curve_info)
+                # print(dict_of_standard_info)
 
             else:
                 # use_calibration_curve == 'linear0':
@@ -6113,13 +6119,25 @@ def plate_map_sub_return_the_fitted_and_other_info(
                 sendmessage = sendmessage + " Cannot calculate fitted value. Likely due to very large exponent."
 
     elif use_calibration_curve == 'poly2':
+        # print("araw ",araw)
+        # because I want the runtime warning to be trapped in this specific case
+
         if C_poly2 == 0:
             ftv = " "
             caution_flag = 'F'
             sendmessage = sendmessage + " A denominator is 0. Cannot calculate fitted value."
         else:
-            ftv1 = ((-1 * B_poly2) + ((B_poly2 ** 2) - (4 * C_poly2 * (A_poly2 - araw))) ** (1 / 2)) / (2 * C_poly2)
-            ftv2 = ((-1 * B_poly2) - ((B_poly2 ** 2) - (4 * C_poly2 * (A_poly2 - araw))) ** (1 / 2)) / (2 * C_poly2)
+            warnings.filterwarnings("error")
+            try:
+                ftv1 = ((-1 * B_poly2) + ((B_poly2 ** 2) - (4 * C_poly2 * (A_poly2 - araw))) ** (1 / 2)) / (2 * C_poly2)
+            except RuntimeWarning:
+                ftv1 = None
+            try:
+                ftv2 = ((-1 * B_poly2) - ((B_poly2 ** 2) - (4 * C_poly2 * (A_poly2 - araw))) ** (1 / 2)) / (2 * C_poly2)
+            except RuntimeWarning:
+                ftv2 = None
+            warnings.filterwarnings("default")
+
             # if ftv1 >= 0:
             #     ftv = ftv1
             #     # print("one")
@@ -6127,14 +6145,22 @@ def plate_map_sub_return_the_fitted_and_other_info(
             #     ftv = ftv2
             #     # print("two")
             #
-            # # print("ftv1 ", ftv1)
-            # # print("ftv1 ", ftv1)
+            # print("ftv1 ", ftv1)
+            # print("ftv2 ", ftv2)
             #
             # # always pick the positive root
             # ftv = ftv1
 
             # how to pick the root
-            if (araw <= adj_mid and ftv1 <= con_mid) or (araw > adj_mid and ftv1 > con_mid):
+            if ftv1 is None and ftv2 is None:
+                ftv = " "
+                caution_flag = 'F'
+                sendmessage = sendmessage + " Cannot calculate fitted value."
+            elif ftv1 is None:
+                ftv = ftv2
+            elif ftv2 is None:
+                ftv = ftv1
+            elif (araw <= adj_mid and ftv1 <= con_mid) or (araw > adj_mid and ftv1 > con_mid):
                 ftv = ftv1
             elif (araw <= adj_mid and ftv2 <= con_mid) or (araw > adj_mid and ftv2 > con_mid):
                 ftv = ftv2
