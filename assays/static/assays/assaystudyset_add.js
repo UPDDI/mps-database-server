@@ -357,12 +357,23 @@ $(document).ready(function () {
 
         // No longer consider new studies
         new_studies = [];
+
+        // Force fixed header recalc
+        setTimeout(function() {
+            // Kill fixed header
+            $('#studies').DataTable().fixedHeader.disable()
+        }, 100);
     });
 
     // Back button
     $('#back_button').click(function() {
         list_section_selector.show();
         form_section_selector.hide();
+
+        // Force fixed header recalc
+        setTimeout(function() {
+            $('#studies').DataTable().fixedHeader.enable();
+        }, 100);
     });
 
     $(document).on('click', '.study-selector', function() {
