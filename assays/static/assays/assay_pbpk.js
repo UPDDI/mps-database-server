@@ -120,16 +120,16 @@ $(document).ready(function () {
             title: "Select",
             "render": function (data, type, row, meta) {
                 if (type === 'display') {
-                    return '<input type="checkbox" class="big-checkbox pk-set-checkbox" data-row-info="'+ encodeURIComponent(JSON.stringify(["", row, study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["PK Type"], treatment_groups[data_groups[row][4]]["Compounds"], treatment_groups[data_groups[row][4]]["Study"].split(">")[1].slice(0,-4), treatment_groups[data_groups[row][4]]["MPS Model"].split(">")[1].slice(0,-4), treatment_groups[data_groups[row][4]]["Device"], data_groups[row][0], data_groups[row][2], data_groups[row][3], study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["Total Device Volume"], study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["Flow Rate"], study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["Relevant Cells"], treatment_groups[data_groups[row][4]]["item_ids"].length, chart_data[row].length-1])) +'" data-table-index="' + meta.row + '">';
+                    return '<input type="checkbox" class="big-checkbox pk-set-checkbox" data-row-info="'+ encodeURIComponent(JSON.stringify(["", row.row, study_name_to_pk_params[treatment_groups[data_groups[row.row][4]]["Study"].split("/")[3]]["PK Type"], treatment_groups[data_groups[row.row][4]]["Compounds"], treatment_groups[data_groups[row.row][4]]["Study"].split(">")[1].slice(0,-4), treatment_groups[data_groups[row.row][4]]["MPS Model"].split(">")[1].slice(0,-4), treatment_groups[data_groups[row.row][4]]["Device"], data_groups[row.row][0], data_groups[row.row][2], data_groups[row.row][3], study_name_to_pk_params[treatment_groups[data_groups[row.row][4]]["Study"].split("/")[3]]["Total Device Volume"], study_name_to_pk_params[treatment_groups[data_groups[row.row][4]]["Study"].split("/")[3]]["Flow Rate"], study_name_to_pk_params[treatment_groups[data_groups[row.row][4]]["Study"].split("/")[3]]["Relevant Cells"], treatment_groups[data_groups[row.row][4]]["item_ids"].length, chart_data[row.row].length-1])) +'" data-table-index="' + meta.row + '">';
                 }
                 return '';
             },
             "className": "dt-center",
-            "createdCell": function (td, cellData, rowData, row, col) {
-                if (cellData) {
-                    $(td).css('vertical-align', 'middle');
-                }
-            },
+            // "createdCell": function (td, cellData, rowData, row, col) {
+            //     if (cellData) {
+            //         $(td).css('vertical-align', 'middle');
+            //     }
+            // },
             "sortable": false,
             width: '5%'
         },
@@ -137,94 +137,94 @@ $(document).ready(function () {
             title: "PK Set",
             type: "brute-numeric",
             "render": function (data, type, row) {
-                return '<span class="badge badge-primary data-power-analysis-group-info">' + row + '</span>';
+                return '<span class="badge badge-primary data-power-analysis-group-info">' + row.row + '</span>';
             },
             width: '5%'
         },
         {
             title: "PK Type",
             "render": function (data, type, row) {
-                return study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["PK Type"];
+                return study_name_to_pk_params[treatment_groups[data_groups[row.row][4]]["Study"].split("/")[3]]["PK Type"];
             },
             width: '20%'
         },
         {
             title: "Compound",
             "render": function (data, type, row) {
-                return treatment_groups[data_groups[row][4]]["Compounds"];
+                return treatment_groups[data_groups[row.row][4]]["Compounds"];
             },
             width: '20%'
         },
         {
             title: "Study",
             "render": function (data, type, row) {
-                return treatment_groups[data_groups[row][4]]["Study"];
+                return treatment_groups[data_groups[row.row][4]]["Study"];
             }
         },
         {
             title: "MPS Model",
             "render": function (data, type, row) {
-                return treatment_groups[data_groups[row][4]]["MPS Model"];
+                return treatment_groups[data_groups[row.row][4]]["MPS Model"];
             }
         },
         {
             title: "Device",
             "render": function (data, type, row) {
-                return treatment_groups[data_groups[row][4]]["Device"];
+                return treatment_groups[data_groups[row.row][4]]["Device"];
             }
         },
         {
             title: "Target/Analyte",
             "render": function (data, type, row) {
-                return data_groups[row][0];
+                return data_groups[row.row][0];
             },
             width: '20%'
         },
         {
             title: "Method/Kit",
             "render": function (data, type, row) {
-                return data_groups[row][2];
+                return data_groups[row.row][2];
             },
             width: '20%'
         },
         {
             title: "Sample Location",
             "render": function (data, type, row) {
-                return data_groups[row][3];
+                return data_groups[row.row][3];
             }
         },
         {
             title: "Total Device Volume (&micro;L)",
             "render": function (data, type, row) {
-                return study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["Total Device Volume"];
+                return study_name_to_pk_params[treatment_groups[data_groups[row.row][4]]["Study"].split("/")[3]]["Total Device Volume"];
             },
             width: '20%'
         },
         {
             title: "Flow Rate (&micro;L/hour)",
             "render": function (data, type, row) {
-                return study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["Flow Rate"];
+                return study_name_to_pk_params[treatment_groups[data_groups[row.row][4]]["Study"].split("/")[3]]["Flow Rate"];
             },
             width: '20%'
         },
         {
             title: "No. of Cells in MPS Model",
             "render": function (data, type, row) {
-                return study_name_to_pk_params[treatment_groups[data_groups[row][4]]["Study"].split("/")[3]]["Relevant Cells"];
+                return study_name_to_pk_params[treatment_groups[data_groups[row.row][4]]["Study"].split("/")[3]]["Relevant Cells"];
             },
             width: '20%'
         },
         {
             title: "No. of Chips",
             "render": function (data, type, row) {
-                return treatment_groups[data_groups[row][4]]["item_ids"].length;
+                return treatment_groups[data_groups[row.row][4]]["item_ids"].length;
             },
             width: '20%'
         },
         {
             title: "No. of Time Points",
             "render": function (data, type, row) {
-                return chart_data[row].length-1;
+                return chart_data[row.row].length-1;
             },
             width: '20%'
         }
@@ -306,8 +306,25 @@ $(document).ready(function () {
                     // Stop spinner
                     window.spinner.stop();
 
+                    var contrived_data = [];
 
-                    return Object.keys(data_groups);
+                    $.each(Object.keys(data_groups), function(index, value) {
+                        var contrived_vals = {
+                            row: value,
+                            '0': 0
+                        }
+
+                        for (var x = 0; x < 15; x++) {
+                            contrived_vals[x] = x;
+                        }
+
+                        contrived_data.push(contrived_vals);
+                    });
+
+                    // console.log(contrived_data);
+
+                    // return Object.keys(data_groups);
+                    return contrived_data;
                 },
                 // Error callback
                 error: function (xhr, errmsg, err) {
@@ -318,7 +335,7 @@ $(document).ready(function () {
                     console.log(xhr.status + ": " + xhr.responseText);
                 }
             },
-            columns: group_table_columns,
+            aoColumns: group_table_columns,
             columnDefs: [
                 { "responsivePriority": 1, "targets": [0, 1, 2, 3, 4, 5, 6, 7, 8, 13, 14] },
                 { "responsivePriority": 2, "targets": [9, 10, 11, 12] }

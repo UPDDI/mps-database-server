@@ -92,12 +92,15 @@
                 {% if user_is_group_editor and not object.signed_off_by %}
                 <span class="dropdown btn-group">
                     <button class="btn btn-warning dropdown-toggle" type="button" id="add_data" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        Add Data
+                        Add/View Data
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="add_data">
+                        {% if user_is_group_editor and not object.signed_off_by %}
                         <li><a href="upload">Upload Data</a></li>
-                        <li><a href="{% url 'assayplatereadermap-index' object.id %}">Assay Plate Reader Maps</a></li>
+                        {% endif %}
+                        {# We need to be able to view these #}
+                        <li><a href="{% url 'assayplatereadermap-index' object.id %}">Assay Plate Reader Maps and Data Processing</a></li>
                         <li><a href="{% url 'assayplatereaderfile-index' object.id %}">Assay Plate Reader Files</a></li>
                     </ul>
                 </span>

@@ -1,10 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block load_js %}
-    <script src="{% static "assays/assayplatereaderfile_add.js" %}"></script>
-{% endblock %}
-
 {# only the add page uses this template, so do not have to make conditional #}
 {% block breadcrumbs %}
     <li><a href="/assays/assaystudy/">Studies</a>
@@ -16,6 +12,7 @@
 {% endblock %}
 
 {# only the add page uses this template, so do not have to make conditional #}
+{# TODO revise please #}
 {% block content %}
     <form class="form-horizontal" method="post" enctype="multipart/form-data">
         <div class="padded-bottom">
@@ -45,24 +42,12 @@
             <div>
                 <legend>Data File Upload</legend>
 
-                <label for="plate_reader_file" class="col-sm-2 control-label">Upload File</label>
-                <div class="col-sm-10">
-                    <input type="file" name="plate_reader_file" class="btn btn-primary btn-lg" id="id_plate_reader_file">
-                </div>
-            </div>
+                {% include 'errors.html' %}
 
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-12">
-                        <h3><em>After choosing a file, click the Submit Button to attach the file to the study and continue.</em></h3>
-                    </div>
-                </div>
-            </div>
-
-            {# error handling #}
-            <div>
+                {# error handling #}
                 {% if form.errors %}
-                    <h2>List of Errors (form)</h2>
+                <div>
+                    {# <h2>List of Errors (form)</h2> #}
                     {% for error in form.plate_reader_file.errors %}
                         <div class="alert alert-danger" role="alert">
                             <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
@@ -77,18 +62,24 @@
                             {{ error }}
                         </div>
                     {% endfor %}
-                    <div class="form-group has-error">
-                {% else %}
-                    <div class="form-group">
+                </div>
                 {% endif %}
-                {% if form.errors %}
-                    </div>
-                {% else %}
-                    </div>
-                {% endif %}
+
+                <label for="plate_reader_file" class="col-sm-2 control-label">Upload File</label>
+                <div class="col-sm-10">
+                    <input type="file" name="plate_reader_file" class="btn btn-primary btn-lg" id="id_plate_reader_file">
+                </div>
             </div>
 
-            {# include error and submit #}
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h3><em>After choosing a file, click the Submit Button to attach the file to the study and continue.</em></h3>
+                    </div>
+                </div>
+            </div>
+
+            {# include submit #}
             <div>
                 <div>
                     {% if not review %}
@@ -96,11 +87,12 @@
                     {% endif %}
                 </div>
 
-                {% include 'errors.html' %}
-
-                {% comment %}            <h6>tracking begin</h6>
+                {# This page is reserved for adding, there can be no tracking #}
+                {% comment %}
+                <h6>tracking begin</h6>
                 {% include 'tracking.html' %}
-                <h6>tracking end</h6>{% endcomment %}
+                <h6>tracking end</h6>
+                {% endcomment %}
             </div>
 
         </div>

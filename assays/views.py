@@ -2376,8 +2376,8 @@ class AssayDataFromFilters(TemplateView):
             else:
                 matrix_items = AssayMatrixItem.objects.none()
 
-            if len(current_filters) > 3 and current_filters[3]:
-                compound_ids = [int(id) for id in current_filters[3].split(',') if id]
+            if len(current_filters) > 2 and current_filters[2]:
+                compound_ids = [int(id) for id in current_filters[2].split(',') if id]
 
                 # See whether to include no compounds
                 if 0 in compound_ids:
@@ -2392,8 +2392,8 @@ class AssayDataFromFilters(TemplateView):
             else:
                 matrix_items = AssayMatrixItem.objects.none()
 
-            if len(current_filters) > 2 and current_filters[2]:
-                target_ids = [int(id) for id in current_filters[2].split(',') if id]
+            if len(current_filters) > 3 and current_filters[3]:
+                target_ids = [int(id) for id in current_filters[3].split(',') if id]
 
                 matrix_items = matrix_items.filter(
                     assaydatapoint__study_assay__target_id__in=target_ids
@@ -2658,6 +2658,26 @@ class AssayStudyAddNew(OneGroupRequiredMixin, AssayStudyMixin, CreateView):
         })
 
         return context
+
+    # Special handling for emailing on creation
+    def extra_form_processing(self, form):
+        # Contact superusers
+        # Superusers to contact
+        superusers_to_be_alerted = User.objects.filter(is_superuser=True, is_active=True)
+
+        # Magic strings are in poor taste, should use a template instead
+        superuser_subject = 'Study Created: {0}'.format(form.instance)
+        superuser_message = render_to_string(
+            'assays/email/superuser_study_created_alert.txt',
+            {
+                'study': form.instance
+            }
+        )
+
+        for user_to_be_alerted in superusers_to_be_alerted:
+            user_to_be_alerted.email_user(superuser_subject, superuser_message, DEFAULT_FROM_EMAIL)
+
+        return super(AssayStudyAddNew, self).extra_form_processing(form)
 
 
 # class AssayStudyAddNew(OneGroupRequiredMixin, CreateView):
@@ -4167,10 +4187,8 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
             data_attached = False
         context['data_attached'] = data_attached
 
-        if data_attached:
-            context['assay_map_additional_info'] = ""
-        else:
-            context['assay_map_additional_info'] = AssayPlateReadMapAdditionalInfoForm(study_id=self.object.study_id)
+        # Always acquire map_additional_info
+        context['assay_map_additional_info'] = AssayPlateReadMapAdditionalInfoForm(study_id=self.object.study_id)
 
         # print("calling formset")
         if 'formset' not in context:
@@ -4523,7 +4541,7 @@ class AssayPlateReaderMapUpdate(StudyGroupMixin, UpdateView):
 #     return my_key
 
 
-class AssayPlateReaderMapView(StudyGroupMixin, DetailView):
+class AssayPlateReaderMapView(StudyViewerMixin, DetailView):
     """Assay plate map view"""
     model = AssayPlateReaderMap
     template_name = 'assays/assayplatereadermap_add.html'
@@ -4550,10 +4568,7 @@ class AssayPlateReaderMapView(StudyGroupMixin, DetailView):
             data_attached = False
         context['data_attached'] = data_attached
 
-        if data_attached:
-            context['assay_map_additional_info'] = ""
-        else:
-            context['assay_map_additional_info'] = AssayPlateReadMapAdditionalInfoForm(study_id=self.object.study_id)
+        context['assay_map_additional_info'] = AssayPlateReadMapAdditionalInfoForm(study_id=self.object.study_id)
 
         context.update({
             'form': AssayPlateReaderMapForm(instance=self.object),
@@ -4563,7 +4578,7 @@ class AssayPlateReaderMapView(StudyGroupMixin, DetailView):
         return context
 
 
-class AssayPlateReaderMapDelete(StudyViewerMixin, DeleteView):
+class AssayPlateReaderMapDelete(CreatorAndNotInUseMixin, DeleteView):
     model = AssayPlateReaderMap
     template_name = 'assays/assayplatereadermap_delete.html'
 
@@ -4702,7 +4717,7 @@ class AssayPlateReaderMapDataFileIndex(StudyViewerMixin, DetailView):
         return context
 
 
-class AssayPlateReaderMapDataFileView(StudyGroupMixin, DetailView):
+class AssayPlateReaderMapDataFileView(StudyViewerMixin, DetailView):
     """Assay Plate Reader File Detail View"""
     model = AssayPlateReaderMapDataFile
     template_name = 'assays/assayplatereaderfile_update.html'
@@ -4730,7 +4745,7 @@ class AssayPlateReaderMapDataFileView(StudyGroupMixin, DetailView):
         return context
 
 
-class AssayPlateReaderMapDataFileDelete(StudyViewerMixin, DeleteView):
+class AssayPlateReaderMapDataFileDelete(CreatorAndNotInUseMixin, DeleteView):
     model = AssayPlateReaderMapDataFile
     template_name = 'assays/assayplatereaderfile_delete.html'
 

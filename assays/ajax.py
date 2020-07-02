@@ -5006,8 +5006,11 @@ def fetch_plate_reader_data_block_plate_map_size(request):
 
     # print(data)
 
-    return HttpResponse(json.dumps(data),
-                        content_type="application/json")
+    return HttpResponse(
+        json.dumps(data),
+        content_type="application/json"
+    )
+
 
 # sck - assay plate map - Get raw value and time for display in existing plate map with file block attached.
 def fetch_information_for_value_set_of_plate_map_for_data_block(request):

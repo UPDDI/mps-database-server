@@ -34,6 +34,10 @@ from django.urls import reverse
 # THIS WILL ONLY BE USED FOR PROTOTYPE
 from django.contrib.postgres.fields import JSONField
 
+# TODO REORGANIZE
+import django.forms as forms
+
+
 # These are here to avoid potentially messy imports, may change later
 def attr_getter(item, attributes):
     """attribute getter for individual items"""

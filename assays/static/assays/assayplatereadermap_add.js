@@ -4468,46 +4468,48 @@ $(document).ready(function () {
                 ret_time = global_plate_mems_time[idx];
                 ret_block_raw_value = global_plate_mems_block_raw_value[idx];
 
-                // Make the changes to the formset (s)
-                $('#id_assayplatereadermapitem_set-' + formset_number + '-well_use').val(ret_well_use);
-                $('#id_assayplatereadermapitem_set-' + formset_number + '-standard_value').val(ret_standard_value);
-                $('#id_assayplatereadermapitem_set-' + formset_number + '-matrix_item').val(ret_matrix_item);
+                if (typeof(ret_well_use) != "undefined") {
+                    // Make the changes to the formset (s)
+                    $('#id_assayplatereadermapitem_set-' + formset_number + '-well_use').val(ret_well_use);
+                    $('#id_assayplatereadermapitem_set-' + formset_number + '-standard_value').val(ret_standard_value);
+                    $('#id_assayplatereadermapitem_set-' + formset_number + '-matrix_item').val(ret_matrix_item);
 
-                $('#id_assayplatereadermapitem_set-' + formset_number + '-location').val(ret_location);
+                    $('#id_assayplatereadermapitem_set-' + formset_number + '-location').val(ret_location);
 
-                $('#id_assayplatereadermapitem_set-' + formset_number + '-dilution_factor').val(ret_dilution_factor);
-                $('#id_assayplatereadermapitem_set-' + formset_number + '-collection_volume').val(ret_collection_volume);
-                $('#id_assayplatereadermapitem_set-' + formset_number + '-collection_time').val(ret_collection_time);
-                $('#id_assayplatereadermapitem_set-' + formset_number + '-compound').val(ret_compound);
-                $('#id_assayplatereadermapitem_set-' + formset_number + '-cell').val(ret_cell);
-                $('#id_assayplatereadermapitem_set-' + formset_number + '-setting').val(ret_setting);
-                $('#id_assayplatereadermapitem_set-' + formset_number + '-default_time').val(ret_default_time);
+                    $('#id_assayplatereadermapitem_set-' + formset_number + '-dilution_factor').val(ret_dilution_factor);
+                    $('#id_assayplatereadermapitem_set-' + formset_number + '-collection_volume').val(ret_collection_volume);
+                    $('#id_assayplatereadermapitem_set-' + formset_number + '-collection_time').val(ret_collection_time);
+                    $('#id_assayplatereadermapitem_set-' + formset_number + '-compound').val(ret_compound);
+                    $('#id_assayplatereadermapitem_set-' + formset_number + '-cell').val(ret_cell);
+                    $('#id_assayplatereadermapitem_set-' + formset_number + '-setting').val(ret_setting);
+                    $('#id_assayplatereadermapitem_set-' + formset_number + '-default_time').val(ret_default_time);
 
-                // 20200522 getting rid of the value formset
-                // if (document.getElementById("id_form_number_file_block_combos").value > 0) {
-                //     // do not need to change the value formset because it is not pulled in,
-                //     // only the data are pulled in for display
-                // } else {
-                //     $('#id_assayplatereadermapitemvalue_set-' + formset_number + '-well_use').val(ret_well_use);
-                //     $('#id_assayplatereadermapitemvalue_set-' + formset_number + '-time').val(ret_time);
-                // }
+                    // 20200522 getting rid of the value formset
+                    // if (document.getElementById("id_form_number_file_block_combos").value > 0) {
+                    //     // do not need to change the value formset because it is not pulled in,
+                    //     // only the data are pulled in for display
+                    // } else {
+                    //     $('#id_assayplatereadermapitemvalue_set-' + formset_number + '-well_use').val(ret_well_use);
+                    //     $('#id_assayplatereadermapitemvalue_set-' + formset_number + '-time').val(ret_time);
+                    // }
 
-                // Make the changes to the plate
-                $('#well_use-' + formset_number).text(ret_well_use);
+                    // Make the changes to the plate
+                    $('#well_use-' + formset_number).text(ret_well_use);
 
-                $('#matrix_item-' + formset_number).text(ret_matrix_item_text);
+                    $('#matrix_item-' + formset_number).text(ret_matrix_item_text);
 
-                $('#location-' + formset_number).text(ret_location_text);
-                $('#dilution_factor-' + formset_number).text(ret_dilution_factor);
-                $('#collection_volume-' + formset_number).text(ret_collection_volume);
-                $('#collection_time-' + formset_number).text(ret_collection_time);
-                $('#standard_value-' + formset_number).text(ret_standard_value);
-                $('#compound-' + formset_number).text(ret_compound);
-                $('#cell-' + formset_number).text(ret_cell);
-                $('#setting-' + formset_number).text(ret_setting);
-                $('#default_time-' + formset_number).text(ret_default_time);
-                $('#time-' + formset_number).text(ret_time);
-                $('#block_raw_value-' + formset_number).text(ret_block_raw_value);
+                    $('#location-' + formset_number).text(ret_location_text);
+                    $('#dilution_factor-' + formset_number).text(ret_dilution_factor);
+                    $('#collection_volume-' + formset_number).text(ret_collection_volume);
+                    $('#collection_time-' + formset_number).text(ret_collection_time);
+                    $('#standard_value-' + formset_number).text(ret_standard_value);
+                    $('#compound-' + formset_number).text(ret_compound);
+                    $('#cell-' + formset_number).text(ret_cell);
+                    $('#setting-' + formset_number).text(ret_setting);
+                    $('#default_time-' + formset_number).text(ret_default_time);
+                    $('#time-' + formset_number).text(ret_time);
+                    $('#block_raw_value-' + formset_number).text(ret_block_raw_value);
+                }
 
                 idx = idx + 1;
             });

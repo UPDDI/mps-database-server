@@ -110,7 +110,7 @@ $(document).ready(function() {
                 },
                 {
                     'visible': false,
-                    'targets': [7, 9, 10, 14, 16, 17]
+                    'targets': [7, 8, 9, 10, 14, 16, 17]
                 },
                 {
                     'className': 'none',

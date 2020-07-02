@@ -75,7 +75,7 @@ $(document).ready(function () {
         .addClass('btn btn-sm')
         .appendTo(alphabet);
 
-    for(var i=0 ; i<26 ; i++) {
+    for(var i=0; i<26; i++) {
         var letter = String.fromCharCode(65 + i);
 
         $('<a/>')

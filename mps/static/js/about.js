@@ -64,7 +64,8 @@ $(document).ready(function () {
     var about_studies_for_release_table = $('#about_studies_for_release_table').DataTable({
         dom: '<Bl<"row">frptip>',
         "iDisplayLength": 10,
-        responsive: true
+        responsive: true,
+        order: [3, 'asc'],
     });
 
     // Prefix of "about" more or less superfluous
@@ -92,31 +93,40 @@ $(document).ready(function () {
         dom: '<Bl<"row">frptip>',
         "iDisplayLength": 10,
         responsive: true,
-        initComplete: function() {
-            var initial_hash = window.location.hash;
-            if (initial_hash) {
-                if (initial_hash === '#anchor_releases') {
-                    $('html, body').animate({
-                        scrollTop: 3200
-                    }, 1000);
-                }
-                else if (initial_hash === '#anchor_models_distinct') {
-                    $('html, body').animate({
-                        scrollTop: 4200
-                    }, 1000);
-                }
-                else if (initial_hash === '#anchor_faqs') {
-                    $('html, body').animate({
-                        scrollTop: 4800
-                    }, 1000);
-                }
-                else {
-                    $('html, body').animate({
-                        scrollTop: $(initial_hash).offset().top - offset
-                    }, 500);
-                    $(initial_hash).find('button').next().first().css("display", "block");
-                }
-            }
-        }
+        // initComplete: function() {
+        //     var initial_hash = window.location.hash;
+        //     if (initial_hash) {
+        //         if (initial_hash === '#anchor_releases') {
+        //             $('html, body').animate({
+        //                 scrollTop: 3200
+        //             }, 1000);
+        //         }
+        //         else if (initial_hash === '#anchor_models_distinct') {
+        //             $('html, body').animate({
+        //                 scrollTop: 4200
+        //             }, 1000);
+        //         }
+        //         else if (initial_hash === '#anchor_faqs') {
+        //             $('html, body').animate({
+        //                 scrollTop: 4800
+        //             }, 1000);
+        //         }
+        //         else {
+        //             $('html, body').animate({
+        //                 scrollTop: $(initial_hash).offset().top - offset
+        //             }, 500);
+        //         }
+        //     }
+        // }
     });
+
+    // Crude: Scroll to top after a delay
+    var initial_hash = window.location.hash;
+    if (initial_hash) {
+        setTimeout(function() {
+            $('html, body').animate({
+                scrollTop: $(initial_hash).offset().top - offset
+            }, 500);
+        }, 500);
+    }
 });

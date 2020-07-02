@@ -29,6 +29,7 @@ WIDGETS_WITH_AUTOCOMPLETE_OFF = {
 
 class BootstrapForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
+        # PLEASE NOTE: THIS WILL DISRUPT OTHER ATTEMPTS TO GET THIS KWARG
         self.user = kwargs.pop('user', '')
         super(BootstrapForm, self).__init__(*args, **kwargs)
 
