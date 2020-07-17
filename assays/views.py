@@ -2788,6 +2788,27 @@ class AssayStudySetDataPlots(StudySetViewerMixin, DetailView):
     model = AssayStudySet
     template_name = 'assays/assaystudyset_data_plots.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudySetDataPlots, self).get_context_data(**kwargs)
+
+        # NOT DRY
+        # FILTER OUT STUDIES WITH NO ASSAYS
+        # PLEASE NOTE FILTER HERE
+        # WE ASSUME THE USER OUGHT TO SEE ALL THE STUDIES (via permission mixin)
+        # combined = get_user_accessible_studies(self.request.user).filter(
+        #     assaystudyassay__isnull=False
+        # )
+        combined = self.object.studies.all()
+
+        get_queryset_with_organ_model_map(combined)
+        get_queryset_with_number_of_data_points(combined)
+        get_queryset_with_stakeholder_sign_off(combined)
+        get_queryset_with_group_center_dictionary(combined)
+
+        context['studies'] = combined
+
+        return context
+
 
 class AssayStudySetReproducibility(StudySetViewerMixin, DetailView):
     model = AssayStudySet

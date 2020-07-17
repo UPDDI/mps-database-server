@@ -626,6 +626,7 @@ class AssayStudyAdmin(LockableAdmin):
     date_hierarchy = 'start_date'
     list_display = (
         'name',
+        'id',
         'group',
         'get_study_types_string',
         'start_date',
@@ -713,10 +714,14 @@ class AssayStudyAdmin(LockableAdmin):
         qs = qs.prefetch_related(
             'access_groups',
             'collaborator_groups',
-            'assaystudystakeholder_set__group'
+            # Needs to be revised to actually improve time
+            'assaystudystakeholder_set__group',
+            # 'assaystudystakeholder_set__signed_off_by',
+            'signed_off_by',
         )
         return qs
 
+    # Not a, uh, great query. Way too large.
     @mark_safe
     def stakeholder_display(self, obj):
         contents = ''
@@ -728,9 +733,13 @@ class AssayStudyAdmin(LockableAdmin):
         if count:
             stakes = []
             for stakeholder in queryset.order_by('group__name'):
-                if not stakeholder.signed_off_by:
+                if not stakeholder.signed_off_by_id:
                     released = False
-                stakes.append('{0} Approved?: {1}'.format(stakeholder.group.name, stakeholder.signed_off_by))
+                    current_approval_status = False
+                else:
+                    current_approval_status = True
+
+                stakes.append('{0} Approved?: {1}'.format(stakeholder.group.name, current_approval_status))
 
             contents = '<br>'.join(stakes)
 
