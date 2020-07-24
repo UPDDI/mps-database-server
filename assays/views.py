@@ -49,6 +49,7 @@ from assays.models import (
     assay_plate_reader_map_info_plate_size_choices,
     assay_plate_reader_map_info_plate_size_choices_list,
     upload_file_location,
+    AssayOmicDataFileUpload,
 )
 from assays.forms import (
     AssayStudyConfigurationForm,
@@ -98,6 +99,7 @@ from assays.forms import (
     AssayPlateReaderMapDataFileForm,
     AssayPlateReaderMapDataFileBlockFormSetFactory,
     AbstractClassAssayStudyAssay,
+    AssayOmicDataFileUploadForm,
 )
 
 from microdevices.models import MicrophysiologyCenter
@@ -5252,3 +5254,118 @@ class PBPKFilterView(TemplateView):
 
 class PBPKView(TemplateView):
     template_name = 'assays/assay_pbpk.html'
+
+#####
+# END Plate reader file list, add, update, view and HOLD section
+
+##### Start the omic data section
+
+class AssayOmicDataFileUploadIndex(StudyViewerMixin, DetailView):
+    """Assay Omic Data file"""
+
+    model = AssayStudy
+    context_object_name = 'assayomicdatafileupload_index'
+    template_name = 'assays/assayomicdatafileupload_index.html'
+
+    # For permission mixin
+    def get_object(self, queryset=None):
+        self.study = super(AssayOmicDataFileUploadIndex, self).get_object()
+        return self.study
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayOmicDataFileUploadIndex, self).get_context_data(**kwargs)
+
+        # get files
+        datafiles = AssayOmicDataFileUpload.objects.filter(
+            study=self.object.id
+        )
+        # get and put short file name into queryset
+        for file in datafiles:
+            file.name_short = os.path.basename(str(file.omic_data_file))
+
+        context['datafiles'] = datafiles
+        return context
+
+
+class AssayOmicDataFileUploadDelete(CreatorAndNotInUseMixin, DeleteView):
+    model = AssayOmicDataFileUpload
+    template_name = 'assays/assayomicdatafileupload_delete.html'
+
+    def get_success_url(self):
+        return self.object.get_post_submission_url()
+
+
+class AssayOmicDataFileUploadAdd(StudyGroupMixin, CreateView):
+    """Views Add Upload an AssayOmicDataFileUpload file """
+
+    model = AssayOmicDataFileUpload
+    template_name = 'assays/assayomicdatafileupload_add.html'
+    form_class = AssayOmicDataFileUploadForm
+
+    # For permission mixin
+    def get_object(self, queryset=None):
+        self.study = super(AssayOmicDataFileUploadAdd, self).get_object()
+        return self.study
+
+    def get_form(self, form_class=None):
+        form_class = self.get_form_class()
+        study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
+
+        if self.request.method == 'POST':
+            return form_class(self.request.POST, self.request.FILES, study=study)
+        else:
+            return form_class(study=study)
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayOmicDataFileUploadAdd, self).get_context_data(**kwargs)
+        context['add'] = True
+        context['page_called'] = 'add'
+        return context
+
+    def form_valid(self, form):
+        if form.is_valid():
+            save_forms_with_tracking(self, form, update=True)
+            return redirect(self.object.get_post_submission_url())
+        else:
+            return self.render_to_response(self.get_context_data(form=form, ))
+
+class AssayOmicDataFileUploadUpdate(StudyGroupMixin, UpdateView):
+    """Views View Upload an AssayOmicDataFileUpload file """
+
+    model = AssayOmicDataFileUpload
+    template_name = 'assays/assayomicdatafileupload_update.html'
+    form_class = AssayOmicDataFileUploadForm
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayOmicDataFileUploadUpdate, self).get_context_data(**kwargs)
+        context['update'] = True
+        context['page_called'] = 'update'
+        return context
+
+    def form_valid(self, form):
+        if form.is_valid():
+            save_forms_with_tracking(self, form, update=True)
+            return redirect(self.object.get_post_submission_url())
+        else:
+            return self.render_to_response(self.get_context_data(form=form, ))
+
+class AssayOmicDataFileUploadView(StudyGroupMixin, DetailView):
+    """Views View Upload an AssayOmicDataFileUpload file """
+
+    model = AssayOmicDataFileUpload
+    template_name = 'assays/assayomicdatafileupload_update.html'
+    form_class = AssayOmicDataFileUploadForm
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayOmicDataFileUploadView, self).get_context_data(**kwargs)
+        context['review'] = True
+        context['page_called'] = 'review'
+
+        # HANDY to use DetailView in a View view and trick Django into getting the form
+        context.update({
+            'form': AssayOmicDataFileUploadForm(instance=self.object),
+        })
+
+        return context
+
+# END omic data file list, add, update, view and delete section
