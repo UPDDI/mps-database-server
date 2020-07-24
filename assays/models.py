@@ -4606,3 +4606,183 @@ class SpeciesParameters(models.Model):
 
     def __str__(self):
         return '{} - {} ({})'.format(self.species, self.organ, self.reference)
+
+
+##### Start Assay Omic Section
+class AssayOmicDataGroup(LockableModel):
+    """Assay omic data groups - pk used to tie chip and sample metadata to a data group."""
+
+    class Meta(object):
+        verbose_name = 'Assay Omic Data Group'
+        verbose_name_plural = 'Assay Omic Data Groups'
+        unique_together = [('study', 'name')]
+
+    study = models.ForeignKey(
+        AssayStudy,
+        default=1,
+        on_delete=models.CASCADE,
+        verbose_name='This Study'
+    )
+    name = models.CharField(
+        max_length=100,
+        default=set_default_description(),
+        verbose_name='Group Name'
+    )
+    number = models.IntegerField(
+        default=999,
+        blank=True,
+        verbose_name='Group Number'
+    )
+
+    def __str__(self):
+        return '{}'.format(self.name)
+
+
+class AssayOmicDataFileUpload(LockableModel):
+    """Assay omic data - usually export from a DEG tool."""
+
+    class Meta(object):
+        verbose_name = 'Assay Omic Data File Upload'
+        verbose_name_plural = 'Assay Omic Data File Uploads'
+        unique_together = [('study', 'omic_data_file')]
+
+    study = models.ForeignKey(
+        AssayStudy,
+        on_delete=models.CASCADE,
+        verbose_name='This Study'
+    )
+
+    description = models.CharField(
+        max_length=2000,
+        blank=True,
+        default=set_default_description(),
+        verbose_name='File Description'
+    )
+
+    omic_data_file = models.FileField(
+        upload_to='omic_data_file',
+        help_text='Omic Data File',
+        blank=True,
+        null=True,
+        verbose_name='Data File'
+    )
+
+    data_type = models.CharField(
+        max_length=25,
+        default='Log2fc',
+        blank=True,
+        verbose_name='Data Type'
+    )
+
+    pipeline = models.CharField(
+        max_length=25,
+        default='DESeq2',
+        blank=True,
+        verbose_name='Computation Pipeline'
+    )
+
+    method = models.ForeignKey(
+        AssayMethod,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name='Method'
+    )
+
+    group = models.ForeignKey(
+        AssayOmicDataGroup,
+        default=1,
+        on_delete=models.CASCADE,
+        verbose_name='Group'
+    )
+    group_2 = models.ForeignKey(
+        AssayOmicDataGroup,
+        default=1,
+        related_name='group_2',
+        on_delete=models.CASCADE,
+        verbose_name='Group 2'
+    )
+
+    time = models.FloatField(
+        default=0,
+        null=True,
+        blank=True,
+        verbose_name='Sample Time'
+    )
+    time_2 = models.FloatField(
+        default=0,
+        null=True,
+        blank=True,
+        verbose_name='Sample Time 2'
+    )
+
+    location = models.ForeignKey(
+        'AssaySampleLocation',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name='Sample Location'
+    )
+    location_2 = models.ForeignKey(
+        'AssaySampleLocation',
+        null=True,
+        blank=True,
+        related_name="location_2",
+        on_delete=models.CASCADE,
+        verbose_name='Sample Location 2'
+    )
+
+    def __str__(self):
+        return '{0}'.format(self.id)
+
+    def get_absolute_url(self):
+        return '/assays/assayomicdatafileupload/{}/'.format(self.id)
+
+    def get_post_submission_url(self):
+        return '/assays/assaystudy/{}/assayomicdatafileupload/'.format(self.study_id)
+
+    def get_delete_url(self):
+        return '{}delete/'.format(self.get_absolute_url())
+
+
+class AssayOmicDataPoint(models.Model):
+    """Individual points of omic data"""
+
+    # this will be the study in which the user was sitting when they uploaded the data file
+    # in theory, it could be study_1 or study_2
+    study = models.ForeignKey(
+        'assays.AssayStudy',
+        on_delete=models.CASCADE,
+        verbose_name='This Study'
+    )
+
+    omic_data_file = models.ForeignKey(
+        AssayOmicDataFileUpload,
+        null=False,
+        blank=False,
+        on_delete=models.CASCADE,
+        verbose_name='Data File'
+    )
+
+    name = models.CharField(
+        max_length=100,
+        blank=False,
+        null=False,
+        verbose_name='Name'
+    )
+
+    target = models.ForeignKey(
+        AssayTarget,
+        blank=False,
+        null=False,
+        on_delete=models.CASCADE,
+        verbose_name='Computational Target'
+    )
+
+    value = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name='Computed Value'
+    )
+
+##### End Assay Omic Section - Phase 1 design

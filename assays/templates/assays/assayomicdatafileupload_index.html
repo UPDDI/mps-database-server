@@ -1,0 +1,98 @@
+ {% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block load_js %}
+    <script src="{% static "assays/assayomicdatafileupload_index.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/">Studies</a></li>
+    <li><a href="{{ object.get_absolute_url }}">{{ object }}</a></li>
+    <li class="active">Assay Omic Data Files</li>
+{% endblock %}
+
+{% block content %}
+
+    {% include 'tracking.html' with study_submit='true' %}
+
+    <div class="padded-bottom">
+        <div class="well">
+            <h1 class="text-center">
+                <em><b>Assay Omic Data File Upload List</b></em><br><br>
+                Study: {{ object }}
+            </h1>
+        </div>
+
+        <div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-7">
+                        {# Hide setup add buttons if the study is marked reviewed #}
+                        {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
+                            {% if not review %}
+                            <div>
+                                <a href="{% url 'assayomicdatafileupload-add' object.id %}" class="btn btn-success" role="button">Add Omic Data File</a>
+                            </div>
+                                {% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="col-md-5">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+
+        {% if datafiles %}
+        <div>
+            <div><p id="omic_file_index_tooltip"></p>
+                <label for="omic_file_index_tooltip">Assay Omic Data File List &nbsp;</label>
+            </div>
+
+            <table id="assayomicdatafileuploads" class="display table table-striped table-hover" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th>View</th>
+                    <th>Edit</th>
+                    <th>File</th>
+                    <th>Description</th>
+                    <th>Method</th>
+                    <th>Group 1</th>
+                    <th>Group 2</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for file in datafiles %}
+                <tr>
+                    <td>
+                        <a class="btn btn-primary" href="{% url 'assayomicdatafileupload-view' file.id  %}">View </a>
+                    </td>
+                    <td>
+{#                      {% if not object.signed_off_by %}#}
+                        <a class="btn btn-primary" href="{% url 'assayomicdatafileupload-update' file.id  %}">Edit </a>
+{#                      {% endif %}#}
+                    </td>
+                    <td>
+                        <a target="_blank" href="/media/{{ file.omic_data_file }}">
+                            {{ file.omic_data_file }}
+                        </a>
+                    </td>
+                    <td>{{ file.description }}</td>
+                    <td>{{ file.method }}</td>
+                    <td>{{ file.group }}</td>
+                    <td>{{ file.group_2 }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% else %}
+        <div class="alert alert-warning" role="alert">
+            No assay plate files have been uploaded and saved.
+        </div>
+        {% endif %}
+    </div>
+
+{% endblock %}
+

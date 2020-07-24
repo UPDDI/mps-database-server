@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block load_js %}
+    <script src="{% static "assays/assayomicdatafileupload_update.js" %}"></script>
+    <script src="{% static "js/enter_override.js" %}"></script>
+{% endblock %}
+
+{# this template is for update and reveiw only (not add) #}
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/">Studies</a>
+    <li><a href="{{ form.instance.study.get_absolute_url }}">{{ form.instance.study }}</a></li>
+    <li><a href="{% url 'assayomicdatafileupload-index' object.study.id %}">Assay Omic Data Files</a>
+    <li class="active">
+        <em>{{ object }}</em>
+    </li>
+{% endblock %}
+
+{% block content %}
+
+    <form class="form-horizontal" method="post" enctype="multipart/form-data">
+        <div class="padded-bottom">
+            <div class="well">
+                <h1 class="text-center">
+                    <em><b>
+                    {% if update %}
+                        Update
+                    {% else %}
+                        Review
+                    {% endif %}
+                    Assay Omic File
+                    </b></em>
+                    <br>
+                    <br>
+                    in Study {{ form.instance.study }}
+                    <br>
+                {% csrf_token %}
+                </h1>
+            </div>
+
+            {% if not review %}
+                {% include "submit.html" with flag="y" creator=object.created_by.id %}
+            {% endif %}
+
+            {% include 'errors.html' %}
+            {% if form.errors %}
+                {% for field in form %}
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                                <span class="sr-only">Error:</span>
+                                {{field.label}}: {{error}}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                    <span class="sr-only">Error:</span>
+                    {{ form.non_field_errors }}
+                    form.errors<br>
+                    {{ form.errors }}<br>
+                </div>
+            {% endif %}
+
+            {# main #}
+            <div class="container">
+            {# pass to js file need for use in js #}
+                <div>
+                    <div class="hidden" id="check_load">
+                        {{ page_called }}
+                    </div>
+                    <div class="hidden" id="this_file_id">
+                        {{ object.id }}
+                    </div>
+                </div>
+
+                {% if update %}
+                    {% if form.omic_data_file.errors %}
+                        {% for error in form.omic_data_file.errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                                <span class="sr-only">Error:</span>
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    <div class="form-group has-error">
+                    {% else %}
+                    <div class="form-group">
+                    {% endif %}
+                        <label for="protocol" class="col-sm-2 control-label">Omic Data File</label>
+                        <div class="col-sm-10">
+                            {{ form.omic_data_file }}
+                            <div>
+                                <br>
+                                <b>Acceptable Formats: Excel and CSV</b>
+                            </div>
+                        </div>
+                    </div>
+                    {% if form.omic_data_file.errors %}
+                    </div>
+                    {% endif %}
+
+                {% else %}
+                    <label for="omic_data_file" class="col-sm-2 control-label">Omic Data File</label>
+                    <div class="col-sm-10">
+                        <em><b> {{ form.filename_only.value }} </b></em>
+                        {# Show form field as text .name vrs .value HANDY  #}
+                        {# name {{ form.form_filename_only.name }} #}
+                        {# value {{ form.form_filename_only.value }} #}
+                    </div>
+                    <br>
+                {% endif %}
+
+
+                <br>
+                <br>
+                {% include 'generic_field.html' with field=form.description %}
+                {% if update %}
+                    {% include 'generic_field.html' with field=form.method %}
+                {% else %}
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="plate-map-page-field-labels-small">
+                                <b>Method</b>
+                            </div>
+                        </div>
+                        <div class="col-md-10">
+                            {{ form.method }}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# groups #}
+                <br>
+                <div class="row">
+                    <div class="col-md-2">
+                    </div>
+                    <div class="col-md-10">
+                        <label>If value is positive, gene is up regulated in group 1.</label>
+                    </div>
+                </div>
+                {% include 'generic_field.html' with field=form.group %}
+                {% include 'generic_field.html' with field=form.group_2 %}
+
+
+                <div class="row">
+                    <div class="col-md-2">
+                    </div>
+                    <div>
+                        <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+                            <tr>
+                                <th class="bg-success" colspan="3">Sample Time</th>
+                                <th class="bg-warning">Sample Location</th>
+                            </tr>
+                            <tr>
+                                <th class="bg-success">Day</th>
+                                <th class="bg-success">Hour</th>
+                                <th class="bg-success">Minute</th>
+                                <td class="bg-warning">
+                                    {% if update %}
+                                        {% include 'generic_popup_link.html' with field=form.location %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td hidden>
+                                    {{ form.time }}
+                                </td>
+                                <td class="bg-success">{{ form.time_day }}</td>
+                                <td class="bg-success">{{ form.time_hour }}</td>
+                                <td class="bg-success">{{ form.time_minute }}</td>
+                                <td class="bg-warning">{{ form.location }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+

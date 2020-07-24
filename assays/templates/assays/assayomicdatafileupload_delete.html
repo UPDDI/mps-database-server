@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/">Studies</a>
+    <li><a href="{{ object.study.get_absolute_url }}">{{ object.study }}</a></li>
+    <li><a href="{% url 'assayomicdatafileupload-index' object.study.id %}">Assay Omic Data Files</a>
+    <li class="active">
+        <em>{{ object }}</em>
+    </li>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+
+        <div class="padded-bottom">
+            <div class="well">
+                <h1 class="text-center">
+                    <em><b>Assay Omic Data File Delete
+                    </b></em><br><br>
+                    Delete Assay Data File: <em>{{ object }}</em>
+                <br>
+                </h1>
+                {% csrf_token %}
+            </div>
+        </div>
+
+        <h2 class="text-danger">Are you sure you want to delete the Assay Omic Data File:<br><b>{{ object }}</b>?</h2>
+        <hr>
+        <div class="padded-bottom">
+            <button type="submit" class="btn btn-danger">Confirm Deletion</button>
+        </div>
+    </form>
+{% endblock %}
