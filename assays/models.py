@@ -28,6 +28,12 @@ from mps.utils import *
 import reversion
 
 import datetime
+from django.urls import reverse
+# THIS WILL ONLY BE USED FOR PROTOTYPE
+from django.contrib.postgres.fields import JSONField
+
+import ujson as json
+
 
 from django.urls import reverse
 
@@ -1904,8 +1910,9 @@ class AssayStudy(FlaggableModel):
     #     )
     #     return study_types
 
+    # !!!!
     # THIS IS ONLY FOR THE PROTOTYPE
-    series_data = JSONField(default=dict, blank=True)
+    # series_data = JSONField(default=dict, blank=True)
 
     # TODO INEFFICIENT BUT SHOULD WORK
     def stakeholder_approval_needed(self):
@@ -1967,6 +1974,188 @@ class AssayStudy(FlaggableModel):
                 })
 
         return '\n'.join([' '.join(x) for x in list(current_study.values())])
+
+    # TODO REVIEW
+    def get_group_data_string(self, get_chips=False, plate_id=None):
+        data = {
+            # Probably should change name?
+            'series_data': [],
+            # Mode defines which get populated
+            # May need modify for a 'both' option
+            'chips': [],
+            'plates': {}
+        }
+
+        # If we so desired, we could order these
+        # One option is PK to get order of addition?
+        groups = AssayGroup.objects.filter(
+            study_id=self.id
+        ).prefetch_related(
+            # Prefetch the cells etc.
+            # Kind of rough, but on the bright side we don't need chaining
+            'assaygroupcell_set',
+            # Shame we need to do this
+            # BUT COMPOUND SCHEMA IS STUPID
+            'assaygroupcompound_set__compound_instance',
+            'assaygroupsetting_set',
+            # Guess I need to eat the cost...
+            'organ_model__device'
+        ).order_by(
+            'id'
+        )
+
+        # For mapping chips
+        group_id_to_index = {}
+
+        # No junk
+        # We actually do want to get the id for updates and the like
+        excluded_keys = [
+            '_state',
+            # Interestingly, we are going to exclude id for now
+            # Since we are killing all of the related data on save anyway...
+            # We just end up making a mess keeping this
+            # TODO TODO TODO BRING BACK WHEN WE REFACTOR PLEASE
+            'id',
+            '_prefetched_objects_cache',
+            # WE DON'T WANT THE GROUP ID
+            # THIS WILL RUIN THE DIFFERENCE CHECKER
+            'group_id',
+        ]
+
+        for group_index, group in enumerate(groups):
+            current_group = {
+                'cell': [],
+                'compound': [],
+                'setting': [],
+                # Why stringify this?
+                'id': group.id,
+                # 'id': str(group.id),
+                'name': group.name,
+                # Tricky, these are passed as strings
+                'organ_model_id': group.organ_model_id,
+                # TRICKY! TODO BE CAREFUL MAY NOT EXIST
+                'organ_model_protocol_id': group.organ_model_protocol_id,
+                'test_type': group.test_type,
+                # TECHNICALLY ONLY RELEVANT WHEN GETTING CHIPS
+                # SEE BELOW
+                'number_of_items': 0,
+                # Prevents AJAX requests, I guess
+                'device_type': group.organ_model.device.device_type
+            }
+
+            # Not very DRY
+            for cell in group.assaygroupcell_set.all():
+                current_group.get('cell').append(
+                    {
+                        key: cell.__dict__.get(key) for key in cell.__dict__.keys() if key not in excluded_keys
+                    }
+                )
+
+            # OH BOY! BECAUSE THE SCHEMA FOR COMPOUNDS ARE STUPID, WE NEED SPECIAL HANDLING
+            # WOO WOO!
+            # We need the compound instances to be devolved, unfortunately
+            # Either that, or we, you know, revise the compound schema
+            # To meet deadlines, I guess that isn't really an option
+            # Here we go!
+            for compound in group.assaygroupcompound_set.all():
+                current_dic = {
+                    key: compound.__dict__.get(key) for key in compound.__dict__.keys() if key not in excluded_keys
+                }
+
+                # Because compound schema is stupid
+                current_dic.update({
+                    'compound_id': compound.compound_instance.compound_id,
+                    'supplier_text': compound.compound_instance.supplier.name,
+                    'lot_text': compound.compound_instance.lot,
+                    'receipt_date': compound.compound_instance.receipt_date,
+                })
+
+                current_group.get('compound').append(
+                    current_dic
+                )
+
+            for setting in group.assaygroupsetting_set.all():
+                current_group.get('setting').append(
+                    {
+                        key: setting.__dict__.get(key) for key in setting.__dict__.keys() if key not in excluded_keys
+                    }
+                )
+
+            data.get('series_data').append(current_group)
+            group_id_to_index.update({
+                group.id: group_index
+            })
+
+        if get_chips:
+            # TODO TODO TODO
+            # PLEASE NOTE: WE WILL HAVE TO GO BACK AND CONSOLIDATE ALL CHIPS IN EXISTING STUDIES TO A SINGLE MATRIX
+            # We can't get the matrix in question with a name (the study name can change)
+            # We can get the correct chips by either seeing if the organ model is for chips or checking the representation of the matrix
+            # For the moment we will assume only one chip matrix
+            chips = AssayMatrixItem.objects.filter(
+                # Must be for this study
+                study_id=self.id,
+                # Must be in the chip matrix
+                matrix__representation='chips'
+            ).prefetch_related(
+                # Unfortunately, to avoid N+1, we need to prefetch
+                'matrix'
+            # Possibly annoying, I don't know
+            ).order_by(
+                'id'
+            )
+
+            # For every chip, tack on an object with
+            for chip in chips:
+                data.get('chips').append(
+                    {
+                        'name': chip.name,
+                        'group_id': chip.group_id,
+                        # We use group index in the group page rather than id because groups may or may not exist on that page
+                        # Default *ideally* is not necessary here
+                        'group_index': group_id_to_index.get(chip.group_id, None),
+                        'id': chip.id
+                    }
+                )
+
+                data.get('series_data')[group_id_to_index.get(chip.group_id, None)]['number_of_items'] += 1
+
+        # Get the plate information
+        # It is worth noting that for the purposes of a plate edit page, we really only need the one...
+        # Maybe we could have a plate_id arg as a filter?
+        # TODO REVIEW
+        if plate_id:
+            current_plate_data = {}
+
+            # We don't really care about much outside of the column, row, group_id, name
+            # Passing the plate_id is what tells us the current plate
+            current_plate = AssayMatrix.objects.filter(
+                id=plate_id,
+                # Insurance
+                study_id=self.id
+            )[0]
+
+            for well in AssayMatrixItem.objects.filter(matrix_id=current_plate.id):
+                current_well_data = {
+                    'group_id': well.group_id,
+                    'group_index': group_id_to_index.get(well.group_id, None),
+                    'name': well.name,
+                    'id': well.id
+                }
+                current_plate_data.update({
+                    '{}_{}'.format(
+                        well.row_index,
+                        well.column_index,
+                    ) : current_well_data
+                })
+
+            # It probably isn't ideal to pass the plate this way?
+            # data.get('plates').append(current_plate_data
+            data.update({
+                'plates': current_plate_data
+            })
+
+        return json.dumps(data)
 
     def get_study_types_string(self):
         current_types = []
@@ -2111,11 +2300,6 @@ class AssayMatrix(FlaggableModel):
         default='',
         verbose_name='Notes'
     )
-
-    # NOTE THAT THIS FIELD TYPE IS PECULIAR TO POSTGRES
-    # NOTE: Additionally, this is just for testing purposes
-    # Once the reset of the schema has been made, it must be removed
-    series_data = JSONField(default=dict, blank=True)
 
     # TEMPORARY: FOR PROTOTYPE SCHEMA
     # REMOVE ASAP
@@ -2536,6 +2720,15 @@ class AbstractSetupSetting(models.Model):
 
 # Previously considered the name "AssaySetupGroup"
 class AssayGroup(models.Model):
+    class Meta(object):
+        # Do not allow duplicates of name per study
+        unique_together = [
+            (
+                'name',
+                'study'
+            )
+        ]
+
     # We are not considering series at the moment
     # series = models.ForeignKey(
     #     AssayItemSeries,
@@ -2555,8 +2748,10 @@ class AssayGroup(models.Model):
     name = models.CharField(
         max_length=255,
         verbose_name='Name',
-        blank=True,
-        default=''
+        # Ought to be required
+        # Additionally, ought to be unique with study
+        # blank=True,
+        # default=''
     )
 
     # Need to store test type here, acquiring it implicitly is unpleasant
@@ -2572,8 +2767,9 @@ class AssayGroup(models.Model):
     organ_model = models.ForeignKey(
         OrganModel,
         verbose_name='MPS Model',
-        null=True,
-        blank=True,
+        # Ought to be required
+        # null=True,
+        # blank=True,
         on_delete=models.CASCADE
     )
 
@@ -2582,10 +2778,156 @@ class AssayGroup(models.Model):
     organ_model_protocol = models.ForeignKey(
         OrganModelProtocol,
         verbose_name='MPS Model Version',
+        # Not required
         null=True,
         blank=True,
         on_delete=models.CASCADE
     )
+
+    # TODO TODO TODO
+    # ALL OF THIS COULD BE HANDLED MORE... DELICATELY
+    def devolved_settings(self, criteria=DEFAULT_SETTING_CRITERIA):
+        """Makes a tuple of cells (for comparison)"""
+        setting_tuple = []
+        attribute_getter = tuple_attrgetter(*criteria)
+        for setting in self.assaygroupsetting_set.all():
+            current_tuple = attribute_getter(setting)
+
+            setting_tuple.append(current_tuple)
+
+        return tuple(sorted(set(setting_tuple)))
+
+    def stringify_settings(self, criteria=None):
+        """Stringified cells for a setup"""
+        settings = []
+        for setting in self.assaygroupsetting_set.all():
+            settings.append(setting.flex_string(criteria))
+
+        if not settings:
+            settings = ['-No Extra Settings-']
+
+        return '\n'.join(collections.OrderedDict.fromkeys(settings))
+
+    def devolved_cells(self, criteria=DEFAULT_CELL_CRITERIA):
+        """Makes a tuple of cells (for comparison)"""
+        cell_tuple = []
+        attribute_getter = tuple_attrgetter(*criteria)
+        for cell in self.assaygroupcell_set.all():
+            current_tuple = attribute_getter(cell)
+
+            cell_tuple.append(current_tuple)
+
+        return tuple(sorted(set(cell_tuple)))
+
+    def stringify_cells(self, criteria=None):
+        """Stringified cells for a setup"""
+        cells = []
+        for cell in self.assaygroupcell_set.all():
+            cells.append(cell.flex_string(criteria))
+
+        if not cells:
+            cells = ['-No Cell Samples-']
+
+        return '\n'.join(collections.OrderedDict.fromkeys(cells))
+
+    def devolved_compounds(self, criteria=DEFAULT_COMPOUND_CRITERIA):
+        """Makes a tuple of compounds (for comparison)"""
+        compound_tuple = []
+        attribute_getter = tuple_attrgetter(*criteria)
+        for compound in self.assaygroupcompound_set.all():
+            current_tuple = attribute_getter(compound)
+
+            compound_tuple.append(current_tuple)
+
+        return tuple(sorted(set(compound_tuple)))
+
+    def stringify_compounds(self, criteria=None):
+        """Stringified cells for a setup"""
+        compounds = []
+        for compound in self.assaygroupcompound_set.all():
+            compounds.append(compound.flex_string(criteria))
+
+        if not compounds:
+            compounds = ['-No Compounds-']
+
+        return '\n'.join(collections.OrderedDict.fromkeys(compounds))
+
+    def get_compound_profile(self, matrix_item_compound_post_filters):
+        """Compound profile for determining concentration at time point"""
+        compound_profile = []
+
+        for compound in self.assaygroupcompound_set.all():
+            valid_compound = True
+
+            # Makes sure the compound doesn't violate filters
+            # This is because a compound can be excluded even if its parent matrix item isn't!
+            for filter, values in list(matrix_item_compound_post_filters.items()):
+                if str(attr_getter(compound, filter.split('__'))) not in values:
+                    valid_compound = False
+                    break
+
+            compound_profile.append({
+                'valid_compound': valid_compound,
+                'addition_time': compound.addition_time,
+                'duration': compound.duration,
+                # SCALE INITIALLY
+                'concentration': compound.concentration * compound.concentration_unit.scale_factor,
+                # JUNK
+                # 'scale_factor': compound.concentration_unit.scale_factor,
+                'name': compound.compound_instance.compound.name,
+                'base_unit': compound.concentration_unit.base_unit.unit,
+            })
+
+        return compound_profile
+
+    # SPAGHETTI CODE
+    # TERRIBLE, BLOATED
+    def quick_dic(
+        self,
+        compound_profile=False,
+        matrix_item_compound_post_filters=None,
+        criteria=None
+    ):
+        if not criteria:
+            criteria = {}
+        dic = {
+            # TODO May need to prefetch device (potential n+1)
+            # 'Device': self.device.name,
+            'Device': 'TODO',
+            'MPS User Group': self.study.group.name,
+            'Study': self.get_hyperlinked_study(),
+            'Matrix': 'TO BE REVISED TODO',
+            'MPS Model': self.get_hyperlinked_model_or_device(),
+            'Compounds': self.stringify_compounds(criteria.get('compound', None)),
+            'Cells': self.stringify_cells(criteria.get('cell', None)),
+            'Settings': self.stringify_settings(criteria.get('setting', None)),
+            'Trimmed Compounds': self.stringify_compounds({
+                'compound_instance.compound_id': True,
+                'concentration': True
+            }),
+            'Items with Same Treatment': [],
+            'item_ids': []
+        }
+
+        if compound_profile:
+            dic.update({
+                'compound_profile': self.get_compound_profile(matrix_item_compound_post_filters)
+            })
+
+        return dic
+
+    # TODO THESE ARE NOT DRY
+    def get_hyperlinked_model_or_device(self):
+        if not self.organ_model:
+            return '<a target="_blank" href="{0}">{1} (No MPS Model)</a>'.format(self.device.get_absolute_url(), self.device.name)
+        else:
+            return '<a target="_blank" href="{0}">{1}</a>'.format(self.organ_model.get_absolute_url(), self.organ_model.name)
+
+    def get_hyperlinked_study(self):
+        return '<a target="_blank" href="{0}">{1}</a>'.format(self.study.get_absolute_url(), self.study.name)
+
+    def __str__(self):
+        return self.name
 
 
 class AssayGroupCompound(AbstractSetupCompound):
@@ -2655,13 +2997,6 @@ class AssayGroupSetting(AbstractSetupSetting):
 
 
 # SUBJECT TO REMOVAL (MAY JUST USE ASSAY SETUP)
-@reversion.register(follow=[
-    'study',
-    'matrix',
-    'assaysetupcompound_set',
-    'assaysetupcell_set',
-    'assaysetupsetting_set',
-])
 class AssayMatrixItem(FlaggableModel):
     class Meta(object):
         verbose_name = 'Matrix Item'
@@ -2731,16 +3066,14 @@ class AssayMatrixItem(FlaggableModel):
     row_index = models.IntegerField(verbose_name='Row Index')
     column_index = models.IntegerField(verbose_name='Column Index')
 
-    # TODO DEPRECATED: PURGE
-    # HENCEFORTH ALL ITEMS WILL HAVE AN ORGAN MODEL PROTOCOL
+    # These are repetitive, as they can be found in the group
+    # (With the exception of device, which is implicitly present via organ_model in group)
     device = models.ForeignKey(
         Microdevice,
         verbose_name='Device',
         on_delete=models.CASCADE
     )
 
-    # TODO DEPRECATED: PURGE
-    # HENCEFORTH ALL ITEMS WILL HAVE AN ORGAN MODEL PROTOCOL
     organ_model = models.ForeignKey(
         OrganModel,
         verbose_name='MPS Model',

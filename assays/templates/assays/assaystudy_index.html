@@ -140,6 +140,8 @@
             <a href="{% url 'assays-assaystudy-update-details' object.id %}" class="btn btn-danger">PROTOTYPE</a>
         </div>
 
+        {# DEPRECATED! #}
+        {% comment %}
         <legend>
             <h2>
                 Matrices
@@ -218,10 +220,91 @@
             No matrices exist for this study
         </div>
         {% endif %}
+        {% endcomment %}
+
+        {# Do we want to list groups? #}
+        {# Or should we list something else? #}
+        {# At the very least, link to the respective sections? #}
+        {% if chip_groups %}
+            <div class="well">
+                <h3>
+                    There are <span class="text-success">{{ chip_groups.count }}</span> Chip Groups in this Study
+                </h3>
+                {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
+                <a href="{% url 'assays-assaystudy-update-groups' object.id %}" class="btn btn-primary" role="button">View/Edit Groups</a>
+                <a href="{% url 'assays-assaystudy-update-chips' object.id %}" class="btn btn-primary" role="button">View/Edit Chips</a>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if plate_groups %}
+            <div class="well">
+                <h3>
+                    There are <span class="text-success">{{ plate_groups.count }}</span> Plate Groups in this Study
+                </h3>
+                {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
+                <a href="{% url 'assays-assaystudy-update-groups' object.id %}" class="btn btn-primary" role="button">View/Edit Groups</a>
+                <a href="{% url 'assays-assaystudy-update-plates' object.id %}" class="btn btn-primary" role="button">View/Edit Plates</a>
+                {% endif %}
+            </div>
+
+            <legend>
+                <h2>
+                    Plates
+                </h2>
+            </legend>
+
+            {# Sloppy, might be beneficial for this to be an include #}
+            <table hidden id="plates" class="display table table-striped table-hover" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>View/Edit</th>
+                        <th>Name</th>
+                        <th>Device</th>
+                        <th>Wells in Use</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {# Temporary #}
+                {% for plate in plates %}
+                    <tr>
+                        <td>
+                            <a class="btn btn-primary"
+                               href="{% url 'assays-assaymatrix-plate-update' plate.id %}">
+                                View/Edit
+                            </a>
+                        </td>
+                        <td>
+                            {{ plate.name }}
+                        </td>
+                        <td>
+                            {{ plate.device }}
+                        </td>
+                        <td>
+                            {{ plate.assaymatrixitem_set.count }}
+                        </td>
+                        {% comment %}
+                        <td>
+                            {% if plate.signed_off_by %}
+                                <span hidden>1</span>
+                                <span title="This entry was validated by {{ plate.full_reviewer }} on {{ plate.signed_off_date }}" class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+                            {% endif %}
+                            {% if plate.flagged %}
+                                <span hidden>0</span>
+                                <span title="This entry is flagged for review: '{{ plate.reason_for_flag }}'" class="glyphicon glyphicon-flag text-danger" aria-hidden="true"></span>
+                            {% endif %}
+                        </td>
+                        {% endcomment %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
 
         <legend>
             <h2>
-                Items
+                Chips and Wells
             </h2>
         </legend>
 
@@ -254,9 +337,11 @@
                     <td>{{ item.name }}</td>
                     <td>{{ item.setup_date }}</td>
                     <td>{{ item.organ_model }}</td>
-                    <td>{{ item.stringify_compounds|linebreaksbr }}</td>
-                    <td>{{ item.stringify_cells|linebreaksbr }}</td>
-                    <td>{{ item.stringify_settings|linebreaksbr }}</td>
+                    {# Uh... a little excessive... #}
+                    {# TODO REVISE #}
+                    <td>{{ item.group.stringify_compounds|linebreaksbr }}</td>
+                    <td>{{ item.group.stringify_cells|linebreaksbr }}</td>
+                    <td>{{ item.group.stringify_settings|linebreaksbr }}</td>
                     <td>
                         {{ item.full_creator }}
                     </td>

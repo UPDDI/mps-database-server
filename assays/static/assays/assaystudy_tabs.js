@@ -68,6 +68,15 @@ $(document).ready(function() {
             study_tabs_section.find('li.active').prev('li').find('a').attr('href')
         );
 
+        // Contrived for formless tabs
+        // Just redirect if there is no form
+        // SUBJECT TO REVISION
+        if (!$('form')[0]) {
+            $(location).attr('href', redirect_url.val());
+            // DO NOT OPEN DIALOG
+            return;
+        }
+
         if (redirect_url.val() !== '#') {
             redirect_confirm.dialog('open');
         }
@@ -78,6 +87,15 @@ $(document).ready(function() {
         redirect_url.val(
             study_tabs_section.find('li.active').next('li').find('a').attr('href')
         );
+
+        // Contrived for formless tabs
+        // Just redirect if there is no form
+        // SUBJECT TO REVISION
+        if (!$('form')[0]) {
+            $(location).attr('href', redirect_url.val());
+            // DO NOT OPEN DIALOG
+            return;
+        }
 
         if (redirect_url.val() !== '#') {
             redirect_confirm.dialog('open');

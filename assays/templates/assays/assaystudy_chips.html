@@ -46,6 +46,16 @@
 
     <legend>Study Chips</legend>
 
+    <a id="rename_chips_sequentially_button" role="button" class="btn btn-primary">
+        Rename Chips Sequentially
+        <span class="glyphicon glyphicon glyphicon-list"></span>
+    </a>
+    <a id="rename_chips_by_group_button" role="button" class="btn btn-primary">
+        Rename Chips By Group
+        <span class="glyphicon glyphicon-th-list
+        glyphicon"></span>
+    </a>
+
     {# Temporary #}
     <table id="chips_table" class="display table table-striped table-hover" cellspacing="0" width="100%">
     <thead>
@@ -117,4 +127,69 @@
     {# For displaying cells etc. #}
     {% include 'assays/component_displays.html' %}
 </form>
+
+{# Popup forms for renaming #}
+{# Should probably specifically use "dialog" or "popup" as a standard #}
+<div hidden id="rename_chips_sequentially_popup" title="Rename Chips Sequentially">
+    {# semi-inappropriate use of row to deal with dialog styles #}
+    <div class="row form-group">
+        <label for="rename_chips_sequentially" class="col-sm-2 control-label">
+            Initial Chip Name
+        </label>
+        <div class="col-sm-10">
+            <input id="id_rename_chips_sequentially" name="rename_chips_sequentially" class="form-control">
+        </div>
+    </div>
+    <div>
+
+    </div>
+    <div class="row">
+        {# discouraged #}
+        <label class="col-sm-2 control-label">
+            Example:
+        </label>
+        <div class="col-sm-10">
+            <span id="rename_chips_sequentially_example">
+                1, 2, 3...
+            </span>
+        </div>
+    </div>
+</div>
+
+<div hidden id="rename_chips_by_group_popup" title="Rename Chips By Group">
+    {# semi-inappropriate use of row to deal with dialog styles #}
+    <div class="row form-group">
+        <label for="group_to_rename" class="col-sm-2 control-label">
+            Group to Rename
+        </label>
+        <div class="col-sm-10">
+            <select id="id_group_to_rename" name="group_to_rename" class="form-control no-selectize"></select>
+        </div>
+    </div>
+    <div>
+
+    <div class="row form-group">
+        <label for="rename_chips_by_group" class="col-sm-2 control-label">
+            Initial Chip Name
+        </label>
+        <div class="col-sm-10">
+            <input id="id_rename_chips_by_group" name="rename_chips_by_group" class="form-control">
+        </div>
+    </div>
+    <div>
+
+    </div>
+    <div class="row">
+        {# discouraged #}
+        <label class="col-sm-2 control-label">
+            Example:
+        </label>
+        <div class="col-sm-10">
+            <span id="rename_chips_by_group_example">
+                1, 2, 3...
+            </span>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

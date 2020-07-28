@@ -67,6 +67,27 @@
 
     {% include 'generic_field.html' with field=form.device %}
 
+    {# Is this worth it? #}
+    {# DEFINITELY OUGHT TO BE HIDDEN #}
+    <div hidden>
+        {% include 'generic_field.html' with field=form.number_of_rows %}
+        {% include 'generic_field.html' with field=form.number_of_columns %}
+        {# {% include 'generic_field.html' with field=form.number_of_items %} #}
+    </div>
+
+    <div class="form-group">
+        {# Saving this is awkward, as is providing a default... #}
+        <label for="id_plate_naming" class="col-sm-2 control-label">
+            Well Prefix
+        </label>
+        <div class="col-sm-10">
+            <input id="id_plate_naming" class="form-control">
+            <br>
+            <a role="button" id="apply_plate_names_zero" class="btn btn-primary matrix_item-section add_name_section" style="display: inline-block;" hidden="">Apply Default Plate Names (Append Zero)</a>
+            <a role="button" id="apply_plate_names_no_zero" class="btn btn-primary matrix_item-section add_name_section" style="display: inline-block;" hidden="">Apply Default Plate Names (Don't Append Zero)</a>
+        </div>
+    </div>
+
     {% include 'assays/group_visibility_section.html' %}
 
     <div class="well padded-bottom">
@@ -108,16 +129,14 @@
                 <td><select id="id_series_selector" class="form-control no-selectize required"></select></td>
             </tr>
 
-            {% comment %}
             <tr class="selection_dialog_naming_section">
-                <th>Name/Rename Chips?</th>
+                <th>Incrementally Name Wells?</th>
                 <th>Initial Name</th>
             </tr>
             <tr class="selection_dialog_naming_section text-center">
-                <td><input id="id_use_chip_naming" class="big-checkbox" type="checkbox"></td>
-                <td><input id="id_chip_naming" class="form-control"></td>
+                <td><input id="id_use_incremental_well_naming" class="big-checkbox" type="checkbox"></td>
+                <td><input id="id_incremental_well_naming" class="form-control"></td>
             </tr>
-            {% endcomment %}
 
             </table>
             </div>
@@ -128,7 +147,8 @@
         <table>
         <tr id="empty_matrix_item_html">
         <td data-prefix="{{ item_prefix }}" class="matrix_item-td">
-            <div hidden class="matrix_item-name_section">
+            {# Always show the name #}
+            <div class="matrix_item-name_section">
                 <span class="label label-default matrix_item-name"></span>
             </div>
             <span class="label label-warning matrix-item-hover">

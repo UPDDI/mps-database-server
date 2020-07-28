@@ -41,9 +41,11 @@ from assays.models import (
     AssayPlateReaderMapItemValue,
     AssayPlateReaderMapDataFile,
     AssayPlateReaderMapDataFileBlock,
-    #AssayPlateReaderMapDataFileLine,
-    AssayCategory,
-    # AssayPlateReaderMapDataProcessing,
+    # ...
+    AssayGroup,
+    AssayGroupCell,
+    AssayGroupCompound,
+    AssayGroupSetting,
     assay_plate_reader_time_unit_choices,
     assay_plate_reader_main_well_use_choices,
     assay_plate_reader_blank_well_use_choices,
@@ -401,6 +403,7 @@ class ModelFormSplitTime(BootstrapForm):
         return cleaned_data
 
 
+# TODO TODO TODO PLEASE, PLEASE GET RID OF THIS TRASH!
 class BaseModelFormSetForcedUniqueness(BaseModelFormSet):
     def clean(self):
         self.validate_unique()
@@ -1363,6 +1366,1435 @@ class AssayStudyPlateForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
         return matrix
 
 
+        return data
+
+
+class AssayStudyDetailForm(SignOffMixin, BootstrapForm):
+    def __init__(self, *args, **kwargs):
+        super(AssayStudyDetailForm, self).__init__(*args, **kwargs)
+        # Get valid groups for the dropdown
+        self.fields['group'].queryset = filter_groups(self.user)
+
+        # Crudely force required class
+        for current_field in ['total_device_volume', 'flow_rate', 'number_of_relevant_cells']:
+            self.fields[current_field].widget.attrs['class'] += ' required'
+
+    class Meta(object):
+        model = AssayStudy
+        widgets = {
+            'name': forms.Textarea(attrs={'rows': 1}),
+            'description': forms.Textarea(attrs={'rows': 5, 'cols': 100}),
+        }
+        # Since we are splitting into multiple forms, includes are safer
+        fields = (
+            'group',
+            'toxicity',
+            'efficacy',
+            'disease',
+            'cell_characterization',
+            'start_date',
+            'use_in_calculations',
+            'protocol',
+            'image',
+            'pbpk_steady_state',
+            'pbpk_bolus',
+            'number_of_relevant_cells',
+            'total_device_volume',
+            'flow_rate',
+            'name',
+            'description',
+        )
+
+    def clean(self):
+        """Checks for at least one study type"""
+        # clean the form data, before validation
+        data = super(AssayStudyDetailForm, self).clean()
+
+        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], ['pbpk_steady_state'], data['pbpk_bolus']]):
+            raise forms.ValidationError('Please select at least one study type')
+
+        if data.get('pbpk_steady_state', '') and (not data.get('number_of_relevant_cells', '') or not data.get('flow_rate', '')):
+            raise forms.ValidationError('Continuous Infusion PBPK Requires Number of Cells Per MPS Model and Flow Rate')
+
+        if data.get('pbpk_bolus', '') and (not data.get('number_of_relevant_cells', '') or not data.get('total_device_volume', '')):
+            raise forms.ValidationError('Bolus PBPK Requires Number of Cells Per MPS Model and Total Device Volume')
+
+        return data
+
+
+class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
+    # CONTRIVANCES
+    # test_type = forms.ChoiceField(
+    #     initial='control',
+    #     choices=TEST_TYPE_CHOICES,
+    #     required=False
+    # )
+    # organ_model_full = forms.ModelChoiceField(
+    #     queryset=OrganModel.objects.all().order_by('name'),
+    #     required=False,
+    #     label='Matrix Item MPS Model'
+    # )
+    # organ_model_protocol_full = forms.ModelChoiceField(
+    #     queryset=OrganModelProtocol.objects.all().order_by('name'),
+    #     required=False,
+    #     label='Matrix Item MPS Model Version'
+    # )
+    # number_of_items = forms.CharField(
+    #     initial='',
+    #     required=False
+    # )
+    # group_name = forms.CharField(
+    #     initial='',
+    #     required=False
+    # )
+
+    # CONTRIVED!
+    series_data = forms.CharField(required=False)
+
+    # Contrivance
+    organ_model = forms.ModelChoiceField(
+        queryset=OrganModel.objects.all().order_by('name'),
+        required=False,
+        label='Matrix Item MPS Model'
+    )
+
+    update_group_fields = [
+        'name',
+        'test_type',
+        'organ_model_id',
+        'organ_model_protocol_id',
+    ]
+
+    class Meta(object):
+        model = AssayStudy
+        # Since we are splitting into multiple forms, includes are safer
+        # Only temporary, will change when finished
+        fields = (
+            # TEMPORARY ->
+            'series_data',
+            # <- TEMPORARY
+            'test_type',
+            'organ_model',
+            'organ_model_full',
+            # 'group_name',
+            # TEMP!
+            'organ_model_protocol',
+            'organ_model_protocol_full',
+            'cell_cell_sample',
+            'cell_biosensor',
+            'cell_density',
+            'cell_density_unit',
+            'cell_passage',
+            'cell_addition_location',
+            'setting_setting',
+            'setting_unit',
+            'setting_value',
+            'setting_addition_location',
+            'compound_compound',
+            'compound_concentration_unit',
+            'compound_concentration',
+            'compound_addition_location',
+            'compound_supplier_text',
+            'compound_lot_text',
+            'compound_receipt_date',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(AssayStudyGroupForm, self).__init__(*args, **kwargs)
+
+        # Contrivances
+        self.fields['test_type'].widget.attrs['class'] = 'no-selectize required form-control'
+
+        # Prepopulate series_data from thing
+        self.fields['series_data'].initial = self.instance.get_group_data_string(get_chips=True)
+
+    def clean(self):
+        """Checks for at least one study type"""
+        # clean the form data, before validation
+        data = super(AssayStudyGroupForm, self).clean()
+
+        # SLOPPY NOT DRY
+        new_setup_data = {}
+
+        # This matrix is only for chips
+        # WARNING: THIS WILL BREAK IN STUDIES WITH MULTIPLE CHIP SETS
+        # IMPORTANT NOTE: WHEN BACK-FILLING, WE WILL NEED TO CONSOLIDATE CHIP MATRICES! Otherwise this flow will not work correctly...
+        current_matrix = AssayMatrix.objects.filter(
+            # The study must exist in order to visit this page, so getting the id this was is fine
+            study_id=self.instance.id,
+            representation='chips'
+        )
+
+        # Current group ids so that we can match for deletes and edits
+        current_groups = AssayGroup.objects.filter(
+            study_id=self.instance.id
+        )
+
+        current_group_ids = {
+            group.id: group for group in current_groups
+        }
+
+        if current_matrix:
+            current_matrix = current_matrix[0].id
+        else:
+            current_matrix = None
+
+        # Ditto for items (chips, in this case as wells are managed elsewhere)
+        # We only care about chips, at the moment
+        current_items = AssayMatrixItem.objects.filter(
+            study_id=self.instance.id,
+            matrix_id=current_matrix
+        )
+
+        current_item_ids = {
+            item.id: item for item in current_items
+        }
+
+        # Need to get the current groups (this could be an edit of groups)
+        new_groups = None
+        # Note that the instance is None for new adds, of course
+        current_groups = AssayGroup.objects.filter(study_id=self.instance.id)
+
+        new_items = None
+        # Likewise with chips, some may need to be edited or removed etc.
+        # DO NOT DUPLICATE QUERY
+        # current_items = AssayMatrixItem.objects.filter(matrix_id=current_matrix)
+
+        # This is supposed to contain data for cells, compounds, and settings (perhaps more later)
+        new_related = None
+
+        # Just have the errors be non-field errors for the moment
+        current_errors = []
+
+        # Am I sticking with the name 'series_data'?
+        if self.cleaned_data.get('series_data', None):
+            all_data = json.loads(self.cleaned_data.get('series_data', '[]'))
+        else:
+            # Contrived defaults
+            all_data = {
+                'series_data': [],
+                'chips': [],
+                'plates': {}
+            }
+
+        # The data for groups is currently stored in series_data
+        all_setup_data = all_data.get('series_data')
+        all_chip_data = all_data.get('chips')
+
+        # Catch technically empty setup data
+        setup_data_is_empty = True
+
+        for group_set in all_setup_data:
+            if group_set:
+                setup_data_is_empty = not any(group_set.values())
+
+        if setup_data_is_empty:
+            all_setup_data = []
+
+        # if commit and all_setup_data:
+        # SEE BASE MODELS FOR WHY COMMIT IS NOT HERE
+        if all_setup_data:
+            created_by = self.user
+            created_on = timezone.now()
+
+            # current_item_number = 1
+
+            # CRUDE: JUST MAKE ONE LARGE ROW?
+            number_of_items = 0
+
+            for setup_group in all_setup_data:
+                number_of_items += int(setup_group.get('number_of_items', '0'))
+
+            # Alternative for one row per group
+            # # Find max for number of columns
+            # number_of_columns = 0
+            # for setup_group in all_setup_data:
+            #     if int(setup_group.get('number_of_items', '0')) > number_of_columns:
+            #         number_of_columns = int(setup_group.get('number_of_items', '0'))
+
+            if not current_matrix:
+                new_matrix = AssayMatrix(
+                    # Just name the chip matrix the same thing as the study?
+                    name=self.instance.name,
+                    # Does not work with plates at the moment
+                    representation='chips',
+                    study=self.instance,
+                    # Doesn't matter for chips
+                    device=None,
+                    # Alternative that looks nicer, but these matrices probably won't be accessible anyway
+                    # number_of_rows=len(all_setup_data),
+                    # number_of_columns=number_of_columns,
+                    number_of_rows=1,
+                    number_of_columns=number_of_items,
+                    created_by=created_by,
+                    created_on=created_on,
+                    modified_by=created_by,
+                    modified_on=created_on,
+                )
+
+                try:
+                    new_matrix.full_clean()
+                except forms.ValidationError as e:
+                    current_errors.append(e)
+            else:
+                new_matrix = None
+
+            # COMPOUND STUFF BECAUSE COMPOUND SCHEMA IS MISERABLE
+            # Get all chip setup assay compound instances
+            assay_compound_instances = {}
+
+            # Get all Compound Instances
+            compound_instances = {
+                (
+                    instance.compound.id,
+                    instance.supplier.id,
+                    instance.lot,
+                    str(instance.receipt_date)
+                ): instance for instance in CompoundInstance.objects.all().prefetch_related(
+                    'compound',
+                    'supplier'
+                )
+            }
+
+            # Get all suppliers
+            suppliers = {
+                supplier.name: supplier for supplier in CompoundSupplier.objects.all()
+            }
+
+            # SLOPPY TODO TODO TODO
+            # Would be much neater to have this in an object or something
+            new_groups = []
+            update_groups = []
+            deleted_groups = []
+
+            # CHECK UNIQUENESS
+            group_names = {}
+
+            new_items = []
+            update_items = []
+            deleted_items = []
+
+            # Superfluous?
+            new_item_to_group_name = {}
+
+            new_cells = []
+            update_cells = []
+            deleted_cells = []
+
+            new_compounds = []
+            update_compounds = []
+            deleted_compounds = []
+
+            new_settings = []
+            update_settings = []
+            deleted_settings = []
+
+            # For now, chips are are all in one row
+            for setup_row, setup_group in enumerate(all_setup_data):
+                items_in_group = int(setup_group.pop('number_of_items', '0'))
+                test_type = setup_group.get('test_type', '')
+
+                # To break out to prevent repeat errors
+                group_has_error = False
+
+                # Make the group
+                # Add the group to the new_groups
+                # TODO DIFFERENTIATE NEW AND EXISTING GROUPS HERE
+                # We can identify and existing group by checking for an id
+                current_group = current_group_ids.get(int(setup_group.get('id', 0)), None)
+
+                if current_group:
+                    # ???
+                    # new_group = current_group
+
+                    if setup_group.get('deleted', False):
+                        deleted_groups.append(current_group.id)
+                    else:
+                         # TODO LOGIC FOR UPDATE HERE?
+                        # We need to update name, test_type, organ_model, and organ_model_protocol
+                        # IDEALLY ONLY IF THEY NEED TO BE UPDATED
+                        group_needs_to_be_updated = False
+                        for field in self.update_group_fields:
+                            if getattr(current_group, field) != setup_group.get(field, ''):
+                                setattr(current_group, field, setup_group.get(field, ''))
+                                group_needs_to_be_updated = True
+
+                        if group_needs_to_be_updated:
+                            try:
+                                # I think we are fine with no exclusions
+                                current_group.full_clean()
+                                update_groups.append(current_group)
+                            # MUST BE MODIFIED TO ADD TO CORRECT ROW (we could display all above too?)
+                            except forms.ValidationError as e:
+                                current_errors.append(e)
+                                group_has_error = True
+
+                        # Add to group names
+                        # Check uniqueness
+                        if setup_group.get('name', '') in group_names:
+                            current_errors.append('The Group name "{}" is duplicated. The names of Groups must be unique.'.format(
+                                setup_group.get('name', '')
+                            ))
+                        else:
+                            group_names.update({
+                                setup_group.get('name', ''): True
+                            })
+                else:
+                    current_organ_model_id = setup_group.get('organ_model_id', '')
+
+                    if current_organ_model_id:
+                        current_organ_model_id = int(current_organ_model_id)
+
+                    current_organ_model_protocol_id = setup_group.get('organ_model_protocol_id', '')
+
+                    if current_organ_model_protocol_id:
+                        current_organ_model_protocol_id = int(current_organ_model_protocol_id)
+
+                    new_group = AssayGroup(
+                        # Study should just be instance
+                        study=self.instance,
+                        name=setup_group.get('name', ''),
+                        test_type=setup_group.get('test_type', ''),
+                        organ_model_id=current_organ_model_id,
+                        organ_model_protocol_id=current_organ_model_protocol_id,
+                    )
+
+                    # TODO Logic for first clean and adding to new_groups here
+                    try:
+                        # I think we are fine with no exclusions
+                        new_group.full_clean()
+                        new_groups.append(new_group)
+                    # MUST BE MODIFIED TO ADD TO CORRECT ROW (we could display all above too?)
+                    except forms.ValidationError as e:
+                        current_errors.append(e)
+                        group_has_error = True
+
+                    # Add to group names
+                    # Check uniqueness
+                    if setup_group.get('name', '') in group_names:
+                        current_errors.append('The Group name "{}" is duplicated. The names of Groups must be unique.'.format(
+                            setup_group.get('name', '')
+                        ))
+                    else:
+                        group_names.update({
+                            setup_group.get('name', ''): True
+                        })
+
+                # Always iterate for cells, compounds, and settings
+                # Keep in mind that to decrease sparsity related data is now tied to a group
+                for prefix, current_objects in setup_group.items():
+                    # Related are tied to group, not item
+                    # Groups are INDEX DEPENDENT, *NOT* by ID (group may or may not exist)
+                    # If we don't want to wipe things every time, we CAN'T JUST DO THIS!
+                    # Obviously, we would need to differentiate adds, updates, and deletes
+                    # current_related_list = new_related.setdefault(
+                    #     str(setup_row), []
+                    # )
+
+                    if prefix in ['cell', 'compound', 'setting'] and setup_group[prefix]:
+                        for setup_column, current_object in enumerate(current_objects):
+                            # Just to filter out anything that isn't related data we need
+                            # TODO: NOTE: The big problem here is that we do not differentiate updates and adds!
+                            # That is, we would need to wipe all of the existing related data for this to work...
+                            # That is *possible*, but unwise
+                            # We could, alternatively, see if there is an entry at the INDEX (setup_column)
+                            # This can get quite convoluted! AND ALSO NEEDS TO ACCOMMODATE DELETIONS!
+                            # TODO TODO TODO NOTE: Basically to deal with deletions, we could see if number_of_deletions > number_of_new_columns
+                            # Of course, we get number_of_new_columns from the passed data
+                            # On the other hand, if we didn't really care about maximizing efficiency we could just kill anything marked for deletion
+                            # The performance hit for adding a new entry instead of updating an existing would be negligible
+                            # Why bother twisiting oneself into a knot to do so?
+                            # Besides, if we mark deletions rather than totally removing them, we would know for sure whether "they were in the right column" and thus whether they needed to be added
+                            # Anyway, we would need a query that matched the data to "columns"
+                            # The query for this, hopefully, shouldn't be too big!
+                            # We only care about that which is associated with groups in THIS study, so it should be fine?
+
+                            # Skip if nothing
+                            if not current_object:
+                                continue
+
+                            # NOTE TODO TODO TODO
+                            # I am probably just going to blow up all of the old related data for the moment and always add
+                            # This is much faster to write but more expensive than it needs to be
+                            # On the bright side, it won't orphan any data because data is bound to a Group rather than the constituent pieces...
+                            current_object.update({
+                                # GROUP NOT ITEM
+                                # 'group_id': new_group,
+                                # SOMEWHAT TRICKY: START WITH NAME AND OVERWRITE
+                                'group_id': setup_group.get('name', '')
+                            })
+                            # Breaks rule of 3
+                            if prefix == 'cell':
+                                new_cell = AssayGroupCell(**current_object)
+
+                                try:
+                                    new_cell.full_clean(exclude=['group'])
+                                    # current_related_list.append(new_cell)
+                                    new_cells.append(new_cell)
+                                except forms.ValidationError as e:
+                                    # May need to revise process_error
+                                    current_errors.append(
+                                        process_error_for_study_new(
+                                            prefix,
+                                            setup_row,
+                                            setup_column,
+                                            e
+                                        )
+                                    )
+                                    group_has_error = True
+
+                            elif prefix == 'setting':
+                                new_setting = AssayGroupSetting(**current_object)
+                                try:
+                                    new_setting.full_clean(exclude=['group'])
+                                    # current_related_list.append(new_setting)
+                                    new_settings.append(new_setting)
+                                except forms.ValidationError as e:
+                                    current_errors.append(
+                                        process_error_for_study_new(
+                                            prefix,
+                                            setup_row,
+                                            setup_column,
+                                            e
+                                        )
+                                    )
+                                    group_has_error = True
+
+                            elif prefix == 'compound':
+                                # CONFUSING NOT DRY BAD
+                                compound = int(current_object.get('compound_id', '0'))
+                                supplier_text = current_object.get('supplier_text', 'N/A').strip()
+                                lot_text = current_object.get('lot_text', 'N/A').strip()
+                                receipt_date = current_object.get('receipt_date', '')
+
+                                # NOTE THE DEFAULT, PLEASE DO THIS IN A WAY THAT IS MORE DRY
+                                if not supplier_text:
+                                    supplier_text = 'N/A'
+
+                                if not lot_text:
+                                    lot_text = 'N/A'
+
+                                # Check if the supplier already exists
+                                supplier = suppliers.get(supplier_text, '')
+
+                                concentration = current_object.get('concentration', '0')
+                                # Annoying, bad
+                                if not concentration:
+                                    concentration = 0.0
+                                else:
+                                    concentration = float(concentration)
+                                concentration_unit_id = int(current_object.get('concentration_unit_id', '0'))
+                                addition_location_id = int(current_object.get('addition_location_id', '0'))
+
+                                addition_time = current_object.get('addition_time', '0')
+                                duration = current_object.get('duration', '0')
+
+                                if not addition_time:
+                                    addition_time = 0.0
+                                else:
+                                    addition_time = float(addition_time)
+
+                                if not duration:
+                                    duration = 0.0
+                                else:
+                                    duration = float(duration)
+
+                                # Otherwise create the supplier
+                                if not supplier:
+                                    supplier = CompoundSupplier(
+                                        name=supplier_text,
+                                        created_by=created_by,
+                                        created_on=created_on,
+                                        modified_by=created_by,
+                                        modified_on=created_on,
+                                    )
+                                    try:
+                                        supplier.full_clean()
+                                        supplier.save()
+                                    except forms.ValidationError as e:
+                                        # raise forms.ValidationError(e)
+                                        current_errors.append(
+                                            process_error_for_study_new(
+                                                prefix,
+                                                setup_row,
+                                                setup_column,
+                                                e
+                                            )
+                                        )
+                                        group_has_error = True
+
+                                    suppliers.update({
+                                        supplier_text: supplier
+                                    })
+
+                                # FRUSTRATING EXCEPTION
+                                if not receipt_date:
+                                    receipt_date = None
+
+                                # Check if compound instance exists
+                                compound_instance = compound_instances.get((compound, supplier.id, lot_text, str(receipt_date)), '')
+
+                                if not compound_instance:
+                                    compound_instance = CompoundInstance(
+                                        compound_id=compound,
+                                        supplier=supplier,
+                                        lot=lot_text,
+                                        receipt_date=receipt_date,
+                                        created_by=created_by,
+                                        created_on=created_on,
+                                        modified_by=created_by,
+                                        modified_on=created_on,
+                                    )
+                                    try:
+                                        compound_instance.full_clean()
+                                        compound_instance.save()
+                                    except forms.ValidationError as e:
+                                        # raise forms.ValidationError(e)
+                                        current_errors.append(
+                                            process_error_for_study_new(
+                                                prefix,
+                                                setup_row,
+                                                setup_column,
+                                                e
+                                            )
+                                        )
+                                        group_has_error = True
+
+                                    compound_instances.update({
+                                        (compound, supplier.id, lot_text, str(receipt_date)): compound_instance
+                                    })
+
+                                # Save the AssayCompoundInstance
+                                conflicting_assay_compound_instance = assay_compound_instances.get(
+                                    (
+                                        # NOPE! HAVE TO USE
+                                        # Hmmm... not sure what to use...
+                                        # We need something that is id agnostic
+                                        # But we can't use just the name!
+                                        # We need the study id and group name
+                                        # Should be enough!
+                                        self.instance.id,
+                                        setup_group.get('name', ''),
+                                        compound_instance.id,
+                                        concentration,
+                                        concentration_unit_id,
+                                        addition_time,
+                                        duration,
+                                        addition_location_id
+                                    ), None
+                                )
+                                if not conflicting_assay_compound_instance:
+                                    new_compound = AssayGroupCompound(
+                                        # matrix_item_id=new_item.id,
+                                        compound_instance_id=compound_instance.id,
+                                        concentration=concentration,
+                                        concentration_unit_id=concentration_unit_id,
+                                        addition_time=addition_time,
+                                        duration=duration,
+                                        addition_location_id=addition_location_id,
+                                        # MANUALLY ADD THE GROUP NAME AS A CONTRIVED VALUE
+                                        group_id=setup_group.get('name', '')
+                                    )
+
+                                    try:
+                                        new_compound.full_clean(exclude=['group'])
+                                        # current_related_list.append(new_compound)
+                                        new_compounds.append(new_compound)
+                                    except forms.ValidationError as e:
+                                        # raise forms.ValidationError(e)
+                                        current_errors.append(
+                                            process_error_for_study_new(
+                                                prefix,
+                                                setup_row,
+                                                setup_column,
+                                                e
+                                            )
+                                        )
+                                        group_has_error = True
+
+                                assay_compound_instances.update({
+                                    (
+                                        self.instance.id,
+                                        setup_group.get('name', ''),
+                                        compound_instance.id,
+                                        concentration,
+                                        concentration_unit_id,
+                                        addition_time,
+                                        duration,
+                                        addition_location_id
+                                    ): True
+                                })
+
+            # We ought to process items separately for a number of reasons
+            # TODO
+            # Start of numbering for items
+            # We begin with the number of current_items + 1
+            # We assume, for the moment, that there will not be name collisions
+            # TODO: FOR TOTAL ASSURANCE, PREVENT NAME COLLISIONS
+            current_item_number = current_items.count() + 1
+
+            for current_chip in all_chip_data:
+                # Terminate early if no group
+                # BE CAREFUL, ZERO IS FALSY
+                if current_chip.get('group_index', None) is not None:
+                    setup_group = all_setup_data[current_chip.get('group_index')]
+                else:
+                    continue
+
+                # We know whether this is a current item if the id matches one in our list
+                current_item = current_item_ids.get(int(current_chip.get('id', 0)), None)
+
+                # TODO
+                if current_item:
+                    # ??
+                    # new_item = current_item
+
+                    # TODO LOGIC FOR UPDATE HERE?
+                    # It might be overkill, but user could change the organ model and protocol
+                    # So just always pass the organ model, protocol, test_type, modified on and by
+                    # NEVER BOTHER WITH THE GROUP
+                    # WE KNOW WHAT THE GROUP IS BECAUSE YOU CANNOT CHANGE IT HERE
+
+                    # WE AREN'T BOTHERING WITH UPDATING ITEMS HERE
+                    # We will delete them, though
+                    if current_chip.get('deleted', False):
+                        deleted_items.append(current_item.id)
+                else:
+                    # TODO NOTE: New chip names *theoretically* can conflict with existing chips
+                    # For instance, someone can rename their 3 chips "3,4,5" and add three new chips, bad news!
+                    new_item = AssayMatrixItem(
+                        # study=study,
+                        # matrix=new_matrix,
+                        name=str(current_item_number),
+                        # JUST MAKE SETUP DATE THE STUDY DATE FOR NOW
+                        setup_date=self.instance.start_date,
+                        # Alternative row and column
+                        # row_index=setup_row,
+                        # column_index=iteration,
+                        row_index=0,
+                        column_index=current_item_number-1,
+                        # Irrelevant (but required, unfortunately, maybe will remove later)
+                        # device=study.organ_model.device,
+                        organ_model_id=setup_group.get('organ_model_id', None),
+                        # Some nuances here that we will gloss over
+                        organ_model_protocol_id=setup_group.get('organ_model_protocol_id', None),
+                        test_type=setup_group.get('test_type', ''),
+                        created_by=created_by,
+                        created_on=created_on,
+                        modified_by=created_by,
+                        modified_on=created_on,
+                        study_id=self.instance.id,
+
+                        # SOMEWHAT UNORTHODOX:
+                        # We put the group name here
+                        # THEN OVERRIDE IT WITH THE ID LATER
+                        group_id=setup_group.get('name', ''),
+                    )
+
+                    try:
+                        new_item.full_clean(exclude=[
+                            # The matrix needs to be excluded because it might not exist yet
+                            'matrix',
+                            # DEFINITELY EXCLUDE GROUP
+                            'group',
+
+                            # Why exclude these?
+                            'device',
+                            # 'organ_model',
+                            # 'organ_model_protocol',
+                        ])
+                        new_items.append(new_item)
+                    except forms.ValidationError as e:
+                        current_errors.append(e)
+                        group_has_error = True
+
+                # CAN CAUSE UNUSUAL BEHAVIOR DURING UPDATES!
+                current_item_number += 1
+
+        if current_errors:
+            current_errors.append(['Please review the table below for errors.'])
+            raise forms.ValidationError(current_errors)
+
+        # Kind of odd at first blush, but we reverse to save in order
+        # new_items = list(reversed(new_items))
+
+        new_setup_data.update({
+            'new_matrix': new_matrix,
+            'new_items': new_items,
+
+            # NO LONGER HOW THINGS ARE HANDLED:
+            # 'new_related': new_related,
+            'new_compounds': new_compounds,
+            'new_cells': new_cells,
+            'new_settings': new_settings,
+
+            'new_groups': new_groups,
+            # TODO current_matrix?
+            # TODO updates?
+            # We PROBABLY don't need to modify the matrix
+            # I mean, if someone REALLY wanted to look at it, then it would be messed up if the number of chips changed
+            # 'update_matrix': update_matrix,
+            # Swapping groups etc (renaming is in a different interface)
+            # Maybe we ought to overkill update all in current items?
+            # Or, I suppose we can avoid superfluous updates by doing a comparison prior?
+            'update_groups': update_groups,
+
+            # WE DON'T REALLY HAVE TO UPDATE ITEMS, BUT WE DO HAVE TO DELETE THEM
+            # Probably not needed here
+            'update_items': update_items,
+
+            # TODO TODO TODO
+            # First pass we are not going to bother with this
+            'update_compounds': update_compounds,
+            'update_cells': update_cells,
+            'update_settings': update_settings,
+
+            # WE NEED THE GROUP IDS!
+            'current_group_ids': current_group_ids,
+            # WE WOULD WANT TO KNOW IF THERE IS ALREADY A MATRIX!
+            'current_matrix':  current_matrix,
+            # Probably not needed
+            # 'item_ids': item_ids,
+
+            'deleted_groups': deleted_groups,
+            'deleted_items': deleted_items,
+
+            # THESE GET TRICKY! IDEALLY WE WANT TO DELETE AS FEW RELATED AS POSSIBLE
+            # TODO TODO TODO
+            # First pass we are not going to bother with this
+            'deleted_compounds': deleted_compounds,
+            'deleted_cells': deleted_cells,
+            'deleted_settings': deleted_settings,
+        })
+
+        data.update({
+            'processed_setup_data': new_setup_data
+        })
+
+        return data
+
+    # TODO: REVISE TO USE bulk_create
+    # TODO: REVISE TO PROPERLY DEAL WITH UPDATES WITH bulk_update
+    def save(self, commit=True):
+        all_setup_data = self.cleaned_data.get('processed_setup_data', None)
+
+        # Sloppy
+        study = self.instance
+
+        if all_setup_data and commit:
+            # VERY SLOPPY
+            created_by = self.user
+            created_on = timezone.now()
+
+            study.modified_by = created_by
+            study.modified_on = created_on
+
+            study.save()
+            # SLOPPY: REVISE
+
+            study_id = study.id
+
+            # TODO TODO TODO: STUPID, BUT ONE WAY TO DEAL WITH THE DEVICE ISSUE
+            # Otherwise I would need to cut it out and immediately revise every place it was called...
+            # Light query anyway (relative to the others) I guess
+            organ_model_id_to_device_id = {
+                organ_model.id: organ_model.device_id for organ_model in OrganModel.objects.all()
+            }
+
+            new_matrix = all_setup_data.get('new_matrix', None)
+
+            new_groups = all_setup_data.get('new_groups', None)
+
+            update_groups = all_setup_data.get('update_groups', None)
+            current_group_ids = all_setup_data.get('current_group_ids', None)
+
+            new_items = all_setup_data.get('new_items', None)
+
+            update_items = all_setup_data.get('update_items', None)
+
+            # Why?
+            new_compounds = all_setup_data.get('new_compounds', None)
+            new_cells = all_setup_data.get('new_cells', None)
+            new_settings = all_setup_data.get('new_settings', None)
+
+            update_compounds = all_setup_data.get('update_compounds', None)
+            update_cells = all_setup_data.get('update_cells', None)
+            update_settings = all_setup_data.get('update_settings', None)
+
+            current_matrix = all_setup_data.get('current_matrix', None)
+            deleted_groups = all_setup_data.get('deleted_groups', None)
+            deleted_items = all_setup_data.get('deleted_items', None)
+            deleted_compounds = all_setup_data.get('deleted_compounds', None)
+            deleted_cells = all_setup_data.get('deleted_cells', None)
+            deleted_settings = all_setup_data.get('deleted_settings', None)
+
+            if new_matrix:
+                new_matrix.study_id = study_id
+                new_matrix.save()
+                new_matrix_id = new_matrix.id
+                current_matrix_id = new_matrix_id
+            # Uh... why use an elif here?
+            # elif not new_matrix and (new_items or update_items):
+            else:
+                # TODO TODO TODO
+                # Have some way to get the "current matrix" if there isn't a new matrix
+                # TODO Be careful, if there are no chips, don't bother!
+                current_matrix_id = all_setup_data.get('current_matrix')
+
+            # UPDATE CURRENT GROUPS IF NECESSARY
+            # Bulk update should be relatively fast
+            if update_groups:
+                AssayGroup.objects.bulk_update(update_groups, self.update_group_fields)
+
+            # These dics match names (which are specific to this study! They are not from queries!) to ids
+            # We want to avoid superfluous queries, and we might as well take advantage of the uniqueness constraints
+            new_group_ids = {}
+
+            # Combine current_group ids into new_group_ids
+            # Way more verbose than it needs to be
+            for current_group_id, current_group in current_group_ids.items():
+                new_group_ids.update({
+                    current_group.name: current_group_id
+                })
+
+            # new_item_ids = {}
+
+            # TODO
+            # for new_group in new_groups:
+                # We don't really need to tie to anything?
+
+            # Be careful with conditionals
+            if new_groups:
+                # Bulk create the groups BE SURE ONLY NEW GROUPS IN THIS LIST
+                AssayGroup.objects.bulk_create(new_groups)
+
+                # TODO NOTE: WE NEED ALL GROUPS, NOT JUST THESE
+                for new_group in new_groups:
+                    new_group_ids.update({
+                        new_group.name: new_group.id
+                    })
+
+            # NOTE: WE MAY HAVE NEW ITEMS WITHOUT A NEW MATRIX
+            for new_item in new_items:
+                # ADD MATRIX and tracking
+                # TODO TODO TODO TODO DO NOT USE new_matrix_id HERE
+                new_item.matrix_id = current_matrix_id
+                # IDEALLY WE WILL JUST CUT THESE ANYWAY??
+                new_item.device_id = organ_model_id_to_device_id.get(new_item.organ_model_id)
+
+                # TODO TODO TODO
+                # We perform a little bit of sleight of hand here!
+                current_group_name = new_item.group_id
+
+                # Assign the correct group
+                # "new_group_ids" is a misnomer!
+                new_group_id = new_group_ids.get(current_group_name, None)
+
+                new_item.group_id = new_group_id
+
+                # To get the group id with have to use a dic TODO TODO
+
+                # Ideally we won't save this way! We want to use bulk_create
+                # new_item.save()
+
+                # Ideally we would do this after the bulk_create
+                # new_item_ids.update({
+                #     new_item.name: new_item.id
+                # })
+
+            if new_items:
+                AssayMatrixItem.objects.bulk_create(new_items)
+
+                # We shouldn't actually need these for anything
+                # for new_item in new_items:
+                #     new_item_ids.update({
+                #         new_item.name: new_item.id
+                #     })
+
+            # WE WILL WANT TO SAVE EACH COMPONENT SEPARATELY FOR BULK CREATE/UPDATE (otherwise gets odd)
+            # Additionally, this data is no longer tied to an individual item
+            # for current_item_name, new_related_data_set in new_related.items():
+            #     new_item_id = new_item_ids.get(current_item_name, None)
+
+            #     if new_item_id:
+            #         for new_related_data in new_related_data_set:
+            #             # ADD MATRIX ITEM
+            #             new_related_data.matrix_item_id = new_item_id
+            #             new_related_data.save()
+
+            # Can't use ids due to the fact that some ids are new!
+            # Be sure you can access ALL groups for this!
+            # (EXCLUDING DELETED GROUPS, WHICH OUGHT NOT TO BE ACCESSED)
+
+            # Barbaric, just obscene in its grotesque cruelty
+            # How could one do such a thing and not be deemed heartless?
+            # KILL ALL COMPOUNDS, CELL, AND SETTINGS:
+            AssayGroupCompound.objects.filter(group_id__in=new_group_ids.values()).delete()
+            AssayGroupCell.objects.filter(group_id__in=new_group_ids.values()).delete()
+            AssayGroupSetting.objects.filter(group_id__in=new_group_ids.values()).delete()
+
+            # Breaks rule of three
+            # Stupid
+            for new_compound in new_compounds:
+                # We perform a little bit of sleight of hand here!
+                current_group_name = new_compound.group_id
+
+                # Assign the correct group
+                # "new_group_ids" is a misnomer!
+                new_group_id = new_group_ids.get(current_group_name, None)
+
+                new_compound.group_id = new_group_id
+
+            if new_compounds:
+                AssayGroupCompound.objects.bulk_create(new_compounds)
+
+            for new_cell in new_cells:
+                # We perform a little bit of sleight of hand here!
+                current_group_name = new_cell.group_id
+
+                # Assign the correct group
+                # "new_group_ids" is a misnomer!
+                new_group_id = new_group_ids.get(current_group_name, None)
+
+                new_cell.group_id = new_group_id
+
+            if new_cells:
+                AssayGroupCell.objects.bulk_create(new_cells)
+
+            for new_setting in new_settings:
+                # We perform a little bit of sleight of hand here!
+                current_group_name = new_setting.group_id
+
+                # Assign the correct group
+                # "new_group_ids" is a misnomer!
+                new_group_id = new_group_ids.get(current_group_name, None)
+
+                new_setting.group_id = new_group_id
+
+            if new_settings:
+                AssayGroupSetting.objects.bulk_create(new_settings)
+
+            # Perform deletions
+            if deleted_items:
+                AssayMatrixItem.objects.filter(id__in=deleted_items, matrix_id=current_matrix_id).delete()
+            if deleted_groups:
+                AssayGroup.objects.filter(id__in=deleted_groups, study_id=self.instance.id).delete()
+
+        return study
+
+
+class AssayStudyChipForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
+    series_data = forms.CharField(required=False)
+
+    class Meta(object):
+        model = AssayStudy
+        # Since we are splitting into multiple forms, includes are safer
+        fields = (
+            'series_data',
+            'organ_model_full',
+            'organ_model_protocol_full'
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(AssayStudyChipForm, self).__init__(*args, **kwargs)
+
+        # Prepopulate series_data from thing
+        self.fields['series_data'].initial = self.instance.get_group_data_string(get_chips=True)
+
+    # TODO NEEDS TO BE REVISED
+    # TODO TODO TODO CLEAN AND SAVE
+    def clean(self):
+        cleaned_data = super(AssayStudyChipForm, self).clean()
+
+        # TODO TODO TODO NOTE CRAMMED IN
+        # Am I sticking with the name 'series_data'?
+        if self.cleaned_data.get('series_data', None):
+            all_data = json.loads(self.cleaned_data.get('series_data', '[]'))
+        else:
+            # Contrived defaults
+            all_data = {
+                'series_data': [],
+                'chips': [],
+                'plates': {}
+            }
+
+        # The data for groups is currently stored in series_data
+        all_setup_data = all_data.get('series_data')
+        all_chip_data = all_data.get('chips')
+
+        # Catch technically empty setup data
+        setup_data_is_empty = True
+
+        for group_set in all_setup_data:
+            if group_set:
+                setup_data_is_empty = not any(group_set.values())
+
+        if setup_data_is_empty:
+            all_setup_data = []
+
+        # if commit and all_setup_data:
+        # SEE BASE MODELS FOR WHY COMMIT IS NOT HERE
+        if all_chip_data:
+            chip_data = []
+
+            chip_names = {}
+
+            current_errors = []
+
+            current_matrix = AssayMatrix.objects.filter(
+                # The study must exist in order to visit this page, so getting the id this was is fine
+                study_id=self.instance.id,
+                representation='chips'
+            )
+
+            # Get the group ids
+            group_ids = {
+                group.id: True for group in AssayGroup.objects.filter(
+                    study_id=self.instance.id
+                )
+            }
+
+            chip_id_to_chip = {
+                chip.id: chip for chip in AssayMatrixItem.objects.filter(
+                    study_id=self.instance.id,
+                    matrix_id=current_matrix[0].id
+                )
+            }
+
+            # We basically just modify group_id and name
+            # TODO MAKE SURE THE GROUP IDS ARE VALID
+            # That is, check against the group ids of the study
+            for chip in all_chip_data:
+                if chip_id_to_chip.get(chip.get('id', 0)):
+                    current_chip = chip_id_to_chip.get(chip.get('id', 0))
+                else:
+                    current_chip = False
+                    current_errors.append('A Chip is missing, please refresh and try again.')
+
+                if current_chip:
+                    # Add to group names
+                    # Check uniqueness
+                    if chip.get('name', '') in chip_names:
+                        current_errors.append('The Chip name "{}" is duplicated. The names of Chips must be unique.'.format(
+                            chip.get('name', '')
+                        ))
+                    else:
+                        chip_names.update({
+                            chip.get('name', ''): True
+                        })
+
+                        current_chip.name = chip.get('name', '')
+
+                    if chip.get('group_id', '') in group_ids:
+                        current_chip.group_id = chip.get('group_id', '')
+                    try:
+                        current_chip.full_clean()
+                        chip_data.append(current_chip)
+                    except forms.ValidationError as e:
+                        current_errors.append(e)
+
+        self.cleaned_data.update({
+            'chip_data': chip_data
+        })
+
+        if current_errors:
+            raise forms.ValidationError(current_errors)
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        # Just do the bulk update
+        # We don't need to do anything else
+        # TODO TODO TODO
+        # NOTE NOTE NOTE
+        # WE TECHNICALLY SHOULD CHANGE THE SHARED VALUES HERE (organ_model, test_type, etc.)
+        # ON THE OTHER HAND, IT IS PROBABLY BEST TO LEAVE THEM OUT
+        if commit:
+            AssayMatrixItem.objects.bulk_update(
+                self.cleaned_data.get('chip_data', None),
+                [
+                    'group_id',
+                    'name'
+                ]
+            )
+
+        return self.instance
+
+# OLD TO BE REMOVED
+# class AssayStudyPlateForm(SignOffMixin, BootstrapForm):
+#     plate_name = forms.CharField(
+#         required=False,
+#         widget=forms.Textarea(attrs={'rows': 1}),
+#         label='Plate Name'
+#     )
+#     plate_notes = forms.CharField(
+#         required=False,
+#         widget=forms.Textarea(attrs={'rows': 5}),
+#         label='Plate Notes'
+#     )
+#     device = forms.ModelChoiceField(
+#         # Filter to plates only
+#         queryset=Microdevice.objects.filter(device_type='plate').order_by('name'),
+#         required=False,
+#         label='Plate Device'
+#     )
+
+#     class Meta(object):
+#         model = AssayStudy
+#         fields = (
+#             'plate_name',
+#             'plate_notes',
+#             'device',
+#             'series_data',
+#         )
+
+
+class AssayStudyPlateForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
+    series_data = forms.CharField(required=False)
+
+    class Meta(object):
+        model = AssayMatrix
+        fields = (
+            'name',
+            'notes',
+            'device',
+            # Maybe a bit unorthodox
+            'number_of_columns',
+            'number_of_rows',
+            # TODO
+            'series_data',
+        )
+        widgets = {
+            'name': forms.Textarea(attrs={'rows': 1}),
+            'notes': forms.Textarea(attrs={'rows': 10}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.study = kwargs.pop('study', None)
+        super(AssayStudyPlateForm, self).__init__(*args, **kwargs)
+
+        if self.study:
+            self.instance.study = self.study
+        else:
+            self.study = self.instance.study
+
+        # Crude! TEMPORARY
+        if self.instance.id:
+            self.fields['series_data'].initial = self.study.get_group_data_string(plate_id=self.instance.id)
+        else:
+            self.fields['series_data'].initial = self.study.get_group_data_string()
+
+    # FORCE UNIQUENESS CHECK
+    def clean(self):
+        cleaned_data = super(AssayStudyPlateForm, self).clean()
+
+        # VERY SLOPPY
+        created_by = self.user
+        created_on = timezone.now()
+
+        # TODO TODO TODO NOTE CRAMMED IN
+        # Am I sticking with the name 'series_data'?
+        if self.cleaned_data.get('series_data', None):
+            all_data = json.loads(self.cleaned_data.get('series_data', '[]'))
+        else:
+            # Contrived defaults
+            all_data = {
+                'series_data': [],
+                'chips': [],
+                'plates': {}
+            }
+
+        # The data for groups is currently stored in series_data
+        all_setup_data = all_data.get('series_data')
+        all_plate_data = all_data.get('plates')
+
+        # Catch technically empty setup data
+        setup_data_is_empty = True
+
+        for group_set in all_setup_data:
+            if group_set:
+                setup_data_is_empty = not any(group_set.values())
+
+        if setup_data_is_empty:
+            all_setup_data = []
+
+        # Plate name
+        if AssayMatrix.objects.filter(
+                study_id=self.instance.study.id,
+                name=self.cleaned_data.get('name', '')
+        ).exclude(pk=self.instance.pk).count():
+            raise forms.ValidationError({'name': ['Plate name must be unique within Study.']})
+
+        current_wells = {
+            well.id: well for well in AssayMatrixItem.objects.filter(
+                matrix_id=self.instance.id
+            )
+        }
+
+        # Technically ought to restrict to JUST PLATE GROUPS
+        # However, that makes the query uglier
+        # First pass, we won't make sure a check
+        current_groups = {
+            group.id: group for group in AssayGroup.objects.filter(
+                study_id=self.instance.study.id
+            )
+        }
+
+        new_wells = []
+        update_wells = []
+        delete_wells = []
+
+        # NOTE: We will be alerted during clean for anything that ISN'T INTERNAL to the plate
+        taken_names = {}
+
+        current_errors = []
+
+        for row_column, well in all_plate_data.items():
+            row_column_split = row_column.split('_')
+            row = int(row_column_split[0])
+            column = int(row_column_split[1])
+
+            current_well = current_wells.get(well.get('id', 0), None)
+            current_group = current_groups.get(well.get('group_id', 0), None)
+
+            # Junk data
+            if not current_group:
+                continue
+
+            # BE SURE TO TEST THE NAMES!
+            current_name = well.get('name', '')
+            if current_name in taken_names:
+                current_errors.append('The name "{}" is already in use, please make sure well names are unique.'.format(
+                    current_name
+                ))
+            else:
+                taken_names.update({
+                    current_name: True
+                })
+
+            # Update if already exists
+            if current_well:
+                # If slated for deletion
+                if well.get('deleted', ''):
+                    delete_wells.append(current_well.id)
+                else:
+                    # Update name
+                    current_well.name = current_name
+                    if well.get('group_id', '') in current_groups:
+                        # Update group id
+                        current_well.group_id = well.get('group_id', '')
+
+                        # Make sure nothing broke
+                        try:
+                            current_well.full_clean()
+                            # Add it to those slated to update
+                            update_wells.append(current_well)
+                        except forms.ValidationError as e:
+                            current_errors.append(e)
+            # Add otherwise
+            else:
+                new_item = AssayMatrixItem(
+                    # We know this one
+                    study=self.instance.study,
+                    # TRICKY!
+                    # matrix=new_matrix,
+                    name=current_name,
+                    # JUST MAKE SETUP DATE THE STUDY DATE FOR NOW
+                    setup_date=self.instance.study.start_date,
+                    row_index=row,
+                    column_index=column,
+                    # Irrelevant (but required, unfortunately, maybe will remove later)
+                    # device=study.organ_model.device,
+                    organ_model_id=current_group.organ_model_id,
+                    # Some nuances here that we will gloss over
+                    organ_model_protocol_id=current_group.organ_model_protocol_id,
+                    test_type=current_group.test_type,
+                    created_by=created_by,
+                    created_on=created_on,
+                    modified_by=created_by,
+                    modified_on=created_on,
+                    group_id=current_group.id
+                )
+
+                try:
+                    new_item.full_clean(exclude=[
+                        # The matrix needs to be excluded because it might not exist yet
+                        'matrix',
+
+                        # Why exclude these?
+                        # Get rid of device for now because it is still required
+                        'device',
+                        # 'organ_model',
+                        # 'organ_model_protocol',
+                    ])
+                    new_wells.append(new_item)
+                except forms.ValidationError as e:
+                        current_errors.append(e)
+                        group_has_error = True
+
+        cleaned_data.update({
+            'new_wells': new_wells,
+            'update_wells': update_wells,
+            'delete_wells': delete_wells,
+        })
+
+        if current_errors:
+            raise forms.ValidationError(current_errors)
+
+        return cleaned_data
+
+    # CRUDE, TEMPORARY
+    # TODO REVISE ASAP
+    def save(self, commit=True):
+        # Takes care of saving the Plate in and of itself
+        matrix = super(AssayStudyPlateForm, self).save(commit)
+
+        if commit:
+            matrix_id = self.instance.id
+            study_id = self.instance.study.id
+
+            # TODO TODO TODO: STUPID, BUT ONE WAY TO DEAL WITH THE DEVICE ISSUE
+            # Otherwise I would need to cut it out and immediately revise every place it was called...
+            # Light query anyway (relative to the others) I guess
+            organ_model_id_to_device_id = {
+                organ_model.id: organ_model.device_id for organ_model in OrganModel.objects.all()
+            }
+
+            new_wells = self.cleaned_data.get('new_wells')
+            update_wells = self.cleaned_data.get('update_wells')
+            delete_wells = self.cleaned_data.get('delete_wells')
+
+            # Add new wells
+            if new_wells:
+                # Need to iterate through the new wells and add the matrix id
+                # (The matrix might not exist yet)
+                for well in new_wells:
+                    well.matrix_id = matrix_id
+                    # IDEALLY WE WILL JUST CUT THESE ANYWAY??
+                    well.device_id = organ_model_id_to_device_id.get(well.organ_model_id)
+
+                AssayMatrixItem.objects.bulk_create(new_wells)
+
+            # Update wells
+            # TODO TODO TODO
+            # NOTE NOTE NOTE
+            # WE TECHNICALLY SHOULD CHANGE THE SHARED VALUES HERE (organ_model, test_type, etc.)
+            # ON THE OTHER HAND, IT IS PROBABLY BEST TO LEAVE THEM OUT
+            if update_wells:
+                AssayMatrixItem.objects.bulk_update(
+                    update_wells,
+                    [
+                        'name',
+                        'group_id'
+                    ]
+                )
+
+            if delete_wells:
+                AssayMatrixItem.objects.filter(id__in=delete_wells).delete()
+
+        return matrix
+
+
 # Need to make plural to distinguish
 # CONTRIVED ANYWAY
 class AssayStudyAssaysForm(BootstrapForm):
@@ -1411,7 +2843,7 @@ class AssayStudyFormAdmin(BootstrapForm):
         # clean the form data, before validation
         data = super(AssayStudyFormAdmin, self).clean()
 
-        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], ['pbpk_steady_state'], data['pbpk_bolus']]):
+        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], data['pbpk_steady_state'], data['pbpk_bolus']]):
             raise forms.ValidationError('Please select at least one study type')
 
         if data.get('pbpk_steady_state', '') and (not data.get('number_of_relevant_cells', '') or not data.get('flow_rate', '')):
@@ -1460,30 +2892,6 @@ AssayStudyAssayFormSetFactory = inlineformset_factory(
     exclude=[]
 )
 
-
-# TODO ADD STUDY
-class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
-    test_type = forms.ChoiceField(
-        initial='control',
-        choices=TEST_TYPE_CHOICES,
-        required=False
-    )
-    # CONTRIVANCE
-    organ_model_full = forms.ModelChoiceField(
-        queryset=OrganModel.objects.all().order_by('name'),
-        required=False,
-        label='Matrix Item MPS Model'
-    )
-    organ_model = forms.ModelChoiceField(
-        queryset=OrganModel.objects.all().order_by('name'),
-        required=False,
-        label='Matrix Item MPS Model'
-    )
-    organ_model_protocol = forms.ModelChoiceField(
-        queryset=OrganModelProtocol.objects.all().order_by('version'),
-        required=False,
-        label='Matrix Item MPS Model Version'
-    )
 
     class Meta(object):
         model = AssayMatrix
@@ -2378,13 +3786,46 @@ class AssayMatrixItemFullForm(SignOffMixin, BootstrapForm):
             )
 
 
-class AssayMatrixItemForm(forms.ModelForm):
+# SetupFormsMixin is unfortunate, but expedient
+class AssayMatrixItemForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
+    # CONTRIVED!
+    series_data = forms.CharField(required=False)
+
+    class Meta(object):
+        model = AssayMatrixItem
+        # WE OUGHT TO BE ABLE TO EDIT A SELECT FEW THINGS
+        fields = (
+            'name',
+            'group',
+            # Notes stuff worth keeping??
+            'scientist',
+            'notebook',
+            'notebook_page',
+            'notes'
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(AssayMatrixItemForm, self).__init__(*args, **kwargs)
+
+        # Gee, it might be nice to have a better way to query groups!
+        self.fields['group'].queryset = AssayGroup.objects.filter(
+            # We will always know the study, this can never be an add page
+            study_id=self.instance.study_id,
+            organ_model__device__device_type='chip'
+        ).prefetch_related('organ_model__device')
+
+        # UGLY: DO NOT LIKE THIS
+        # Prepopulate series_data
+        self.fields['series_data'].initial = self.instance.study.get_group_data_string(get_chips=True)
+
+# DEPRECATED JUNK
+class AssayMatrixItemInlineForm(forms.ModelForm):
     class Meta(object):
         model = AssayMatrixItem
         exclude = ('study', 'matrix') + tracking
 
 
-# TODO NEED TO TEST
+# TODO NEED TO TEST (NOTE FROM THE FUTURE: "NOT ANYMORE I DON'T, THIS IS DEPRECATED TRASH!")
 class AssayMatrixItemFormSet(BaseInlineFormSetForcedUniqueness):
     custom_fields = (
         'device',
@@ -2452,7 +3893,7 @@ AssayMatrixItemFormSetFactory = inlineformset_factory(
     AssayMatrix,
     AssayMatrixItem,
     formset=AssayMatrixItemFormSet,
-    form=AssayMatrixItemForm,
+    form=AssayMatrixItemInlineForm,
     extra=1,
     exclude=('study',) + tracking
 )
@@ -2652,504 +4093,6 @@ def process_error_for_study_new(prefix, row, column, full_error):
             ])
 
     return modified_error
-
-
-# Perhaps it would have been more intelligent to leverage the forms in the add
-# There would have been different consquences for doing so, but consistency
-class AssayStudyFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
-    setup_data = forms.CharField(required=False)
-    processed_setup_data = forms.CharField(required=False)
-    number_of_items = forms.CharField(required=False)
-    test_type = forms.ChoiceField(
-        initial='control',
-        choices=TEST_TYPE_CHOICES,
-        required=False
-    )
-
-    def __init__(self, *args, **kwargs):
-        """Init the Study Form
-
-        Kwargs:
-        groups -- a queryset of groups (allows us to avoid N+1 problem)
-        """
-        super(AssayStudyFormNew, self).__init__(*args, **kwargs)
-        self.fields['group'].queryset = filter_groups(self.user)
-
-        # Make sure there are only organ models with versions
-        # Removed for now
-        # self.fields['organ_model'].queryset = OrganModel.objects.filter(
-        #     organmodelprotocol__isnull=False
-        # ).distinct()
-
-        # SLOPPY
-        self.fields['test_type'].widget.attrs['class'] += ' no-selectize test-type required'
-        # Bad
-        self.fields['test_type'].widget.attrs['style'] = 'width:100px;'
-        self.fields['number_of_items'].widget.attrs['class'] = 'form-control number-of-items required'
-        # Bad
-        # self.fields['number_of_items'].widget.attrs['style'] = 'margin-top:10px;'
-
-        # Crudely force required class
-        for current_field in ['total_device_volume', 'flow_rate', 'number_of_relevant_cells']:
-            self.fields[current_field].widget.attrs['class'] += ' required'
-
-    class Meta(object):
-        model = AssayStudy
-        widgets = {
-            'assay_run_id': forms.Textarea(attrs={'rows': 1}),
-            'name': forms.Textarea(attrs={'rows': 1}),
-            'description': forms.Textarea(attrs={'rows': 5, 'cols': 100}),
-        }
-        exclude = tracking + restricted + ('access_groups', 'signed_off_notes', 'bulk_file')
-
-    def clean(self):
-        """Checks for at least one study type"""
-        # clean the form data, before validation
-        data = super(AssayStudyFormNew, self).clean()
-
-        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], data['pbpk_steady_state'], data['pbpk_bolus']]):
-            raise forms.ValidationError('Please select at least one study type')
-
-        if data.get('pbpk_steady_state', '') and (not data.get('number_of_relevant_cells', '') or not data.get('flow_rate', '')):
-            raise forms.ValidationError('Continuous Infusion PBPK Requires Number of Cells Per MPS Model and Flow Rate')
-
-        if data.get('pbpk_bolus', '') and (not data.get('number_of_relevant_cells', '') or not data.get('total_device_volume', '')):
-            raise forms.ValidationError('Bolus PBPK Requires Number of Cells Per MPS Model and Total Device Volume')
-
-        # SLOPPY NOT DRY
-        new_setup_data = {}
-        new_matrix = None
-        new_items = None
-        new_related = None
-
-        errors = {'organ_model': [], 'setup_data': []}
-        current_errors = errors.get('setup_data')
-
-        # study = super(AssayStudyFormNew, self).save(commit=False)
-
-        if self.cleaned_data.get('setup_data', None):
-            all_setup_data = json.loads(self.cleaned_data.get('setup_data', '[]'))
-        else:
-            all_setup_data = []
-
-        # Never consider if no model
-        if not self.cleaned_data.get('organ_model', None):
-            all_setup_data = []
-
-        # Catch technically empty setup data
-        setup_data_is_empty = True
-
-        for group_set in all_setup_data:
-            if group_set:
-                setup_data_is_empty = not any(group_set.values())
-
-        if setup_data_is_empty:
-            all_setup_data = []
-
-        # if commit and all_setup_data:
-        # SEE BASE MODELS FOR WHY COMMIT IS NOT HERE
-        if all_setup_data:
-            created_by = self.user
-            created_on = timezone.now()
-
-            current_item_number = 1
-
-            # CRUDE: JUST MAKE ONE LARGE ROW?
-            # number_of_items = 0
-            #
-            # for setup_group in all_setup_data:
-            #     number_of_items += int(setup_group.get('number_of_items', '0'))
-
-            # Find max for number of columns
-            number_of_columns = 0
-            for setup_group in all_setup_data:
-                if int(setup_group.get('number_of_items', '0')) > number_of_columns:
-                    number_of_columns = int(setup_group.get('number_of_items', '0'))
-
-            new_matrix = AssayMatrix(
-                name=data.get('name', ''),
-                # Does not work with plates at the moment
-                representation='chips',
-                # study=self.instance,
-                device=None,
-                number_of_rows=len(all_setup_data),
-                number_of_columns=number_of_columns,
-                # number_of_rows=1,
-                # number_of_columns=number_of_items,
-                created_by=created_by,
-                created_on=created_on,
-                modified_by=created_by,
-                modified_on=created_on,
-            )
-
-            try:
-                new_matrix.full_clean(exclude=['study'])
-            except forms.ValidationError as e:
-                errors.get('organ_model').append(e.values())
-
-            # new_matrix.save()
-
-            # COMPOUND STUFF BECAUSE COMPOUND SCHEMA IS MISERABLE
-            # Get all chip setup assay compound instances
-            assay_compound_instances = {}
-
-            # Get all Compound Instances
-            compound_instances = {
-                (
-                    instance.compound.id,
-                    instance.supplier.id,
-                    instance.lot,
-                    str(instance.receipt_date)
-                ): instance for instance in CompoundInstance.objects.all().prefetch_related(
-                    'compound',
-                    'supplier'
-                )
-            }
-
-            # Get all suppliers
-            suppliers = {
-                supplier.name: supplier for supplier in CompoundSupplier.objects.all()
-            }
-
-            new_items = []
-            new_related = {}
-
-            # NOTE: ROW IS DERIVED FROM THE GROUP IN QUESTION
-            # ALL ITEMS IN THE GROUP ARE IN THE COLUMNS OF SAID ROW
-            for setup_row, setup_group in enumerate(all_setup_data):
-                items_in_group = int(setup_group.pop('number_of_items', '0'))
-                test_type = setup_group.get('test_type', '')
-
-                # To break out to prevent repeat errors
-                group_has_error = False
-
-                for iteration in range(items_in_group):
-                    new_item = AssayMatrixItem(
-                        # study=study,
-                        # matrix=new_matrix,
-                        name=str(current_item_number),
-                        # JUST MAKE SETUP DATE THE STUDY DATE FOR NOW
-                        setup_date=data.get('start_date', ''),
-                        row_index=setup_row,
-                        column_index=iteration,
-                        # column_index=current_item_number-1,
-                        # device=study.organ_model.device,
-                        # organ_model=study.organ_model,
-                        # organ_model_protocol=study.organ_model_protocol,
-                        test_type=test_type,
-                        created_by=created_by,
-                        created_on=created_on,
-                        modified_by=created_by,
-                        modified_on=created_on,
-                    )
-
-                    try:
-                        new_item.full_clean(exclude=[
-                            'study',
-                            'matrix',
-                            'device',
-                            'organ_model',
-                            'organ_model_protocol',
-                        ])
-                        new_items.append(new_item)
-
-                    except forms.ValidationError as e:
-                        # raise forms.ValidationError(e)
-                        errors.get('organ_model').append(e.values())
-                        group_has_error = True
-
-                    current_related_list = new_related.setdefault(
-                        str(len(new_items)), []
-                    )
-
-                    # new_item.save()
-                    for prefix, current_objects in setup_group.items():
-                        for setup_column, current_object in enumerate(current_objects):
-                            if prefix in ['cell', 'compound', 'setting'] and current_object:
-                                current_object.update({
-                                    'matrix_item': new_item,
-                                })
-                                if prefix == 'cell':
-                                    new_cell = AssaySetupCell(**current_object)
-
-                                    try:
-                                        new_cell.full_clean(exclude=['matrix_item'])
-                                        current_related_list.append(new_cell)
-                                    except forms.ValidationError as e:
-                                        # raise forms.ValidationError(e)
-                                        current_errors.append(
-                                            process_error_for_study_new(
-                                                prefix,
-                                                setup_row,
-                                                setup_column,
-                                                e
-                                            )
-                                        )
-                                        group_has_error = True
-
-                                    # new_cell.save()
-                                elif prefix == 'setting':
-                                    new_setting = AssaySetupSetting(**current_object)
-                                    try:
-                                        new_setting.full_clean(exclude=['matrix_item'])
-                                        current_related_list.append(new_setting)
-                                    except forms.ValidationError as e:
-                                        # raise forms.ValidationError(e)
-                                        current_errors.append(
-                                            process_error_for_study_new(
-                                                prefix,
-                                                setup_row,
-                                                setup_column,
-                                                e
-                                            )
-                                        )
-                                        group_has_error = True
-
-                                    # new_setting.save()
-                                elif prefix == 'compound':
-                                    # CONFUSING NOT DRY BAD
-                                    compound = int(current_object.get('compound_id', '0'))
-                                    supplier_text = current_object.get('supplier_text', 'N/A').strip()
-                                    lot_text = current_object.get('lot_text', 'N/A').strip()
-                                    receipt_date = current_object.get('receipt_date', '')
-
-                                    # NOTE THE DEFAULT, PLEASE DO THIS IN A WAY THAT IS MORE DRY
-                                    if not supplier_text:
-                                        supplier_text = 'N/A'
-
-                                    if not lot_text:
-                                        lot_text = 'N/A'
-
-                                    # Check if the supplier already exists
-                                    supplier = suppliers.get(supplier_text, '')
-
-                                    concentration = current_object.get('concentration', '0')
-                                    # Annoying, bad
-                                    if not concentration:
-                                        concentration = 0.0
-                                    else:
-                                        concentration = float(concentration)
-                                    concentration_unit_id = int(current_object.get('concentration_unit_id', '0'))
-                                    addition_location_id = int(current_object.get('addition_location_id', '0'))
-
-                                    addition_time = current_object.get('addition_time', '0')
-                                    duration = current_object.get('duration', '0')
-
-                                    if not addition_time:
-                                        addition_time = 0.0
-                                    else:
-                                        addition_time = float(addition_time)
-
-                                    if not duration:
-                                        duration = 0.0
-                                    else:
-                                        duration = float(duration)
-
-                                    # Otherwise create the supplier
-                                    if not supplier:
-                                        supplier = CompoundSupplier(
-                                            name=supplier_text,
-                                            created_by=created_by,
-                                            created_on=created_on,
-                                            modified_by=created_by,
-                                            modified_on=created_on,
-                                        )
-                                        try:
-                                            supplier.full_clean()
-                                            supplier.save()
-                                        except forms.ValidationError as e:
-                                            # raise forms.ValidationError(e)
-                                            current_errors.append(
-                                                process_error_for_study_new(
-                                                    prefix,
-                                                    setup_row,
-                                                    setup_column,
-                                                    e
-                                                )
-                                            )
-                                            group_has_error = True
-
-                                        suppliers.update({
-                                            supplier_text: supplier
-                                        })
-
-                                    # FRUSTRATING EXCEPTION
-                                    if not receipt_date:
-                                        receipt_date = None
-
-                                    # Check if compound instance exists
-                                    compound_instance = compound_instances.get((compound, supplier.id, lot_text, str(receipt_date)), '')
-
-                                    if not compound_instance:
-                                        compound_instance = CompoundInstance(
-                                            compound_id=compound,
-                                            supplier=supplier,
-                                            lot=lot_text,
-                                            receipt_date=receipt_date,
-                                            created_by=created_by,
-                                            created_on=created_on,
-                                            modified_by=created_by,
-                                            modified_on=created_on,
-                                        )
-                                        try:
-                                            compound_instance.full_clean()
-                                            compound_instance.save()
-                                        except forms.ValidationError as e:
-                                            # raise forms.ValidationError(e)
-                                            current_errors.append(
-                                                process_error_for_study_new(
-                                                    prefix,
-                                                    setup_row,
-                                                    setup_column,
-                                                    e
-                                                )
-                                            )
-                                            group_has_error = True
-
-                                        compound_instances.update({
-                                            (compound, supplier.id, lot_text, str(receipt_date)): compound_instance
-                                        })
-
-                                    # Save the AssayCompoundInstance
-                                    conflicting_assay_compound_instance = assay_compound_instances.get(
-                                        (
-                                            # new_item.id,
-                                            current_item_number,
-                                            compound_instance.id,
-                                            concentration,
-                                            concentration_unit_id,
-                                            addition_time,
-                                            duration,
-                                            addition_location_id
-                                        ), None
-                                    )
-                                    if not conflicting_assay_compound_instance:
-                                        new_compound = AssaySetupCompound(
-                                            # matrix_item_id=new_item.id,
-                                            compound_instance_id=compound_instance.id,
-                                            concentration=concentration,
-                                            concentration_unit_id=concentration_unit_id,
-                                            addition_time=addition_time,
-                                            duration=duration,
-                                            addition_location_id=addition_location_id
-                                        )
-
-                                        try:
-                                            new_compound.full_clean(exclude=['matrix_item'])
-                                            current_related_list.append(new_compound)
-                                        except forms.ValidationError as e:
-                                            # raise forms.ValidationError(e)
-                                            current_errors.append(
-                                                process_error_for_study_new(
-                                                    prefix,
-                                                    setup_row,
-                                                    setup_column,
-                                                    e
-                                                )
-                                            )
-                                            group_has_error = True
-
-                                        # new_compound.save()
-
-                                    assay_compound_instances.update({
-                                        (
-                                            # new_item.id,
-                                            current_item_number,
-                                            compound_instance.id,
-                                            concentration,
-                                            concentration_unit_id,
-                                            addition_time,
-                                            duration,
-                                            addition_location_id
-                                        ): True
-                                    })
-
-                    current_item_number += 1
-
-                    # Don't keep iterating through this group if there is a problem
-                    if group_has_error:
-                        break
-
-        if current_errors:
-            errors.get('organ_model').append(['Please review the table below for errors.'])
-            raise forms.ValidationError(errors)
-
-        new_setup_data.update({
-            'new_matrix': new_matrix,
-            'new_items': new_items,
-            'new_related': new_related,
-        })
-
-        data.update({
-            'processed_setup_data': new_setup_data
-        })
-
-        return data
-
-    def save(self, commit=True):
-        # PLEASE SEE BASE MODELS
-        # study = super(AssayStudyFormNew, self).save(commit)
-        study = super(AssayStudyFormNew, self).save()
-
-        # VERY SLOPPY
-        created_by = self.user
-        created_on = timezone.now()
-
-        study.created_by = created_by
-        study.created_on = created_on
-        study.modified_by = created_by
-        study.modified_on = created_on
-
-        study.save()
-        # SLOPPY: REVISE
-
-        study_id = study.id
-
-        if study.organ_model_id:
-            device_id = study.organ_model.device_id
-        else:
-            device_id = None
-
-        organ_model_id = study.organ_model_id
-        organ_model_protocol_id = study.organ_model_protocol_id
-
-        all_setup_data = self.cleaned_data.get('processed_setup_data', None)
-
-        if all_setup_data:
-            new_matrix = all_setup_data.get('new_matrix', None)
-            new_items = all_setup_data.get('new_items', None)
-            new_related = all_setup_data.get('new_related', None)
-
-            if new_matrix:
-                new_matrix.study_id = study_id
-                new_matrix.save()
-                new_matrix_id = new_matrix.id
-
-                new_item_ids = {}
-
-                for new_item in new_items:
-                    # ADD MATRIX and tracking
-                    new_item.matrix_id = new_matrix_id
-                    new_item.study_id = study_id
-                    new_item.device_id = device_id
-                    new_item.organ_model_id = organ_model_id
-                    new_item.organ_model_protocol_id = organ_model_protocol_id
-                    new_item.save()
-
-                    new_item_ids.update({
-                        new_item.name: new_item.id
-                    })
-
-                for current_item_name, new_related_data_set in new_related.items():
-                    new_item_id = new_item_ids.get(current_item_name, None)
-
-                    if new_item_id:
-                        for new_related_data in new_related_data_set:
-                            # ADD MATRIX ITEM
-                            new_related_data.matrix_item_id = new_item_id
-                            new_related_data.save()
-
-        return study
 
 
 class AssayMatrixFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
@@ -4189,11 +5132,6 @@ class AssayPlateReaderMapForm(BootstrapForm):
                 list_of_lists_mifc_headers_row_0[i] = list_each_row
                 i = i + 1
 
-            # print("  ")
-            # print('list_of_lists_mifc_headers_row_0')
-            # print(list_of_lists_mifc_headers_row_0)
-            # print("  ")
-
             # First make a csv from the list_of_lists (using list_of_lists_mifc_headers_row_0)
 
             # or self.objects.study
@@ -4206,11 +5144,6 @@ class AssayPlateReaderMapForm(BootstrapForm):
             platenamestring1 = str(my_platemap)
             metadatastring1 = str(data.get('form_hold_the_data_block_metadata_string'))
 
-            # print("study ",my_study)
-            # print("platemap ",my_platemap)
-            # print("user ",my_user)
-            # print("data block ", my_data_block_pk)
-
             # Specify the file for use with the file uploader class
             # some of these caused errors in the file name so remove them
             # Luke and Quinn voted for all the symbols out instead of a few
@@ -4222,7 +5155,6 @@ class AssayPlateReaderMapForm(BootstrapForm):
                                 my_platemap.id, platenamestring,
                                 my_data_block_pk, metadatastring
                             )
-            # print("name_the_file ",name_the_file)
 
             bulk_location = upload_file_location(
                 my_study,
@@ -4244,7 +5176,6 @@ class AssayPlateReaderMapForm(BootstrapForm):
             # Add the UTF-8 BOM
             list_of_lists_mifc_headers_row_0[0][0] = '\ufeff' + list_of_lists_mifc_headers_row_0[0][0]
 
-            # print("!!!!!!!!")
             # Write the lines here here uncomment this
             for one_line_of_data in list_of_lists_mifc_headers_row_0:
                 csv_writer.writerow(one_line_of_data)
@@ -4369,8 +5300,6 @@ class AssayPlateReaderMapItemFormSet(BaseInlineFormSetForcedUniqueness):
                 form.instance.modified_by = self.user
             else:
                 form.instance.created_by = self.user
-
-        # print(self.queryset)
 
 ###########
 # 20200522 getting rid of the value form all together since not allowing editing after values attached to plate map.
@@ -4514,19 +5443,14 @@ class AssayPlateReaderMapDataFileForm(BootstrapForm):
         # need this because, remember, the plate map doesn't come WITH a study, must tell it which
         if not self.study and self.instance.study:
             self.study = self.instance.study
-            # print("file form self.study ",self.study)
         if self.study:
             self.instance.study = self.study
-            # print("file form self.instance.study ",self.instance.study)
 
         my_instance = self.instance
-        # print("file form my_instance ", my_instance)
 
         # to display the file name without the whole path
         form_filename_only = os.path.basename(str(my_instance.plate_reader_file))
         self.fields['form_filename_only'].initial = form_filename_only
-
-        # self.fields['se_file_format_select'].widget.attrs['class'] += ' required'
 
     se_form_plate_size = forms.ChoiceField(
         required=False,

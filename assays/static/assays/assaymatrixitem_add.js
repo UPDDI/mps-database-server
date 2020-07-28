@@ -7,6 +7,9 @@ $(document).ready(function() {
 
     window.GROUPING.refresh_function = get_readout;
 
+    // Make the difference table
+    window.GROUPS.make_difference_table('chip');
+
     var device = $('#id_device');
     var organ_model = $('#id_organ_model');
     var protocol = $('#id_organ_model_protocol');
@@ -578,29 +581,30 @@ $(document).ready(function() {
     //     refresh_table_and_charts();
     // });
 
+    // JUNK: REMOVED!
     // Handling Device flow
     // Make sure global var exists before continuing
-    if (window.get_organ_models) {
-        device.change(function() {
-            // Get organ models
-            window.get_organ_models(device.val());
-        });
+    // if (window.get_organ_models) {
+    //     device.change(function() {
+    //         // Get organ models
+    //         window.get_organ_models(device.val());
+    //     });
 
-        window.get_organ_models(device.val());
+    //     window.get_organ_models(device.val());
 
-        organ_model.change(function() {
-            // Get and display correct protocol options
-            window.get_protocols(organ_model.val());
-        });
+    //     organ_model.change(function() {
+    //         // Get and display correct protocol options
+    //         window.get_protocols(organ_model.val());
+    //     });
 
-        window.get_protocols(organ_model.val());
+    //     window.get_protocols(organ_model.val());
 
-        protocol.change(function() {
-            window.display_protocol(protocol.val());
-        });
+    //     protocol.change(function() {
+    //         window.display_protocol(protocol.val());
+    //     });
 
-        window.display_protocol(protocol.val());
-    }
+    //     window.display_protocol(protocol.val());
+    // }
 
     // Post submission operation
     // Special operations for pre-submission
@@ -614,4 +618,40 @@ $(document).ready(function() {
         // Add the exclusions
         $('#id_dynamic_exclusion').val(JSON.stringify(dynamic_excluded_current));
     });
+
+    // These operations are for the group stuff
+    // Basically, I want some way to indicate the current group more easily
+    // I COULD remove every other group, but that would mean they would have to go through each group individually
+    // I COULD make the selected group appear at the top, but then the order would change and maybe people would be confused
+    // I COULD have a special table that display a copy of just the selection
+    // I COULD highlight the selected row in the table (doing this alone would make people mad, they would not want to scroll)
+    // Anyway:
+    // Wherein the term "highlight" is used in a looser sense
+
+    // Also, uh... stop using var eventually
+    // Proposed, not implemented yet
+    // var current_group_table_body = $('#current_group_table_body');
+    var difference_table_rows = $('#difference_table').find('tr');
+
+    function highlight_selected_group() {
+        // Get the current group name
+        var current_group_name = $('#id_group').find('option:selected').text();
+
+        // Remove highlight
+        difference_table_rows.removeClass('success');
+
+        // Iterate over every row
+        difference_table_rows.each(function() {
+            if ($(this).find('td').first().text() === current_group_name) {
+                $(this).addClass('success');
+
+                // Break
+                return false;
+            }
+        });
+    }
+
+    $("#id_group").change(function() {
+        highlight_selected_group();
+    }).trigger('change');
 });

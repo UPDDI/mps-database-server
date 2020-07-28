@@ -14,6 +14,7 @@ from .models import (
     AssayMatrix,
     AssayStudyAssay,
     AssayDataPoint,
+    # ????
     AssayChipReadout,
     AssayChipSetup,
     AssayRun,
@@ -40,6 +41,7 @@ from .models import (
     assay_plate_reader_map_info_shape_row_dict,
     assay_plate_reader_map_info_plate_size_choices_list,
     PhysicalUnits,
+    AssayGroup,
 )
 from microdevices.models import (
     MicrophysiologyCenter,
@@ -759,26 +761,30 @@ def get_item_groups(study, criteria, matrix_items=None, compound_profile=False, 
 
     # By pulling the setups for the study, I avoid problems with preview data
     # NOTE THAT STUDY CAN BE MULTIPLE STUDIES, HENCE DIFFERENT FILTER
-    if matrix_items is None:
-        matrix_items = AssayMatrixItem.objects.filter(
-            study_id__in=study
-        )
+    # if matrix_items is None:
+    #     matrix_items = AssayMatrixItem.objects.filter(
+    #         study_id__in=study
+    #     )
 
-    setups = matrix_items.prefetch_related(
-        'matrix',
-        'organ_model',
-        'assaysetupsetting_set__setting',
-        'assaysetupsetting_set__addition_location',
-        'assaysetupsetting_set__unit',
-        'assaysetupcell_set__cell_sample__cell_subtype',
-        'assaysetupcell_set__cell_sample__cell_type__organ',
-        'assaysetupcell_set__density_unit',
-        'assaysetupcell_set__addition_location',
-        'assaysetupcompound_set__compound_instance__compound',
-        'assaysetupcompound_set__concentration_unit',
-        'assaysetupcompound_set__addition_location',
-        # SOMEWHAT FOOLISH
-        'study__group__microphysiologycenter_set'
+    # setups = matrix_items.prefetch_related(
+    #     'matrix',
+    #     'organ_model',
+    #     'assaysetupsetting_set__setting',
+    #     'assaysetupsetting_set__addition_location',
+    #     'assaysetupsetting_set__unit',
+    #     'assaysetupcell_set__cell_sample__cell_subtype',
+    #     'assaysetupcell_set__cell_sample__cell_type__organ',
+    #     'assaysetupcell_set__density_unit',
+    #     'assaysetupcell_set__addition_location',
+    #     'assaysetupcompound_set__compound_instance__compound',
+    #     'assaysetupcompound_set__concentration_unit',
+    #     'assaysetupcompound_set__addition_location',
+    #     # SOMEWHAT FOOLISH
+    #     'study__group__microphysiologycenter_set'
+    # )
+
+    setups = AssayGroup.objects.filter(
+        study_id__in=study
     )
 
     if not criteria:
@@ -849,7 +855,9 @@ def get_item_groups(study, criteria, matrix_items=None, compound_profile=False, 
             })
 
         current_representative.get('Items with Same Treatment').append(
-            setup.get_hyperlinked_name()
+            # TODO TODO TODO
+            # setup.get_hyperlinked_name()
+            setup.name
         )
         current_representative.get('item_ids').append(
             setup.id

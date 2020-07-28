@@ -20,7 +20,7 @@ $(document).ready(function () {
             series_data: [],
             // Plates is an array, kind of ugly, but for the moment one has to search for the current plate on the plate page
             // On the other hand, might we not have another "fake schema" contrivance for matrices?
-            plates: [],
+            plates: {},
             // The ID needs to be in individual chip objects, they don't exist initially (unlike plates!)
             chips: []
         };
@@ -36,20 +36,23 @@ $(document).ready(function () {
     // var matrix_item_data = full_series_data.matrix_item_data;
     // var matrix_item_data = $('#id_matrix_item_data').val();
 
-    var matrix_item_data = null;
+    var matrix_item_data =  matrix_item_data = full_series_data.plates;
 
     console.log(plate_id);
     // Try to get the plate
-    $.each(full_series_data.plates, function(index, plate) {
-        if (plate.id === plate_id) {
-            matrix_item_data = full_series_data.plates[index];
-        }
-    });
-    if (!matrix_item_data) {
-        full_series_data.plates.push({id: ''});
-        console.log(full_series_data);
-        matrix_item_data = full_series_data.plates[full_series_data.plates.length-1];
-    }
+    // TODO: IF WE ARE EDITING ONLY ONE PLATE AT A TIME, THIS IS POINTLESS
+    // The only possible benefit is strange front-end validation?
+    // We don't really want to depend on front-end validation, and there are MUCH better methods to pass that data...
+    // $.each(full_series_data.plates, function(index, plate) {
+    //     if (plate.id === plate_id) {
+    //         matrix_item_data = full_series_data.plates[index];
+    //     }
+    // });
+    // if (!matrix_item_data) {
+    //     full_series_data.plates.push({id: ''});
+    //     console.log(full_series_data);
+    //     matrix_item_data = full_series_data.plates[full_series_data.plates.length-1];
+    // }
 
     // TEMPORARY ACQUISITION OF GROUPS
     // THIS NEEDS TO BE REPLACED ASAP
@@ -120,9 +123,10 @@ $(document).ready(function () {
 
     var selection_dialog_selected_items = $('#selection_dialog_selected_items');
     var series_selector = $('#id_series_selector');
-    // var selection_dialog_naming_section = $('.selection_dialog_naming_section');
-    // var use_chip_naming = $('#id_use_chip_naming');
-    // var chip_naming = $('#id_chip_naming');
+    // Always show the naming section?
+    var selection_dialog_naming_section = $('.selection_dialog_naming_section');
+    var use_incremental_well_naming = $('#id_use_incremental_well_naming');
+    var incremental_well_naming = $('#id_incremental_well_naming');
 
     var item_display_class = '.matrix_item-td';
 
@@ -158,39 +162,78 @@ $(document).ready(function () {
     }
 
     // Decided by an checkbox option?
-    // function plate_style_name_creation(append_zero) {
-    //     var current_global_name = $('#id_matrix_item_name').val();
-    //     var current_number_of_rows = number_of_rows_selector.val();
-    //     var current_number_of_columns = number_of_columns_selector.val();
+    // TODO REVISE
+    function plate_style_name_creation(append_zero) {
+        // Start from the plate name
+        // var current_global_name = $('#id_name').val();
 
-    //     var largest_row_name_length = Math.pow(current_number_of_columns, 1/10);
+        // Use well prefix
+        var current_global_name = $('#id_plate_naming').val();
 
-    //     for (var row_id=0; row_id < current_number_of_rows; row_id++) {
-    //         // Please note + 1
-    //         var row_name = to_letters(row_id + 1);
+        // Can't rely on this?
+        var current_number_of_rows = number_of_rows_selector.val();
+        var current_number_of_columns = number_of_columns_selector.val();
 
-    //         for (var column_id=0; column_id < current_number_of_columns; column_id++) {
-    //             var current_item_id = item_prefix + '_' + row_id + '_' + column_id;
+        var largest_row_name_length = Math.pow(current_number_of_columns, 1/10);
 
-    //             var column_name = column_id + 1 + '';
-    //             if (append_zero) {
-    //                 while (column_name.length < largest_row_name_length) {
-    //                     column_name = '0' + column_name;
-    //                 }
-    //             }
+        console.log(largest_row_name_length);
 
-    //             var value = current_global_name + row_name + column_name;
+        // Iterate over every well
+        // Iterating over the data itself means more queries
+        // Alternatively, we can iterate over the elements
+        // $.each(matrix_item_data, function(well_index, well) {
+            // var row_index = well_index.split('_')[0];
+            // var column_index = well_index.split('_')[1];
+        $('.matrix_item-td').each(function() {
+            var row_index = Math.floor($(this).attr('data-row-index'));
+            var column_index = Math.floor($(this).attr('data-column-index'));
 
-    //             // TODO TODO TODO PERFORM THE ACTUAL APPLICATION TO THE FORMS
-    //             // TODO TODO TODO PERFORM THE ACTUAL APPLICATION TO THE FORMS
-    //             // Set display
-    //             var item_display = $('#'+ current_item_id);
-    //             item_display.find('.matrix_item-name').html(value);
-    //             // Set form
-    //             $('#id_' + item_prefix + '-' + item_display.attr(item_form_index_attribute) + '-name').val(value);
-    //         }
-    //     }
-    // }
+            var row_name = to_letters(row_index + 1);
+
+            var column_name = column_index + 1 + '';
+            if (append_zero) {
+                while (column_name.length < largest_row_name_length) {
+                    column_name = '0' + column_name;
+                }
+            }
+
+            var current_name = current_global_name + row_name + column_name;
+
+            // TODO TODO TODO PERFORM THE ACTUAL APPLICATION TO THE FORMS
+            // IGNORE ANYTHING THAT DOESN'T EXIST YET
+            if (matrix_item_data[$(this).attr('data-row-column')]) {
+                // Set the name
+                matrix_item_data[$(this).attr('data-row-column')].name = current_name;
+                // Set the name label for the well
+                $(this).find('.matrix_item-name').text(current_name);
+            }
+        });
+
+        // Refresh the data
+        series_data_selector.val(JSON.stringify(full_series_data));
+
+        // OLD
+        // for (var row_id=0; row_id < current_number_of_rows; row_id++) {
+        //     // Please note + 1
+        //     var row_name = to_letters(row_id + 1);
+
+        //     for (var column_id=0; column_id < current_number_of_columns; column_id++) {
+        //         var current_item_id = item_prefix + '_' + row_id + '_' + column_id;
+
+        //         var column_name = column_id + 1 + '';
+        //         if (append_zero) {
+        //             while (column_name.length < largest_row_name_length) {
+        //                 column_name = '0' + column_name;
+        //             }
+        //         }
+
+        //         var value = current_global_name + row_name + column_name;
+
+        //         // TODO TODO TODO PERFORM THE ACTUAL APPLICATION TO THE FORMS
+
+        //     }
+        // }
+    }
 
     // This function gets the initial dimensions of the matrix
     // Please see the corresponding AJAX call as necessary
@@ -365,8 +408,8 @@ $(document).ready(function () {
                         // new_cell.find('.matrix-item-hover')
                         //     .removeClass('label-warning')
                         //     .addClass('label-primary')
-                        //     .text(matrix_item_data[current_name].group);
-                        set_label(new_cell, matrix_item_data[row_column].group);
+                        //     .text(matrix_item_data[current_name].group_index);
+                        set_label(new_cell, matrix_item_data[row_column].group_index);
 
                         // Add the name
                         new_cell.find('.matrix_item-name').text(matrix_item_data[row_column].name);
@@ -381,60 +424,60 @@ $(document).ready(function () {
         }
     };
 
-    // function chip_style_name_incrementer() {
-    //     // var original_name = $('#id_matrix_item_name').val();
+    function apply_incremental_well_naming() {
+        // var original_name = $('#id_matrix_item_name').val();
 
-    //     var original_name = $('#id_chip_naming').val();
-    //     var split_name = original_name.split(/(\d+)/).filter(Boolean);
+        var original_name = $('#id_incremental_well_naming').val();
+        var split_name = original_name.split(/(\d+)/).filter(Boolean);
 
-    //     var numeric_index = original_name.length - 1;
-    //     // Increment the first number encountered
-    //     while (!$.isNumeric(split_name[numeric_index]) && numeric_index >= 0) {
-    //         numeric_index -= 1;
-    //     }
+        var numeric_index = original_name.length - 1;
+        // Increment the first number encountered
+        while (!$.isNumeric(split_name[numeric_index]) && numeric_index >= 0) {
+            numeric_index -= 1;
+        }
 
-    //     if (numeric_index === -1) {
-    //         numeric_index = original_name.length;
-    //     }
+        if (numeric_index === -1) {
+            numeric_index = original_name.length;
+        }
 
-    //     var first_half = split_name.slice(0, numeric_index).join('');
-    //     var second_half = split_name.slice(numeric_index + 1).join('');
-    //     var initial_value = Math.floor(split_name[numeric_index]);
+        var first_half = split_name.slice(0, numeric_index).join('');
+        var second_half = split_name.slice(numeric_index + 1).join('');
+        var initial_value = Math.floor(split_name[numeric_index]);
 
-    //     if (isNaN(initial_value)) {
-    //         initial_value = 1;
-    //     }
+        if (isNaN(initial_value)) {
+            initial_value = 1;
+        }
 
-    //     // Skipped keeps track of how many items were skipped (recalculates the name this way)
-    //     var skipped = 0;
+        // Skipped keeps track of how many items were skipped (recalculates the name this way)
+        var skipped = 0;
 
-    //     // Iterate over all selected
-    //     current_selection.each(function(index) {
-    //         // Note that this accounts for skips
-    //         var incremented_value = index + initial_value - skipped;
-    //         incremented_value += '';
+        // Iterate over all selected
+        current_selection.each(function(index) {
+            // Note that this accounts for skips
+            var incremented_value = index + initial_value - skipped;
+            incremented_value += '';
 
-    //         while (first_half.length + second_half.length + incremented_value.length < original_name.length) {
-    //             incremented_value = '0' + incremented_value;
-    //         }
+            while (first_half.length + second_half.length + incremented_value.length < original_name.length) {
+                incremented_value = '0' + incremented_value;
+            }
 
-    //         var value = first_half + incremented_value + second_half;
+            var value = first_half + incremented_value + second_half;
 
-    //         // SET DISPLAY AND VALUE HERE
-    //         // TODO
-    //         // Conditional is to ignore empty items, every item needs a series before it is considered
-    //         if (matrix_item_data[$(this).attr('data-row-column')]) {
-    //             // Set the name
-    //             matrix_item_data[$(this).attr('data-row-column')].name = value;
-    //             // Set the name label
-    //             $(this).find('.matrix_item-name').text(value);
-    //         }
-    //         // Increment skipped if this items doesn't have a series
-    //         else {
-    //             skipped += 1;
-    //         }
-    //     });
-    // }
+            // SET DISPLAY AND VALUE HERE
+            // TODO
+            // Conditional is to ignore empty items, every item needs a series before it is considered
+            if (matrix_item_data[$(this).attr('data-row-column')]) {
+                // Set the name
+                matrix_item_data[$(this).attr('data-row-column')].name = value;
+                // Set the name label
+                $(this).find('.matrix_item-name').text(value);
+            }
+            // Increment skipped if this items doesn't have a series
+            else {
+                skipped += 1;
+            }
+        });
+    }
 
     function programmatic_select(current_selection) {
         $('.ui-selected').not(current_selection).removeClass('ui-selected').addClass('ui-unselecting');
@@ -521,7 +564,7 @@ $(document).ready(function () {
     //         $('.matrix_item-name_section').hide();
 
     //         // UNCHECK USE CHIP NAMES
-    //         // use_chip_naming.prop('checked', false);
+    //         // use_incremental_well_naming.prop('checked', false);
     //     }
     // }
 
@@ -542,6 +585,8 @@ $(document).ready(function () {
     device_selector.change(check_matrix_device);
     check_matrix_device();
 
+    // PROBABLY DEPRECATED
+    // NOT IN USE AT THE MOMENT
     number_of_rows_selector.change(function() {
         get_matrix_dimensions();
     });
@@ -594,7 +639,14 @@ $(document).ready(function () {
 
     function delete_selected() {
         current_selection.each(function() {
-            delete matrix_item_data[$(this).attr('data-row-column')];
+            var current_well = matrix_item_data[$(this).attr('data-row-column')];
+
+            if (current_well.id) {
+                current_well.deleted = true;
+            }
+            else {
+                delete matrix_item_data[$(this).attr('data-row-column')];
+            }
 
             unset_label($(this));
         });
@@ -615,11 +667,15 @@ $(document).ready(function () {
 
                 var current_matrix_item_data = matrix_item_data[$(this).attr('data-row-column')];
 
-                current_matrix_item_data.series = series_selector.val();
+                // Remove for now
+                // current_matrix_item_data.series = series_selector.val();
 
                 // TODO: SET GROUP WITH RESPECT TO INCREMENT TODO
                 // TODO
-                current_matrix_item_data.group = series_selector.val();
+                current_matrix_item_data.group_index = series_selector.val();
+
+                // NEED THE ID, WE DON'T REALLY CARE ABOUT THE INDEX WHEN SAVING
+                current_matrix_item_data.group_id = series_data[parseInt(series_selector.val())].id;
 
                 set_label($(this), series_selector.val());
 
@@ -631,17 +687,21 @@ $(document).ready(function () {
                 //     // FOR THE MOMENT, JUST SETS TO THE DEFAULT NO APPENDED ZEROES
                 //     current_matrix_item_data.name = $(this).attr('data-well-name');
                 // }
-                // TODO PLATE NAMING
+
+                // TODO PLATE NAMING (probably have a separate section for that)
                 // FOR THE MOMENT, JUST SETS TO THE DEFAULT NO APPENDED ZEROES
-                current_matrix_item_data.name = $(this).attr('data-well-name');
+                // NOTE: Only apply default well name if empty (otherwise, overwrites every application without incremental_naming checked)
+                if (!current_matrix_item_data.name) {
+                    current_matrix_item_data.name = $(this).attr('data-well-name');
+                }
             });
         }
 
         // If the representation is a chips, use the initial
-        // if (current_representation === 'chips' && use_chip_naming.prop('checked')) {
-        //     // Sets the chip names
-        //     chip_style_name_incrementer();
-        // }
+        if (use_incremental_well_naming.prop('checked')) {
+            // Sets the chip names
+            apply_incremental_well_naming();
+        }
 
         // TO BE REVISED:
         // replace_series_data();
@@ -677,18 +737,24 @@ $(document).ready(function () {
             // SHOULD THE USE CHIP NAMING BE UNCHECKED EVERY TIME?
             // Set the initial name to the first item or nothing
             // if (matrix_item_data[first_selection.attr('data-row-column')] && matrix_item_data[first_selection.attr('data-row-column')].name) {
-            //     chip_naming.val(matrix_item_data[first_selection.attr('data-row-column')].name);
+            //     incremental_well_naming.val(matrix_item_data[first_selection.attr('data-row-column')].name);
             // }
             // else {
-            //     chip_naming.val('');
+            //     incremental_well_naming.val('');
             // }
+
+            // Just always display naming
+            // Allow changing just the name!
+            if (use_incremental_well_naming.prop('checked')) {
+                $('#selection_dialog_accept').prop('disabled', false);
+            }
 
             // Only display initial name if this is for chips
             // if (representation_selector.val() === 'chips') {
             //     selection_dialog_naming_section.show();
 
             //     // Allow just changing the name
-            //     if (use_chip_naming.prop('checked')) {
+            //     if (use_incremental_well_naming.prop('checked')) {
             //         $('#selection_dialog_accept').prop('disabled', false);
             //     }
             // }
@@ -741,32 +807,33 @@ $(document).ready(function () {
     //     }
     // }).trigger('change');
 
-    // Check to see if chip naming style should be used
-    // use_chip_naming.change(function() {
-    //     if ($(this).prop('checked') && representation_selector.val() === 'chips') {
-    //         // Allow apply
-    //         $('#selection_dialog_accept').prop('disabled', false);
-    //     }
-    //     // If this is for chips and there is no series and use_chip_naming is off
-    //     else if (representation_selector.val() === 'chips' && !series_selector.val()) {
-    //         // Disable apply
-    //         $('#selection_dialog_accept').prop('disabled', true);
-    //     }
-    //     // Enable/disable chip_naming
-    //     chip_naming.prop('disabled', !$(this).prop('checked'));
-    // }).trigger('change');
+    // Check to see if incremental naming style should be used
+    use_incremental_well_naming.change(function() {
+        if ($(this).prop('checked')) {
+            // Allow apply
+            $('#selection_dialog_accept').prop('disabled', false);
+        }
+        // Make sure that either group selected or names given
+        else if (!series_selector.val()) {
+            // Disable apply
+            $('#selection_dialog_accept').prop('disabled', true);
+        }
+        // Enable/disable incremental_well_naming
+        incremental_well_naming.prop('disabled', !$(this).prop('checked'));
+    }).trigger('change');
 
     // Disable and enable apply based on whether there is a series
     series_selector.change(function() {
         if ($(this).val()) {
             $('#selection_dialog_accept').prop('disabled', false);
         }
-        // else if (representation_selector.val() !== 'chips' && !use_chip_naming.prop('checked')) {
-        //     $('#selection_dialog_accept').prop('disabled', true);
-        // }
-        else {
+        // Disable if not incremental add
+        else if (!use_incremental_well_naming.prop('checked')) {
             $('#selection_dialog_accept').prop('disabled', true);
         }
+        // else {
+        //     $('#selection_dialog_accept').prop('disabled', true);
+        // }
     });
 
     // Container that shows up to reveal what a group contains
@@ -826,12 +893,13 @@ $(document).ready(function () {
         // We do not currently differentiate groups and series
         // (We will probably have to go back and rename series stuff for clarity)
         var current_group = null;
-        var current_series = null;
+        // Removed for now
+        // var current_series = null;
         var current_data = matrix_item_data[$(this).parent().attr('data-row-column')];
 
-        if (current_data && current_data.group) {
-            current_group = current_data.group;
-            current_series = current_data.series;
+        if (current_data && current_data.group_index) {
+            current_group = current_data.group_index;
+            // current_series = current_data.series;
         }
 
         // Only show if the user is not selecting
@@ -847,12 +915,21 @@ $(document).ready(function () {
 
             matrix_contents_hover_body.empty();
             matrix_contents_hover_body.html(
-                generate_row_clone_html($(this).parent().attr('data-well-name'), current_series, current_group)
+                generate_row_clone_html($(this).parent().attr('data-well-name'), current_group, current_group)
             );
         }
     });
 
     $(document).on('mouseout', '.matrix-item-hover', function() {
         matrix_contents_hover.hide();
+    });
+
+    // Events for plate naming buttons
+    $('#apply_plate_names_zero').click(function() {
+        plate_style_name_creation(true);
+    });
+
+    $('#apply_plate_names_no_zero').click(function() {
+        plate_style_name_creation(false);
     });
 });

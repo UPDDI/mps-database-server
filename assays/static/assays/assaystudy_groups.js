@@ -1,4 +1,5 @@
 // TODO WE ARE NOW CALLING THEM GROUPS AGAIN, I GUESS
+// TODO: WHY ARE WE GOING BACK AND FORTH BETWEEN INT AND STING FOR INDICES???????
 $(document).ready(function () {
     // TEMPORARY
     var series_data_selector = $('#id_series_data');
@@ -11,7 +12,7 @@ $(document).ready(function () {
         full_series_data = {
             series_data: [],
             // Plates is an array, kind of ugly, but for the moment one has to search for the current plate on the plate page
-            plates: [],
+            plates: {},
             // The ID needs to be in individual chip objects, they don't exist initially (unlike plates!)
             chips: []
         };
@@ -107,8 +108,8 @@ $(document).ready(function () {
     // var selection_dialog_selected_items = $('#selection_dialog_selected_items');
     // var series_selector = $('#id_series_selector');
     // var selection_dialog_naming_section = $('.selection_dialog_naming_section');
-    // var use_chip_naming = $('#id_use_chip_naming');
-    // var chip_naming = $('#id_chip_naming');
+    // var use_chip_naming = $('#id_use_incremental_well_naming');
+    // var chip_naming = $('#id_incremental_well_naming');
 
     // Default values
     var default_values = {};
@@ -427,22 +428,36 @@ $(document).ready(function () {
     }
 
     // TODO REVISE FOR TRUE ID
+    // NOTE: Interestingly, the way add works right now, one will NEVER be able to "add back" a group they inadvertently deleted
+    // Is this a problem?
+    // Obviously it would be an issue if there was data, someone (for whatever reason) decreased the item number, increased it again, and then saved. How often would this occur? It is difficult to say.
     function add_chip(setup_index) {
         chips.push({
             'name': chips.length + 1,
-            'group_id': setup_index
+            'group_index': Math.floor(setup_index)
         });
     }
 
     // TODO REVISE FOR TRUE ID
+    // TODO BE CAREFUL HERE
     function remove_chip(setup_index) {
         $.each(chips, function(index, chip) {
-            // NOTE: group_id is just an index for the moment
-            // Really, it needs to be changed to an actual ID
-            if (chip.group_id === setup_index) {
-                chips.splice(index, 1);
-                // Break after removal
-                return false;
+            // NOTE: group_index is just an index for the moment
+            // We also need access to the id, ideally
+            // TODO TODO TODO SHOULD BE MORE CAREFUL ABOUT STRING TO INTEGER COMPARISONS
+            if (chip.group_index == setup_index) {
+                // If the chip exists, we need to mark it for deletion
+                if (chip.id && !chip.deleted) {
+                    full_series_data['chips'][index]['deleted'] = true;
+                    // Break after removal
+                    return false;
+                }
+                // If the chip doesn't exist yet, just kill it
+                else if (!chip.id) {
+                    chips.splice(index, 1);
+                    // Break after removal
+                    return false;
+                }
             }
         });
     }
@@ -451,9 +466,10 @@ $(document).ready(function () {
         var current_number_of_chips = 0;
 
         $.each(chips, function(index, chip) {
-            // NOTE: group_id is just an index for the moment
-            // Really, it needs to be changed to an actual ID
-            if (chip.group_id === setup_index) {
+            // NOTE: group_index is just an index for the moment
+            // We also need access to the id, ideally
+            // NOTE: DO NOT COUNT DELETED CHIPS
+            if (chip.group_index == setup_index && !chip.deleted) {
                 current_number_of_chips += 1;
             }
         });
@@ -467,8 +483,6 @@ $(document).ready(function () {
             add_chip(setup_index);
             current_number_of_chips += 1;
         }
-
-        console.log(chips);
 
         replace_series_data();
     }
@@ -501,7 +515,7 @@ $(document).ready(function () {
     }
 
     // JUST USES DEFAULT PROTOCOL FOR NOW
-    function spawn_row(setup_to_use, add_new_row) {
+    function spawn_row(setup_to_use, add_new_row, is_clone) {
         // TODO: SHOULD REMOVE, WHOLE CONCEPT OF current_setup NEEDS TO BE REVISED
         if (!setup_to_use) {
             setup_to_use = {
@@ -586,8 +600,11 @@ $(document).ready(function () {
         var name_input = $('#id_group_name')
             .clone()
             .removeAttr('id')
-            .addClass('group-name')
+            .addClass('group-name required')
             .attr('data-row', row_index);
+
+        // SLOPPY: MAKE REQUIRED FOR NOW
+        name_input.attr('required', 'required')
 
         new_row.append(
             $('<td>').append(name_input)
@@ -677,7 +694,7 @@ $(document).ready(function () {
             new_row.find('.number-of-items')
                 .val(0)
                 .attr('disabled', 'disabled')
-                .attr('title', 'The Group is for Plates Only')
+                .attr('title', 'Apply to Wells in the Plate Tab')
         }
         else {
             new_row.find('.number-of-items')
@@ -691,8 +708,15 @@ $(document).ready(function () {
         study_setup_body.append(new_row);
 
         if (add_new_row) {
+            var new_series_data = $.extend(true, {}, setup_to_use);
+
+            // GET RID OF THE GROUP ID WHEN THIS IS A NEW ROW
+            if (is_clone) {
+                delete new_series_data['id'];
+            }
+
             series_data.push(
-                $.extend(true, {}, setup_to_use)
+                new_series_data
             );
 
             // Crude way to make sure the chips get generated
@@ -766,7 +790,7 @@ $(document).ready(function () {
     // NOT ALLOWED IN EDIT?
     $(document).on('click', 'a[data-clone-row-button="true"]', function() {
         current_row_index = Math.floor($(this).attr('data-row'));
-        spawn_row(series_data[current_row_index], true);
+        spawn_row(series_data[current_row_index], true, true);
 
         // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
         change_matrix_visibility();
@@ -778,6 +802,8 @@ $(document).ready(function () {
 
         // A somewhat odd way to kill the chips
         // Set the number of items to zero and trigger it
+        // We *PROBABLY* can get away with this
+        // Cascade will kill chips when it gets deleted anyway
         $('.number-of-items[data-row="' + $(this).attr('data-row') + '"]').val(0).trigger('change');
 
         // TODO: WE NEED TO DEAL WITH THE CONSEQUENCES OF DELETION!
@@ -802,7 +828,16 @@ $(document).ready(function () {
         // });
 
         // JUST FLAT OUT DELETE THE ROW
-        series_data.splice(current_row_index, 1);
+        // BUT WAIT! MAKE SURE THERE ISN'T A GROUP YET!
+        // TODO TODO TODO: NOTE: BUT WAIT!!!! ONLY DO THIS IF IT DOESN'T ALREADY EXIST!
+        // We would know this because it has an id (unless something goofy is happening)
+        if (series_data[current_row_index].id === undefined) {
+            // DELETE THE DATA HERE
+            series_data.splice(current_row_index, 1);
+        }
+        else {
+            // TODO STRIKE IT OUT!
+        }
 
         rebuild_table();
     });
@@ -813,7 +848,14 @@ $(document).ready(function () {
         current_prefix = $(this).attr('data-prefix');
 
         // DELETE THE DATA HERE
-        series_data[current_row_index][current_prefix][current_column_index] = {};
+        // TODO TODO TODO: NOTE: BUT WAIT!!!! ONLY DO THIS IF IT DOESN'T ALREADY EXIST!
+        // We would know this because it has an id (unless something goofy is happening)
+        if (series_data[current_row_index][current_prefix][current_column_index].id === undefined) {
+            series_data[current_row_index][current_prefix][current_column_index] = {};
+        }
+        else {
+            // TODO: STRIKEOUT!
+        }
 
         rebuild_table();
     });
