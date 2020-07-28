@@ -183,14 +183,12 @@
                             View/Edit
                         </a>
                     </td>
-                    {% comment %}
                     <td>
                         <a class="btn btn-danger"
                            href="{{ matrix.get_absolute_url }}prototype/">
                             PROTOTYPE
                         </a>
                     </td>
-                    {% endcomment %}
                     <td>{{ matrix.name }}</td>
                     <td>
                         {% for item in matrix.assaymatrixitem_set.all|dictsort:"name" %}

@@ -36,6 +36,7 @@ from assays.models import (
     AssayMethod,
     AssaySetting,
     AssaySupplier,
+    AssayCategory,
     AssayPlateReaderMap,
     AssayPlateReaderMapItem,
     AssayPlateReaderMapItemValue,
@@ -79,10 +80,6 @@ from .utils import (
     calibration_choices,
 )
 
-from mps.utils import (
-    get_split_times,
-)
-
 from django.utils import timezone
 
 from mps.templatetags.custom_filters import is_group_admin, filter_groups, ADMIN_SUFFIX
@@ -94,6 +91,10 @@ import ujson as json
 import os
 import csv
 import re
+
+from mps.utils import (
+    get_split_times,
+)
 
 # TODO REFACTOR WHITTLING TO BE HERE IN LIEU OF VIEW
 # TODO REFACTOR FK QUERYSETS TO AVOID N+1
@@ -521,7 +522,7 @@ class DicModelChoiceField(forms.Field):
         return value
 
     def valid_value(self, value):
-        # "Check to see if the provided value is a valid choice"
+        """Check to see if the provided value is a valid choice"""
         if str(value.id) in self.dic.get(self.name):
             return True
         return False
@@ -661,7 +662,7 @@ class AssayStudyForm(SignOffMixin, BootstrapForm):
             'name': forms.Textarea(attrs={'rows': 1}),
             'description': forms.Textarea(attrs={'rows': 5, 'cols': 100}),
         }
-        exclude = tracking + restricted + ('access_groups', 'signed_off_notes', 'bulk_file', 'collaborator_groups', 'archived')
+        exclude = tracking + restricted + ('access_groups', 'signed_off_notes', 'bulk_file', 'collaborator_groups')
 
     def clean(self):
         """Checks for at least one study type"""
@@ -722,695 +723,6 @@ class AssayStudyDetailForm(SignOffMixin, BootstrapForm):
         data = super(AssayStudyDetailForm, self).clean()
 
         if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], data['pbpk_steady_state'], data['pbpk_bolus']]):
-            raise forms.ValidationError('Please select at least one study type')
-
-        if data.get('pbpk_steady_state', '') and (not data.get('number_of_relevant_cells', '') or not data.get('flow_rate', '')):
-            raise forms.ValidationError('Continuous Infusion PBPK Requires Number of Cells Per MPS Model and Flow Rate')
-
-        if data.get('pbpk_bolus', '') and (not data.get('number_of_relevant_cells', '') or not data.get('total_device_volume', '')):
-            raise forms.ValidationError('Bolus PBPK Requires Number of Cells Per MPS Model and Total Device Volume')
-
-        return data
-
-
-class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
-    # CONTRIVANCES
-    # test_type = forms.ChoiceField(
-    #     initial='control',
-    #     choices=TEST_TYPE_CHOICES,
-    #     required=False
-    # )
-    # organ_model_full = forms.ModelChoiceField(
-    #     queryset=OrganModel.objects.all().order_by('name'),
-    #     required=False,
-    #     label='Matrix Item MPS Model'
-    # )
-    # organ_model_protocol_full = forms.ModelChoiceField(
-    #     queryset=OrganModelProtocol.objects.all().order_by('name'),
-    #     required=False,
-    #     label='Matrix Item MPS Model Version'
-    # )
-    # number_of_items = forms.CharField(
-    #     initial='',
-    #     required=False
-    # )
-    # group_name = forms.CharField(
-    #     initial='',
-    #     required=False
-    # )
-
-    # Contrivance
-    organ_model = forms.ModelChoiceField(
-        queryset=OrganModel.objects.all().order_by('name'),
-        required=False,
-        label='Matrix Item MPS Model'
-    )
-
-    class Meta(object):
-        model = AssayStudy
-        # Since we are splitting into multiple forms, includes are safer
-        # Only temporary, will change when finished
-        fields = (
-            # TEMPORARY ->
-            'series_data',
-            # <- TEMPORARY
-            'test_type',
-            'organ_model',
-            'organ_model_full',
-            # 'group_name',
-            # TEMP!
-            'organ_model_protocol',
-            'organ_model_protocol_full',
-            'cell_cell_sample',
-            'cell_biosensor',
-            'cell_density',
-            'cell_density_unit',
-            'cell_passage',
-            'cell_addition_location',
-            'setting_setting',
-            'setting_unit',
-            'setting_value',
-            'setting_addition_location',
-            'compound_compound',
-            'compound_concentration_unit',
-            'compound_concentration',
-            'compound_addition_location',
-            'compound_supplier_text',
-            'compound_lot_text',
-            'compound_receipt_date',
-        )
-
-    def __init__(self, *args, **kwargs):
-        super(AssayStudyGroupForm, self).__init__(*args, **kwargs)
-
-        # Contrivances
-        self.fields['test_type'].widget.attrs['class'] = 'no-selectize required form-control'
-
-    # def clean(self):
-    #     """Checks for at least one study type"""
-    #     # clean the form data, before validation
-    #     data = super(AssayStudyFormNew, self).clean()
-
-    #     # SLOPPY NOT DRY
-    #     new_setup_data = {}
-
-    #     # This matrix is only for chips
-    #     # WARNING: THIS WILL BREAK IN STUDIES WITH MULTIPLE CHIP SETS
-    #     # IMPORTANT NOTE: WHEN BACK-FILLING, WE WILL NEED TO CONSOLIDATE CHIP MATRICES! Otherwise this flow will not work correctly...
-    #     current_matrix = AssayMatrix.objects.filter(
-    #         # The study must exist in order to visit this page, so getting the id this was is fine
-    #         study_id=self.instance.id,
-    #         representation='chips'
-    #     )
-
-    #     if current_matrix:
-    #         current_matrix = current_matrix[0]
-    #     else:
-    #         current_matrix = None
-
-    #     new_items = None
-    #     current_items = AssayMatrixItems.objects.filter(matrix_id=current_matrix)
-
-    #     new_related = None
-
-    #     errors = {'setup_data': []}
-    #     current_errors = errors.get('setup_data')
-
-    #     # study = super(AssayStudyFormNew, self).save(commit=False)
-
-    #     if self.cleaned_data.get('setup_data', None):
-    #         all_setup_data = json.loads(self.cleaned_data.get('setup_data', '[]'))
-    #     else:
-    #         all_setup_data = []
-
-    #     # Never consider if no model
-    #     if not self.cleaned_data.get('organ_model', None):
-    #         all_setup_data = []
-
-    #     # Catch technically empty setup data
-    #     setup_data_is_empty = True
-
-    #     for group_set in all_setup_data:
-    #         if group_set:
-    #             setup_data_is_empty = not any(group_set.values())
-
-    #     if setup_data_is_empty:
-    #         all_setup_data = []
-
-    #     # if commit and all_setup_data:
-    #     # SEE BASE MODELS FOR WHY COMMIT IS NOT HERE
-    #     if all_setup_data:
-    #         created_by = self.user
-    #         created_on = timezone.now()
-
-    #         current_item_number = 1
-
-    #         # CRUDE: JUST MAKE ONE LARGE ROW?
-    #         # number_of_items = 0
-    #         #
-    #         # for setup_group in all_setup_data:
-    #         #     number_of_items += int(setup_group.get('number_of_items', '0'))
-
-    #         # Find max for number of columns
-    #         number_of_columns = 0
-    #         for setup_group in all_setup_data:
-    #             if int(setup_group.get('number_of_items', '0')) > number_of_columns:
-    #                 number_of_columns = int(setup_group.get('number_of_items', '0'))
-
-    #         new_matrix = AssayMatrix(
-    #             name=data.get('name', ''),
-    #             # Does not work with plates at the moment
-    #             representation='chips',
-    #             # study=self.instance,
-    #             device=None,
-    #             number_of_rows=len(all_setup_data),
-    #             number_of_columns=number_of_columns,
-    #             # number_of_rows=1,
-    #             # number_of_columns=number_of_items,
-    #             created_by=created_by,
-    #             created_on=created_on,
-    #             modified_by=created_by,
-    #             modified_on=created_on,
-    #         )
-
-    #         try:
-    #             new_matrix.full_clean(exclude=['study'])
-    #         except forms.ValidationError as e:
-    #             errors.get('organ_model').append(e.values())
-
-    #         # new_matrix.save()
-
-    #         # COMPOUND STUFF BECAUSE COMPOUND SCHEMA IS MISERABLE
-    #         # Get all chip setup assay compound instances
-    #         assay_compound_instances = {}
-
-    #         # Get all Compound Instances
-    #         compound_instances = {
-    #             (
-    #                 instance.compound.id,
-    #                 instance.supplier.id,
-    #                 instance.lot,
-    #                 str(instance.receipt_date)
-    #             ): instance for instance in CompoundInstance.objects.all().prefetch_related(
-    #                 'compound',
-    #                 'supplier'
-    #             )
-    #         }
-
-    #         # Get all suppliers
-    #         suppliers = {
-    #             supplier.name: supplier for supplier in CompoundSupplier.objects.all()
-    #         }
-
-    #         new_items = []
-    #         new_related = {}
-
-    #         # NOTE: ROW IS DERIVED FROM THE GROUP IN QUESTION
-    #         # ALL ITEMS IN THE GROUP ARE IN THE COLUMNS OF SAID ROW
-    #         for setup_row, setup_group in enumerate(all_setup_data):
-    #             items_in_group = int(setup_group.pop('number_of_items', '0'))
-    #             test_type = setup_group.get('test_type', '')
-
-    #             # To break out to prevent repeat errors
-    #             group_has_error = False
-
-    #             for iteration in range(items_in_group):
-    #                 new_item = AssayMatrixItem(
-    #                     # study=study,
-    #                     # matrix=new_matrix,
-    #                     name=str(current_item_number),
-    #                     # JUST MAKE SETUP DATE THE STUDY DATE FOR NOW
-    #                     setup_date=data.get('start_date', ''),
-    #                     row_index=setup_row,
-    #                     column_index=iteration,
-    #                     # column_index=current_item_number-1,
-    #                     # device=study.organ_model.device,
-    #                     # organ_model=study.organ_model,
-    #                     # organ_model_protocol=study.organ_model_protocol,
-    #                     test_type=test_type,
-    #                     created_by=created_by,
-    #                     created_on=created_on,
-    #                     modified_by=created_by,
-    #                     modified_on=created_on,
-    #                 )
-
-    #                 try:
-    #                     new_item.full_clean(exclude=[
-    #                         'study',
-    #                         'matrix',
-    #                         'device',
-    #                         'organ_model',
-    #                         'organ_model_protocol',
-    #                     ])
-    #                     new_items.append(new_item)
-
-    #                 except forms.ValidationError as e:
-    #                     # raise forms.ValidationError(e)
-    #                     errors.get('organ_model').append(e.values())
-    #                     group_has_error = True
-
-    #                 current_related_list = new_related.setdefault(
-    #                     str(len(new_items)), []
-    #                 )
-
-    #                 # new_item.save()
-    #                 for prefix, current_objects in setup_group.items():
-    #                     for setup_column, current_object in enumerate(current_objects):
-    #                         if prefix in ['cell', 'compound', 'setting'] and current_object:
-    #                             current_object.update({
-    #                                 'matrix_item': new_item,
-    #                             })
-    #                             if prefix == 'cell':
-    #                                 new_cell = AssaySetupCell(**current_object)
-
-    #                                 try:
-    #                                     new_cell.full_clean(exclude=['matrix_item'])
-    #                                     current_related_list.append(new_cell)
-    #                                 except forms.ValidationError as e:
-    #                                     # raise forms.ValidationError(e)
-    #                                     current_errors.append(
-    #                                         process_error_for_study_new(
-    #                                             prefix,
-    #                                             setup_row,
-    #                                             setup_column,
-    #                                             e
-    #                                         )
-    #                                     )
-    #                                     group_has_error = True
-
-    #                                 # new_cell.save()
-    #                             elif prefix == 'setting':
-    #                                 new_setting = AssaySetupSetting(**current_object)
-    #                                 try:
-    #                                     new_setting.full_clean(exclude=['matrix_item'])
-    #                                     current_related_list.append(new_setting)
-    #                                 except forms.ValidationError as e:
-    #                                     # raise forms.ValidationError(e)
-    #                                     current_errors.append(
-    #                                         process_error_for_study_new(
-    #                                             prefix,
-    #                                             setup_row,
-    #                                             setup_column,
-    #                                             e
-    #                                         )
-    #                                     )
-    #                                     group_has_error = True
-
-    #                                 # new_setting.save()
-    #                             elif prefix == 'compound':
-    #                                 # CONFUSING NOT DRY BAD
-    #                                 compound = int(current_object.get('compound_id', '0'))
-    #                                 supplier_text = current_object.get('supplier_text', 'N/A').strip()
-    #                                 lot_text = current_object.get('lot_text', 'N/A').strip()
-    #                                 receipt_date = current_object.get('receipt_date', '')
-
-    #                                 # NOTE THE DEFAULT, PLEASE DO THIS IN A WAY THAT IS MORE DRY
-    #                                 if not supplier_text:
-    #                                     supplier_text = 'N/A'
-
-    #                                 if not lot_text:
-    #                                     lot_text = 'N/A'
-
-    #                                 # Check if the supplier already exists
-    #                                 supplier = suppliers.get(supplier_text, '')
-
-    #                                 concentration = current_object.get('concentration', '0')
-    #                                 # Annoying, bad
-    #                                 if not concentration:
-    #                                     concentration = 0.0
-    #                                 else:
-    #                                     concentration = float(concentration)
-    #                                 concentration_unit_id = int(current_object.get('concentration_unit_id', '0'))
-    #                                 addition_location_id = int(current_object.get('addition_location_id', '0'))
-
-    #                                 addition_time = current_object.get('addition_time', '0')
-    #                                 duration = current_object.get('duration', '0')
-
-    #                                 if not addition_time:
-    #                                     addition_time = 0.0
-    #                                 else:
-    #                                     addition_time = float(addition_time)
-
-    #                                 if not duration:
-    #                                     duration = 0.0
-    #                                 else:
-    #                                     duration = float(duration)
-
-    #                                 # Otherwise create the supplier
-    #                                 if not supplier:
-    #                                     supplier = CompoundSupplier(
-    #                                         name=supplier_text,
-    #                                         created_by=created_by,
-    #                                         created_on=created_on,
-    #                                         modified_by=created_by,
-    #                                         modified_on=created_on,
-    #                                     )
-    #                                     try:
-    #                                         supplier.full_clean()
-    #                                         supplier.save()
-    #                                     except forms.ValidationError as e:
-    #                                         # raise forms.ValidationError(e)
-    #                                         current_errors.append(
-    #                                             process_error_for_study_new(
-    #                                                 prefix,
-    #                                                 setup_row,
-    #                                                 setup_column,
-    #                                                 e
-    #                                             )
-    #                                         )
-    #                                         group_has_error = True
-
-    #                                     suppliers.update({
-    #                                         supplier_text: supplier
-    #                                     })
-
-    #                                 # FRUSTRATING EXCEPTION
-    #                                 if not receipt_date:
-    #                                     receipt_date = None
-
-    #                                 # Check if compound instance exists
-    #                                 compound_instance = compound_instances.get((compound, supplier.id, lot_text, str(receipt_date)), '')
-
-    #                                 if not compound_instance:
-    #                                     compound_instance = CompoundInstance(
-    #                                         compound_id=compound,
-    #                                         supplier=supplier,
-    #                                         lot=lot_text,
-    #                                         receipt_date=receipt_date,
-    #                                         created_by=created_by,
-    #                                         created_on=created_on,
-    #                                         modified_by=created_by,
-    #                                         modified_on=created_on,
-    #                                     )
-    #                                     try:
-    #                                         compound_instance.full_clean()
-    #                                         compound_instance.save()
-    #                                     except forms.ValidationError as e:
-    #                                         # raise forms.ValidationError(e)
-    #                                         current_errors.append(
-    #                                             process_error_for_study_new(
-    #                                                 prefix,
-    #                                                 setup_row,
-    #                                                 setup_column,
-    #                                                 e
-    #                                             )
-    #                                         )
-    #                                         group_has_error = True
-
-    #                                     compound_instances.update({
-    #                                         (compound, supplier.id, lot_text, str(receipt_date)): compound_instance
-    #                                     })
-
-    #                                 # Save the AssayCompoundInstance
-    #                                 conflicting_assay_compound_instance = assay_compound_instances.get(
-    #                                     (
-    #                                         # new_item.id,
-    #                                         current_item_number,
-    #                                         compound_instance.id,
-    #                                         concentration,
-    #                                         concentration_unit_id,
-    #                                         addition_time,
-    #                                         duration,
-    #                                         addition_location_id
-    #                                     ), None
-    #                                 )
-    #                                 if not conflicting_assay_compound_instance:
-    #                                     new_compound = AssaySetupCompound(
-    #                                         # matrix_item_id=new_item.id,
-    #                                         compound_instance_id=compound_instance.id,
-    #                                         concentration=concentration,
-    #                                         concentration_unit_id=concentration_unit_id,
-    #                                         addition_time=addition_time,
-    #                                         duration=duration,
-    #                                         addition_location_id=addition_location_id
-    #                                     )
-
-    #                                     try:
-    #                                         new_compound.full_clean(exclude=['matrix_item'])
-    #                                         current_related_list.append(new_compound)
-    #                                     except forms.ValidationError as e:
-    #                                         # raise forms.ValidationError(e)
-    #                                         current_errors.append(
-    #                                             process_error_for_study_new(
-    #                                                 prefix,
-    #                                                 setup_row,
-    #                                                 setup_column,
-    #                                                 e
-    #                                             )
-    #                                         )
-    #                                         group_has_error = True
-
-    #                                     # new_compound.save()
-
-    #                                 assay_compound_instances.update({
-    #                                     (
-    #                                         # new_item.id,
-    #                                         current_item_number,
-    #                                         compound_instance.id,
-    #                                         concentration,
-    #                                         concentration_unit_id,
-    #                                         addition_time,
-    #                                         duration,
-    #                                         addition_location_id
-    #                                     ): True
-    #                                 })
-
-    #                 current_item_number += 1
-
-    #                 # Don't keep iterating through this group if there is a problem
-    #                 if group_has_error:
-    #                     break
-
-    #     if current_errors:
-    #         errors.get('organ_model').append(['Please review the table below for errors.'])
-    #         raise forms.ValidationError(errors)
-
-    #     new_setup_data.update({
-    #         'new_matrix': new_matrix,
-    #         'new_items': new_items,
-    #         'new_related': new_related,
-    #     })
-
-    #     data.update({
-    #         'processed_setup_data': new_setup_data
-    #     })
-
-    #     return data
-
-    # def save(self, commit=True):
-    #     # PLEASE SEE BASE MODELS
-    #     # study = super(AssayStudyFormNew, self).save(commit)
-    #     study = super(AssayStudyFormNew, self).save()
-
-    #     # VERY SLOPPY
-    #     created_by = self.user
-    #     created_on = timezone.now()
-
-    #     study.created_by = created_by
-    #     study.created_on = created_on
-    #     study.modified_by = created_by
-    #     study.modified_on = created_on
-
-    #     study.save()
-    #     # SLOPPY: REVISE
-
-    #     study_id = study.id
-
-    #     if study.organ_model_id:
-    #         device_id = study.organ_model.device_id
-    #     else:
-    #         device_id = None
-
-    #     organ_model_id = study.organ_model_id
-    #     organ_model_protocol_id = study.organ_model_protocol_id
-
-    #     all_setup_data = self.cleaned_data.get('processed_setup_data', None)
-
-    #     if all_setup_data:
-    #         new_matrix = all_setup_data.get('new_matrix', None)
-    #         new_items = all_setup_data.get('new_items', None)
-    #         new_related = all_setup_data.get('new_related', None)
-
-    #         if new_matrix:
-    #             new_matrix.study_id = study_id
-    #             new_matrix.save()
-    #             new_matrix_id = new_matrix.id
-
-    #             new_item_ids = {}
-
-    #             for new_item in new_items:
-    #                 # ADD MATRIX and tracking
-    #                 new_item.matrix_id = new_matrix_id
-    #                 new_item.study_id = study_id
-    #                 new_item.device_id = device_id
-    #                 new_item.organ_model_id = organ_model_id
-    #                 new_item.organ_model_protocol_id = organ_model_protocol_id
-    #                 new_item.save()
-
-    #                 new_item_ids.update({
-    #                     new_item.name: new_item.id
-    #                 })
-
-    #             for current_item_name, new_related_data_set in new_related.items():
-    #                 new_item_id = new_item_ids.get(current_item_name, None)
-
-    #                 if new_item_id:
-    #                     for new_related_data in new_related_data_set:
-    #                         # ADD MATRIX ITEM
-    #                         new_related_data.matrix_item_id = new_item_id
-    #                         new_related_data.save()
-
-    #     return study
-
-
-class AssayStudyChipForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
-    class Meta(object):
-        model = AssayStudy
-        # Since we are splitting into multiple forms, includes are safer
-        fields = (
-            'series_data',
-            'organ_model_full',
-            'organ_model_protocol_full'
-        )
-
-# OLD TO BE REMOVED
-# class AssayStudyPlateForm(SignOffMixin, BootstrapForm):
-#     plate_name = forms.CharField(
-#         required=False,
-#         widget=forms.Textarea(attrs={'rows': 1}),
-#         label='Plate Name'
-#     )
-#     plate_notes = forms.CharField(
-#         required=False,
-#         widget=forms.Textarea(attrs={'rows': 5}),
-#         label='Plate Notes'
-#     )
-#     device = forms.ModelChoiceField(
-#         # Filter to plates only
-#         queryset=Microdevice.objects.filter(device_type='plate').order_by('name'),
-#         required=False,
-#         label='Plate Device'
-#     )
-
-#     class Meta(object):
-#         model = AssayStudy
-#         fields = (
-#             'plate_name',
-#             'plate_notes',
-#             'device',
-#             'series_data',
-#         )
-
-
-class AssayStudyPlateForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
-    series_data = forms.CharField(required=False)
-
-    class Meta(object):
-        model = AssayMatrix
-        fields = (
-            'name',
-            'notes',
-            'device',
-            # TODO
-            'series_data',
-        )
-        widgets = {
-            'name': forms.Textarea(attrs={'rows': 1}),
-            'notes': forms.Textarea(attrs={'rows': 10}),
-        }
-
-    def __init__(self, *args, **kwargs):
-        self.study = kwargs.pop('study', None)
-        self.user = kwargs.pop('user', None)
-
-        super(AssayStudyPlateForm, self).__init__(*args, **kwargs)
-
-        if self.study:
-            self.instance.study = self.study
-        else:
-            self.study = self.instance.study
-
-        # Crude! TEMPORARY
-        self.fields['series_data'].initial = json.dumps(self.study.series_data)
-
-    # FORCE UNIQUENESS CHECK
-    def clean(self):
-        super(AssayStudyPlateForm, self).clean()
-
-        if AssayMatrix.objects.filter(
-                study_id=self.instance.study.id,
-                name=self.cleaned_data.get('name', '')
-        ).exclude(pk=self.instance.pk).count():
-            raise forms.ValidationError({'name': ['Matrix name must be unique within study.']})
-
-    # CRUDE, TEMPORARY
-    # TODO REVISE ASAP
-    def save(self, commit=True):
-        matrix = super(AssayStudyPlateForm, self).save(commit)
-
-        if commit:
-            # Add the plate ID to the new plate in the series data
-            series_data = json.loads(self.cleaned_data.get('series_data'))
-
-            for plate in series_data.get('plates'):
-                if plate.get('id') == '':
-                    plate.update({
-                        'id': matrix.id
-                    })
-
-            # Remember, for the moment, this is a JSON FIELD
-            # We will change this ASAP
-            self.study.series_data = series_data
-            self.study.save()
-
-        return matrix
-
-
-        return data
-
-
-class AssayStudyDetailForm(SignOffMixin, BootstrapForm):
-    def __init__(self, *args, **kwargs):
-        super(AssayStudyDetailForm, self).__init__(*args, **kwargs)
-        # Get valid groups for the dropdown
-        self.fields['group'].queryset = filter_groups(self.user)
-
-        # Crudely force required class
-        for current_field in ['total_device_volume', 'flow_rate', 'number_of_relevant_cells']:
-            self.fields[current_field].widget.attrs['class'] += ' required'
-
-    class Meta(object):
-        model = AssayStudy
-        widgets = {
-            'name': forms.Textarea(attrs={'rows': 1}),
-            'description': forms.Textarea(attrs={'rows': 5, 'cols': 100}),
-        }
-        # Since we are splitting into multiple forms, includes are safer
-        fields = (
-            'group',
-            'toxicity',
-            'efficacy',
-            'disease',
-            'cell_characterization',
-            'start_date',
-            'use_in_calculations',
-            'protocol',
-            'image',
-            'pbpk_steady_state',
-            'pbpk_bolus',
-            'number_of_relevant_cells',
-            'total_device_volume',
-            'flow_rate',
-            'name',
-            'description',
-        )
-
-    def clean(self):
-        """Checks for at least one study type"""
-        # clean the form data, before validation
-        data = super(AssayStudyDetailForm, self).clean()
-
-        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], ['pbpk_steady_state'], data['pbpk_bolus']]):
             raise forms.ValidationError('Please select at least one study type')
 
         if data.get('pbpk_steady_state', '') and (not data.get('number_of_relevant_cells', '') or not data.get('flow_rate', '')):
@@ -2893,6 +2205,8 @@ AssayStudyAssayFormSetFactory = inlineformset_factory(
 )
 
 
+# TODO ADD STUDY
+class AssayMatrixForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
     class Meta(object):
         model = AssayMatrix
         exclude = ('study',) + tracking
@@ -2906,7 +2220,7 @@ AssayStudyAssayFormSetFactory = inlineformset_factory(
 
     def __init__(self, *args, **kwargs):
         self.study = kwargs.pop('study', None)
-        self.user = kwargs.pop('user', None)
+        # self.user = kwargs.pop('user', None)
         super(AssayMatrixForm, self).__init__(*args, **kwargs)
 
         if self.study:
@@ -2948,9 +2262,6 @@ AssayStudyAssayFormSetFactory = inlineformset_factory(
         self.fields['matrix_item_full_organ_model'].widget.attrs['class'] = 'no-selectize'
         self.fields['matrix_item_full_organ_model_protocol'].widget.attrs['class'] = 'no-selectize'
 
-        self.fields['test_type'].widget.attrs['class'] = 'no-selectize required form-control'
-        self.fields['organ_model_full'].widget.attrs['class'] = 'no-selectize'
-
         # No selectize on action either (hides things, looks odd)
         # CONTRIVED
         # self.fields['action'].widget.attrs['class'] += ' no-selectize'
@@ -2969,10 +2280,7 @@ AssayStudyAssayFormSetFactory = inlineformset_factory(
             self.fields[current_field].widget.attrs['class'] += ' required'
 
     ### ADDITIONAL MATRIX FIELDS (unsaved)
-    number_of_items = forms.IntegerField(
-        required=False,
-        label='Number of Items'
-    )
+    number_of_items = forms.IntegerField(required=False)
 
     ### ITEM FIELD HELPERS
     # action = forms.ChoiceField(choices=(
@@ -3101,15 +2409,13 @@ AssayStudyAssayFormSetFactory = inlineformset_factory(
 
     # FORCE UNIQUENESS CHECK
     def clean(self):
-        data = super(AssayMatrixForm, self).clean()
+        super(AssayMatrixForm, self).clean()
 
         if AssayMatrix.objects.filter(
                 study_id=self.instance.study.id,
                 name=self.cleaned_data.get('name', '')
         ).exclude(pk=self.instance.pk).count():
             raise forms.ValidationError({'name': ['Matrix name must be unique within study.']})
-
-        return data
 
 
 class AssaySetupCompoundForm(ModelFormSplitTime):
@@ -4099,8 +3405,7 @@ class AssayMatrixFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
     # ADD test_types
     test_type = forms.ChoiceField(
         initial='control',
-        choices=TEST_TYPE_CHOICES,
-        required=False
+        choices=TEST_TYPE_CHOICES
     )
 
     class Meta(object):
@@ -4115,7 +3420,7 @@ class AssayMatrixFormNew(SetupFormsMixin, SignOffMixin, BootstrapForm):
         user -- the user in question
         """
         # PROBABLY DON'T NEED THIS?
-        self.user = kwargs.pop('user', None)
+        # self.user = kwargs.pop('user', None)
         super(AssayMatrixFormNew, self).__init__(*args, **kwargs)
 
         # SLOPPY
@@ -4315,7 +3620,6 @@ class PhysicalUnitsForm(BootstrapForm):
         }
 
 
-
 class AssayMeasurementTypeForm(BootstrapForm):
     class Meta(object):
         model = AssayMeasurementType
@@ -4356,8 +3660,6 @@ class AssaySupplierForm(BootstrapForm):
         }
 
 
-### ASSAY PLATE MAP START
-##### monkey patch to display method target and unit combo as needed in the assay plate map page
 #####
 # sck - ASSAY PLATE MAP START
 
@@ -4423,7 +3725,9 @@ class AssayPlateReadMapAdditionalInfoForm(forms.Form):
         choices=assay_plate_reader_time_unit_choices
     )
     se_location = forms.ModelChoiceField(
-         queryset=AssaySampleLocation.objects.all(),
+         queryset=AssaySampleLocation.objects.all().order_by(
+             'name'
+         ),
          required=False,
     )
     ns_location = forms.ModelChoiceField(
@@ -4495,7 +3799,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
 
     def __init__(self, *args, **kwargs):
         self.study = kwargs.pop('study', None)
-        self.user = kwargs.pop('user', None)
+        # self.user = kwargs.pop('user', None)
         super(AssayPlateReaderMapForm, self).__init__(*args, **kwargs)
 
         # need these or get blank study_assay in the update page (add page worked okay without)
@@ -5073,7 +4377,8 @@ class AssayPlateReaderMapForm(BootstrapForm):
 
             if len(use_curve.strip()) == 0:
                 err_msg = "The calibration method " + use_curve_long + " was not found in the cross reference. This is a very bad error. It must be fixed"
-                print(err_msg)
+                # print(err_msg)
+                raise forms.ValidationError(err_msg)
 
             # form.instance.study
             # make a dictionary to send to the utils.py when call the function
@@ -5089,6 +4394,8 @@ class AssayPlateReaderMapForm(BootstrapForm):
                 'standard_unit': data.get('standard_unit').unit,
                 'form_min_standard': data.get('form_calibration_standard_fitted_min_for_e'),
                 'form_max_standard': data.get('form_calibration_standard_fitted_max_for_e'),
+                'form_logistic4_A': data.get('form_logistic4_A'),
+                'form_logistic4_D': data.get('form_logistic4_D'),
                 'form_blank_handling': data.get('se_form_blank_handling'),
                 'radio_standard_option_use_or_not': data.get('radio_standard_option_use_or_not'),
                 'radio_replicate_handling_average_or_not_0': data.get(
@@ -5382,7 +4689,6 @@ AssayPlateReaderMapItemFormSetFactory = inlineformset_factory(
 # Add a plate reader file to the study (just add the file and check the file extension, no data processing)
 class AssayPlateReaderMapDataFileAddForm(BootstrapForm):
     """Form for Plate Reader Data File Upload"""
-    pass
 
     class Meta(object):
         model = AssayPlateReaderMapDataFile
@@ -5435,7 +4741,7 @@ class AssayPlateReaderMapDataFileForm(BootstrapForm):
 
     def __init__(self, *args, **kwargs):
         self.study = kwargs.pop('study', None)
-        self.user = kwargs.pop('user', None)
+        # self.user = kwargs.pop('user', None)
         # # ??
         # filename_only = kwargs.pop('extra', 0)
         super(AssayPlateReaderMapDataFileForm, self).__init__(*args, **kwargs)
@@ -5604,7 +4910,6 @@ AssayPlateReaderMapDataFileBlockFormSetFactory = inlineformset_factory(
 # ASSAY PLATE MAP END
 #####
 
-
 #####
 # Start omics section
 
@@ -5677,274 +4982,3 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
                 'time': data.get('time') + data.get('time_' + time_unit, 0) * conversion,
             })
         return data
-
-
-
-    # will need to do this after get basics working
-    # # check the file extension of the loaded file to make sure the user is not adding spreadsheet files
-    # # https://medium.com/@literallywords/server-side-file-extension-validation-in-django-2-1-b8c8bc3245a0
-    # def clean_plate_reader_file(self):
-    #     data = self.cleaned_data['plate_reader_file']
-    #     # Run file extension check
-    #     file_extension = os.path.splitext(data.name)[1]
-    #     if file_extension not in ['.csv', '.tsv', '.txt']:
-    #         if '.xl' in file_extension or '.wk' in file_extension or '.12' in file_extension:
-    #             raise ValidationError(
-    #                  "This appears to be an spreadsheet file. To upload, export to a tab delimited file and try again.",
-    #                  code='invalid'
-    #             )
-    #         else:
-    #             raise ValidationError(
-    #                  "Invalid file extension - must be in ['.csv', '.tsv', '.txt']",
-    #                  code='invalid'
-    #             )
-    #     return data
-
-
-    # Let them name the maps the same if they really want to. Does not really matter to me
-    # def clean(self):
-    #     # FORCE UNIQUE - this will return back to the form instead of showing the user an error
-    #     cleaned_data = super(AssayPlateReaderMapForm, self).clean()
-    #
-    #     if AssayPlateReaderMap.objects.filter(
-    #             study_id=self.instance.study.id,
-    #             name=self.cleaned_data.get('name', '')
-    #     ).exclude(pk=self.instance.pk).count():
-    #         raise forms.ValidationError({'name': ['Plate Map name must be unique within study. This plate map is now corrupted. Go back to the Plate Map List and click to Add Plate Map and start again.']})
-    #
-    #     return cleaned_data
-
-    # def clean(self):
-    #     # First thing in clean
-    #     # Call super for data
-    #     data = super(AssayPlateReaderMapForm, self).clean()
-    #     # After initial stuff done
-    #     self.process_file(save=False, calledme='clean')
-    #     return data
-    #
-    # def save(self, commit=True):
-    #             # First thing in save
-    #     # Make sure to pass commit to the super call (don't want accidental saves)
-    #     map = super(AssayPlateReaderMapForm, self).save(commit=commit)
-    #
-    #     # Only save the file if commit is true
-    #     if commit:
-    #         self.process_file(save=True, calledme="save")
-    #     return map
-    #
-    # def process_file(self, save=False, calledme="c"):
-    #     #### START When saving AssayPlateReaderMapUpdate after a calibration
-    #     # if user checked the box to send to study summary, make that happen
-    #
-    #     data = self.cleaned_data
-    #     # study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
-    #
-    #     if data.get('form_make_mifc_on_submit'):
-    #         # search term MIFC - if MIFC changes, this will need changed
-    #         # make a list of column headers for the mifc file
-    #         # could use COLUMN_HEADERS, but need to append one
-    #         column_table_headers_average = [
-    #             'Chip ID',
-    #             'Cross Reference',
-    #             'Assay Plate ID',
-    #             'Assay Well ID',
-    #             'Day',
-    #
-    #             'Hour',
-    #             'Minute',
-    #             'Target/Analyte',
-    #             'Subtarget',
-    #             'Method/Kit',
-    #
-    #             'Sample Location',
-    #             'Value',
-    #             'Value Unit',
-    #             'Replicate',
-    #             'Caution Flag',
-    #
-    #             'Exclude',
-    #             'Notes',
-    #             'Processing Details',
-    #         ]
-    #         # search term MIFC - if MIFC changes, this will need changed
-    #         # Make a dictionary of headers in utils and header needed in the mifc file
-    #         utils_key_column_header = {
-    #             'matrix_item_name': 'Chip ID',
-    #             'cross_reference': 'Cross Reference',
-    #             'plate_name': 'Assay Plate ID',
-    #             'well_name': 'Assay Well ID',
-    #             'day': 'Day',
-    #             'hour': 'Hour',
-    #             'minute': 'Minute',
-    #             'target': 'Target/Analyte',
-    #             'subtarget': 'Subtarget',
-    #             'method': 'Method/Kit',
-    #             'location_name': 'Sample Location',
-    #             'processed_value': 'Value',
-    #             'unit': 'Value Unit',
-    #             'replicate': 'Replicate',
-    #             'caution_flag': 'Caution Flag',
-    #             'exclude': 'Exclude',
-    #             'notes': 'Notes',
-    #             'sendmessage': 'Processing Details'}
-    #
-    #         # print(".unit ",data.get('standard_unit').unit)
-    #         # print(".id ", data.get('standard_unit').id)
-    #         # .unit
-    #         # µg / mL
-    #         # .id
-    #         # 6
-    #         # print(".unit ",data.get('standard_unit').unit)
-    #         # print(".id ", data.get('standard_unit').id)
-    #
-    #         if data.get('form_block_standard_borrow_pk_single_for_storage') == None:
-    #             borrowed_block_pk = -1
-    #         else:
-    #             borrowed_block_pk = data.get('form_block_standard_borrow_pk_single_for_storage')
-    #
-    #         if data.get('form_block_standard_borrow_pk_platemap_single_for_storage') == None:
-    #             borrowed_platemap_pk = -1
-    #         else:
-    #             borrowed_platemap_pk = data.get(
-    #                 'form_block_standard_borrow_pk_platemap_single_for_storage')
-    #
-    #         use_curve_long = data.get('form_calibration_curve_method_used')
-    #         use_curve = find_a_key_by_value_in_dictionary(CALIBRATION_CURVE_MASTER_DICT, use_curve_long)
-    #         if use_curve == 'select_one':
-    #             use_curve = 'no_calibration'
-    #
-    #         if len(use_curve.strip()) == 0:
-    #             err_msg = "The calibration method " + use_curve_long + " was not found in the cross reference. This is a very bad error. It must be fixed"
-    #             # print(err_msg)
-    #             raise forms.ValidationError(err_msg)
-    #
-    #         # form.instance.study
-    #         # make a dictionary to send to the utils.py when call the function
-    #         set_dict = {
-    #             'called_from': 'form_save',
-    #             'study': self.instance.study.id,
-    #             'pk_platemap': self.instance.id,
-    #             'pk_data_block': data.get('form_block_file_data_block_selected_pk_for_storage'),
-    #             'plate_name': data.get('name'),
-    #             'form_calibration_curve': use_curve,
-    #             'multiplier': data.get('form_data_processing_multiplier'),
-    #             'unit': data.get('form_calibration_unit'),
-    #             'standard_unit': data.get('standard_unit').unit,
-    #             'form_min_standard': data.get('form_calibration_standard_fitted_min_for_e'),
-    #             'form_max_standard': data.get('form_calibration_standard_fitted_max_for_e'),
-    #             'form_logistic4_A': data.get('form_logistic4_A'),
-    #             'form_logistic4_D': data.get('form_logistic4_D'),
-    #             'form_blank_handling': data.get('se_form_blank_handling'),
-    #             'radio_standard_option_use_or_not': data.get('radio_standard_option_use_or_not'),
-    #             'radio_replicate_handling_average_or_not_0': data.get(
-    #                 'radio_replicate_handling_average_or_not'),
-    #             'borrowed_block_pk': borrowed_block_pk,
-    #             'borrowed_platemap_pk': borrowed_platemap_pk,
-    #             'count_standards_current_plate': data.get('form_number_standards_this_plate'),
-    #             'target': data.get('form_calibration_target'),
-    #             'method': data.get('form_calibration_method'),
-    #             'time_unit': data.get('time_unit'),
-    #             'volume_unit': data.get('volume_unit'),
-    #             'user_notes': data.get('form_hold_the_notes_string'),
-    #             'user_omits': data.get('form_hold_the_omits_string'),
-    #             'plate_size': data.get('device'),
-    #         }
-    #
-    #         # this function is in utils.py that returns data
-    #         data_mover = plate_reader_data_file_process_data(set_dict)
-    #         # what comes back is a dictionary of
-    #         list_of_dicts = data_mover[9]
-    #         list_of_lists_mifc_headers_row_0 = [None] * (len(list_of_dicts) + 1)
-    #         list_of_lists_mifc_headers_row_0[0] = column_table_headers_average
-    #         i = 1
-    #         # print(" ")
-    #         for each_dict_in_list in list_of_dicts:
-    #             list_each_row = []
-    #             for this_mifc_header in column_table_headers_average:
-    #                 # print("this_mifc_header ", this_mifc_header)
-    #                 # find the key in the dictionary that we need
-    #                 utils_dict_header = find_a_key_by_value_in_dictionary(utils_key_column_header,
-    #                                                                       this_mifc_header)
-    #                 # print("utils_dict_header ", utils_dict_header)
-    #                 # print("this_mifc_header ", this_mifc_header)
-    #                 # get the value that is associated with this header in the dict
-    #                 this_value = each_dict_in_list.get(utils_dict_header)
-    #                 # print("this_value ", this_value)
-    #                 # add the value to the list for this dict in the list of dicts
-    #                 list_each_row.append(this_value)
-    #             # when down with the dictionary, add the completely list for this row to the list of lists
-    #             # print("list_each_row ", list_each_row)
-    #             list_of_lists_mifc_headers_row_0[i] = list_each_row
-    #             i = i + 1
-    #
-    #         # print("  ")
-    #         # print('list_of_lists_mifc_headers_row_0')
-    #         # print(list_of_lists_mifc_headers_row_0)
-    #         # print("  ")
-    #
-    #         # First make a csv from the list_of_lists (using list_of_lists_mifc_headers_row_0)
-    #
-    #         # or self.objects.study
-    #         my_study = self.instance.study
-    #         # my_user = self.request.user
-    #         my_user = self.user
-    #         my_platemap = self.instance
-    #         my_data_block_pk = data.get('form_block_file_data_block_selected_pk_for_storage')
-    #
-    #         platenamestring1 = str(my_platemap)
-    #         metadatastring1 = str(data.get('form_hold_the_data_block_metadata_string'))
-    #
-    #         # print("study ",my_study)
-    #         # print("platemap ",my_platemap)
-    #         # print("user ",my_user)
-    #         # print("data block ", my_data_block_pk)
-    #
-    #         # Specify the file for use with the file uploader class
-    #         # some of these caused errors in the file name so remove them
-    #         # Luke and Quinn voted for all the symbols out instead of a few
-    #
-    #         platenamestring = re.sub('[^a-zA-Z0-9_]', '', platenamestring1)
-    #         metadatastring = re.sub('[^a-zA-Z0-9_]', '', metadatastring1)
-    #
-    #         name_the_file = 'PLATE-{}-{}--METADATA-{}-{}'.format(
-    #                             my_platemap.id, platenamestring,
-    #                             my_data_block_pk, metadatastring
-    #                         )
-    #         # print("name_the_file ",name_the_file)
-    #
-    #         bulk_location = upload_file_location(
-    #             my_study,
-    #             name_the_file
-    #         )
-    #
-    #         # Make sure study has directories
-    #         if not os.path.exists(MEDIA_ROOT + '/data_points/{}'.format(my_study.id)):
-    #             os.makedirs(MEDIA_ROOT + '/data_points/{}'.format(my_study.id))
-    #
-    #         # Need to import from models
-    #         # Avoid magic string, use media location
-    #         file_location = MEDIA_ROOT.replace('mps/../', '', 1) + '/' + bulk_location + '.csv'
-    #
-    #         # Should make a csv writer to avoid repetition
-    #         file_to_write = open(file_location, 'w')
-    #         csv_writer = csv.writer(file_to_write, dialect=csv.excel)
-    #
-    #         # Add the UTF-8 BOM
-    #         list_of_lists_mifc_headers_row_0[0][0] = '\ufeff' + list_of_lists_mifc_headers_row_0[0][0]
-    #
-    #         # print("!!!!!!!!")
-    #         # Write the lines here here uncomment this
-    #         for one_line_of_data in list_of_lists_mifc_headers_row_0:
-    #             csv_writer.writerow(one_line_of_data)
-    #
-    #         file_to_write.close()
-    #         new_mifc_file = open(file_location, 'rb')
-    #
-    #         file_processor = AssayFileProcessor(new_mifc_file,
-    #                                             my_study,
-    #                                             my_user, save=save,
-    #                                             full_path='/media/' + bulk_location + '.csv')
-    #
-    #         # Process the file
-    #         file_processor.process_file()
-    #     #### END When saving AssayPlateReaderMapUpdate after a calibration

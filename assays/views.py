@@ -50,6 +50,7 @@ from assays.models import (
     assay_plate_reader_map_info_plate_size_choices_list,
     upload_file_location,
     AssayGroup,
+    AssayOmicDataFileUpload,
 )
 from assays.forms import (
     AssayStudyConfigurationForm,
@@ -99,6 +100,7 @@ from assays.forms import (
     AssayPlateReaderMapDataFileBlockFormSetFactory,
     AbstractClassAssayStudyAssay,
     AssayMatrixItemForm,
+    AssayOmicDataFileUploadForm,
 )
 
 from microdevices.models import MicrophysiologyCenter
