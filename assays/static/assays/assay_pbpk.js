@@ -909,7 +909,7 @@ $(document).ready(function () {
             document.getElementById("spinner")
         );
 
-        var compound_pk_data = JSON.stringify(chart_data[group_num], function(key, value) {return (value == null) ? "0" : value});
+        var compound_pk_data = JSON.stringify(chart_data[group_num], function(key, value) {return (value == null) ? null : value});
         for (var x=1; x<compound_pk_data.length; x++) {
             compound_pk_data[x][0] *= 60;
         }
