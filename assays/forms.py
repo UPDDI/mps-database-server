@@ -1195,8 +1195,20 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                     concentration = 0.0
                                 else:
                                     concentration = float(concentration)
-                                concentration_unit_id = int(current_object.get('concentration_unit_id', '0'))
-                                addition_location_id = int(current_object.get('addition_location_id', '0'))
+
+                                concentration_unit_id = current_object.get('concentration_unit_id', '0')
+
+                                if concentration_unit_id:
+                                    concentration_unit_id = int(concentration_unit_id)
+                                else:
+                                    concentration_unit_id = None
+
+                                addition_location_id = current_object.get('addition_location_id', '0')
+
+                                if addition_location_id:
+                                    addition_location_id = int(addition_location_id)
+                                else:
+                                    addition_location_id = None
 
                                 addition_time = current_object.get('addition_time', '0')
                                 duration = current_object.get('duration', '0')

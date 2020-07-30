@@ -2404,8 +2404,9 @@ class AbstractSetupCompound(models.Model):
     # TODO TODO TODO TEMPORARILY NOT REQUIRED
     addition_location = models.ForeignKey(
         AssaySampleLocation,
-        blank=True,
-        default=1,
+        # MAKE REQUIRED FOR NOW!
+        # blank=True,
+        # default=1,
         on_delete=models.CASCADE,
         verbose_name='Addition Location'
     )
