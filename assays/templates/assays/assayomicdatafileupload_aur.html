@@ -2,17 +2,25 @@
 {% load static %}
 
 {% block load_js %}
-    <script src="{% static "assays/assayomicdatafileupload_update.js" %}"></script>
+    <script src="{% static "assays/assayomicdatafileupload_aur.js" %}"></script>
     <script src="{% static "js/enter_override.js" %}"></script>
 {% endblock %}
 
-{# this template is for update and reveiw only (not add) #}
+{# this template is add, update, and reveiw (aur) #}
 {% block breadcrumbs %}
     <li><a href="/assays/assaystudy/">Studies</a>
     <li><a href="{{ form.instance.study.get_absolute_url }}">{{ form.instance.study }}</a></li>
-    <li><a href="{% url 'assayomicdatafileupload-index' object.study.id %}">Assay Omic Data Files</a>
+    {% if object %}
+        <li><a href="{% url 'assayomicdatafileupload-index' object.study.id %}">Assay Omic Data Files</a>
+    {% else %}
+        <li><a href="{% url 'assayomicdatafileupload-index' form.instance.study_id %}">Assay Omic Data Files</a>
+    {% endif %}
     <li class="active">
-        <em>{{ object }}</em>
+        {% if object %}
+            <em>{{ object }}</em>
+        {% else %}
+            Add
+        {% endif %}
     </li>
 {% endblock %}
 
@@ -26,13 +34,17 @@
                     {% if update %}
                         Update
                     {% else %}
-                        Review
+                        {% if review %}
+                            Review
+                        {% else %}
+                            Add
+                        {% endif %}
                     {% endif %}
                     Assay Omic File
                     </b></em>
                     <br>
                     <br>
-                    in Study {{ form.instance.study }}
+                    for Study {{ form.instance.study }}
                     <br>
                 {% csrf_token %}
                 </h1>
@@ -76,9 +88,12 @@
                     <div class="hidden" id="this_file_id">
                         {{ object.id }}
                     </div>
+                     <div class="hidden">
+                        {{ form.file_was_added_or_changed }}
+                    </div>
                 </div>
 
-                {% if update %}
+                {% if update or add %}
                     {% if form.omic_data_file.errors %}
                         {% for error in form.omic_data_file.errors %}
                             <div class="alert alert-danger" role="alert">
@@ -95,7 +110,7 @@
                         <div class="col-sm-10">
                             {{ form.omic_data_file }}
                             <div>
-                                <br>
+{#                                <br>#}
                                 <b>Acceptable Formats: Excel and CSV</b>
                             </div>
                         </div>
@@ -115,11 +130,10 @@
                     <br>
                 {% endif %}
 
-
-                <br>
                 <br>
                 {% include 'generic_field.html' with field=form.description %}
-                {% if update %}
+
+                {% if update or add %}
                     {% include 'generic_field.html' with field=form.method %}
                 {% else %}
                     <div class="row">
@@ -134,18 +148,19 @@
                     </div>
                 {% endif %}
 
+                {% include 'generic_field.html' with field=form.pipeline %}
+
                 {# groups #}
                 <br>
                 <div class="row">
                     <div class="col-md-2">
                     </div>
                     <div class="col-md-10">
-                        <label>If value is positive, gene is up regulated in group 1.</label>
+                        <label>Select groups so that, if value is positive, gene is up regulated in group 1.</label>
                     </div>
                 </div>
-                {% include 'generic_field.html' with field=form.group %}
-                {% include 'generic_field.html' with field=form.group_2 %}
 
+                {% include 'generic_field.html' with field=form.group_1 %}
 
                 <div class="row">
                     <div class="col-md-2">
@@ -153,33 +168,68 @@
                     <div>
                         <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
                             <tr>
-                                <th class="bg-success" colspan="3">Sample Time</th>
-                                <th class="bg-warning">Sample Location</th>
+                                <th class="bg-success" colspan="3">Sample Time 1</th>
+                                <th class="bg-warning">Sample Location 1</th>
                             </tr>
                             <tr>
                                 <th class="bg-success">Day</th>
                                 <th class="bg-success">Hour</th>
                                 <th class="bg-success">Minute</th>
                                 <td class="bg-warning">
-                                    {% if update %}
-                                        {% include 'generic_popup_link.html' with field=form.location %}
+                                    {% if update or add %}
+                                        {% include 'generic_popup_link.html' with field=form.location_1 %}
                                     {% endif %}
                                 </td>
                             </tr>
                             <tr>
                                 <td hidden>
-                                    {{ form.time }}
+                                    {{ form.time_1 }}
                                 </td>
-                                <td class="bg-success">{{ form.time_day }}</td>
-                                <td class="bg-success">{{ form.time_hour }}</td>
-                                <td class="bg-success">{{ form.time_minute }}</td>
-                                <td class="bg-warning">{{ form.location }}</td>
+                                <td class="bg-success">{{ form.time_1_day }}</td>
+                                <td class="bg-success">{{ form.time_1_hour }}</td>
+                                <td class="bg-success">{{ form.time_1_minute }}</td>
+                                <td class="bg-warning">{{ form.location_1 }}</td>
                             </tr>
                         </table>
                     </div>
                 </div>
+
+                <br>
+                {% include 'generic_field.html' with field=form.group_2 %}
+
+                <div class="row">
+                    <div class="col-md-2">
+                    </div>
+                    <div>
+                        <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+                            <tr>
+                                <th class="bg-success" colspan="3">Sample Time 2</th>
+                                <th class="bg-warning">Sample Location 2</th>
+                            </tr>
+                            <tr>
+                                <th class="bg-success">Day</th>
+                                <th class="bg-success">Hour</th>
+                                <th class="bg-success">Minute</th>
+                                <td class="bg-warning">
+                                    {% if update or add %}
+                                        {% include 'generic_popup_link.html' with field=form.location_2 %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td hidden>
+                                    {{ form.time_2 }}
+                                </td>
+                                <td class="bg-success">{{ form.time_2_day }}</td>
+                                <td class="bg-success">{{ form.time_2_hour }}</td>
+                                <td class="bg-success">{{ form.time_2_minute }}</td>
+                                <td class="bg-warning">{{ form.location_2 }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
             </div>
         </div>
     </form>
 {% endblock %}
-

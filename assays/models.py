@@ -4638,6 +4638,12 @@ class AssayOmicDataGroup(LockableModel):
         return '{}'.format(self.name)
 
 
+assay_omic_pipeline_choices = [
+    ('DESeq2', 'DESeq2'),
+    ('limma', 'limma'),
+    ('other', 'other')
+]
+
 class AssayOmicDataFileUpload(LockableModel):
     """Assay omic data - usually export from a DEG tool."""
 
@@ -4658,12 +4664,10 @@ class AssayOmicDataFileUpload(LockableModel):
         default=set_default_description(),
         verbose_name='File Description'
     )
-
+    # if not required, and user tries to have two empty, will get error
     omic_data_file = models.FileField(
         upload_to='omic_data_file',
         help_text='Omic Data File',
-        blank=True,
-        null=True,
         verbose_name='Data File'
     )
 
@@ -4671,6 +4675,7 @@ class AssayOmicDataFileUpload(LockableModel):
         max_length=25,
         default='Log2fc',
         blank=True,
+        help_text='Type of Results',
         verbose_name='Data Type'
     )
 
@@ -4678,6 +4683,8 @@ class AssayOmicDataFileUpload(LockableModel):
         max_length=25,
         default='DESeq2',
         blank=True,
+        choices=assay_omic_pipeline_choices,
+        help_text='Primary Data Processing Tool',
         verbose_name='Computation Pipeline'
     )
 
@@ -4686,50 +4693,57 @@ class AssayOmicDataFileUpload(LockableModel):
         blank=True,
         null=True,
         on_delete=models.CASCADE,
+        help_text='Assay Method',
         verbose_name='Method'
     )
 
-    group = models.ForeignKey(
+    group_1 = models.ForeignKey(
         AssayOmicDataGroup,
         default=1,
         on_delete=models.CASCADE,
-        verbose_name='Group'
+        related_name='group_1',
+        help_text='Data Processing Group 1',
+        verbose_name='Group 1'
     )
     group_2 = models.ForeignKey(
         AssayOmicDataGroup,
         default=1,
-        related_name='group_2',
         on_delete=models.CASCADE,
+        related_name='group_2',
+        help_text='Data Processing Group 2',
         verbose_name='Group 2'
     )
 
-    time = models.FloatField(
+    time_1 = models.FloatField(
         default=0,
         null=True,
         blank=True,
-        verbose_name='Sample Time'
+        help_text='Sample Time Group 1',
+        verbose_name='Sample Time 1'
     )
     time_2 = models.FloatField(
         default=0,
         null=True,
         blank=True,
+        help_text='Sample Time Group 2',
         verbose_name='Sample Time 2'
     )
 
-    location = models.ForeignKey(
+    location_1 = models.ForeignKey(
         'AssaySampleLocation',
         null=True,
         blank=True,
         on_delete=models.CASCADE,
-        verbose_name='Sample Location'
+        related_name="location_1",
+        verbose_name='Sample Location Group 1'
     )
     location_2 = models.ForeignKey(
         'AssaySampleLocation',
         null=True,
         blank=True,
-        related_name="location_2",
         on_delete=models.CASCADE,
-        verbose_name='Sample Location 2'
+        related_name="location_2",
+        verbose_name='Sample Location Group 2'
     )
 
     def __str__(self):
@@ -4747,6 +4761,10 @@ class AssayOmicDataFileUpload(LockableModel):
 
 class AssayOmicDataPoint(models.Model):
     """Individual points of omic data"""
+
+    class Meta(object):
+        verbose_name = 'Assay Omic Data Point'
+        verbose_name_plural = 'Assay Omic Data Points'
 
     # this will be the study in which the user was sitting when they uploaded the data file
     # in theory, it could be study_1 or study_2
@@ -4768,6 +4786,7 @@ class AssayOmicDataPoint(models.Model):
         max_length=100,
         blank=False,
         null=False,
+        help_text='Gene Reference',
         verbose_name='Name'
     )
 
@@ -4776,6 +4795,7 @@ class AssayOmicDataPoint(models.Model):
         blank=False,
         null=False,
         on_delete=models.CASCADE,
+        help_text='Computational Target',
         verbose_name='Computational Target'
     )
 
@@ -4784,5 +4804,8 @@ class AssayOmicDataPoint(models.Model):
         null=True,
         verbose_name='Computed Value'
     )
+
+    def __str__(self):
+        return '{0}'.format(self.id)
 
 ##### End Assay Omic Section - Phase 1 design
