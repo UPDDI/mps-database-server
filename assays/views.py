@@ -617,11 +617,28 @@ class AssayStudyMixin(FormHandlerMixin):
     def get_context_data(self, **kwargs):
         context = super(AssayStudyMixin, self).get_context_data(**kwargs)
 
+        has_chips = False
+        has_plates = False
+
+        # CRUDE: NEEDS REVISION
+        if self.object:
+            study_groups = AssayGroup.objects.filter(
+                study_id=self.object.id,
+            ).prefetch_related('organ_model__device')
+
+            has_chips = study_groups.filter(
+                organ_model__device__device_type='chip'
+            ).count() > 0
+
+            has_plates = study_groups.filter(
+                organ_model__device__device_type='plate'
+            ).count() > 0
+
         # TODO: Check whether this Study has Chips or Plates
         # Contrived at the moment
         context.update({
-            'has_chips': True,
-            'has_plates': True,
+            'has_chips': has_chips,
+            'has_plates': has_plates,
             'has_next_button': True,
             'has_previous_button': True,
             'cellsamples' : CellSample.objects.all().prefetch_related(
@@ -711,6 +728,35 @@ class AssayStudyGroups(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     template_name = 'assays/assaystudy_groups.html'
     form_class = AssayStudyGroupForm
 
+    # Oh no! We actually need to have special handling for the "next" button
+    # TODO
+    # Special handling for handling next button
+    def extra_form_processing(self, form):
+        # If the user submitted with "next"
+        if self.request.POST.get('post_submission_url_override') == reverse('assays-assaystudy-update-assays', args=[form.instance.pk]):
+            # CRUDE: NOT DRY
+            study_groups = AssayGroup.objects.filter(
+                study_id=self.object.id,
+            ).prefetch_related('organ_model__device')
+
+            has_chips = study_groups.filter(
+                organ_model__device__device_type='chip'
+            ).count() > 0
+
+            has_plates = study_groups.filter(
+                organ_model__device__device_type='plate'
+            ).count() > 0
+
+            # If there are chip groups, go to chips
+            if has_chips:
+                self.post_submission_url_override = reverse('assays-assaystudy-update-chips', args=[form.instance.pk])
+
+            # If there are plate groups, go to plates
+            elif has_plates:
+                self.post_submission_url_override = reverse('assays-assaystudy-update-plates', args=[form.instance.pk])
+
+        # Otherwise it will just go to assays, like usual
+        return super(AssayStudyGroups, self).extra_form_processing(form)
 
 class AssayStudyChips(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     template_name = 'assays/assaystudy_chips.html'
