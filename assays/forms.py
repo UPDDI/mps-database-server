@@ -1027,8 +1027,13 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                         # IDEALLY ONLY IF THEY NEED TO BE UPDATED
                         group_needs_to_be_updated = False
                         for field in self.update_group_fields:
-                            if getattr(current_group, field) != setup_group.get(field, ''):
-                                setattr(current_group, field, setup_group.get(field, ''))
+                            if getattr(current_group, field) != setup_group.get(field, None):
+                                # Contrived: Replace empty string with None
+                                if field.endswith('id') and setup_group.get(field, None) is '':
+                                    setattr(current_group, field, None)
+                                else:
+                                    setattr(current_group, field, setup_group.get(field, None))
+
                                 group_needs_to_be_updated = True
 
                         if group_needs_to_be_updated:
@@ -1038,7 +1043,15 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                 update_groups.append(current_group)
                             # MUST BE MODIFIED TO ADD TO CORRECT ROW (we could display all above too?)
                             except forms.ValidationError as e:
-                                current_errors.append(e)
+                                # current_errors.append(e)
+                                current_errors.append(
+                                    process_error_with_annotation(
+                                        'Group',
+                                        setup_row,
+                                        0,
+                                        e
+                                    )
+                                )
                                 group_has_error = True
 
                         # Add to group names
@@ -1052,15 +1065,20 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                 setup_group.get('name', ''): True
                             })
                 else:
-                    current_organ_model_id = setup_group.get('organ_model_id', '')
+                    # CRUDE
+                    current_organ_model_id = setup_group.get('organ_model_id', None)
 
                     if current_organ_model_id:
                         current_organ_model_id = int(current_organ_model_id)
+                    else:
+                        current_organ_model_id = None
 
-                    current_organ_model_protocol_id = setup_group.get('organ_model_protocol_id', '')
+                    current_organ_model_protocol_id = setup_group.get('organ_model_protocol_id', None)
 
                     if current_organ_model_protocol_id:
                         current_organ_model_protocol_id = int(current_organ_model_protocol_id)
+                    else:
+                        current_organ_model_protocol_id = None
 
                     new_group = AssayGroup(
                         # Study should just be instance
@@ -1078,7 +1096,15 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                         new_groups.append(new_group)
                     # MUST BE MODIFIED TO ADD TO CORRECT ROW (we could display all above too?)
                     except forms.ValidationError as e:
-                        current_errors.append(e)
+                        # current_errors.append(e)
+                        current_errors.append(
+                            process_error_with_annotation(
+                                'Group',
+                                setup_row,
+                                0,
+                                e
+                            )
+                        )
                         group_has_error = True
 
                     # Add to group names
@@ -1146,7 +1172,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                 except forms.ValidationError as e:
                                     # May need to revise process_error
                                     current_errors.append(
-                                        process_error_for_study_new(
+                                        process_error_with_annotation(
                                             prefix,
                                             setup_row,
                                             setup_column,
@@ -1163,7 +1189,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                     new_settings.append(new_setting)
                                 except forms.ValidationError as e:
                                     current_errors.append(
-                                        process_error_for_study_new(
+                                        process_error_with_annotation(
                                             prefix,
                                             setup_row,
                                             setup_column,
@@ -1238,7 +1264,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                     except forms.ValidationError as e:
                                         # raise forms.ValidationError(e)
                                         current_errors.append(
-                                            process_error_for_study_new(
+                                            process_error_with_annotation(
                                                 prefix,
                                                 setup_row,
                                                 setup_column,
@@ -1275,7 +1301,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                     except forms.ValidationError as e:
                                         # raise forms.ValidationError(e)
                                         current_errors.append(
-                                            process_error_for_study_new(
+                                            process_error_with_annotation(
                                                 prefix,
                                                 setup_row,
                                                 setup_column,
@@ -1327,7 +1353,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                     except forms.ValidationError as e:
                                         # raise forms.ValidationError(e)
                                         current_errors.append(
-                                            process_error_for_study_new(
+                                            process_error_with_annotation(
                                                 prefix,
                                                 setup_row,
                                                 setup_column,
@@ -3395,7 +3421,7 @@ AssayStudySetReferenceFormSetFactory = inlineformset_factory(
 
 
 # Convoluted
-def process_error_for_study_new(prefix, row, column, full_error):
+def process_error_with_annotation(prefix, row, column, full_error):
     current_error = dict(full_error)
     modified_error = []
 

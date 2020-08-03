@@ -130,6 +130,67 @@ $(document).ready(function () {
         });
     });
 
+    function dialog_box_values_valid(this_popup, prefix) {
+        // Contrived: TODO TODO TODO
+        return true;
+    }
+
+    function apply_dialog_box_values(this_popup, prefix) {
+        // ACTUALLY MAKE THE CHANGE TO THE RESPECTIVE ENTITY
+        // TODO TODO TODO
+        var current_data = {};
+
+        // Apply the values from the inputs
+        this_popup.find('input').each(function() {
+            if ($(this).attr('name')) {
+                current_data[$(this).attr('name').replace(current_prefix + '_', '')] = $(this).val();
+            }
+        });
+
+        // Apply the values from the selects
+        this_popup.find('select').each(function() {
+            if ($(this).attr('name')) {
+                current_data[$(this).attr('name').replace(current_prefix + '_', '') + '_id'] = $(this).val();
+            }
+        });
+
+        // SLOPPY
+        // DEAL WITH SPLIT TIMES
+        $.each(time_prefixes, function(index, current_time_prefix) {
+            if (current_data[current_time_prefix + '_minute'] !== undefined) {
+                current_data[current_time_prefix] = window.SPLIT_TIME.get_minutes(
+                        current_data[current_time_prefix + '_day'],
+                        current_data[current_time_prefix + '_hour'],
+                        current_data[current_time_prefix + '_minute']
+                );
+                $.each(window.SPLIT_TIME.time_conversions, function(key, value) {
+                    delete current_data[current_time_prefix + '_' + key];
+                });
+            }
+        });
+
+        // Special exception for cell_sample
+        if (this_popup.find('input[name="' + prefix + '_cell_sample"]')[0]) {
+            current_data['cell_sample_id'] = this_popup.find('input[name="' + prefix + '_cell_sample"]').val();
+            delete current_data['cell_sample'];
+        }
+
+        // Modify the setup data
+        modify_series_data(current_prefix, current_data, current_row_index, current_column_index);
+
+        // Get the display for the current content
+        var html_contents = get_content_display(current_prefix, current_row_index, current_column_index, current_data, true);
+
+        // Apply the content
+        $('a[data-edit-button="true"][data-row="' + current_row_index +'"][data-column="' + current_column_index +'"][data-prefix="' + current_prefix + '"]').parent().html(html_contents);
+
+        // Overkill
+        // rebuild_table();
+        window.GROUPS.make_difference_table();
+
+        this_popup.dialog('close');
+    }
+
     // CREATE DIALOGS
     $.each(prefixes, function(index, prefix) {
         var current_dialog = $('#' + prefix + '_dialog');
@@ -198,59 +259,12 @@ $(document).ready(function () {
             {
                 text: 'Apply',
                 click: function() {
-                    // ACTUALLY MAKE THE CHANGE TO THE RESPECTIVE ENTITY
-                    // TODO TODO TODO
-                    var current_data = {};
-
-                    // Apply the values from the inputs
-                    $(this).find('input').each(function() {
-                        if ($(this).attr('name')) {
-                            current_data[$(this).attr('name').replace(current_prefix + '_', '')] = $(this).val();
-                        }
-                    });
-
-                    // Apply the values from the selects
-                    $(this).find('select').each(function() {
-                        if ($(this).attr('name')) {
-                            current_data[$(this).attr('name').replace(current_prefix + '_', '') + '_id'] = $(this).val();
-                        }
-                    });
-
-                    // SLOPPY
-                    // DEAL WITH SPLIT TIMES
-                    $.each(time_prefixes, function(index, current_time_prefix) {
-                        if (current_data[current_time_prefix + '_minute'] !== undefined) {
-                            current_data[current_time_prefix] = window.SPLIT_TIME.get_minutes(
-                                    current_data[current_time_prefix + '_day'],
-                                    current_data[current_time_prefix + '_hour'],
-                                    current_data[current_time_prefix + '_minute']
-                            );
-                            $.each(window.SPLIT_TIME.time_conversions, function(key, value) {
-                                delete current_data[current_time_prefix + '_' + key];
-                            });
-                        }
-                    });
-
-                    // Special exception for cell_sample
-                    if ($(this).find('input[name="' + prefix + '_cell_sample"]')[0]) {
-                        current_data['cell_sample_id'] = $(this).find('input[name="' + prefix + '_cell_sample"]').val();
-                        delete current_data['cell_sample'];
+                    // CHECK IF VALID!
+                    // ONLY PROCESS IF TRUE
+                    if (dialog_box_values_valid($(this), prefix)) {
+                        // Pass this popup to apply_values
+                        apply_dialog_box_values($(this), prefix);
                     }
-
-                    // Modify the setup data
-                    modify_series_data(current_prefix, current_data, current_row_index, current_column_index);
-
-                    // Get the display for the current content
-                    var html_contents = get_content_display(current_prefix, current_row_index, current_column_index, current_data, true);
-
-                    // Apply the content
-                    $('a[data-edit-button="true"][data-row="' + current_row_index +'"][data-column="' + current_column_index +'"][data-prefix="' + current_prefix + '"]').parent().html(html_contents);
-
-                    // Overkill
-                    // rebuild_table();
-                    window.GROUPS.make_difference_table();
-
-                    $(this).dialog('close');
                 }
             },
             {
@@ -682,15 +696,28 @@ $(document).ready(function () {
 
         // new_row.find('.organ-model')[0].selectize.setValue(setup_to_use['organ_model_id']);
 
-        // Set the organ model and porotocol
-        new_row.find('.organ-model').text(
-            organ_model_full.find('option[value="' + setup_to_use['organ_model_id'] + '"]').text()
-        );
-        if (setup_to_use['organ_model_protocol_id']) {
-            new_row.find('.organ-model-protocol').text(
-                'Version: ' +
-                organ_model_protocol_full.find('option[value="' + setup_to_use['organ_model_protocol_id'] + '"]').text()
+        // Set the organ model and protocol
+        // IF NO ORGAN MODEL: ASK FOR ONE!
+        if (!setup_to_use['organ_model_id']) {
+            new_row.find('.organ-model')
+            .text(
+                'Please click the magnifying glass to select an MPS Model'
+            ).addClass(
+                'text-danger'
             );
+        }
+        else {
+            new_row.find('.organ-model').text(
+                organ_model_full.find('option[value="' + setup_to_use['organ_model_id'] + '"]').text()
+            ).removeClass(
+                'text-danger'
+            );
+            if (setup_to_use['organ_model_protocol_id']) {
+                new_row.find('.organ-model-protocol').text(
+                    'Version: ' +
+                    organ_model_protocol_full.find('option[value="' + setup_to_use['organ_model_protocol_id'] + '"]').text()
+                );
+            }
         }
 
         if (setup_to_use['device_type'] === 'plate') {
