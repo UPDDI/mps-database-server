@@ -55,6 +55,7 @@ from assays.models import (
     assay_plate_reader_file_delimiter_choices,
     upload_file_location,
     AssayOmicDataFileUpload,
+    AssayOmicDataPoint,
 )
 from compounds.models import Compound, CompoundInstance, CompoundSupplier
 from microdevices.models import (
@@ -77,7 +78,7 @@ from .utils import (
     get_user_accessible_studies,
     plate_reader_data_file_process_data,
     CALIBRATION_CURVE_MASTER_DICT,
-    calibration_choices,
+    calibration_choices, omic_data_file_process_data,
 )
 
 from django.utils import timezone
@@ -91,6 +92,7 @@ import ujson as json
 import os
 import csv
 import re
+import copy
 
 from mps.utils import (
     get_split_times,
@@ -4303,7 +4305,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
 
     # Let them name the maps the same if they really want to. Does not really matter to me
     # def clean(self):
-    #     # FORCE UNIQUE - this will return back to the form instead of showing the user an error
+    #     # HANDY FORCE UNIQUE - this will return back to the form instead of showing the user an error
     #     cleaned_data = super(AssayPlateReaderMapForm, self).clean()
     #
     #     if AssayPlateReaderMap.objects.filter(
@@ -4951,17 +4953,32 @@ AssayPlateReaderMapDataFileBlockFormSetFactory = inlineformset_factory(
 #####
 # Start omics section
 
+# use this to get the key from the value
+# returned_key = find_a_key_by_value_in_dictionary(OMIC_COLUMN_HEADER_TO_TARGET_DICT, 'blah-baseMean')
+
 class AssayOmicDataFileUploadForm(BootstrapForm):
     """Form Upload an AssayOmicDataFileUpload file and associated metadata """
 
     class Meta(object):
         model = AssayOmicDataFileUpload
-        exclude = tracking + ('data_type', 'pipeline', 'study')
-
+        exclude = tracking + ('study',)
 
     def __init__(self, *args, **kwargs):
         self.study = kwargs.pop('study', None)
         super(AssayOmicDataFileUploadForm, self).__init__(*args, **kwargs)
+
+        # # http://www.chidgilovitz.com/displaying-django-form-field-help-text-in-a-bootstrap-3-popover/
+        # for field in self.fields:
+        #     help_text = self.fields[field].help_text
+        #     self.fields[field].help_text = None
+        #     if help_text != '':
+        #         self.fields[field].widget.attrs.update(
+        #             {'class': 'has-popover',
+        #              'data-content': help_text,
+        #              'data-placement': 'right',
+        #              # 'data-container': 'body'
+        #              }
+        #         )
 
         if not self.study and self.instance.study:
             self.study = self.instance.study
@@ -4972,28 +4989,51 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         filename_only = os.path.basename(str(self.instance.omic_data_file))
         self.fields['filename_only'].initial = filename_only
 
-        if self.instance.time:
-            time_instance = self.instance.time
-            times = get_split_times(time_instance)
-            self.fields['time_day'].initial = times.get("day")
-            self.fields['time_hour'].initial = times.get("hour")
-            self.fields['time_minute'].initial = times.get("minute")
+        if self.instance.time_1:
+            time_1_instance = self.instance.time_1
+            times_1 = get_split_times(time_1_instance)
+            self.fields['time_1_day'].initial = times_1.get("day")
+            self.fields['time_1_hour'].initial = times_1.get("hour")
+            self.fields['time_1_minute'].initial = times_1.get("minute")
 
-    # when do time_2, will need to add the _2 to all the places, include the method call, do not forget
-    time_day = forms.DecimalField(
+        if self.instance.time_2:
+            time_2_instance = self.instance.time_2
+            times_2 = get_split_times(time_2_instance)
+            self.fields['time_2_day'].initial = times_2.get("day")
+            self.fields['time_2_hour'].initial = times_2.get("hour")
+            self.fields['time_2_minute'].initial = times_2.get("minute")
+
+    time_1_day = forms.DecimalField(
         required=False,
         label='Day'
     )
-    time_hour = forms.DecimalField(
+    time_1_hour = forms.DecimalField(
         required=False,
         label='Hour'
     )
-    time_minute = forms.DecimalField(
+    time_1_minute = forms.DecimalField(
+        required=False,
+        label='Minute'
+    )
+
+    time_2_day = forms.DecimalField(
+        required=False,
+        label='Day'
+    )
+    time_2_hour = forms.DecimalField(
+        required=False,
+        label='Hour'
+    )
+    time_2_minute = forms.DecimalField(
         required=False,
         label='Minute'
     )
     filename_only = forms.CharField(
         required=False,
+    )
+    file_was_added_or_changed = forms.BooleanField(
+        required=False,
+        initial=False
     )
 
     def clean(self):
@@ -5002,21 +5042,57 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         return data
 
     def save(self, commit=True):
-        map = super(AssayOmicDataFileUploadForm, self).save(commit=commit)
-
+        new_file = super(AssayOmicDataFileUploadForm, self).save(commit=commit)
         if commit:
             self.process_file(save=True, calledme="save")
-        return map
+        return new_file
 
     def process_file(self, save=False, calledme="c"):
+        true_to_continue = True
         data = self.cleaned_data
-        day = data.get('time_day', '')
-        hour = data.get('time_hour', '')
-        minute = data.get('time_minute', '')
-        data['time'] = 0;
-
+        data['time_1'] = 0;
         for time_unit, conversion in list(TIME_CONVERSIONS.items()):
-            data.update({
-                'time': data.get('time') + data.get('time_' + time_unit, 0) * conversion,
-            })
+            if data.get('time_1_' + time_unit) is not None:
+                inttime = (data.get('time_1_' + time_unit))
+                data.update({'time_1': data.get('time_1') + inttime * conversion,})
+
+        data['time_2'] = 0;
+        for time_unit, conversion in list(TIME_CONVERSIONS.items()):
+            if data.get('time_2_' + time_unit) is not None:
+                inttime = data.get('time_2_' + time_unit)
+                data.update({'time_2': data.get('time_2') + inttime * conversion,})
+
+        # if the choose file box was clicked
+        # this will be True and data will be processed
+        change_file = data.get('file_was_added_or_changed', '')
+        file_extension = os.path.splitext(data.get('omic_data_file').name)[1]
+
+        if change_file == 'True' or change_file == change_file == 'true' or change_file:
+            # Run file extension check
+            if file_extension in ['.csv', '.tsv', '.txt', '.xls', '.xlsx']:
+                true_to_continue = True
+            else:
+                true_to_continue = False
+                raise ValidationError(
+                     "Invalid file extension - must be in csv, tsv, txt, xls, or xlsx",
+                     code='invalid'
+                )
+
+        if true_to_continue:
+            data_file_pk = self.instance.id
+            if calledme == "clean":
+                # this function is in utils.py
+                # print("form clean")
+                data_file = data.get('omic_data_file')
+                amessage = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme)
+                # print(amessage)
+            else:
+                # print("form save")
+                queryset = AssayOmicDataFileUpload.objects.get(id=data_file_pk)
+                data_file = queryset.omic_data_file.open()
+                amessage = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme)
+                # print(amessage)
+
         return data
+
+#     End Omic Data File Upload Section

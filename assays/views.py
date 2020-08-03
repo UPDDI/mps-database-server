@@ -5467,7 +5467,7 @@ class AssayOmicDataFileUploadAdd(StudyGroupMixin, CreateView):
     """Views Add Upload an AssayOmicDataFileUpload file """
 
     model = AssayOmicDataFileUpload
-    template_name = 'assays/assayomicdatafileupload_add.html'
+    template_name = 'assays/assayomicdatafileupload_aur.html'
     form_class = AssayOmicDataFileUploadForm
 
     # For permission mixin
@@ -5501,7 +5501,7 @@ class AssayOmicDataFileUploadUpdate(StudyGroupMixin, UpdateView):
     """Views View Upload an AssayOmicDataFileUpload file """
 
     model = AssayOmicDataFileUpload
-    template_name = 'assays/assayomicdatafileupload_update.html'
+    template_name = 'assays/assayomicdatafileupload_aur.html'
     form_class = AssayOmicDataFileUploadForm
 
     def get_context_data(self, **kwargs):
@@ -5521,7 +5521,7 @@ class AssayOmicDataFileUploadView(StudyGroupMixin, DetailView):
     """Views View Upload an AssayOmicDataFileUpload file """
 
     model = AssayOmicDataFileUpload
-    template_name = 'assays/assayomicdatafileupload_update.html'
+    template_name = 'assays/assayomicdatafileupload_aur.html'
     form_class = AssayOmicDataFileUploadForm
 
     def get_context_data(self, **kwargs):
