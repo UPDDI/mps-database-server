@@ -6,7 +6,13 @@ window.GROUPS = {
     make_group_preview: null,
     difference_table_displays: {},
     // Indicates the hidden columns via object
-    hidden_columns: {}
+    hidden_columns: {},
+    get_display_for_field: null,
+    convert_to_numeric_view: {
+        value: true,
+        density: true,
+        concentration: true,
+    },
 };
 
 $(document).ready(function () {
@@ -23,6 +29,13 @@ $(document).ready(function () {
         'organ_model_protocol_id',
         'test_type',
     ];
+
+    // Array of values to convert to have commas etc.
+    // var convert_to_numeric_view = {
+    //     value: true,
+    //     density: true,
+    //     concentration: true,
+    // };
 
     // TEMPORARY
     var series_data_selector = $('#id_series_data');
@@ -96,7 +109,7 @@ $(document).ready(function () {
     // }
 
     // NOT DRY
-    function get_display_for_field(field_name, field_value, prefix) {
+    window.GROUPS.get_display_for_field = function(field_name, field_value, prefix) {
         // NOTE: SPECIAL EXCEPTION FOR CELL SAMPLES
         if (field_name === 'cell_sample') {
             // TODO VERY POORLY DONE
@@ -127,6 +140,9 @@ $(document).ready(function () {
                 // THIS IS BROKEN, FOR PRE-SELECTIZE ERA
                 // return origin.find('option[value="' + field_value + '"]').text()
             }
+            else if (window.GROUPS.convert_to_numeric_view[field_name]) {
+                return parseFloat(field_value).toLocaleString();
+            }
             // Just display the thing if there is an origin
             else if (origin[0]) {
                 return field_value;
@@ -137,6 +153,9 @@ $(document).ready(function () {
             }
         }
     }
+
+    // Alias
+    get_display_for_field = window.GROUPS.get_display_for_field;
 
     // I could include iteration here rather than in the other loop
     // TODO NEEDS MAJOR REVISION

@@ -293,48 +293,6 @@ $(document).ready(function () {
         }
     }
 
-    function get_display_for_field(field_name, field_value, prefix) {
-        // NOTE: SPECIAL EXCEPTION FOR CELL SAMPLES
-        if (field_name === 'cell_sample') {
-            // TODO VERY POORLY DONE
-            // return $('#' + 'cell_sample_' + field_value).attr('data-name');
-            // Global here is a little sloppy, but should always succeed
-            return window.CELLS.cell_sample_id_to_label[field_value];
-        }
-        else {
-            // Ideally, this would be cached in an object or something
-            var origin = $('#id_' + prefix + '_' + field_name);
-
-            // Get the select display if select
-            if (origin.prop('tagName') === 'SELECT') {
-                // Convert to integer if possible, thanks
-                var possible_int = Math.floor(field_value);
-                if (possible_int) {
-                    return origin[0].selectize.options[possible_int].text;
-                }
-                else {
-                    if (origin[0].selectize.options[field_value]) {
-                        return origin[0].selectize.options[field_value].text;
-                    }
-                    // If the current selection is blank, return the empty string
-                    else {
-                        return '';
-                    }
-                }
-                // THIS IS BROKEN, FOR PRE-SELECTIZE ERA
-                // return origin.find('option[value="' + field_value + '"]').text()
-            }
-            // Just display the thing if there is an origin
-            else if (origin[0]) {
-                return field_value;
-            }
-            // Give back null to indicate this should not be displayed
-            else {
-                return null;
-            }
-        }
-    }
-
     // TODO NEEDS MAJOR REVISION
     function get_content_display(prefix, row_index, column_index, content, editable) {
         var html_contents = [];
@@ -365,7 +323,7 @@ $(document).ready(function () {
                 // I will need to think about invalid fields
                 var field_name = key.replace('_id', '');
                 if ((field_name !== 'addition_time' && field_name !== 'duration')) {
-                    var field_display = get_display_for_field(field_name, value, prefix);
+                    var field_display = window.GROUPS.get_display_for_field(field_name, value, prefix);
                     new_display.find('.' + prefix + '-' + field_name).html(field_display);
                 }
                 // NOTE THIS ONLY HAPPENS WHEN IT IS NEEDED IN ADD PAGE
