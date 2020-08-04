@@ -51,7 +51,7 @@ $(document).ready(function() {
                     alert('An error has occurred. Please use a valid PubMed ID or DOI.');
                 }
             },
-            error: function(result) {
+            error: function(xhr) {
                 // Stop spinner
                 window.spinner.stop();
                 console.log(xhr.status + ": " + xhr.responseText);

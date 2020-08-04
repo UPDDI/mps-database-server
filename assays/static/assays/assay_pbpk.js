@@ -269,6 +269,11 @@ $(document).ready(function () {
             document.getElementById("spinner")
         );
 
+        // Hide any lingering junk
+        $('#pbpk-information').hide();
+        // Manually clear clearance among other things (HAR HAR *HAR*)
+        clear_pbpk();
+
         if (group_table) {
             group_table.clear();
             group_table.destroy();
@@ -404,6 +409,9 @@ $(document).ready(function () {
         $('#pk-clearance-graph').empty();
         $('#continuous-infusion-table').empty();
         $("#toggle-continuous-infusion-table").hide();
+
+        // Manually clear clearance (HAR HAR *HAR*)
+        $('#input-icl').val('');
     }
 
     function generate_pbpk(pk_type) {
@@ -909,6 +917,7 @@ $(document).ready(function () {
             document.getElementById("spinner")
         );
 
+        // An incoherent ternary, but you know, whatever!
         var compound_pk_data = JSON.stringify(chart_data[group_num], function(key, value) {return (value == null) ? null : value});
         for (var x=1; x<compound_pk_data.length; x++) {
             compound_pk_data[x][0] *= 60;
@@ -936,7 +945,6 @@ $(document).ready(function () {
             }
         )
         .done(function(data) {
-            // console.log(data);
             // Stop spinner
             window.spinner.stop();
 
@@ -982,7 +990,9 @@ $(document).ready(function () {
                     var clearance_table_data = data.clearance_data.data;
 
                     for (var x=0; x<clearance_table_data.length; x++) {
-                        if (clearance_table_data[x][clearance_table_data[0].length-1].toString() === start_time_dropdown.getValue()) {
+                        // We have to accommodate for diverging times
+                        // if (clearance_table_data[x][clearance_table_data[0].length-1].toString() === start_time_dropdown.getValue()) {
+                        if (clearance_table_data[x][clearance_table_data[0].length-1] >= parseFloat(start_time_dropdown.getValue())) {
                             break;
                         } else {
                             clearance_table_data.shift();
@@ -990,7 +1000,9 @@ $(document).ready(function () {
                         }
                     }
                     for (var x=clearance_table_data.length-1; x>0; x--) {
-                        if (clearance_table_data[x][clearance_table_data[0].length-1].toString() === end_time_dropdown.getValue()) {
+                        // We have to accommodate for diverging times
+                        // if (clearance_table_data[x][clearance_table_data[0].length-1].toString() === end_time_dropdown.getValue()) {
+                        if (clearance_table_data[x][clearance_table_data[0].length-1] <= parseFloat(end_time_dropdown.getValue())) {
                             break;
                         } else {
                             clearance_table_data.pop();
