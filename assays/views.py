@@ -179,6 +179,13 @@ from django.db import connection
 import xlsxwriter
 import io
 
+# File writing
+# ???
+from io import BytesIO
+import xlsxwriter
+from assays.utils import DEFAULT_CSV_HEADER
+from mps.settings import TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX
+
 # TODO Refactor imports
 # TODO REFACTOR CERTAIN WHITTLING TO BE IN FORM AS OPPOSED TO VIEW
 # TODO Rename get_absolute_url when the function does not actually return the model's URL
@@ -1780,6 +1787,7 @@ class AssayStudyTemplate(ObjectGroupRequiredMixin, DetailView):
         response['Content-Disposition'] = 'attachment;filename="' + str(self.object) + '.xlsx"'
 
         return response
+
 
 def get_cell_samples_for_selection(user, setups=None):
     """Returns the cell samples to be listed in setup views

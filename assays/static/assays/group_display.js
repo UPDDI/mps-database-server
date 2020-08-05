@@ -155,7 +155,7 @@ $(document).ready(function () {
     }
 
     // Alias
-    get_display_for_field = window.GROUPS.get_display_for_field;
+    var get_display_for_field = window.GROUPS.get_display_for_field;
 
     // I could include iteration here rather than in the other loop
     // TODO NEEDS MAJOR REVISION

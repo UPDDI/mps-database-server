@@ -67,8 +67,12 @@
         </div>
     </div>
 
-    <a class="btn btn-info btn-lg" role="button" href="{% url 'assays-currentuploadtemplate' %}">Click Here For Upload Template</a>
-    <a class="btn btn-info btn-lg" role="button" href="{% url 'assays-assaystudy-upload-template' object.id %}">Click Here For Prepopulated Upload Template</a>
+    {# <a class="btn btn-info btn-lg" role="button" href="/media/excel_templates/chip_template-{{ version }}.xlsx">Click Here For Upload Template</a> #}
+
+    <div class="well">
+        <a class="btn btn-info btn-lg" role="button" href="{% url 'assays-assaystudy-upload-template' object.id %}" title="This template will place each selected assay on its own sheet (tab). Additionally, the Chip and Well IDs in the Study will be listed in a dropdown.">Click Here For Study Specific Upload Template (RECOMMENDED)</a>
+        <a class="btn btn-info btn" role="button" href="{% url 'assays-currentuploadtemplate' %}" title="This template is generic and will not include any prefilled cells.">Click Here For Generic Upload Template</a>
+    </div>
 
     {# NOT DRY #}
     {{ supporting_data_formset.management_form }}

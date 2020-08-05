@@ -143,13 +143,11 @@
     {% include 'generic_field.html' with field=form.description label="Description" %}
 
     <div class="form-group">
-        <label for="use_in_calculations" class="col-sm-2 control-label">Use in Calculations</label>
+        <label for="use_in_calculations" class="col-sm-2 control-label">Use Data in Compound Report</label>
         <div class="col-sm-10">
           {{ form.use_in_calculations }}
           <div>
-              <em>Check</em> if the data in this study can be used in calculations.
-              <br>
-              <em>Do not check</em> if this study is faulty or a one-off experiment.
+              <em>Check</em> if this data should be included in the Compound Report interface.
           </div>
         </div>
     </div>
