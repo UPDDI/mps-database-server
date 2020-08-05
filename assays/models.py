@@ -4703,7 +4703,7 @@ class AssayOmicDataFileUpload(LockableModel):
         on_delete=models.CASCADE,
         related_name='group_1',
         help_text='Data Processing Group 1',
-        verbose_name='Group 1'
+        verbose_name='Group 1 (Numerator)'
     )
     group_2 = models.ForeignKey(
         AssayOmicDataGroup,
@@ -4711,7 +4711,7 @@ class AssayOmicDataFileUpload(LockableModel):
         on_delete=models.CASCADE,
         related_name='group_2',
         help_text='Data Processing Group 2',
-        verbose_name='Group 2'
+        verbose_name='Group 2 (Denominator)'
     )
 
     time_1 = models.FloatField(

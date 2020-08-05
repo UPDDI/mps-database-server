@@ -70,7 +70,6 @@ from rpy2.robjects import FloatVector
 from collections import Counter
 import operator
 import re
-import copy
 import time
 from django.db.models import Q
 from scipy.optimize import leastsq
@@ -247,31 +246,14 @@ calibration_keys_list.pop(0)
 
 # Make a dictionary of headers from file and team display target names
 OMIC_COLUMN_HEADER_TO_TARGET_DICT = {
-    'baseMean': 'baseMean',
+    'baseMean':       'baseMean',
     'log2FoldChange': 'log2FoldChange',
-    'lfcSE': 'lfcSE',
-    'stat': 'stat',
-    'pvalue': 'pvalue',
-    'padj': 'padj',
+    'lfcSE':          'lfcSE',
+    'stat':           'stat',
+    'pvalue':         'pvalue',
+    'padj':           'padj',
     # 'padj': 'DESeq2-padj',
 }
-# sharing with QUINN
-omic_deseq2_headers = []
-omic_deseq2_headers_lower = []
-omic_deseq2_targets = []
-omic_deseq2_targets_pk = []
-for ke, va in OMIC_COLUMN_HEADER_TO_TARGET_DICT.items():
-    omic_deseq2_headers.append(ke)
-    omic_deseq2_headers_lower.append(ke.lower())
-    omic_deseq2_targets.append(va)
-# this targets have to be IN the target list or they will get a 1
-for t in omic_deseq2_targets:
-    target_pk = 1
-    obj = AssayTarget.objects.filter(name=t).first()
-    if obj is not None:
-        target_pk = obj.id
-    omic_deseq2_targets_pk.append(target_pk)
-
 
 # STRINGS FOR WHEN NONE OF THE ENTITY IN QUESTION
 NO_COMPOUNDS_STRING = '-No Compounds-'
@@ -6522,105 +6504,89 @@ def sandrasGeneralFormatNumberFunction(this_number_in):
 
 
 # sck called from forms.py when save a change data file
-def omic_data_file_process_data(save, study_id, data_file_pk, data_file, file_extension, called_from):
+def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, file_extension, called_from):
     """
     Assay Omics Data File Add or Change the file (utility).
     """
-    continue_fun_if_true = True
+
+    omic_deseq2_headers = []
+    omic_deseq2_headers_lower = []
+    omic_deseq2_targets = []
+    omic_deseq2_targets_pk = []
+    for ke, va in OMIC_COLUMN_HEADER_TO_TARGET_DICT.items():
+        omic_deseq2_headers.append(ke)
+        omic_deseq2_headers_lower.append(ke.lower())
+        omic_deseq2_targets.append(va)
+    # these targets have to be IN the target list or they will get a 1
+    for t in omic_deseq2_targets:
+        target_pk = 1
+        obj = AssayTarget.objects.filter(name=t).first()
+        if obj is not None:
+            target_pk = obj.id
+        omic_deseq2_targets_pk.append(target_pk)
+
+    error_message = ""
+    continue_outer_if_true = True
     looper = 1
     sheet_index = 0
+    workbook = None
     # construct here so can use this name anywhere
     df = pd.DataFrame(columns=["one"])
     # if there are multiple sheets, they can all be added to one bulk file - that means only need one list_of_instances
     list_of_instances = []
     instance_counter = 0
 
-    # if there is more than one Excel sheet, will need a loop.
+    # if there is more than one Excel sheet, will need a loop, check for number of sheets.
     if file_extension in ['.xls', '.xlsx']:
         try:
             file_data = data_file.read()
-            workbook = xlrd.open_work(file_contents=file_data)
+            workbook = xlrd.open_workbook(file_contents=file_data)
             looper = len(workbook.sheet_names())
         except:
-            continue_fun_if_true = False
-            error_message = "Has and Excel extension but file could not be opened."
+            continue_outer_if_true = False
+            error_message = error_message + "Has and Excel extension but file could not be opened."
             raise forms.ValidationError(error_message)
 
-    if continue_fun_if_true:
-        # check file type
-        # if excel file, check for number of sheets
+    if continue_outer_if_true:
         # each sheet will be checked for data
+        # not all sheets need to be valid, a sheet can be skipped and other imported
         while sheet_index < looper:
-            # open the file and find the dataframe in the function
-            sub_find_dataframe = data_file_to_dataframe(data_file, file_extension)
+
+            # Guts of opening the file or sheet and find and return the dataframe
+            sub_find_dataframe = data_file_to_dataframe(data_file, file_extension, workbook, sheet_index)
             continue_this_sheet_if_true = sub_find_dataframe[0]
-            df = sub_find_dataframe[1]
-            error_message = sub_find_dataframe[2]
-            if not continue_this_sheet_if_true:
-                # this error is it could not open an existing worksheet and turn it into a dataframe
-                # maybe could skip this......
-                raise forms.ValidationError(error_message)
-            else:
+            error_message = error_message + sub_find_dataframe[1]
+            df = sub_find_dataframe[2]
+
+            if continue_this_sheet_if_true:
                 # Guts of the QC for the omics data point file
-                # avoid problems with leading or trailing spaces
-                df.columns = df.columns.str.strip()
-                df.columns = map(str.lower, df.columns)
-                # may need other options here, but these will do for now
-                if 'gene' in df.columns:
-                    name_use = 'gene'
-                elif 'name' in df.columns:
-                    name_use = 'name'
-                else:
-                    # for this sheet or file, the HEADER for the target field could not be found, skip this sheet
-                    continue_this_sheet_if_true = False
-                # here here is the place to add more QC column header checks
+                qc_each_file_or_worksheet_level = qc_the_file_level(df, omic_deseq2_headers_lower)
+                continue_this_sheet_if_true = qc_each_file_or_worksheet_level[0]
+                error_message = error_message + qc_each_file_or_worksheet_level[1]
+                name_use = qc_each_file_or_worksheet_level[2]
 
             if continue_this_sheet_if_true:
                 # Guts of data loading for omic data file
-                omic_data_file_id = data_file_pk
-
-                # print("df.columns ", df.columns)
-                # print("omic_deseq2_headers_lower ", omic_deseq2_headers_lower)
-                # print("omic_deseq2_targets_pk ", omic_deseq2_targets_pk)
-                # print("s ", study_id)
-                # print("omic data file id ", omic_data_file_id)
-                # each row in the file
-                for index, row in df.iterrows():
-                    # each row should have the 5 target columns - 0 to 5
-                    i = 0
-                    while i < 5:
-                        name = row[name_use]
-                        target = int(omic_deseq2_targets_pk[i])
-                        value = row[omic_deseq2_headers_lower[i]]
-
-                        # print("index ",index,"  instance_counter ", instance_counter ,"  i ",i,"  name ",name,"  target ",target, "  value ",value)
-
-                        # creating an instance causes an error in the clean since there is no pk for this file on the add form
-                        if called_from == 'save':
-                            instance = AssayOmicDataPoint(
-                                study_id=study_id,
-                                omic_data_file_id=omic_data_file_id,
-                                name=name,
-                                target_id=target,
-                                value=value
-                            )
-                            # print("i ", instance)
-                            # add this list to the list of lists
-                            list_of_instances.append(instance)
-
-                        instance_counter = instance_counter + 1
-                        i = i+1
+                data_loaded_to_list_of_instances = load_data_to_list_of_instances(
+                    list_of_instances, instance_counter, df,
+                    study_id, omic_data_file_id, omic_deseq2_targets_pk,
+                    omic_deseq2_headers_lower, called_from, name_use
+                )
+                continue_this_sheet_if_true = data_loaded_to_list_of_instances[0]
+                error_message = error_message + data_loaded_to_list_of_instances[1]
+                list_of_instances = data_loaded_to_list_of_instances[2]
+                instance_counter = data_loaded_to_list_of_instances[3]
 
             sheet_index = sheet_index + 1
-            # print("sheet_index of looper ", sheet_index," of ", looper, "  instance_counter ",instance_counter)
 
     if instance_counter == 0:
-        continue_fun_if_true = False
-        error_message = "ERROR - There were no records in the file to upload. Could be invalid file and/or missing a required column header."
+        error_message = error_message + "There were no records in the file to upload. "
         raise forms.ValidationError(error_message)
+        continue_outer_if_true = False
 
-    if called_from == 'save' and continue_fun_if_true:
-        # Guts of saving the data to the data file.
+    if called_from == 'save' and continue_outer_if_true:
+        # Guts of removing old and saving the data to the DataPoint Table.
+        # double check that there are data ready to add to the DataPoint table before continuing
         if len(list_of_instances) > 0:
             try:
                 # if there are data in the omic data point table related to this file, remove them all
@@ -6633,7 +6599,7 @@ def omic_data_file_process_data(save, study_id, data_file_pk, data_file, file_ex
             AssayOmicDataPoint.objects.bulk_create(list_of_instances)
         else:
             # This should not happen - should be screened out in the clean - here just in case
-            error_message = "ERROR - Save found no records in the file to upload. Could be invalid file and/or missing a required column header."
+            error_message = error_message + " During the save, found no records in the file to upload. Should have received and error message during data cleaning. "
             raise forms.ValidationError(error_message)
 
     return "done"
@@ -6674,4 +6640,68 @@ def data_file_to_dataframe(data_file, file_extension, workbook=None, sheet_index
             error_message = "ERROR - file was not in a recognized format."
             true_if_dataframe_found = False
 
-    return [true_if_dataframe_found, df, error_message]
+    return [true_if_dataframe_found, error_message, df]
+
+
+def qc_the_file_level(df, omic_deseq2_headers_lower):
+    error_message = ""
+    continue_this_sheet_if_true = True
+    # avoid problems with leading or trailing spaces
+    df.columns = df.columns.str.strip()
+    df.columns = map(str.lower, df.columns)
+    # may need other options here (eg probe_id, refseq name, etc), but these will do for now
+    name_use = ""
+    if 'gene' in df.columns:
+        name_use = 'gene'
+    elif 'name' in df.columns:
+        name_use = 'name'
+    else:
+        # for this sheet or file, the HEADER for the target field could not be found, skip this sheet
+        continue_this_sheet_if_true = False
+    # make sure all the required headers are in this file
+    for each in omic_deseq2_headers_lower:
+        if each in df.columns:
+            pass
+        else:
+            continue_this_sheet_if_true = False
+            error_message = error_message + " Required field " + each + " is missing. "
+    # here here is the place to add more QC column header checks
+    return [continue_this_sheet_if_true, error_message, name_use]
+
+
+def load_data_to_list_of_instances(
+    list_of_instances, instance_counter, df,
+    study_id, omic_data_file_id, omic_deseq2_targets_pk,
+    omic_deseq2_headers_lower, called_from, name_use
+    ):
+
+    error_message = ""
+    continue_this_sheet_if_true = True
+
+    for index, row in df.iterrows():
+        # each row should have the 5 target columns - 0 to 5
+        i = 0
+        while i < 5:
+            name = row[name_use]
+            target = int(omic_deseq2_targets_pk[i])
+            value = row[omic_deseq2_headers_lower[i]]
+
+            # print("index ",index,"  instance_counter ", instance_counter ,"  i ",i,"  name ",name,"  target ",target, "  value ",value)
+
+            # creating an instance causes an error in the clean since there is no pk for this file on the add form
+            if called_from == 'save':
+                instance = AssayOmicDataPoint(
+                    study_id=study_id,
+                    omic_data_file_id=omic_data_file_id,
+                    name=name,
+                    target_id=target,
+                    value=value
+                )
+                # print("i ", instance)
+                # add this list to the list of lists
+                list_of_instances.append(instance)
+
+            instance_counter = instance_counter + 1
+            i = i + 1
+
+    return [continue_this_sheet_if_true, error_message, list_of_instances, instance_counter]

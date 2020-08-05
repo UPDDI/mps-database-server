@@ -53,6 +53,7 @@ from assays.models import (
     upload_file_location,
     AssayOmicDataFileUpload,
     AssayOmicDataPoint,
+    AssayOmicDataGroup,
 )
 from compounds.models import Compound, CompoundInstance, CompoundSupplier
 from microdevices.models import (
@@ -4718,9 +4719,15 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         if self.study:
             self.instance.study = self.study
 
-        # to display the file name without the whole path
-        filename_only = os.path.basename(str(self.instance.omic_data_file))
-        self.fields['filename_only'].initial = filename_only
+        # for now, limit to the same study - we will need to revisit this when we think about
+        # inter study and transitioning to treatment groups
+        data_groups_filtered = AssayOmicDataGroup.objects.filter(
+            study_id=self.instance.study.id
+        )
+
+        # HANDY to limit options in a dropdown on a model field in a form
+        self.fields['group_1'].queryset = data_groups_filtered
+        self.fields['group_2'].queryset = data_groups_filtered
 
         if self.instance.time_1:
             time_1_instance = self.instance.time_1
@@ -4764,10 +4771,6 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
     filename_only = forms.CharField(
         required=False,
     )
-    file_was_added_or_changed = forms.BooleanField(
-        required=False,
-        initial=False
-    )
 
     def clean(self):
         data = super(AssayOmicDataFileUploadForm, self).clean()
@@ -4783,24 +4786,21 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
     def process_file(self, save=False, calledme="c"):
         true_to_continue = True
         data = self.cleaned_data
-        data['time_1'] = 0;
+        data['time_1'] = 0
         for time_unit, conversion in list(TIME_CONVERSIONS.items()):
             if data.get('time_1_' + time_unit) is not None:
                 inttime = (data.get('time_1_' + time_unit))
                 data.update({'time_1': data.get('time_1') + inttime * conversion,})
 
-        data['time_2'] = 0;
+        data['time_2'] = 0
         for time_unit, conversion in list(TIME_CONVERSIONS.items()):
             if data.get('time_2_' + time_unit) is not None:
                 inttime = data.get('time_2_' + time_unit)
                 data.update({'time_2': data.get('time_2') + inttime * conversion,})
 
-        # if the choose file box was clicked
-        # this will be True and data will be processed
-        change_file = data.get('file_was_added_or_changed', '')
         file_extension = os.path.splitext(data.get('omic_data_file').name)[1]
 
-        if change_file == 'True' or change_file == change_file == 'true' or change_file:
+        if 'omic_data_file' in self.changed_data or self.instance.id is None:
             # Run file extension check
             if file_extension in ['.csv', '.tsv', '.txt', '.xls', '.xlsx']:
                 true_to_continue = True

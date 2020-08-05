@@ -40,6 +40,7 @@ from .models import (
     assay_plate_reader_map_info_shape_row_dict,
     assay_plate_reader_map_info_plate_size_choices_list,
     PhysicalUnits,
+    AssayOmicDataFileUpload,
 )
 from microdevices.models import (
     MicrophysiologyCenter,
@@ -6521,6 +6522,134 @@ def fetch_data_processing_for_plate_map_integration(request):
         })
     return HttpResponse(json.dumps(data), content_type="application/json")
 
+
+# sck omic data find sample information if group already in the upload file
+def fetch_omic_sample_info_from_upload_data_table(request):
+    """
+        Assay Omic Data File get the sample info if the group previously added to upload table
+    """
+
+    # if called_from is add, have to do both (did them here to avoid race errors)
+    called_from = request.POST.get('called_from', '0')
+    groupId = request.POST.get('groupId', '0')
+    groupPk = request.POST.get('groupPk', '0')
+    groupId2 = request.POST.get('groupId2', '0')
+    groupPk2 = request.POST.get('groupPk2', '0')
+
+    queryset1 = None
+    queryset2 = None
+
+    timemess = ""
+    locmess = ""
+    day = None
+    hour = None
+    minute = None
+    loc_pk = None
+    timemess2 = ""
+    locmess2 = ""
+    day2 = None
+    hour2 = None
+    minute2 = None
+    loc_pk2 = None
+
+    sample_info = sub_fetch_omic_sample_info_from_upload_data_table(groupId, groupPk)
+    timemess = sample_info[0]
+    locmess = sample_info[1]
+    day = sample_info[2]
+    hour = sample_info[3]
+    minute = sample_info[4]
+    loc_pk = sample_info[5]
+
+    # if add, have to do the second one too
+    if called_from == 'add':
+        sample_info = sub_fetch_omic_sample_info_from_upload_data_table(groupId2, groupPk2)
+        timemess2 = sample_info[0]
+        locmess2 = sample_info[1]
+        day2 = sample_info[2]
+        hour2 = sample_info[3]
+        minute2 = sample_info[4]
+        loc_pk2 = sample_info[5]
+
+    # if the mess is found, the replace will happen in the form field in the html file
+    data = {}
+    data.update({
+        'timemess': timemess,
+        'day': day,
+        'hour': hour,
+        'minute': minute,
+        'locmess': locmess,
+        'sample_location_pk': loc_pk,
+        'timemess2': timemess2,
+        'day2': day2,
+        'hour2': hour2,
+        'minute2': minute2,
+        'locmess2': locmess2,
+        'sample_location_pk2': loc_pk2
+        })
+
+    # print(data)
+    return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+def sub_fetch_omic_sample_info_from_upload_data_table(groupId, groupPk):
+    timemess = ""
+    locmess = ""
+    day = None
+    hour = None
+    minute = None
+    loc_pk = None
+
+    # find time if a previous instance with this group has been saved
+    queryset1 = AssayOmicDataFileUpload.objects.filter(
+        group_1=groupPk
+    ).aggregate(Max('time_1'))['time_1__max']
+
+    if queryset1 is not None:
+        timemess = "found"
+        times = get_split_times(queryset1)
+        day = times.get("day")
+        hour = times.get("hour")
+        minute = times.get("minute")
+    else:
+        queryset2 = AssayOmicDataFileUpload.objects.filter(
+            group_2=groupPk
+        ).aggregate(Max('time_2'))['time_2__max']
+
+        if queryset2 is not None:
+            timemess = "found"
+            times = get_split_times(queryset2)
+            day = times.get("day")
+            hour = times.get("hour")
+            minute = times.get("minute")
+        else:
+            timemess = "no"
+            day = None
+            hour = None
+            minute = None
+
+    # find location if this group has previously been saved with a group
+    queryset1 = AssayOmicDataFileUpload.objects.filter(
+        group_1=groupPk
+    ).aggregate(Max('location_1'))['location_1__max']
+
+    if queryset1 is not None:
+        locmess = "found"
+        loc_pk = queryset1
+    else:
+        queryset2 = AssayOmicDataFileUpload.objects.filter(
+            group_2=groupPk
+        ).aggregate(Max('location_2'))['location_2__max']
+
+        if queryset2 is not None:
+            locmess = "found"
+            loc_pk = queryset2
+        else:
+            loc_pk = None
+
+    return [timemess, locmess, day, hour, minute, loc_pk]
+
+
+
 # TODO TODO TODO
 switch = {
     'fetch_center_id': {'call': fetch_center_id},
@@ -6632,6 +6761,9 @@ switch = {
     },
     'fetch_data_processing_for_plate_map_integration': {
         'call': fetch_data_processing_for_plate_map_integration
+    },
+    'fetch_omic_sample_info_from_upload_data_table': {
+        'call': fetch_omic_sample_info_from_upload_data_table
     },
 }
 
