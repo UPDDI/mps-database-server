@@ -88,9 +88,6 @@
                     <div class="hidden" id="this_file_id">
                         {{ object.id }}
                     </div>
-                     <div class="hidden">
-                        {{ form.file_was_added_or_changed }}
-                    </div>
                 </div>
 
                 {% if update or add %}
@@ -111,7 +108,10 @@
                             {{ form.omic_data_file }}
                             <div>
 {#                                <br>#}
-                                <b>Acceptable Formats: Excel and CSV</b>
+{#                                <b>Acceptable Formats: Excel and CSV</b>#}
+                                <div><p id="omic_file_format_tooltip"></p>
+                                    <label for="omic_file_format_tooltip">Acceptable Formats: Excel and CSV &nbsp;</label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -156,7 +156,7 @@
                     <div class="col-md-2">
                     </div>
                     <div class="col-md-10">
-                        <label>Select groups so that, if value is positive, gene is up regulated in group 1.</label>
+                        <label>Select groups so that, if value is positive, gene is up regulated in Group 1.</label>
                     </div>
                 </div>
 
