@@ -463,9 +463,12 @@ $(document).ready(function () {
      * Look in the utils.py for the keys.
     */
      // search term MIFC - if MIFC changes, this will need changed
+     // ???????????????????????????
+     // ???????????????????????????
+     // Please work towards the DRY principle
     let utils_key_column_header = {}
     utils_key_column_header['plate_index'] = 'Plate Index';
-    utils_key_column_header['matrix_item_name'] = 'Chip ID';
+    utils_key_column_header['matrix_item_name'] = 'Chip ID or Well ID';
     utils_key_column_header['matrix_item_id'] = 'Matrix Item ID';
     utils_key_column_header['cross_reference'] = 'Cross Reference';
     utils_key_column_header['plate_name'] = 'Assay Plate ID';
@@ -523,9 +526,10 @@ $(document).ready(function () {
         return myKey
     }
     //headers for the table for EACH sample
+    // ?
     let column_table_headers_each = [
         'Plate Index',
-        'Chip ID',
+        'Chip ID or Well ID',
         'Matrix Item ID',
         'Cross Reference',
         'Assay Plate ID',
@@ -632,8 +636,9 @@ $(document).ready(function () {
     ];
     // search term MIFC - if MIFC changes, this will need changed
     //headers for the mifc (average) table
+    // ?
     let column_table_headers_average = [
-        'Chip ID',
+        'Chip ID or Well ID',
         'Cross Reference',
         'Assay Plate ID',
         'Assay Well ID',

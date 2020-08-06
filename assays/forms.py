@@ -79,7 +79,9 @@ from .utils import (
     get_user_accessible_studies,
     plate_reader_data_file_process_data,
     CALIBRATION_CURVE_MASTER_DICT,
-    calibration_choices, omic_data_file_process_data,
+    calibration_choices,
+    omic_data_file_process_data,
+    COLUMN_HEADERS,
 )
 
 from django.utils import timezone
@@ -4345,34 +4347,39 @@ class AssayPlateReaderMapForm(BootstrapForm):
         if data.get('form_make_mifc_on_submit'):
             # search term MIFC - if MIFC changes, this will need changed
             # make a list of column headers for the mifc file
-            # could use COLUMN_HEADERS, but need to append one
-            column_table_headers_average = [
-                'Chip ID',
-                'Cross Reference',
-                'Assay Plate ID',
-                'Assay Well ID',
-                'Day',
+            # could use COLUMN_HEADERS, but need to append one (What?! If you need to append a value, then use the existing variable and then append! Please adhere to DRY principles!)
+            # column_table_headers_average = [
+            #     'Chip ID',
+            #     'Cross Reference',
+            #     'Assay Plate ID',
+            #     'Assay Well ID',
+            #     'Day',
 
-                'Hour',
-                'Minute',
-                'Target/Analyte',
-                'Subtarget',
-                'Method/Kit',
+            #     'Hour',
+            #     'Minute',
+            #     'Target/Analyte',
+            #     'Subtarget',
+            #     'Method/Kit',
 
-                'Sample Location',
-                'Value',
-                'Value Unit',
-                'Replicate',
-                'Caution Flag',
+            #     'Sample Location',
+            #     'Value',
+            #     'Value Unit',
+            #     'Replicate',
+            #     'Caution Flag',
 
-                'Exclude',
-                'Notes',
-                'Processing Details',
-            ]
+            #     'Exclude',
+            #     'Notes',
+            #     'Processing Details',
+            # ]
+
+            column_table_headers_average = list(COLUMN_HEADERS)
+            column_table_headers_average.append('Processing Details')
+
+            # Ought to be revised
             # search term MIFC - if MIFC changes, this will need changed
             # Make a dictionary of headers in utils and header needed in the mifc file
             utils_key_column_header = {
-                'matrix_item_name': 'Chip ID',
+                'matrix_item_name': 'Chip ID or Well ID',
                 'cross_reference': 'Cross Reference',
                 'plate_name': 'Assay Plate ID',
                 'well_name': 'Assay Well ID',
@@ -4389,7 +4396,8 @@ class AssayPlateReaderMapForm(BootstrapForm):
                 'caution_flag': 'Caution Flag',
                 'exclude': 'Exclude',
                 'notes': 'Notes',
-                'sendmessage': 'Processing Details'}
+                'sendmessage': 'Processing Details'
+            }
 
             # print(".unit ",data.get('standard_unit').unit)
             # print(".id ", data.get('standard_unit').id)
@@ -4541,6 +4549,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
         #### END When saving AssayPlateReaderMapUpdate after a calibration
 
 
+# What is this? Can't you just write the dictionary in the other direction?
 # this finds the key for the value provided as thisHeader
 def find_a_key_by_value_in_dictionary(this_dict, this_header):
     """This is a function to find a key by value."""

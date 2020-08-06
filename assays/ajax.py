@@ -1909,6 +1909,7 @@ def fetch_assay_study_reproducibility(request):
 
     repro_data.append([
         'Study ID',
+        # Contrived name
         'Chip ID',
         'Time',
         'Value',
@@ -3382,6 +3383,7 @@ def get_inter_study_reproducibility(
 
     inter_data.append([
         'Study ID',
+        # Contrived name
         'Chip ID',
         'Time',
         'Value',
@@ -4249,6 +4251,7 @@ def fetch_power_analysis_group_table(request):
         'Group',
         'Time',
         'Compound Treatment(s)',
+        # Contrived name
         'Chip ID',
         'Value'
     ])

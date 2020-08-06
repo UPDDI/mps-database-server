@@ -84,7 +84,7 @@ from mps.settings import MEDIA_ROOT, TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX
 
 # TODO PLEASE REVIEW TO MAKE SURE CONSISTENT
 COLUMN_HEADERS = (
-    'CHIP ID',
+    'CHIP ID OR WELL ID',
     'CROSS REFERENCE',
     'ASSAY PLATE ID',
     'ASSAY WELL ID',
@@ -104,7 +104,7 @@ COLUMN_HEADERS = (
     'NOTES'
 )
 REQUIRED_COLUMN_HEADERS = (
-    'CHIP ID',
+    'CHIP ID OR WELL ID',
     'ASSAY PLATE ID',
     'ASSAY WELL ID',
     'DAY',
@@ -121,7 +121,7 @@ REQUIRED_COLUMN_HEADERS = (
 )
 # SUBJECT TO CHANGE
 DEFAULT_CSV_HEADER = (
-    'Chip ID',
+    'Chip ID or Well ID',
     'Cross Reference',
     'Assay Plate ID',
     'Assay Well ID',
@@ -141,7 +141,7 @@ DEFAULT_CSV_HEADER = (
 )
 CSV_HEADER_WITH_COMPOUNDS_AND_STUDY = (
     'Study ID',
-    'Chip ID',
+    'Chip ID or Well ID',
     'Cross Reference',
     'Assay Plate ID',
     'Assay Well ID',
@@ -165,7 +165,7 @@ CSV_HEADER_WITH_COMPOUNDS_AND_STUDY = (
 
 DEFAULT_EXPORT_HEADER = (
     'Study ID',
-    'Chip ID',
+    'Chip ID or Well ID',
     'Matrix ID',
     'Cross Reference',
     'Assay Plate ID',
@@ -773,7 +773,7 @@ class AssayFileProcessor:
             if not any(line[:18]):
                 continue
 
-            matrix_item_name = line[header_indices.get('CHIP ID')]
+            matrix_item_name = line[header_indices.get('CHIP ID OR WELL ID')]
 
             assay_plate_id = line[header_indices.get('ASSAY PLATE ID')]
             assay_well_id = line[header_indices.get('ASSAY WELL ID')]
