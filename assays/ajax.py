@@ -6664,6 +6664,17 @@ def sub_fetch_omic_sample_info_from_upload_data_table(groupId, groupPk):
 
     return [timemess, locmess, day, hour, minute, loc_pk]
 
+def fetch_omics_data(request):
+    data = {}
+
+    # To be replaced with access to Sandra's omics schema
+    with open("data.csv") as datafile:
+        data['datafile'] = list(csv.reader(datafile))
+
+    return HttpResponse(
+        json.dumps(data),
+        content_type='application/json'
+    )
 
 
 # TODO TODO TODO
@@ -6780,6 +6791,9 @@ switch = {
     },
     'fetch_omic_sample_info_from_upload_data_table': {
         'call': fetch_omic_sample_info_from_upload_data_table
+    },
+    'fetch_omics_data': {
+        'call': fetch_omics_data
     },
 }
 

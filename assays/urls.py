@@ -99,6 +99,7 @@ from assays.views import (
     AssayOmicDataFileUploadView,
     AssayOmicDataFileUploadUpdate,
     AssayOmicDataFileUploadDelete,
+    AssayStudyOmics,
 )
 import assays.ajax
 
@@ -210,6 +211,9 @@ urlpatterns = [
 
     # Power Analysis
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/power_analysis/$', AssayStudyPowerAnalysisStudy.as_view(), name='assays-power-analysis-study'),
+
+    # Omics Interface
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/omics/$', AssayStudyOmics.as_view(), name='assays-assaystudy-omics'),
 
     # PBPK filter
     url(r'^assays/pbpk_filter/$', PBPKFilterView.as_view(), name='assays-pbpk-filter'),

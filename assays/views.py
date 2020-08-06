@@ -5545,3 +5545,8 @@ class AssayOmicDataFileUploadView(StudyGroupMixin, DetailView):
         return context
 
 # END omic data file list, add, update, view and delete section
+
+class AssayStudyOmics(StudyViewerMixin, DetailView):
+    """Displays the omics interface for the current study"""
+    model = AssayStudy
+    template_name = 'assays/assaystudy_omics.html'
