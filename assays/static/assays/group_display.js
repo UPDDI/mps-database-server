@@ -141,7 +141,13 @@ $(document).ready(function () {
                 // return origin.find('option[value="' + field_value + '"]').text()
             }
             else if (window.GROUPS.convert_to_numeric_view[field_name]) {
-                return parseFloat(field_value).toLocaleString();
+                var parsed_as_float = parseFloat(field_value);
+                if (field_name !== 'value' || parsed_as_float) {
+                    return parsed_as_float.toLocaleString();
+                }
+                else if (field_name === 'value') {
+                    return field_value;
+                }
             }
             // Just display the thing if there is an origin
             else if (origin[0]) {

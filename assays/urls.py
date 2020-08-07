@@ -103,6 +103,9 @@ from assays.views import (
 )
 import assays.ajax
 
+from django.views.generic import RedirectView
+
+
 # TODO: WHY ARE THERE TWO DIFFERENT APPROACHES TO NAMES
 urlpatterns = [
     # User can view all Editable Studies
@@ -112,7 +115,8 @@ urlpatterns = [
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/$', AssayStudyIndex.as_view(), name='assays-assaystudy-index'),
     # Update page for studies
     # TO BE DEPRECATED
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/update/$', AssayStudyUpdate.as_view(), name='assays-assaystudy-update'),
+    # url(r'^assays/assaystudy/(?P<pk>[0-9]+)/update/$', AssayStudyUpdate.as_view(), name='assays-assaystudy-update'),
+
     # Delete view for studies
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/delete/$', AssayStudyDelete.as_view(), name='assays-assaystudy-delete'),
     # Summary view for studies
@@ -138,6 +142,9 @@ urlpatterns = [
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/chips/$', AssayStudyChips.as_view(), name='assays-assaystudy-update-chips'),
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/plates/$', AssayStudyPlates.as_view(), name='assays-assaystudy-update-plates'),
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/assays/$', AssayStudyAssays.as_view(), name='assays-assaystudy-update-assays'),
+
+    # Just redirect for now
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/update/$', RedirectView.as_view(pattern_name='assays-assaystudy-update-details', permanent=True), name='assays-assaystudy-update'),
 
     url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assayplate/add/$', AssayStudyPlateAdd.as_view(), name='assays-assaymatrix-plate-add'),
     url(r'^assays/assayplate/(?P<pk>[0-9]+)/plate/$', AssayStudyPlateUpdate.as_view(), name='assays-assaymatrix-plate-update'),

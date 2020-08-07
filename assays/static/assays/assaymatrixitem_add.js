@@ -7,8 +7,16 @@ $(document).ready(function() {
 
     window.GROUPING.refresh_function = get_readout;
 
-    // Make the difference table
-    window.GROUPS.make_difference_table('chip');
+    // If chips
+    if ($('#id_series_data').val().indexOf('"plates":{}') !== -1) {
+        // Make the difference table
+        window.GROUPS.make_difference_table('chip');
+    }
+    // If plates
+    else {
+        // Make the difference table
+        window.GROUPS.make_difference_table('plate');
+    }
 
     var device = $('#id_device');
     var organ_model = $('#id_organ_model');
@@ -460,7 +468,7 @@ $(document).ready(function() {
             toggle_excluded();
         });
 
-        // TODO DEFINETELY NOT DRY
+        // TODO DEFINITELY NOT DRY
         // Swap positions of filter and length selection; clarify filter
         $('.dataTables_filter').css('float', 'left').prop('title', 'Separate terms with a space to search multiple fields');
         $('.dataTables_length').css('float', 'right');

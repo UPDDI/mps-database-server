@@ -3157,15 +3157,30 @@ class AssayMatrixItemForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
         super(AssayMatrixItemForm, self).__init__(*args, **kwargs)
 
         # Gee, it might be nice to have a better way to query groups!
-        self.fields['group'].queryset = AssayGroup.objects.filter(
-            # We will always know the study, this can never be an add page
-            study_id=self.instance.study_id,
-            organ_model__device__device_type='chip'
-        ).prefetch_related('organ_model__device')
+        # Use chip groups if chip
+        if self.instance.matrix.representation == 'chips':
+            self.fields['group'].queryset = AssayGroup.objects.filter(
+                # We will always know the study, this can never be an add page
+                study_id=self.instance.study_id,
+                organ_model__device__device_type='chip'
+            ).prefetch_related('organ_model__device')
 
-        # UGLY: DO NOT LIKE THIS
-        # Prepopulate series_data
-        self.fields['series_data'].initial = self.instance.study.get_group_data_string(get_chips=True)
+            # UGLY: DO NOT LIKE THIS
+            # Prepopulate series_data
+            self.fields['series_data'].initial = self.instance.study.get_group_data_string(get_chips=True)
+
+        # Otherwise use plate groups
+        # TODO: IF WE ARE BINDING PLATES TO MODELS, WE CANNOT DO THIS!
+        else:
+            self.fields['group'].queryset = AssayGroup.objects.filter(
+                study_id=self.instance.study_id,
+                # See above
+                organ_model__device__device_type='plate'
+            ).prefetch_related('organ_model__device')
+
+            # UGLY: DO NOT LIKE THIS
+            # Prepopulate series_data
+            self.fields['series_data'].initial = self.instance.study.get_group_data_string(plate_id=self.instance.matrix_id)
 
 # DEPRECATED JUNK
 class AssayMatrixItemInlineForm(forms.ModelForm):
