@@ -40,24 +40,27 @@ $(document).ready(function () {
 
             var current_selectize = this.selectize;
 
-            current_selectize.blur();
+            // In case of something idiosyncratic
+            if (current_selectize) {
+                current_selectize.blur();
 
-            current_selectize.addOption(options);
+                current_selectize.addOption(options);
 
-            // SLOPPY! NEED TO PREVENT INLINES FROM EXPLODING
-            if (new_pk && !current_value && !$(this).parent().parent().hasClass('inline')) {
-                current_selectize.setValue(new_pk);
-            }
-            else if (current_value) {
-                current_selectize.setValue(current_value);
-            }
+                // SLOPPY! NEED TO PREVENT INLINES FROM EXPLODING
+                if (new_pk && !current_value && !$(this).parent().parent().hasClass('inline')) {
+                    current_selectize.setValue(new_pk);
+                }
+                else if (current_value) {
+                    current_selectize.setValue(current_value);
+                }
 
-            // Handling for adding to inlines
-            if ($(this).parent().parent().hasClass('inline')) {
-                var set_title = $(this).parent().parent().parent().parent().attr('id').split('-')[0];
-                window.INLINES.default_rows[set_title].find('select[data_app="' + current_app + '"][data_model="' + current_model + '"]').append(
-                    new Option(new_name, new_pk)
-                );
+                // Handling for adding to inlines
+                if ($(this).parent().parent().hasClass('inline')) {
+                    var set_title = $(this).parent().parent().parent().parent().attr('id').split('-')[0];
+                    window.INLINES.default_rows[set_title].find('select[data_app="' + current_app + '"][data_model="' + current_model + '"]').append(
+                        new Option(new_name, new_pk)
+                    );
+                }
             }
         });
     }
