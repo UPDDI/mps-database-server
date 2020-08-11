@@ -15,7 +15,10 @@
 {% block breadcrumbs %}
     <li><a href="/assays/assaystudy/">Studies</a></li>
     <li><a href="{{ object.study.get_absolute_url }}">{{ object.study }}</a></li>
-    <li><a href="{{ object.matrix.get_absolute_url }}">Matrix {{ object.matrix }}</a></li>
+    {# ONLY SHOW THIS IF PLATE #}
+    {% if object.matrix.representation == 'plate' %}
+    <li><a href="{{ object.matrix.get_absolute_url }}">{{ object.matrix }}</a></li>
+    {% endif %}
     <li class="active">
         <em>{{ object }}</em>
     </li>
@@ -93,7 +96,8 @@
         </tbody>
     </table>
 
-    {% if object.assaysetupcell_set.count %}
+    {# NOTE: MOVED TO NEW SCHEMA: OLD ENTRIES WILL BREAK #}
+    {% if object.group and object.group.assaygroupcell_set.count %}
     <legend>Cells</legend>
     <table class="table table-striped table-bordered">
         <thead>
@@ -109,7 +113,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for cell in object.assaysetupcell_set.all %}
+        {% for cell in object.group.assaygroupcell_set.all %}
             <tr>
                 <td>{{ cell.cell_sample }}</td>
                 <td>{{ cell.biosensor }}</td>
@@ -125,35 +129,7 @@
     </table>
     {% endif %}
 
-    {% if object.assaysetupsetting_set.count %}
-    <legend>Settings</legend>
-    <table class="table table-striped table-bordered">
-        <thead>
-        <tr>
-            <th>Setting</th>
-            <th>Value</th>
-            <th>Unit</th>
-            <th>Addition Time</th>
-            <th>Duration</th>
-            <th>Addition Location</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for setting in object.assaysetupsetting_set.all %}
-            <tr>
-                <td>{{ setting.setting }}</td>
-                <td>{{ setting.value|intcomma }}</td>
-                <td>{{ setting.unit }}</td>
-                <td>{{ setting.get_addition_time_string }}</td>
-                <td>{{ setting.get_duration_string }}</td>
-                <td>{{ setting.addition_location }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
-
-    {% if object.assaysetupcompound_set.count %}
+    {% if object.group and object.group.assaygroupcompound_set.count %}
     <legend>Compounds</legend>
     <table class="table table-striped table-bordered">
         <thead>
@@ -169,7 +145,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for compound in object.assaysetupcompound_set.all %}
+        {% for compound in object.group.assaygroupcompound_set.all %}
             <tr>
                 <td>
                     <a href="{% url 'compounds-compound-detail' compound.compound_instance.compound.id %}">
@@ -183,6 +159,34 @@
                 <td>{{ compound.get_addition_time_string }}</td>
                 <td>{{ compound.get_duration_string }}</td>
                 <td>{{ compound.addition_location }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if object.group and object.group.assaygroupsetting_set.count %}
+    <legend>Settings</legend>
+    <table class="table table-striped table-bordered">
+        <thead>
+        <tr>
+            <th>Setting</th>
+            <th>Value</th>
+            <th>Unit</th>
+            <th>Addition Time</th>
+            <th>Duration</th>
+            <th>Addition Location</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for setting in object.group.assaygroupsetting_set.all %}
+            <tr>
+                <td>{{ setting.setting }}</td>
+                <td>{{ setting.value|intcomma }}</td>
+                <td>{{ setting.unit }}</td>
+                <td>{{ setting.get_addition_time_string }}</td>
+                <td>{{ setting.get_duration_string }}</td>
+                <td>{{ setting.addition_location }}</td>
             </tr>
         {% endfor %}
         </tbody>

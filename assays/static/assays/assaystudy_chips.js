@@ -128,15 +128,40 @@ $(document).ready(function () {
         else {
             var example_strings = [];
 
+            // We have to count the number of chips, I guess
+            // A little clumsy, but you know
+            var number_of_chips = 0;
+            $.each(chips, function(index, chip) {
+                // Check the group if necessary
+                // Using group_index may be dangerous??
+                // (It is probably fine, but an ID is maybe more specific)
+                if (!group || (group && chip['group_index'] == group)) {
+                    number_of_chips++;
+                }
+            });
+
             // Three examples for the moment
-            for(var i=0; i < 3; i++) {
+            var terminate_point = 3;
+
+            if (terminate_point > number_of_chips) {
+                terminate_point = number_of_chips;
+            }
+
+            for(var i=0; i < terminate_point; i++) {
                 example_strings.push(
                     get_incremented_name(i, initial_value, first_half, second_half, original_name)
                 );
             }
 
+            // If the termination is larger, then use it in the example
+            if (number_of_chips - 1 > 2) {
+                example_strings.push(
+                    '... ' + get_incremented_name(number_of_chips - 1, initial_value, first_half, second_half, original_name)
+                );
+            }
+
             example_section.text(
-                example_strings.join(', ') + '...'
+                example_strings.join(', ')
             );
         }
     }

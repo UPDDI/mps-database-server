@@ -843,6 +843,8 @@ $(document).ready(function () {
 
     // For the hover preview of the data
     // TODO NEED current_group for dilution etc.
+    // NOTE WE DON'T USE SERIES YET
+    // Maybe never?
     function generate_row_clone_html(current_well_name, current_series, current_group) {
         // (these divs are contrivances)
         var name_row = $('<div>').append(
@@ -855,9 +857,10 @@ $(document).ready(function () {
 
         // SUBJECT TO CHANGE
         // Just draws from the difference table
-        if (series_data[current_series]) {
+        // Be careful with conditionals! Zero has the truthiness of *false*!
+        if (series_data[current_group] !== undefined) {
             full_row.append(
-                $('tr[data-group-name="' + series_data[current_series].name + '"]').clone()
+                $('tr[data-group-name="' + series_data[current_group].name + '"]').clone()
             );
         }
 
@@ -897,7 +900,8 @@ $(document).ready(function () {
         // var current_series = null;
         var current_data = matrix_item_data[$(this).parent().attr('data-row-column')];
 
-        if (current_data && current_data.group_index) {
+        // BE CAREFUL WITH CONDITIONALS
+        if (current_data && current_data.group_index !== undefined) {
             current_group = current_data.group_index;
             // current_series = current_data.series;
         }

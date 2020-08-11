@@ -2241,7 +2241,8 @@ class AssayMatrix(FlaggableModel):
             # ('chip', 'Chip'),
             ('plate', 'Plate'),
             # What other things might interest us?
-            ('', '')
+            # We exclude null, for now
+            # ('', '')
         ),
         verbose_name='Representation'
     )

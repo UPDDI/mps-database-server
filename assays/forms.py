@@ -1941,6 +1941,8 @@ class AssayStudyPlateForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
     # FORCE UNIQUENESS CHECK
     def clean(self):
+        # RATHER CRUDE: WE FORCE THE PLATE TO HAVE A REPRESENTATION OF PLATE
+        self.instance.representation = 'plate'
         cleaned_data = super(AssayStudyPlateForm, self).clean()
 
         # VERY SLOPPY
