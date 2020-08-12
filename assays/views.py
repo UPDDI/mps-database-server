@@ -50,6 +50,7 @@ from assays.models import (
     assay_plate_reader_map_info_plate_size_choices_list,
     upload_file_location,
     AssayOmicDataFileUpload,
+    AssayOmicDataPoint,
 )
 from assays.forms import (
     AssayStudyConfigurationForm,
@@ -5282,6 +5283,21 @@ class AssayOmicDataFileUploadIndex(StudyViewerMixin, DetailView):
         # get and put short file name into queryset
         for file in datafiles:
             file.name_short = os.path.basename(str(file.omic_data_file))
+
+        # find count of genomic data points associated to each file
+        data_point_count = AssayOmicDataPoint.objects.filter(
+            study=self.object.id
+        ).values('omic_data_file').annotate(
+            point_count=Count('omic_data_file')
+        )
+        # put point counts in a dictionary
+        point_count_dict = {}
+        for each in data_point_count.iterator():
+            point_count_dict.update({each.get('omic_data_file'): each.get('point_count')})
+
+        # put the counts into the queryset
+        for file in datafiles:
+            file.point_count = point_count_dict.get(int(file.id))
 
         context['datafiles'] = datafiles
         return context

@@ -3,7 +3,7 @@
 {% block breadcrumbs %}
     <li><a href="/assays/assaystudy/">Studies</a>
     <li><a href="{{ object.study.get_absolute_url }}">{{ object.study }}</a></li>
-    <li><a href="{% url 'assayomicdatafileupload-index' object.study.id %}">Assay Omic Data Files</a>
+    <li><a href="{% url "assayomicdatafileupload-index" object.study.id %}">Assay Omic Data Files</a>
     <li class="active">
         <em>{{ object }}</em>
     </li>

@@ -1365,7 +1365,7 @@ admin.site.register(AssayOmicDataGroup, AssayOmicDataGroupAdmin)
 class AssayOmicDataFileUploadAdmin(ImportExportModelAdmin):
     model = AssayOmicDataFileUpload
     list_display = ('study', 'omic_data_file', 'description', 'data_type', 'method', 'pipeline',
-                    'group_1', 'group_2', 'time_1', 'time_2', 'location_1', 'location_2')
+                    'group_1', 'group_2', 'time_1', 'time_2', 'location_1', 'location_2', 'name_reference')
     search_fields = ('description', )
 
 admin.site.register(AssayOmicDataFileUpload, AssayOmicDataFileUploadAdmin)

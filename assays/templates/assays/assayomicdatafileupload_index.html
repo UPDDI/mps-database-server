@@ -14,7 +14,7 @@
 
 {% block content %}
 
-    {% include 'tracking.html' with study_submit='true' %}
+    {% include "tracking.html" with study_submit="true" %}
 
     <div class="padded-bottom">
         <div class="well">
@@ -32,7 +32,7 @@
                         {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
                             {% if not review %}
                             <div>
-                                <a href="{% url 'assayomicdatafileupload-add' object.id %}" class="btn btn-success" role="button">Add Omic Data File</a>
+                                <a href="{% url "assayomicdatafileupload-add" object.id %}" class="btn btn-success" role="button">Add Omic Data File</a>
                             </div>
                                 {% endif %}
                         {% endif %}
@@ -56,21 +56,29 @@
                     <th>View</th>
                     <th>Edit</th>
                     <th>File</th>
+                    <th># Points</th>
                     <th>Description</th>
                     <th>Method</th>
+                    <th>Data Type</th>
+                    <th>Name</th>
+                    <th>Pipeline</th>
                     <th>Group 1</th>
+                    <th>Time 1 (min)</th>
+                    <th>Location 1</th>
                     <th>Group 2</th>
+                    <th>Time 2 (min)</th>
+                    <th>SLocation 2</th>
                 </tr>
             </thead>
             <tbody>
             {% for file in datafiles %}
                 <tr>
                     <td>
-                        <a class="btn btn-primary" href="{% url 'assayomicdatafileupload-view' file.id  %}">View </a>
+                        <a class="btn btn-primary" href="{% url "assayomicdatafileupload-view" file.id  %}">View </a>
                     </td>
                     <td>
 {#                      {% if not object.signed_off_by %}#}
-                        <a class="btn btn-primary" href="{% url 'assayomicdatafileupload-update' file.id  %}">Edit </a>
+                        <a class="btn btn-primary" href="{% url "assayomicdatafileupload-update" file.id  %}">Edit </a>
 {#                      {% endif %}#}
                     </td>
                     <td>
@@ -78,10 +86,20 @@
                             {{ file.omic_data_file }}
                         </a>
                     </td>
+
+                    <td>{{ file.point_count }}</td>
                     <td>{{ file.description }}</td>
                     <td>{{ file.method }}</td>
+                    <td>{{ file.data_type }}</td>
+                    <td>{{ file.name_reference }}</td>
+                    <td>{{ file.pipeline }}</td>
                     <td>{{ file.group_1 }}</td>
+                    <td>{{ file.time_1 }}</td>
+                    <td>{{ file.location_1 }}</td>
                     <td>{{ file.group_2 }}</td>
+                    <td>{{ file.time_2 }}</td>
+                    <td>{{ file.location_2 }}</td>
+
                 </tr>
             {% endfor %}
             </tbody>
