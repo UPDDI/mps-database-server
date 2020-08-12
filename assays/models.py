@@ -3141,99 +3141,129 @@ class AssayMatrixItem(FlaggableModel):
     def __str__(self):
         return str(self.name)
 
+    # REVISED: Just alias to the respective group methods, maybe a bit clumsy
     def devolved_settings(self, criteria=DEFAULT_SETTING_CRITERIA):
         """Makes a tuple of cells (for comparison)"""
-        setting_tuple = []
-        attribute_getter = tuple_attrgetter(*criteria)
-        for setting in self.assaysetupsetting_set.all():
-            current_tuple = attribute_getter(setting)
-
-            setting_tuple.append(current_tuple)
-
-        return tuple(sorted(set(setting_tuple)))
+        return self.group.devolved_settings(criteria)
 
     def stringify_settings(self, criteria=None):
         """Stringified cells for a setup"""
-        settings = []
-        for setting in self.assaysetupsetting_set.all():
-            settings.append(setting.flex_string(criteria))
-
-        if not settings:
-            settings = ['-No Extra Settings-']
-
-        return '\n'.join(collections.OrderedDict.fromkeys(settings))
+        return self.group.stringify_settings(criteria)
 
     def devolved_cells(self, criteria=DEFAULT_CELL_CRITERIA):
         """Makes a tuple of cells (for comparison)"""
-        cell_tuple = []
-        attribute_getter = tuple_attrgetter(*criteria)
-        for cell in self.assaysetupcell_set.all():
-            current_tuple = attribute_getter(cell)
-
-            cell_tuple.append(current_tuple)
-
-        return tuple(sorted(set(cell_tuple)))
+        return self.group.devolved_cells(criteria)
 
     def stringify_cells(self, criteria=None):
         """Stringified cells for a setup"""
-        cells = []
-        for cell in self.assaysetupcell_set.all():
-            cells.append(cell.flex_string(criteria))
-
-        if not cells:
-            cells = ['-No Cell Samples-']
-
-        return '\n'.join(collections.OrderedDict.fromkeys(cells))
+        return self.group.stringify_cells(criteria)
 
     def devolved_compounds(self, criteria=DEFAULT_COMPOUND_CRITERIA):
         """Makes a tuple of compounds (for comparison)"""
-        compound_tuple = []
-        attribute_getter = tuple_attrgetter(*criteria)
-        for compound in self.assaysetupcompound_set.all():
-            current_tuple = attribute_getter(compound)
-
-            compound_tuple.append(current_tuple)
-
-        return tuple(sorted(set(compound_tuple)))
+        return self.group.devolved_compounds(criteria)
 
     def stringify_compounds(self, criteria=None):
         """Stringified cells for a setup"""
-        compounds = []
-        for compound in self.assaysetupcompound_set.all():
-            compounds.append(compound.flex_string(criteria))
-
-        if not compounds:
-            compounds = ['-No Compounds-']
-
-        return '\n'.join(collections.OrderedDict.fromkeys(compounds))
+        return self.group.stringify_compounds(criteria)
 
     def get_compound_profile(self, matrix_item_compound_post_filters):
         """Compound profile for determining concentration at time point"""
-        compound_profile = []
+        return self.group.stringify_compounds(matrix_item_compound_post_filters)
 
-        for compound in self.assaysetupcompound_set.all():
-            valid_compound = True
+    # OLD!
+    # def devolved_settings(self, criteria=DEFAULT_SETTING_CRITERIA):
+    #     """Makes a tuple of cells (for comparison)"""
+    #     setting_tuple = []
+    #     attribute_getter = tuple_attrgetter(*criteria)
+    #     for setting in self.assaysetupsetting_set.all():
+    #         current_tuple = attribute_getter(setting)
 
-            # Makes sure the compound doesn't violate filters
-            # This is because a compound can be excluded even if its parent matrix item isn't!
-            for filter, values in list(matrix_item_compound_post_filters.items()):
-                if str(attr_getter(compound, filter.split('__'))) not in values:
-                    valid_compound = False
-                    break
+    #         setting_tuple.append(current_tuple)
 
-            compound_profile.append({
-                'valid_compound': valid_compound,
-                'addition_time': compound.addition_time,
-                'duration': compound.duration,
-                # SCALE INITIALLY
-                'concentration': compound.concentration * compound.concentration_unit.scale_factor,
-                # JUNK
-                # 'scale_factor': compound.concentration_unit.scale_factor,
-                'name': compound.compound_instance.compound.name,
-                'base_unit': compound.concentration_unit.base_unit.unit,
-            })
+    #     return tuple(sorted(set(setting_tuple)))
 
-        return compound_profile
+    # def stringify_settings(self, criteria=None):
+    #     """Stringified cells for a setup"""
+    #     settings = []
+    #     for setting in self.assaysetupsetting_set.all():
+    #         settings.append(setting.flex_string(criteria))
+
+    #     if not settings:
+    #         settings = ['-No Extra Settings-']
+
+    #     return '\n'.join(collections.OrderedDict.fromkeys(settings))
+
+    # def devolved_cells(self, criteria=DEFAULT_CELL_CRITERIA):
+    #     """Makes a tuple of cells (for comparison)"""
+    #     cell_tuple = []
+    #     attribute_getter = tuple_attrgetter(*criteria)
+    #     for cell in self.assaysetupcell_set.all():
+    #         current_tuple = attribute_getter(cell)
+
+    #         cell_tuple.append(current_tuple)
+
+    #     return tuple(sorted(set(cell_tuple)))
+
+    # def stringify_cells(self, criteria=None):
+    #     """Stringified cells for a setup"""
+    #     cells = []
+    #     for cell in self.assaysetupcell_set.all():
+    #         cells.append(cell.flex_string(criteria))
+
+    #     if not cells:
+    #         cells = ['-No Cell Samples-']
+
+    #     return '\n'.join(collections.OrderedDict.fromkeys(cells))
+
+    # def devolved_compounds(self, criteria=DEFAULT_COMPOUND_CRITERIA):
+    #     """Makes a tuple of compounds (for comparison)"""
+    #     compound_tuple = []
+    #     attribute_getter = tuple_attrgetter(*criteria)
+    #     for compound in self.assaysetupcompound_set.all():
+    #         current_tuple = attribute_getter(compound)
+
+    #         compound_tuple.append(current_tuple)
+
+    #     return tuple(sorted(set(compound_tuple)))
+
+    # def stringify_compounds(self, criteria=None):
+    #     """Stringified cells for a setup"""
+    #     compounds = []
+    #     for compound in self.assaysetupcompound_set.all():
+    #         compounds.append(compound.flex_string(criteria))
+
+    #     if not compounds:
+    #         compounds = ['-No Compounds-']
+
+    #     return '\n'.join(collections.OrderedDict.fromkeys(compounds))
+
+    # def get_compound_profile(self, matrix_item_compound_post_filters):
+    #     """Compound profile for determining concentration at time point"""
+    #     compound_profile = []
+
+    #     for compound in self.assaysetupcompound_set.all():
+    #         valid_compound = True
+
+    #         # Makes sure the compound doesn't violate filters
+    #         # This is because a compound can be excluded even if its parent matrix item isn't!
+    #         for filter, values in list(matrix_item_compound_post_filters.items()):
+    #             if str(attr_getter(compound, filter.split('__'))) not in values:
+    #                 valid_compound = False
+    #                 break
+
+    #         compound_profile.append({
+    #             'valid_compound': valid_compound,
+    #             'addition_time': compound.addition_time,
+    #             'duration': compound.duration,
+    #             # SCALE INITIALLY
+    #             'concentration': compound.concentration * compound.concentration_unit.scale_factor,
+    #             # JUNK
+    #             # 'scale_factor': compound.concentration_unit.scale_factor,
+    #             'name': compound.compound_instance.compound.name,
+    #             'base_unit': compound.concentration_unit.base_unit.unit,
+    #         })
+
+    #     return compound_profile
 
     # SPAGHETTI CODE
     # TERRIBLE, BLOATED
