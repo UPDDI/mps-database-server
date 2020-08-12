@@ -241,20 +241,6 @@ for item in CALIBRATION_CURVE_MASTER_DICT.items():
     calibration_keys_list.append(item[0])
 calibration_keys_list.pop(0)
 
-# in forms.py, this finds the key for the value provided as thisHeader
-# def find_a_key_by_value_in_dictionary(this_dict, this_header):
-
-# Make a dictionary of headers from file and team display target names
-OMIC_COLUMN_HEADER_TO_TARGET_DICT = {
-    'baseMean':       'baseMean',
-    'log2FoldChange': 'log2FoldChange',
-    'lfcSE':          'lfcSE',
-    'stat':           'stat',
-    'pvalue':         'pvalue',
-    'padj':           'padj',
-    # 'padj': 'DESeq2-padj',
-}
-
 # STRINGS FOR WHEN NONE OF THE ENTITY IN QUESTION
 NO_COMPOUNDS_STRING = '-No Compounds-'
 NO_CELLS_STRING = '-No Cells-'
@@ -6503,75 +6489,134 @@ def sandrasGeneralFormatNumberFunction(this_number_in):
         return formatted_number
 
 
-# sck called from forms.py when save a change data file
-def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, file_extension, called_from):
+# sck called from forms.py when save or change omic data file
+def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, file_extension, called_from, data_type, pipeline):
     """
     Assay Omics Data File Add or Change the file (utility).
     """
 
-    omic_deseq2_headers = []
-    omic_deseq2_headers_lower = []
-    omic_deseq2_targets = []
-    omic_deseq2_targets_pk = []
-    for ke, va in OMIC_COLUMN_HEADER_TO_TARGET_DICT.items():
-        omic_deseq2_headers.append(ke)
-        omic_deseq2_headers_lower.append(ke.lower())
-        omic_deseq2_targets.append(va)
-    # these targets have to be IN the target list or they will get a 1
-    for t in omic_deseq2_targets:
-        target_pk = 1
-        obj = AssayTarget.objects.filter(name=t).first()
-        if obj is not None:
-            target_pk = obj.id
-        omic_deseq2_targets_pk.append(target_pk)
-
-    error_message = ""
+    error_message = ''
     continue_outer_if_true = True
+    # if there is more than one Excel sheet, will need a loop, check for number of sheets.
     looper = 1
     sheet_index = 0
     workbook = None
     # construct here so can use this name anywhere
-    df = pd.DataFrame(columns=["one"])
-    # if there are multiple sheets, they can all be added to one bulk file - that means only need one list_of_instances
+    df = pd.DataFrame(columns=['one'])
+    # if there are multiple sheets, they can all be added to one bulk file
+    # that means only need one list_of_instances for all the sheets
     list_of_instances = []
     instance_counter = 0
 
-    # if there is more than one Excel sheet, will need a loop, check for number of sheets.
-    if file_extension in ['.xls', '.xlsx']:
-        try:
-            file_data = data_file.read()
-            workbook = xlrd.open_workbook(file_contents=file_data)
-            looper = len(workbook.sheet_names())
-        except:
-            continue_outer_if_true = False
-            error_message = error_message + "Has and Excel extension but file could not be opened."
-            raise forms.ValidationError(error_message)
+    df_column_headers_stripped = []
+    target_text_lower_list = []
+    target_pk_list = []
+
+    target_to_pk_dict = {target.name: target.id for target in AssayTarget.objects.all()}
+
+    # will need to handle the targets differently for the different import formats
+    # get the list of target pks needed (may only need one, that is okay)
+    if data_type == 'log2fc' and pipeline == 'deseq2':
+        targets_and_pks = omic_deseq2_log2fc_upload_get_file_headers_and_targets(target_to_pk_dict)
+        target_text_lower_list = targets_and_pks[0]
+        target_pk_list = targets_and_pks[1]
+    elif data_type == 'normcounts':
+        target_text = 'Normalized Count'
+        target_pk_single = target_to_pk_dict.get(target_text, 1)
+        target_text_lower_list = [target_text.lower()]
+        target_pk_list = [target_pk_single]
+    elif data_type == 'rawcounts':
+        target_text = 'Raw Count'
+        target_pk_single = target_to_pk_dict.get(target_text, 1)
+        target_text_lower_list = [target_text.lower()]
+        target_pk_list = [target_pk_single]
+    else:
+        error_message = error_message + 'No option for this combination of data type and pipeline has been programmed. Contact the MPS Database Admins.'
+        raise forms.ValidationError(error_message)
+        continue_outer_if_true = False
+
+    # print(target_text_lower_list)
+    # print(target_pk_list)
+
+    if continue_outer_if_true:
+        # get the number of sheets need to loop through and check to see if valid
+        if file_extension in ['.xls', '.xlsx']:
+            try:
+                file_data = data_file.read()
+                workbook = xlrd.open_workbook(file_contents=file_data)
+                looper = len(workbook.sheet_names())
+            except:
+                continue_outer_if_true = False
+                error_message = error_message + 'Has and Excel extension but file could not be opened.'
+                raise forms.ValidationError(error_message)
 
     if continue_outer_if_true:
         # each sheet will be checked for data
-        # not all sheets need to be valid, a sheet can be skipped and other imported
-        while sheet_index < looper:
+        # not all sheets need to be valid, a sheet can be skipped and others imported
 
+        while sheet_index < looper:
             # Guts of opening the file or sheet and find and return the dataframe
-            sub_find_dataframe = data_file_to_dataframe(data_file, file_extension, workbook, sheet_index)
+            # same for all data import types - no splitting by data type is needed
+            sub_find_dataframe = data_file_to_data_frame(data_file, file_extension, workbook, sheet_index)
             continue_this_sheet_if_true = sub_find_dataframe[0]
             error_message = error_message + sub_find_dataframe[1]
             df = sub_find_dataframe[2]
 
-            if continue_this_sheet_if_true:
-                # Guts of the QC for the omics data point file
-                qc_each_file_or_worksheet_level = qc_the_file_level(df, omic_deseq2_headers_lower)
-                continue_this_sheet_if_true = qc_each_file_or_worksheet_level[0]
-                error_message = error_message + qc_each_file_or_worksheet_level[1]
-                name_use = qc_each_file_or_worksheet_level[2]
+            # avoid problems with leading or trailing spaces
+            df.columns = df.columns.str.strip()
+            # save these in a list, because, need for some data (headers are chip ID names, sample names, group names)
+            df_column_headers_stripped = df.columns
+            df.columns = map(str.lower, df.columns)
+            matrix_item_pk_list = []
 
             if continue_this_sheet_if_true:
+                qc_each_file_or_worksheet_level = []
+                # Guts of the QC for the omics data point file
+                # functions should return continue and error message (and other stuff if needed for data type)
+                if data_type == 'log2fc' and pipeline == 'deseq2':
+                    qc_each_file_or_worksheet_level = omic_deseq2_log2fc_qc_the_fold_change_file_level(
+                        df, target_text_lower_list)
+                    continue_this_sheet_if_true = qc_each_file_or_worksheet_level[0]
+                    error_message = error_message + qc_each_file_or_worksheet_level[1]
+                    gene_id_field_name_if_app = qc_each_file_or_worksheet_level[2]
+                elif data_type == 'normcounts':
+                    qc_each_file_or_worksheet_level = omic_count_qc_the_count_file_level(df, study_id)
+                    continue_this_sheet_if_true = qc_each_file_or_worksheet_level[0]
+                    error_message = error_message + qc_each_file_or_worksheet_level[1]
+                    matrix_item_pk_list = qc_each_file_or_worksheet_level[2]
+                    gene_id_field_name_if_app = 'name'
+                elif data_type == 'rawcounts':
+                    qc_each_file_or_worksheet_level = omic_count_qc_the_count_file_level(df, study_id)
+                    continue_this_sheet_if_true = qc_each_file_or_worksheet_level[0]
+                    error_message = error_message + qc_each_file_or_worksheet_level[1]
+                    matrix_item_pk_list = qc_each_file_or_worksheet_level[2]
+                    gene_id_field_name_if_app = 'name'
+                else:
+                    continue_this_sheet_if_true = False
+
+            data_loaded_to_list_of_instances = [continue_this_sheet_if_true, error_message, list_of_instances, instance_counter]
+            if continue_this_sheet_if_true:
                 # Guts of data loading for omic data file
-                data_loaded_to_list_of_instances = load_data_to_list_of_instances(
-                    list_of_instances, instance_counter, df,
-                    study_id, omic_data_file_id, omic_deseq2_targets_pk,
-                    omic_deseq2_headers_lower, called_from, name_use
-                )
+                # functions should return continue, error message, and a list of instances and an instance counter
+                if data_type == 'log2fc' and pipeline == 'deseq2':
+                    data_loaded_to_list_of_instances = omic_deseq2_log2fc_data_to_list_of_instances(
+                        list_of_instances, instance_counter, df,
+                        study_id, omic_data_file_id, target_pk_list,
+                        target_text_lower_list, called_from, gene_id_field_name_if_app)
+                elif data_type == 'normcounts':
+                    data_loaded_to_list_of_instances = omic_counts_data_to_list_of_instances(
+                        list_of_instances, instance_counter, df,
+                        study_id, omic_data_file_id, target_pk_list,
+                        matrix_item_pk_list, called_from, gene_id_field_name_if_app)
+                elif data_type == 'rawcounts':
+                    data_loaded_to_list_of_instances = omic_counts_data_to_list_of_instances(
+                        list_of_instances, instance_counter, df,
+                        study_id, omic_data_file_id, target_pk_list,
+                        matrix_item_pk_list, called_from, gene_id_field_name_if_app)
+                else:
+                    continue_this_sheet_if_true = False
+
+            if continue_this_sheet_if_true:
                 continue_this_sheet_if_true = data_loaded_to_list_of_instances[0]
                 error_message = error_message + data_loaded_to_list_of_instances[1]
                 list_of_instances = data_loaded_to_list_of_instances[2]
@@ -6580,39 +6625,45 @@ def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, fi
             sheet_index = sheet_index + 1
 
     if instance_counter == 0:
-        error_message = error_message + "There were no records in the file to upload. "
+        error_message = error_message + 'There were no records in the file to upload. '
         raise forms.ValidationError(error_message)
         continue_outer_if_true = False
 
     if called_from == 'save' and continue_outer_if_true:
-        # Guts of removing old and saving the data to the DataPoint Table.
-        # double check that there are data ready to add to the DataPoint table before continuing
-        if len(list_of_instances) > 0:
-            try:
-                # if there are data in the omic data point table related to this file, remove them all
-                instance = AssayOmicDataPoint.objects.filter(omic_data_file=data_file_pk)
-                instance.delete()
-            except:
-                # if found none
-                pass
-            # Add the data to the omic data point table
-            AssayOmicDataPoint.objects.bulk_create(list_of_instances)
-        else:
-            # This should not happen - should be screened out in the clean - here just in case
-            error_message = error_message + " During the save, found no records in the file to upload. Should have received and error message during data cleaning. "
-            raise forms.ValidationError(error_message)
+        omic_upload_remove_and_add(omic_data_file_id, list_of_instances, error_message)
 
-    return "done"
+    return 'done'
 
-def data_file_to_dataframe(data_file, file_extension, workbook=None, sheet_index=None):
+
+def omic_upload_remove_and_add(data_file_pk, list_of_instances, error_message):
+    # Guts of removing old and saving the data to the DataPoint Table.
+    # double check that there are data ready to add to the DataPoint table before continuing
+    if len(list_of_instances) > 0:
+        try:
+            # if there are data in the omic data point table related to this file, remove them all
+            instance = AssayOmicDataPoint.objects.filter(omic_data_file=data_file_pk)
+            instance.delete()
+        except:
+            # if found none
+            pass
+        # Add the data to the omic data point table
+        AssayOmicDataPoint.objects.bulk_create(list_of_instances)
+    else:
+        # This should not happen - should be screened out in the clean - here just in case
+        error_message = error_message + ' During the save, found no records in the file to upload. Should have received and error message during data cleaning. '
+        raise forms.ValidationError(error_message)
+
+
+def data_file_to_data_frame(data_file, file_extension, workbook=None, sheet_index=None):
+    # should be able to use this for all data to data frame
 
     # being called for each text file or each workbook sheet
     # make a default data frame
-    df = pd.DataFrame(columns=["one"])
+    df = pd.DataFrame(columns=['one'])
 
     try_again = False
     true_if_dataframe_found = True
-    error_message = ""
+    error_message = ''
 
     if file_extension == '.csv':
         try:
@@ -6637,58 +6688,103 @@ def data_file_to_dataframe(data_file, file_extension, workbook=None, sheet_index
         try:
             df = pd.read_csv(data_file, header=0)
         except:
-            error_message = "ERROR - file was not in a recognized format."
+            error_message = 'ERROR - file was not in a recognized format.'
             true_if_dataframe_found = False
 
     return [true_if_dataframe_found, error_message, df]
 
 
-def qc_the_file_level(df, omic_deseq2_headers_lower):
-    error_message = ""
+def omic_deseq2_log2fc_upload_get_file_headers_and_targets(target_to_pk_dict):
+    # in forms.py, this finds the key for the value provided as thisHeader
+    # def find_a_key_by_value_in_dictionary(this_dict, this_header):
+
+    # Make a dictionary of headers from file and team display target names
+    OMIC_COLUMN_HEADER_TO_TARGET_DICT = {
+        'baseMean': 'baseMean',
+        'log2FoldChange': 'log2FoldChange',
+        'lfcSE': 'lfcSE',
+        'stat': 'stat',
+        'pvalue': 'pvalue',
+        'padj': 'padj',
+        # 'padj': 'DESeq2-padj',
+    }
+
+    omic_deseq2_headers = []
+    omic_deseq2_headers_lower = []
+    omic_deseq2_targets = []
+    omic_deseq2_targets_pk = []
+    for ke, va in OMIC_COLUMN_HEADER_TO_TARGET_DICT.items():
+        omic_deseq2_headers.append(ke)
+        omic_deseq2_headers_lower.append(ke.lower())
+        omic_deseq2_targets.append(va)
+
+    for name in omic_deseq2_targets:
+        target_pk = target_to_pk_dict.get(name, 1)
+        omic_deseq2_targets_pk.append(target_pk)
+    return [omic_deseq2_headers_lower, omic_deseq2_targets_pk]
+
+
+def omic_deseq2_log2fc_qc_the_fold_change_file_level(df, target_text_lower_list):
+    error_message = ''
     continue_this_sheet_if_true = True
-    # avoid problems with leading or trailing spaces
-    df.columns = df.columns.str.strip()
-    df.columns = map(str.lower, df.columns)
     # may need other options here (eg probe_id, refseq name, etc), but these will do for now
-    name_use = ""
+    gene_id_field_name_if_app = ''
     if 'gene' in df.columns:
-        name_use = 'gene'
+        gene_id_field_name_if_app = 'gene'
     elif 'name' in df.columns:
-        name_use = 'name'
+        gene_id_field_name_if_app = 'name'
     else:
         # for this sheet or file, the HEADER for the target field could not be found, skip this sheet
         continue_this_sheet_if_true = False
-    # make sure all the required headers are in this file
-    for each in omic_deseq2_headers_lower:
+    # make sure all the required target_text_lower_list are in this file
+    for each in target_text_lower_list:
         if each in df.columns:
             pass
         else:
             continue_this_sheet_if_true = False
-            error_message = error_message + " Required field " + each + " is missing. "
-    # here here is the place to add more QC column header checks
-    return [continue_this_sheet_if_true, error_message, name_use]
+            error_message = error_message + ' Required field ' + each + ' is missing. '
+    return [continue_this_sheet_if_true, error_message, gene_id_field_name_if_app]
 
 
-def load_data_to_list_of_instances(
+def omic_count_qc_the_count_file_level(df, study_id):
+    error_message = ''
+    continue_this_sheet_if_true = True
+
+    matrix_item_name_to_pk = {matrix_item.name: matrix_item.id for matrix_item in AssayMatrixItem.objects.filter(study_id=study_id)}
+
+    matrix_item_pk_list = []
+    i = 0
+    for each in df.columns:
+        pk = matrix_item_name_to_pk.get(each, 0)
+        matrix_item_pk_list.append(pk)
+        if pk == 0 and i > 0:
+            # build the error string just in case NONE of the fields are valid, but otherwise, just ignore them
+            # continue_this_sheet_if_true = False
+            error_message = error_message + ' Chip/Well Name ' + each + ' not found in this study. '
+        i = i + 1
+    return [continue_this_sheet_if_true, error_message, matrix_item_pk_list]
+
+
+def omic_deseq2_log2fc_data_to_list_of_instances(
     list_of_instances, instance_counter, df,
-    study_id, omic_data_file_id, omic_deseq2_targets_pk,
-    omic_deseq2_headers_lower, called_from, name_use
+    study_id, omic_data_file_id, target_pk_list,
+    target_text_lower_list, called_from, gene_id_field_name_if_app
     ):
 
-    error_message = ""
+    error_message = ''
     continue_this_sheet_if_true = True
 
     for index, row in df.iterrows():
-        # each row should have the 5 target columns - 0 to 5
         i = 0
-        while i < 5:
-            name = row[name_use]
-            target = int(omic_deseq2_targets_pk[i])
-            value = row[omic_deseq2_headers_lower[i]]
+        while i < len(target_text_lower_list):
+            name = row[gene_id_field_name_if_app]
+            target = int(target_pk_list[i])
+            value = row[target_text_lower_list[i]]
 
-            # print("index ",index,"  instance_counter ", instance_counter ,"  i ",i,"  name ",name,"  target ",target, "  value ",value)
+            # print('index ',index,'  instance_counter ', instance_counter ,'  i ',i,'  name ',name,'  target ',target, '  value ',value)
 
             # creating an instance causes an error in the clean since there is no pk for this file on the add form
+            # but we want the rest to go through the save AND we want to make sure instances are being counted in the clean
             if called_from == 'save':
                 instance = AssayOmicDataPoint(
                     study_id=study_id,
@@ -6697,11 +6793,69 @@ def load_data_to_list_of_instances(
                     target_id=target,
                     value=value
                 )
-                # print("i ", instance)
                 # add this list to the list of lists
                 list_of_instances.append(instance)
 
             instance_counter = instance_counter + 1
             i = i + 1
+
+    return [continue_this_sheet_if_true, error_message, list_of_instances, instance_counter]
+
+def omic_counts_data_to_list_of_instances(
+    list_of_instances, instance_counter, df,
+    study_id, omic_data_file_id, target_pk_list,
+    matrix_item_pk_list, called_from, gene_id_field_name_if_app
+    ):
+
+    error_message = ''
+    continue_this_sheet_if_true = True
+
+    if len(matrix_item_pk_list) != len(df.columns):
+        error_message = 'There is a problem with finding the list of matrix items. Notify the MPS Database Admins.'
+        continue_this_sheet_if_true = False
+        print(error_message)
+    else:
+        target = int(target_pk_list[0])
+        data_cols = []
+        i = 0
+        for each in df.columns:
+            if i > 0:
+                data_cols.append(each)
+            i = i + 1
+
+        for index, row in df.iterrows():
+
+            # assume for now there will be only one header row and it was row 0 and we specified a header row so it is not called here
+            # if there are additional header rows, deal with them here ....
+
+            name = row[gene_id_field_name_if_app]
+            print('name for this row ',name)
+            c = 0
+
+            while c < len(data_cols):
+                print('c ', c, ' data_cols[c] ', data_cols[c])
+                value = row[data_cols[c]]
+                # note the +1 because the first one was not popped off as the data_cols was
+                this_matrix_item = int(matrix_item_pk_list[c + 1])
+                # print('index ',index,'  instance_counter ', instance_counter ,'  i ',i,'  name ',name,'  target ',target, '  value ',value)
+
+                # creating an instance causes an error in the clean since there is no pk for this file on the add form
+                # but we want the rest to go through the save AND we want to make sure instances are being counted in the clean
+
+                if called_from == 'save' and this_matrix_item > 0:
+                    instance = AssayOmicDataPoint(
+                        study_id=study_id,
+                        omic_data_file_id=omic_data_file_id,
+                        name=name,
+                        target_id=target,
+                        value=value
+                        # , matrix_item_id=this_matrix_item
+                        #     may want a group id or a cross reference, depends on what team decides
+                    )
+                    # add this list to the list of lists
+                    list_of_instances.append(instance)
+
+                instance_counter = instance_counter + 1
+                c = c + 1
 
     return [continue_this_sheet_if_true, error_message, list_of_instances, instance_counter]

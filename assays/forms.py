@@ -4781,12 +4781,12 @@ class AssayPlateReaderMapDataFileAddForm(BootstrapForm):
         if file_extension not in ['.csv', '.tsv', '.txt']:
             if '.xl' in file_extension or '.wk' in file_extension or '.12' in file_extension:
                 raise ValidationError(
-                     "This appears to be an spreadsheet file. To upload, export to a tab delimited file and try again.",
+                     'This appears to be an spreadsheet file. To upload, export to a tab delimited file and try again.',
                      code='invalid'
                 )
             else:
                 raise ValidationError(
-                     "Invalid file extension - must be in ['.csv', '.tsv', '.txt']",
+                     'Invalid file extension - must be in [.csv, .tsv, .txt]',
                      code='invalid'
                 )
         return data
@@ -4816,10 +4816,13 @@ class AssayPlateReaderMapDataFileForm(BootstrapForm):
         # need this because, remember, the plate map doesn't come WITH a study, must tell it which
         if not self.study and self.instance.study:
             self.study = self.instance.study
+            # print('file form self.study ',self.study)
         if self.study:
             self.instance.study = self.study
+            # print('file form self.instance.study ',self.instance.study)
 
         my_instance = self.instance
+        # print('file form my_instance ', my_instance)
 
         # to display the file name without the whole path
         form_filename_only = os.path.basename(str(my_instance.plate_reader_file))
@@ -4846,7 +4849,7 @@ class AssayPlateReaderMapDataFileForm(BootstrapForm):
     )
     # PI wants to select options for file processing
     # Currently, the choices for file formats are HARDCODED here
-    # if we actually iron out the "sanctioned" file formats, these could go into a table and be available in the admin
+    # if we actually iron out the 'sanctioned' file formats, these could go into a table and be available in the admin
     # BUT, reading/processing of the format would still need to be build, so maybe better NOT to put in admin....
 
     se_file_format_select = forms.ChoiceField(
@@ -5017,24 +5020,31 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         data_groups_filtered = AssayOmicDataGroup.objects.filter(
             study_id=self.instance.study.id
         )
+        # find the pk for the method tempo-seq
+        obj = AssayMethod.objects.filter(name='TempO-Seq').first()
+        if obj is not None:
+            method_pk = obj.id
+            self.fields['method'].initial = method_pk
 
         # HANDY to limit options in a dropdown on a model field in a form
         self.fields['group_1'].queryset = data_groups_filtered
         self.fields['group_2'].queryset = data_groups_filtered
 
+        self.fields['group_2'].widget.attrs['class'] += ' required'
+
         if self.instance.time_1:
             time_1_instance = self.instance.time_1
             times_1 = get_split_times(time_1_instance)
-            self.fields['time_1_day'].initial = times_1.get("day")
-            self.fields['time_1_hour'].initial = times_1.get("hour")
-            self.fields['time_1_minute'].initial = times_1.get("minute")
+            self.fields['time_1_day'].initial = times_1.get('day')
+            self.fields['time_1_hour'].initial = times_1.get('hour')
+            self.fields['time_1_minute'].initial = times_1.get('minute')
 
         if self.instance.time_2:
             time_2_instance = self.instance.time_2
             times_2 = get_split_times(time_2_instance)
-            self.fields['time_2_day'].initial = times_2.get("day")
-            self.fields['time_2_hour'].initial = times_2.get("hour")
-            self.fields['time_2_minute'].initial = times_2.get("minute")
+            self.fields['time_2_day'].initial = times_2.get('day')
+            self.fields['time_2_hour'].initial = times_2.get('hour')
+            self.fields['time_2_minute'].initial = times_2.get('minute')
 
     time_1_day = forms.DecimalField(
         required=False,
@@ -5073,10 +5083,10 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
     def save(self, commit=True):
         new_file = super(AssayOmicDataFileUploadForm, self).save(commit=commit)
         if commit:
-            self.process_file(save=True, calledme="save")
+            self.process_file(save=True, calledme='save')
         return new_file
 
-    def process_file(self, save=False, calledme="c"):
+    def process_file(self, save=False, calledme='c'):
         true_to_continue = True
         data = self.cleaned_data
         data['time_1'] = 0
@@ -5100,24 +5110,30 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
             else:
                 true_to_continue = False
                 raise ValidationError(
-                     "Invalid file extension - must be in csv, tsv, txt, xls, or xlsx",
+                     'Invalid file extension - must be in csv, tsv, txt, xls, or xlsx',
                      code='invalid'
                 )
 
         if true_to_continue:
             data_file_pk = self.instance.id
-            if calledme == "clean":
-                # this function is in utils.py
-                # print("form clean")
-                data_file = data.get('omic_data_file')
-                amessage = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme)
-                # print(amessage)
-            else:
-                # print("form save")
-                queryset = AssayOmicDataFileUpload.objects.get(id=data_file_pk)
-                data_file = queryset.omic_data_file.open()
-                amessage = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme)
-                # print(amessage)
+            data_type = data['data_type']
+            pipeline = data['pipeline']
+
+            # here here when decide on other data types
+            if data_type == 'log2fc':
+                # if 5==5:
+                if calledme == 'clean':
+                    # this function is in utils.py
+                    # print('form clean')
+                    data_file = data.get('omic_data_file')
+                    amessage = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, pipeline)
+                    # print(amessage)
+                else:
+                    # print('form save')
+                    queryset = AssayOmicDataFileUpload.objects.get(id=data_file_pk)
+                    data_file = queryset.omic_data_file.open()
+                    amessage = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, pipeline)
+                    # print(amessage)
 
         return data
 
