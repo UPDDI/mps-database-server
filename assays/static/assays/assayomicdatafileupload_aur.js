@@ -11,6 +11,8 @@ $(document).ready(function () {
     let global_omic_current_group1 = $('#id_group_1')[0].selectize.items[0]
     let global_omic_current_group2 = $('#id_group_2')[0].selectize.items[0]
 
+    let global_make_the_group_change = true;
+
     //start this hidden
     $('#omic_file_format_details_section').hide();
 
@@ -81,21 +83,26 @@ let global_omic_method_tooltip = 'Assay Method';
         } else {
             //here here to update when ready
             alert('Uploading of Normalized and Raw Count Data is Currently in Development.');
-            $('#id_group_1').next().removeClass('required');
-            $('.one-group').hide();
+
+            global_make_the_group_change = false;
             $('#id_group_1')[0].selectize.setValue('not-full');
+            $('#id_group_2')[0].selectize.setValue('not-full');
+            global_make_the_group_change = true;
+
+            $('#id_location_1')[0].selectize.setValue('not-full');
             $('#id_time_1_day').val(0);
             $('#id_time_1_hour').val(0);
             $('#id_time_1_minute').val(0);
             global_omic_current_group1 = $('#id_group_1')[0].selectize.items[0];
+            $('.one-group').hide();
 
-            $('#id_group_2').next().removeClass('required');
-            $('.two-groups').hide();
-            $('#id_group_2')[0].selectize.setValue('not-full');
+            $('#id_location_2')[0].selectize.setValue('not-full');
             $('#id_time_2_day').val(0);
             $('#id_time_2_hour').val(0);
             $('#id_time_2_minute').val(0);
             global_omic_current_group2 = $('#id_group_2')[0].selectize.items[0];
+            $('.two-groups').hide();
+
         }
     }
     /**
@@ -121,29 +128,33 @@ let global_omic_method_tooltip = 'Assay Method';
     */
     $('#id_group_1').change(function () {
         //console.log('change 1')
-        if ($('#id_group_1')[0].selectize.items[0] == $('#id_group_2')[0].selectize.items[0]) {
-            $('#id_group_1')[0].selectize.setValue(global_omic_current_group1);
-            send_user_different_message();
-        } else {
-            global_omic_upload_called_from = 'change';
-            global_omic_upload_group_id_working = 1;
-            global_omic_upload_group_pk_working = $('#id_group_1')[0].selectize.items[0];
-            get_group_sample_info('change');
+        if (global_make_the_group_change) {
+            if ($('#id_group_1')[0].selectize.items[0] == $('#id_group_2')[0].selectize.items[0]) {
+                $('#id_group_1')[0].selectize.setValue(global_omic_current_group1);
+                send_user_different_message();
+            } else {
+                global_omic_upload_called_from = 'change';
+                global_omic_upload_group_id_working = 1;
+                global_omic_upload_group_pk_working = $('#id_group_1')[0].selectize.items[0];
+                get_group_sample_info('change');
+            }
+            global_omic_current_group1 = $('#id_group_1')[0].selectize.items[0];
         }
-        global_omic_current_group1 = $('#id_group_1')[0].selectize.items[0];
     });
     $('#id_group_2').change(function () {
-        if ($('#id_group_1')[0].selectize.items[0] == $('#id_group_2')[0].selectize.items[0]) {
-            $('#id_group_2')[0].selectize.setValue(global_omic_current_group2);
-            send_user_different_message();
-        } else {
-            global_omic_upload_called_from = 'change';
-            //console.log('change 2')
-            global_omic_upload_group_id_working = 2;
-            global_omic_upload_group_pk_working = $('#id_group_2')[0].selectize.items[0];
-            get_group_sample_info('change');
+        if (global_make_the_group_change) {
+            if ($('#id_group_1')[0].selectize.items[0] == $('#id_group_2')[0].selectize.items[0]) {
+                $('#id_group_2')[0].selectize.setValue(global_omic_current_group2);
+                send_user_different_message();
+            } else {
+                global_omic_upload_called_from = 'change';
+                //console.log('change 2')
+                global_omic_upload_group_id_working = 2;
+                global_omic_upload_group_pk_working = $('#id_group_2')[0].selectize.items[0];
+                get_group_sample_info('change');
+            }
+            global_omic_current_group2 = $('#id_group_2')[0].selectize.items[0];
         }
-        global_omic_current_group2 = $('#id_group_2')[0].selectize.items[0];
     });
 
     function send_user_different_message() {
