@@ -35,10 +35,12 @@ $(document).ready(function () {
     // here here update the tool tips for the different file formats
     let global_omic_upload_omic_file_format_deseq2_log2fc_tooltip = 'For DESeq2 Log2Fold change data, the following headers are required to be located in the first row of the file or worksheet: baseMean, log2FoldChange, lfcSE, stat, pvalue, padj, and gene or name.';
     $('#omic_file_format_deseq2_log2fc_tooltip').next().html($('#omic_file_format_deseq2_log2fc_tooltip').next().html() + make_escaped_tooltip(global_omic_upload_omic_file_format_deseq2_log2fc_tooltip));
-    let global_omic_upload_omic_file_format_normcounts_tooltip = 'Normalized counts data files must have one header row. the first column must be named "name" and contain a reference to the gene. The remaining columns must be named with the chip or well name as assigned in the MPS Database. ';
+    let global_omic_upload_omic_file_format_normcounts_tooltip = 'Under Development - Normalized counts data files must have one header row. the first column must be named "name" and contain a reference to the gene. The remaining columns must be named with the chip or well name as assigned in the MPS Database. ';
     $('#omic_file_format_normcounts_tooltip').next().html($('#omic_file_format_normcounts_tooltip').next().html() + make_escaped_tooltip(global_omic_upload_omic_file_format_normcounts_tooltip));
-    let global_omic_upload_omic_file_format_rawcounts_tooltip = 'Raw counts data files must have one header row. The first column must be named "name" and contain a reference to the gene. The remaining columns must be named with the chip or well name as assigned in the MPS Database. ';
+    let global_omic_upload_omic_file_format_rawcounts_tooltip = 'Under Development - Raw counts data files must have one header row. The first column must be named "name" and contain a reference to the gene. The remaining columns must be named with the chip or well name as assigned in the MPS Database. ';
     $('#omic_file_format_rawcounts_tooltip').next().html($('#omic_file_format_rawcounts_tooltip').next().html() + make_escaped_tooltip(global_omic_upload_omic_file_format_rawcounts_tooltip));
+let global_omic_method_tooltip = 'Assay Method';
+    $('#omic_method_tooltip').next().html($('#omic_method_tooltip').next().html() + make_escaped_tooltip(global_omic_method_tooltip));
 
 
     // activates Bootstrap tooltips, must be AFTER tooltips are created - keep
@@ -104,13 +106,13 @@ $(document).ready(function () {
         try {
             method_text = $('#id_method')[0].selectize.options[method_value]['text'];
             if (method_text.toLowerCase() == 'tempo-seq') {
-                new_value = 'probe';
+                new_value = 'temposeq_probe';
             } else {
-                new_value = 'ncbi';
+                new_value = 'entrez_gene';
             }
             $('#id_name_reference')[0].selectize.setValue(new_value);
         } catch {
-            $('#id_name_reference')[0].selectize.setValue('ncbi');
+            $('#id_name_reference')[0].selectize.setValue('entrez_gene');
         }
     });
 
