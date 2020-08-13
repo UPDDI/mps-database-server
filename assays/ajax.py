@@ -818,7 +818,22 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
     # )
 
     if groups:
-        setups = groups
+        setups = groups.prefetch_related(
+            # Needed?
+            # 'organ_model',
+            'assaygroupsetting_set__setting',
+            'assaygroupsetting_set__addition_location',
+            'assaygroupsetting_set__unit',
+            'assaygroupcell_set__cell_sample__cell_subtype',
+            'assaygroupcell_set__cell_sample__cell_type__organ',
+            'assaygroupcell_set__density_unit',
+            'assaygroupcell_set__addition_location',
+            'assaygroupcompound_set__compound_instance__compound',
+            'assaygroupcompound_set__concentration_unit',
+            'assaygroupcompound_set__addition_location',
+            # SOMEWHAT FOOLISH
+            'study__group__microphysiologycenter_set'
+        )
 
     if not criteria:
         criteria = {
@@ -887,18 +902,24 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
                 treatment_group_tuple: current_representative
             })
 
-        current_representative.get('Items with Same Treatment').append(
+        # current_representative.get('Items with Same Treatment').append(
             # TODO TODO TODO
             # setup.get_hyperlinked_name()
-            setup.name
-        )
-        current_representative.get('item_ids').append(
-            setup.id
-        )
-        current_representative.setdefault('names for items', []).append(
-            setup.name
-        )
-        setup_to_treatment_group.update({setup.id: current_representative})
+        # )
+
+        # BAD: INEFFICIENT
+        for matrix_item in setup.assaymatrixitem_set.all():
+            current_representative.get('Items with Same Treatment').append(
+                matrix_item.get_hyperlinked_name()
+            )
+            current_representative.get('item_ids').append(
+                matrix_item.id
+            )
+            current_representative.setdefault('names for items', []).append(
+                matrix_item.name
+            )
+            # NOTE: Not a great idea
+            setup_to_treatment_group.update({matrix_item.id: current_representative})
 
     # Attempt to sort reasonably
     # TODO SHOULD STUDY BE PLACED HERE?
