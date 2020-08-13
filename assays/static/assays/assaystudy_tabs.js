@@ -100,9 +100,17 @@ $(document).ready(function() {
         if (redirect_url.val() !== '#') {
             redirect_confirm.dialog('open');
         }
-        // CONTRIVANCE FOR STUDY ADD
         else {
-            $('#submit').trigger('click');
+            // VERY ODD
+            let popup_ref = $('div[aria-describedby="post_submission_override_confirm"]');
+            popup_ref.find('.btn-warning').remove();
+            popup_ref.find('.alert-warning').find('span').eq(2).text('Are you prepared to save this Study and edit its Groups?');
+            redirect_confirm.dialog('open');
         }
+        // CONTRIVANCE FOR STUDY ADD
+        // THIS WOULD JUST SUBMIT, INSTEAD LET US GIVE A REVISED POPUP?
+        // else {
+        //     $('#submit').trigger('click');
+        // }
     });
 });
