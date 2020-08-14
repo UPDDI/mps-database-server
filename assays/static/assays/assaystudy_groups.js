@@ -25,7 +25,6 @@ $(document).ready(function () {
     var series_data = full_series_data.series_data;
     // var matrix_item_data = full_series_data.matrix_item_data;
 
-    // FOR ADD INTERFACE ONLY
     // ERRORS
     var setup_table_errors_selector = $('#setup_table_errors').find('.errorlist');
 
@@ -544,7 +543,10 @@ $(document).ready(function () {
             )
 
         new_row.append(
-            $('<td>').append(organ_model_input).append(
+            $('<td>').append(
+                // CRUDE!
+                $('<div>').addClass('error-message-section error-display important-display')
+            ).append(organ_model_input).append(
                 $('<div>')
                 .append(
                     $('<span>').addClass(
@@ -1084,7 +1086,7 @@ $(document).ready(function () {
         // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
         change_matrix_visibility();
 
-        // Show errors if necessary (ADD)
+        // Show errors if necessary
         if (Object.keys(table_errors).length) {
             $.each(table_errors, function(current_id, error) {
                 var split_info = current_id.split('|');
@@ -1092,8 +1094,19 @@ $(document).ready(function () {
                 var row_index = split_info[1];
                 var column_index = split_info[2];
                 var field = split_info[3];
-                var current_bubble = $('.subform-delete[data-prefix="' + prefix +'"][data-row="' + row_index + '"][data-column="' + column_index + '"]').parent().parent();
-                current_bubble.find('.error-message-section').append(empty_error_html.clone().text(field + ': ' + error));
+
+                let current_errors_section = null;
+
+                // Special exception for groups
+                // Not really used as of yet
+                if (prefix === 'group') {
+                    current_errors_section = $('tr[data-series="' + (parseInt(row_index)+1) + '"]').find('.error-message-section').first();
+                }
+                else {
+                    current_errors_section = $('.subform-delete[data-prefix="' + prefix +'"][data-row="' + row_index + '"][data-column="' + column_index + '"]').parent().parent().find('.error-message-section');
+                }
+
+                current_errors_section.append(empty_error_html.clone().text(field + ': ' + error));
             });
         }
 

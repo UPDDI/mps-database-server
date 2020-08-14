@@ -881,7 +881,9 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
         new_related = None
 
         # Just have the errors be non-field errors for the moment
-        current_errors = []
+        all_errors = {'series_data': [], '__all__': []}
+        current_errors = all_errors.get('series_data')
+        non_field_errors = all_errors.get('__all__')
 
         # Am I sticking with the name 'series_data'?
         if self.cleaned_data.get('series_data', None):
@@ -952,7 +954,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                 try:
                     new_matrix.full_clean()
                 except forms.ValidationError as e:
-                    current_errors.append(e)
+                    non_field_errors.append(e)
             else:
                 new_matrix = None
 
@@ -1048,10 +1050,9 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                 update_groups.append(current_group)
                             # MUST BE MODIFIED TO ADD TO CORRECT ROW (we could display all above too?)
                             except forms.ValidationError as e:
-                                # current_errors.append(e)
                                 current_errors.append(
                                     process_error_with_annotation(
-                                        'Group',
+                                        'group',
                                         setup_row,
                                         0,
                                         e
@@ -1062,7 +1063,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                         # Add to group names
                         # Check uniqueness
                         if setup_group.get('name', '') in group_names:
-                            current_errors.append('The Group name "{}" is duplicated. The names of Groups must be unique.'.format(
+                            non_field_errors.append('The Group name "{}" is duplicated. The names of Groups must be unique.'.format(
                                 setup_group.get('name', '')
                             ))
                         else:
@@ -1101,10 +1102,9 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                         new_groups.append(new_group)
                     # MUST BE MODIFIED TO ADD TO CORRECT ROW (we could display all above too?)
                     except forms.ValidationError as e:
-                        # current_errors.append(e)
                         current_errors.append(
                             process_error_with_annotation(
-                                'Group',
+                                'group',
                                 setup_row,
                                 0,
                                 e
@@ -1115,7 +1115,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                     # Add to group names
                     # Check uniqueness
                     if setup_group.get('name', '') in group_names:
-                        current_errors.append('The Group name "{}" is duplicated. The names of Groups must be unique.'.format(
+                        non_field_errors.append('The Group name "{}" is duplicated. The names of Groups must be unique.'.format(
                             setup_group.get('name', '')
                         ))
                     else:
@@ -1155,6 +1155,18 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                             # Skip if nothing
                             if not current_object:
                                 continue
+
+                            # Crudely convert to int
+                            for current_field, current_value in current_object.items():
+                                if current_field.endswith('_id'):
+                                    if current_value:
+                                        current_object.update({
+                                            current_field: int(current_value)
+                                        })
+                                    else:
+                                        current_object.update({
+                                            current_field: None
+                                        })
 
                             # NOTE TODO TODO TODO
                             # I am probably just going to blow up all of the old related data for the moment and always add
@@ -1267,7 +1279,6 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                         supplier.full_clean()
                                         supplier.save()
                                     except forms.ValidationError as e:
-                                        # raise forms.ValidationError(e)
                                         current_errors.append(
                                             process_error_with_annotation(
                                                 prefix,
@@ -1304,7 +1315,6 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                         compound_instance.full_clean()
                                         compound_instance.save()
                                     except forms.ValidationError as e:
-                                        # raise forms.ValidationError(e)
                                         current_errors.append(
                                             process_error_with_annotation(
                                                 prefix,
@@ -1356,7 +1366,6 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                                         # current_related_list.append(new_compound)
                                         new_compounds.append(new_compound)
                                     except forms.ValidationError as e:
-                                        # raise forms.ValidationError(e)
                                         current_errors.append(
                                             process_error_with_annotation(
                                                 prefix,
@@ -1460,15 +1469,15 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                         ])
                         new_items.append(new_item)
                     except forms.ValidationError as e:
-                        current_errors.append(e)
+                        non_field_errors.append(e)
                         group_has_error = True
 
                 # CAN CAUSE UNUSUAL BEHAVIOR DURING UPDATES!
                 current_item_number += 1
 
-        if current_errors:
-            current_errors.append(['Please review the table below for errors.'])
-            raise forms.ValidationError(current_errors)
+        if current_errors or non_field_errors:
+            non_field_errors.append(['Please review the table below for errors.'])
+            raise forms.ValidationError(all_errors)
 
         # Kind of odd at first blush, but we reverse to save in order
         # new_items = list(reversed(new_items))
