@@ -2265,7 +2265,14 @@ class AssayMatrix(FlaggableModel):
     )
 
     # Decided against the inclusion of organ model here
-    # organ_model = models.ForeignKey(OrganModel, null=True, blank=True, on_delete=models.CASCADE)
+    # NEVER MIND, I GUESS WE ARE GOING TO ALLOW ORGAN MODEL HERE
+    # PLATES NOW REQUIRE ORGAN MODEL, I THINK
+    organ_model = models.ForeignKey(
+        OrganModel,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
+    )
     #
     # organ_model_protocol = models.ForeignKey(
     #     OrganModelProtocol,

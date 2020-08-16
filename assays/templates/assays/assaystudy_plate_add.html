@@ -65,14 +65,17 @@
 
     {% include 'generic_field.html' with field=form.notes %}
 
-    {% include 'generic_field.html' with field=form.device %}
+    {# Irrelevant, apparently #}
+    {# {% include 'generic_field.html' with field=form.device %} #}
+    {% include 'generic_field.html' with field=form.organ_model %}
 
     {# Is this worth it? #}
     {# DEFINITELY OUGHT TO BE HIDDEN #}
     <div hidden>
+        {# ?!?!?! #}
         {% include 'generic_field.html' with field=form.number_of_rows %}
         {% include 'generic_field.html' with field=form.number_of_columns %}
-        {# {% include 'generic_field.html' with field=form.number_of_items %} #}
+        {% include 'generic_field.html' with field=form.number_of_items %}
     </div>
 
     <div class="form-group">
@@ -103,7 +106,7 @@
     {% include 'assays/group_difference_table.html' %}
 
     {# TODO CHANGE #}
-    <div>
+    <div hidden>
         {# OLD #}
         {# {{ form.setup_data }} #}
         {{ form.series_data }}

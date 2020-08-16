@@ -383,7 +383,7 @@ $(document).ready(function () {
     // This determines whether any of the cells, compounds, or settings of the groups differ and shows a table depicting as much
     // NOTE: Depends on a particular element for table
     // NOTE: Depends on a particular input for data (contrived JSON)
-    window.GROUPS.make_difference_table = function(restrict_to) {
+    window.GROUPS.make_difference_table = function(restrict_to, organ_model_id) {
         // console.log("DIFFERENCE TABLE START");
 
         // We needs to know whether or not to show a column for a particular prefix
@@ -410,7 +410,10 @@ $(document).ready(function () {
             relevant_group_data = [];
             $.each(JSON.parse(series_data_selector.val()).series_data, function(index, group) {
                 if (group['device_type'] === restrict_to) {
-                    relevant_group_data.push(group);
+                    // CHECK ORGAN MODEL IF NECESSARY
+                    if (organ_model_id && group['organ_model_id'] == organ_model_id) {
+                        relevant_group_data.push(group);
+                    }
                 }
             });
         }

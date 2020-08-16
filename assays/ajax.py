@@ -294,6 +294,26 @@ def fetch_device_dimensions(request):
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 
+def fetch_device_dimensions_from_organ_model(request):
+    organ_model_id = request.POST.get('organ_model_id', None)
+
+    data = {
+        'number_of_rows': 1,
+        'number_of_columns': 1
+    }
+
+    organ_model = OrganModel.objects.filter(id=organ_model_id)
+
+    if organ_model:
+        device = organ_model[0].device
+        data.update({
+            'number_of_rows': device.number_of_rows,
+            'number_of_columns': device.number_of_columns
+        })
+
+    return HttpResponse(json.dumps(data), content_type='application/json')
+
+
 def send_ready_for_sign_off_email(request):
     data = {}
 
@@ -7056,6 +7076,9 @@ switch = {
     },
     'fetch_organ_model_type': {
         'call': fetch_organ_model_type
+    },
+    'fetch_device_dimensions_from_organ_model': {
+        'call': fetch_device_dimensions_from_organ_model
     },
     'fetch_matrix_setup': {
         'call': fetch_matrix_setup

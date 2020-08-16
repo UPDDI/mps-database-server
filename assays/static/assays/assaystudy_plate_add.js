@@ -27,7 +27,8 @@ $(document).ready(function () {
     }
 
     // Make the difference table
-    window.GROUPS.make_difference_table('plate');
+    // NOT YET!
+    // window.GROUPS.make_difference_table('plate');
 
     // SERIES DATA
     var series_data = full_series_data.series_data;
@@ -53,23 +54,6 @@ $(document).ready(function () {
     //     console.log(full_series_data);
     //     matrix_item_data = full_series_data.plates[full_series_data.plates.length-1];
     // }
-
-    // TEMPORARY ACQUISITION OF GROUPS
-    // THIS NEEDS TO BE REPLACED ASAP
-    $.each(series_data, function(index) {
-        var new_option = null;
-        if (series_data[index].device_type === 'plate') {
-            if (series_data[index].name) {
-                new_option = new Option(series_data[index].name, index)
-            }
-            else {
-                new_option = new Option('Group ' + (index + 1), index)
-            }
-            $('#id_series_selector').append(
-                new_option
-            );
-        }
-    });
 
     // <- END TEMPORARY
 
@@ -111,7 +95,11 @@ $(document).ready(function () {
     var matrix_body_selector = $('#matrix_body');
 
     // Alias for device selector
-    var device_selector = $('#id_device');
+    // OOPS! BROKE!
+    // var device_selector = $('#id_device');
+
+    const organ_model_selector = $('#id_organ_model');
+
     // Alias for representation selector
     // var representation_selector = $('#id_representation');
     // Alias for number of rows/columns
@@ -241,20 +229,20 @@ $(document).ready(function () {
     // TODO PLEASE NOTE THAT THIS GETS RUN A MILLION TIMES DO TO HOW TRIGGERS ARE SET UP
     // TODO MAKE A VARIABLE TO SEE WHETHER DATA WAS ALREADY ACQUIRED
     var get_matrix_dimensions = function() {
-        var current_device = device_selector.val();
+        var current_organ_model = organ_model_selector.val();
 
         var current_number_of_rows = number_of_rows_selector.val();
         var current_number_of_columns = number_of_columns_selector.val();
 
-        if (current_device) {
+        if (current_organ_model) {
             $.ajax({
                 url: "/assays_ajax/",
                 type: "POST",
                 dataType: "json",
                 data: {
-                    call: 'fetch_device_dimensions',
+                    call: 'fetch_device_dimensions_from_organ_model',
                     // The device may be needed to specify the dimensions
-                    device_id: current_device,
+                    organ_model_id: current_organ_model,
                     csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
                 },
                 success: function (json) {
@@ -269,28 +257,6 @@ $(document).ready(function () {
                     console.log(xhr.status + ": " + xhr.responseText);
                 }
             });
-        }
-
-        if (current_number_of_rows > 200) {
-            alert('Number of rows exceeds limit.');
-            number_of_rows_selector.val(200);
-            current_number_of_rows = 200;
-        }
-
-        if (current_number_of_columns > 200) {
-            alert('Number of columns exceeds limit.');
-            current_number_of_columns.val(200);
-            current_number_of_columns = 200;
-        }
-
-        if (!current_device && current_number_of_rows && current_number_of_columns) {
-            build_matrix(
-                current_number_of_rows,
-                current_number_of_columns
-            );
-
-            // initial_number_of_rows = current_number_of_rows;
-            // initial_number_of_columns = current_number_of_columns;
         }
 
         // Set number of items if not already set
@@ -573,8 +539,53 @@ $(document).ready(function () {
     // check_representation();
 
     // Deal with device changing and change dimensions as necessary
+    // ACTUALLY ORGAN MODEL
     function check_matrix_device() {
-        if (device_selector.val()) {
+        let current_organ_model = organ_model_selector.val();
+        if (current_organ_model) {
+            window.GROUPS.make_difference_table('plate', current_organ_model);
+
+            // CLEAR OPTIONS
+            // DUMB WAY
+            $('#id_series_selector').empty();
+
+            // TEMPORARY ACQUISITION OF GROUPS
+            // THIS NEEDS TO BE REPLACED ASAP
+
+            // GET THE VALID GROUPS
+            let valid_groups = {};
+            let first_group = null;
+
+            $.each(series_data, function(index) {
+                var new_option = null;
+                if (series_data[index].device_type === 'plate' && series_data[index].organ_model_id == current_organ_model) {
+                    if (series_data[index].name) {
+                        new_option = new Option(series_data[index].name, index)
+                    }
+                    else {
+                        new_option = new Option('Group ' + (index + 1), index)
+                    }
+                    $('#id_series_selector').append(
+                        new_option
+                    );
+
+                    first_group = {
+                        index: index,
+                        id: series_data[index].id
+                    };
+                    valid_groups[series_data[index].id] = true;
+                }
+            });
+
+            // DUMB: JUST OVERWRITE WITH FIRST VALID IF INVALID
+            // TODO XXX XXX XXX
+            $.each(matrix_item_data, function(row_column, well) {
+                if (!valid_groups[well.group_id]) {
+                    matrix_item_data[row_column].group_id = first_group.id;
+                    matrix_item_data[row_column].group_index = first_group.index;
+                }
+            });
+
             get_matrix_dimensions();
         }
         // else if (!device_selector.val() || representation_selector.val() === 'plate') {
@@ -582,7 +593,7 @@ $(document).ready(function () {
         // }
     }
 
-    device_selector.change(check_matrix_device);
+    organ_model_selector.change(check_matrix_device);
     check_matrix_device();
 
     // PROBABLY DEPRECATED

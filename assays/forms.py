@@ -1921,7 +1921,10 @@ class AssayStudyPlateForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
         fields = (
             'name',
             'notes',
-            'device',
+            # Don't care about device anymore, I guess
+            # 'device',
+            # DO care about organ model, I guess
+            'organ_model',
             # Maybe a bit unorthodox
             'number_of_columns',
             'number_of_rows',
@@ -1947,6 +1950,18 @@ class AssayStudyPlateForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
             self.fields['series_data'].initial = self.study.get_group_data_string(plate_id=self.instance.id)
         else:
             self.fields['series_data'].initial = self.study.get_group_data_string()
+
+        # Predicate the organ model options on the current groups
+        # Dumb query
+        plate_groups = AssayGroup.objects.filter(
+            study_id=self.instance.study.id,
+            # See above
+            organ_model__device__device_type='plate'
+        ).prefetch_related('organ_model__device')
+
+        self.fields['organ_model'].queryset = OrganModel.objects.filter(
+            id__in=plate_groups.values_list('organ_model_id', flat=True)
+        )
 
     # FORCE UNIQUENESS CHECK
     def clean(self):

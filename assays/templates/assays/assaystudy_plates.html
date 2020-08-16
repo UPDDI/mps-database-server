@@ -51,7 +51,7 @@
             <tr>
                 <th>View/Edit</th>
                 <th>Name</th>
-                <th>Device</th>
+                <th>Organ Model</th>
                 <th>Wells in Use</th>
             </tr>
         </thead>
@@ -70,7 +70,9 @@
                     {{ plate.name }}
                 </td>
                 <td>
-                    {{ plate.device }}
+                    {# REMOVED #}
+                    {# {{ plate.device }} #}
+                    {{ plate.organ_model }}
                 </td>
                 <td>
                     {{ plate.assaymatrixitem_set.count }}

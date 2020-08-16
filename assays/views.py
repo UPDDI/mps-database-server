@@ -801,7 +801,9 @@ class AssayStudyPlates(ObjectGroupRequiredMixin, AssayStudyMixin, DetailView):
             'update': True,
             # TODO REVISE
             'plates': AssayMatrix.objects.filter(
-                device__isnull=False,
+                # OLD
+                # device__isnull=False,
+                organ_model__isnull=False,
                 study_id=self.object.id
             )
         })
@@ -1101,7 +1103,9 @@ class AssayStudyIndex(StudyViewerMixin, DetailView):
 
         # We assume that matrices with devices are plates
         plates = AssayMatrix.objects.filter(
-            device__isnull=False,
+            # WHOOPS
+            # device__isnull=False,
+            organ_model__isnull=False,
             study_id=self.object.id
         )
 
