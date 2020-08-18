@@ -414,6 +414,9 @@ $(document).ready(function () {
                     if (organ_model_id && group['organ_model_id'] == organ_model_id) {
                         relevant_group_data.push(group);
                     }
+                    else if (!organ_model_id) {
+                        relevant_group_data.push(group);
+                    }
                 }
             });
         }
