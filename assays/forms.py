@@ -1884,34 +1884,6 @@ class AssayStudyChipForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
         return self.instance
 
-# OLD TO BE REMOVED
-# class AssayStudyPlateForm(SignOffMixin, BootstrapForm):
-#     plate_name = forms.CharField(
-#         required=False,
-#         widget=forms.Textarea(attrs={'rows': 1}),
-#         label='Plate Name'
-#     )
-#     plate_notes = forms.CharField(
-#         required=False,
-#         widget=forms.Textarea(attrs={'rows': 5}),
-#         label='Plate Notes'
-#     )
-#     device = forms.ModelChoiceField(
-#         # Filter to plates only
-#         queryset=Microdevice.objects.filter(device_type='plate').order_by('name'),
-#         required=False,
-#         label='Plate Device'
-#     )
-
-#     class Meta(object):
-#         model = AssayStudy
-#         fields = (
-#             'plate_name',
-#             'plate_notes',
-#             'device',
-#             'series_data',
-#         )
-
 
 class AssayStudyPlateForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
     series_data = forms.CharField(required=False)
@@ -3201,7 +3173,10 @@ class AssayMatrixItemForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
             self.fields['group'].queryset = AssayGroup.objects.filter(
                 study_id=self.instance.study_id,
                 # See above
-                organ_model__device__device_type='plate'
+                # OOPS! WE NEED TO RESPECT THE ORGAN MODEL OR WHATEVER
+                # organ_model__device__device_type='plate'
+                # MATCH THE ORGAN MODEL ID OF CURRENT GROUP!
+                organ_model_id=self.instance.group.organ_model_id
             ).prefetch_related('organ_model__device')
 
             # UGLY: DO NOT LIKE THIS

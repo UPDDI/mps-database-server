@@ -586,6 +586,10 @@ $(document).ready(function () {
                 }
             });
 
+            // TO BE REVISED:
+            // replace_series_data();
+            series_data_selector.val(JSON.stringify(full_series_data));
+
             get_matrix_dimensions();
         }
         // else if (!device_selector.val() || representation_selector.val() === 'plate') {

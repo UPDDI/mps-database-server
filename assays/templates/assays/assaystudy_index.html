@@ -77,10 +77,20 @@
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="analyze_edit">
                         <li><a href="summary">Study Summary</a></li>
+                        {% if object.assaydatapoint_set.count %}
                         <li><a href="reproducibility">Reproducibility</a></li>
                         <li><a href="power_analysis">Power Analysis</a></li>
-                        <li><a href="images">Images</a></li>
+                        {% else %}
+                        <li class="disabled" title="This study has no data."><a href="reproducibility">Reproducibility</a></li>
+                        <li class="disabled" title="This study has no data."><a href="power_analysis">Power Analysis</a></li>
+                        {% endif %}
+                        {# Stupid conditional because images are not tied directly to studies? #}
                         <li><a href="omics">Gene Expression Analysis</a></li>
+                        {% if object.assayimagesetting_set.count %}
+                        <li><a href="images">Images</a></li>
+                        {% else %}
+                        <li class="disabled" title="This study has no images or videos."><a href="images">Images</a></li>
+                        {% endif %}
                         {% if user_is_group_editor %}
                             <li role="separator" class="divider"></li>
                             {% if not object.signed_off_by %}

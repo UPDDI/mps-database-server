@@ -14,17 +14,30 @@ $(document).ready(function() {
     }
     // If plates
     else {
+        // MAKE SURE TO RESTRICT TO THE CORRECT ORGAN MODEL
+        // HUGELY IMPORTANT
+        // Is pre-populated for form!
+        let current_group_name = $('#id_group').find('option:selected').text();
+        let current_organ_model_id = null;
+        // Now we need to find the correct group
+        // BARBARISM
+        $.each(JSON.parse($('#id_series_data').val()).series_data, function(index, group) {
+            if (group.name === current_group_name) {
+                current_organ_model_id = group.organ_model_id;
+            }
+        });
+
         // Make the difference table
-        window.GROUPS.make_difference_table('plate');
+        window.GROUPS.make_difference_table('plate', current_organ_model_id);
     }
 
-    var device = $('#id_device');
-    var organ_model = $('#id_organ_model');
-    var protocol = $('#id_organ_model_protocol');
+    // var device = $('#id_device');
+    // var organ_model = $('#id_organ_model');
+    // var protocol = $('#id_organ_model_protocol');
 
-    window.device = device;
-    window.organ_model = organ_model;
-    window.organ_model_protocol = protocol;
+    // window.device = device;
+    // window.organ_model = organ_model;
+    // window.organ_model_protocol = protocol;
 
     // var protocol_display = $('#protocol_display');
     //
