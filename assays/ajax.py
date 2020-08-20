@@ -1,5 +1,7 @@
 # coding=utf-8
 import ujson as json
+# Ask if folks mind the pvalues getting truncated, non-U-json fixes this
+# import json
 # from collections import defaultdict
 from django.http import (
     HttpResponse,
@@ -7024,7 +7026,7 @@ def fetch_omics_data(request):
             content_type='application/json'
         )
 
-    datafiles = AssayOmicDataFileUpload.objects.filter(study=study)
+    datafiles = AssayOmicDataFileUpload.objects.filter(study_id=study)
 
     if datafiles.count() == 0:
         data = {'error': 'There is no omics data for this study.'}
@@ -7033,21 +7035,27 @@ def fetch_omics_data(request):
             content_type='application/json'
         )
 
+    # TODO - Put this in loop below
     data['file_id_to_name'] = {file.id: "_vs_".join([file.group_1.name.split('-')[-1].strip(), file.group_2.name.split('-')[-1].strip()]) for file in AssayOmicDataFileUpload.objects.filter(study=study)}
 
     for datafile in datafiles:
         if data['file_id_to_name'][datafile.id] not in data['data']:
             data['data'][data['file_id_to_name'][datafile.id]] = {}
 
-    datapoints = AssayOmicDataPoint.objects.filter(study=study)
+    datapoints = AssayOmicDataPoint.objects.filter(study=study).exclude(value__isnull=True)
+
+    target_ids = {}
 
     for datapoint in datapoints:
         if datapoint.name not in data['data'][data['file_id_to_name'][datapoint.omic_data_file_id]]:
             data['data'][data['file_id_to_name'][datapoint.omic_data_file_id]][datapoint.name] = {}
         data['data'][data['file_id_to_name'][datapoint.omic_data_file_id]][datapoint.name][datapoint.target_id] = datapoint.value
 
-    # I want a dict of target PKs to their names, self-adjusting if we ever add additional targets, usable on Stage/Production even if the PKs change. There are many easier ways to do this.
-    data['target_name_to_id'] = {AssayTarget.objects.filter(id=target)[0].name: target for target in data['data'][[*data['data'].keys()][0]][[*data['data'][[*data['data'].keys()][0]].keys()][1]]}
+        target_ids.update({
+            datapoint.target_id: True
+        })
+
+    data['target_name_to_id'] = {target.name: target.id for target in AssayTarget.objects.filter(id__in=target_ids)}
 
     return HttpResponse(
         json.dumps(data),

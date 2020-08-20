@@ -187,13 +187,13 @@ $(document).ready(function () {
                 // Add data if first pass OR all filter conditions met
                 if (firstTime || ((log2fc >= minL2FC && log2fc <= maxL2FC) && (pvalue >= minPval && pvalue <= maxPval))) {
                 	if (check_over && (log2fc >= Math.log2(log2fc_threshold) && pvalue <= pvalue_threshold)) {
-                		chartData[x]['volcano'].push([log2fc, neglog10pvalue, null, 'TEST', null, null, '', null, null, '']);
+                		chartData[x]['volcano'].push([log2fc, neglog10pvalue, null, null, null, null, '', null, null, '']);
                 		chartData[x]['ma'].push([avgexpress, log2fc, null, '', null, null, '', null, null, '']);
                 	} else if (check_under && (log2fc <= -Math.log2(log2fc_threshold) && pvalue <= pvalue_threshold)) {
-                		chartData[x]['volcano'].push([log2fc, null, null, '', neglog10pvalue, null, 'TEST', null, null, '']);
+                		chartData[x]['volcano'].push([log2fc, null, null, '', neglog10pvalue, null, null, null, null, '']);
                 		chartData[x]['ma'].push([avgexpress, null, null, '', log2fc, null, '', null, null, '']);
                 	} else if (check_neither && !(log2fc >= Math.log2(log2fc_threshold) && pvalue <= pvalue_threshold) && !(log2fc <= -Math.log2(log2fc_threshold) && pvalue <= pvalue_threshold)) {
-                		chartData[x]['volcano'].push([log2fc, null, null, '', null, null, '', neglog10pvalue, null, 'TEST']);
+                		chartData[x]['volcano'].push([log2fc, null, null, '', null, null, '', neglog10pvalue, null, null]);
                 		chartData[x]['ma'].push([avgexpress, null, null, '', null, null, '', log2fc, null, '']);
                 	}
                 }
