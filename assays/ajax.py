@@ -43,6 +43,8 @@ from .models import (
     PhysicalUnits,
     AssayGroup,
     AssayOmicDataFileUpload,
+    AssayOmicDataGroup,
+    AssayOmicDataPoint,
 )
 from microdevices.models import (
     MicrophysiologyCenter,
@@ -7007,12 +7009,45 @@ def sub_fetch_omic_sample_info_from_upload_data_table(groupId, groupPk):
 
     return [timemess, locmess, day, hour, minute, loc_pk]
 
-def fetch_omics_data(request):
-    data = {}
 
-    # To be replaced with access to Sandra's omics schema
-    with open("data.csv") as datafile:
-        data['datafile'] = list(csv.reader(datafile))
+def fetch_omics_data(request):
+    data = {'data': {}}
+
+    study = request.POST.get('study_id', '{}')
+
+    try:
+        study = int(study)
+    except TypeError:
+        data = {'error': 'There was a problem acquiring the study ID.'}
+        return HttpResponse(
+            json.dumps(data),
+            content_type='application/json'
+        )
+
+    datafiles = AssayOmicDataFileUpload.objects.filter(study=study)
+
+    if datafiles.count() == 0:
+        data = {'error': 'There is no omics data for this study.'}
+        return HttpResponse(
+            json.dumps(data),
+            content_type='application/json'
+        )
+
+    data['file_id_to_name'] = {file.id: "_vs_".join([file.group_1.name.split('-')[-1].strip(), file.group_2.name.split('-')[-1].strip()]) for file in AssayOmicDataFileUpload.objects.filter(study=study)}
+
+    for datafile in datafiles:
+        if data['file_id_to_name'][datafile.id] not in data['data']:
+            data['data'][data['file_id_to_name'][datafile.id]] = {}
+
+    datapoints = AssayOmicDataPoint.objects.filter(study=study)
+
+    for datapoint in datapoints:
+        if datapoint.name not in data['data'][data['file_id_to_name'][datapoint.omic_data_file_id]]:
+            data['data'][data['file_id_to_name'][datapoint.omic_data_file_id]][datapoint.name] = {}
+        data['data'][data['file_id_to_name'][datapoint.omic_data_file_id]][datapoint.name][datapoint.target_id] = datapoint.value
+
+    # I want a dict of target PKs to their names, self-adjusting if we ever add additional targets, usable on Stage/Production even if the PKs change. There are many easier ways to do this.
+    data['target_name_to_id'] = {AssayTarget.objects.filter(id=target)[0].name: target for target in data['data'][[*data['data'].keys()][0]][[*data['data'][[*data['data'].keys()][0]].keys()][1]]}
 
     return HttpResponse(
         json.dumps(data),

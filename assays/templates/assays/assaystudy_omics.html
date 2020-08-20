@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block load_js %}
-    <!-- <script src="{% static "assays/grouping_filtering.js" %}"></script> -->
+    <script src="{% static "assays/grouping_filtering.js" %}"></script>
     <script src="{% static "assays/assaystudy_omics.js" %}"></script>
 {% endblock %}
 
@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block sidebar %}
-    {% include 'assays/grouping_filtering.html' with power_analysis="true" intra_flag="true" %}
+    {% include 'assays/grouping_filtering.html' with omics="true"%}
 {% endblock %}
 
 {% block content %}
@@ -34,42 +34,6 @@
         </div>
     </div>
 
-    <button id="fetch-data" class="btn btn-primary">Fetch Data</button>
-    <table id="matrices" class="display table table-striped table-hover" cellspacing="0" width="100%">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Chips</th>
-                <th>Description</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Test</td>
-                <td>Test</td>
-                <td>Test</td>
-            </tr>
-        </tbody>
-    </table>
-    <div class="text-center">
-        <button id="toggle-plot-type" class="btn btn-lg btn-primary">Switch to MA Plots</button>
-        <br><br>
-        <h3>Filters</h3>
-        <div class="row">
-            <div class="col-lg-4 col-lg-offset-1 large-padding-top padded-bottom">
-                <label for="pvalue">P-Value:</label>
-                <input type="text" id="pvalue" size="10" readonly>
-                <div id="slider-range-pvalue"></div>
-            </div>
-            <div class="col-lg-4 col-lg-offset-2 large-padding-top padded-bottom">
-                <label for="log2foldchange">Log2FC:</label>
-                <input type="text" id="log2foldchange" size="10" readonly>
-                <div id="slider-range-log2foldchange"></div>
-            </div>
-        </div>
-        <br>
-        <button id="apply-filters" class="btn btn-primary">Apply Filters</button>
-    </div>
     <div id="plots">
         <div id="volcano-plots">
         </div>
