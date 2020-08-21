@@ -6780,6 +6780,8 @@ def omic_deseq2_log2fc_data_to_list_of_instances(
             name = row[gene_id_field_name_if_app]
             target = int(target_pk_list[i])
             value = row[target_text_lower_list[i]]
+            if np.isnan(value):
+                value = None
 
             # print('index ',index,'  instance_counter ', instance_counter ,'  i ',i,'  name ',name,'  target ',target, '  value ',value)
 

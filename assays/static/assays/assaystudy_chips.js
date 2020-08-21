@@ -367,6 +367,13 @@ $(document).ready(function () {
     $('#id_rename_chips_by_group').on('input', function() {
         // NOTE: Doesn't do anything with the group just yet
         // TODO SHOW A WARNING IF THE GROUP IS EMPTY
-        chip_style_name_incrementer($('#id_rename_chips_by_group').val(), $('#rename_chips_by_group_example'), false);
+        chip_style_name_incrementer($('#id_rename_chips_by_group').val(), $('#rename_chips_by_group_example'), false, $('#id_group_to_rename').val());
     }).trigger('input');
+
+    // NEED THIS FOR CHANGING THE GROUP: CHANGES THE PREVIEW IN POPUP FOR GROUPS
+    $('#id_group_to_rename').on('change', function() {
+        // NOTE: Doesn't do anything with the group just yet
+        // TODO SHOW A WARNING IF THE GROUP IS EMPTY
+        chip_style_name_incrementer($('#id_rename_chips_by_group').val(), $('#rename_chips_by_group_example'), false, $(this).val());
+    }).trigger('change');
 });

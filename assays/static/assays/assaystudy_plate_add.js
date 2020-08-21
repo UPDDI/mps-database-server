@@ -123,6 +123,9 @@ $(document).ready(function () {
     // To see if a selection is occurring
     var user_is_selecting = false;
 
+    // CRUDE: CHECK THE PREVIOUS ORGAN MODEL
+    let previous_organ_model = organ_model_selector.val();
+
     function start_selection() {
         user_is_selecting = true;
     }
@@ -542,7 +545,32 @@ $(document).ready(function () {
     // ACTUALLY ORGAN MODEL
     function check_matrix_device() {
         let current_organ_model = organ_model_selector.val();
-        if (current_organ_model) {
+
+        // CRUDE
+        // We need a warning to indicate that changes occur when changing the organ_model
+        let continue_execution = true;
+
+        // Look through the wells and see if any do not match
+        // DUMB
+        $.each(matrix_item_data, function(row_column, well) {
+            if (series_data[matrix_item_data[row_column].group_index].organ_model_id != current_organ_model) {
+                continue_execution = false;
+                return false;
+            }
+        });
+
+        if (!continue_execution) {
+            if (confirm('Changing the MPS Model will change the Group of existing Wells to a valid Group. Continue?')) {
+                continue_execution = true;
+                previous_organ_model = current_organ_model;
+            }
+            else {
+                // CRUDE!!!
+                organ_model_selector[0].selectize.setValue(previous_organ_model);
+            }
+        }
+
+        if (current_organ_model && continue_execution) {
             window.GROUPS.make_difference_table('plate', current_organ_model);
 
             // CLEAR OPTIONS

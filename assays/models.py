@@ -2253,6 +2253,7 @@ class AssayMatrix(FlaggableModel):
         verbose_name='Study'
     )
 
+    # DEPRECATED!
     device = models.ForeignKey(
         Microdevice,
         null=True,
@@ -2271,7 +2272,8 @@ class AssayMatrix(FlaggableModel):
         OrganModel,
         null=True,
         blank=True,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='MPS Model'
     )
     #
     # organ_model_protocol = models.ForeignKey(
@@ -2628,6 +2630,7 @@ class AbstractSetupSetting(models.Model):
         abstract = True
 
         # Default needs to be revised in models extending this, but for reference
+        # NOTE: VALUE IS EXCLUDED BY REQUEST
         unique_together = [
             (
                 'setting',
@@ -3151,31 +3154,52 @@ class AssayMatrixItem(FlaggableModel):
     # REVISED: Just alias to the respective group methods, maybe a bit clumsy
     def devolved_settings(self, criteria=DEFAULT_SETTING_CRITERIA):
         """Makes a tuple of cells (for comparison)"""
-        return self.group.devolved_settings(criteria)
+        if self.group:
+            return self.group.devolved_settings(criteria)
+        else:
+            return tuple()
 
     def stringify_settings(self, criteria=None):
         """Stringified cells for a setup"""
-        return self.group.stringify_settings(criteria)
+        if self.group:
+            return self.group.stringify_settings(criteria)
+        else:
+            return ''
 
     def devolved_cells(self, criteria=DEFAULT_CELL_CRITERIA):
         """Makes a tuple of cells (for comparison)"""
-        return self.group.devolved_cells(criteria)
+        if self.group:
+            return self.group.devolved_cells(criteria)
+        else:
+            return tuple()
 
     def stringify_cells(self, criteria=None):
         """Stringified cells for a setup"""
-        return self.group.stringify_cells(criteria)
+        if self.group:
+            return self.group.stringify_cells(criteria)
+        else:
+            return ''
 
     def devolved_compounds(self, criteria=DEFAULT_COMPOUND_CRITERIA):
         """Makes a tuple of compounds (for comparison)"""
-        return self.group.devolved_compounds(criteria)
+        if self.group:
+            return self.group.devolved_compounds(criteria)
+        else:
+            return tuple()
 
     def stringify_compounds(self, criteria=None):
         """Stringified cells for a setup"""
-        return self.group.stringify_compounds(criteria)
+        if self.group:
+            return self.group.stringify_compounds(criteria)
+        else:
+            return ''
 
     def get_compound_profile(self, matrix_item_compound_post_filters):
         """Compound profile for determining concentration at time point"""
-        return self.group.stringify_compounds(matrix_item_compound_post_filters)
+        if self.group:
+            return self.group.stringify_compounds(matrix_item_compound_post_filters)
+        else:
+            return []
 
     # OLD!
     # def devolved_settings(self, criteria=DEFAULT_SETTING_CRITERIA):

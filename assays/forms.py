@@ -4815,13 +4815,10 @@ class AssayPlateReaderMapDataFileForm(BootstrapForm):
         # need this because, remember, the plate map doesn't come WITH a study, must tell it which
         if not self.study and self.instance.study:
             self.study = self.instance.study
-            # print('file form self.study ',self.study)
         if self.study:
             self.instance.study = self.study
-            # print('file form self.instance.study ',self.instance.study)
 
         my_instance = self.instance
-        # print('file form my_instance ', my_instance)
 
         # to display the file name without the whole path
         form_filename_only = os.path.basename(str(my_instance.plate_reader_file))
