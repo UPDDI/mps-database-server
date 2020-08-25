@@ -4836,6 +4836,33 @@ def clone_study(request):
         }
         make_clone(request, assay, attributes_to_change=clone_attributes)
 
+    # Clone the groups
+    group_to_group = {}
+
+    for group in study_to_clone.assaygroup_set.all():
+        clone_attributes = {
+            'study_id': new_study_id
+        }
+        original_group_id = group.id
+        new_group_id = make_clone(request, group, attributes_to_change=clone_attributes)
+        group_to_group.update({
+            original_group_id: new_group_id
+        })
+
+    # Double loop is goofy
+    for group in study_to_clone.assaygroup_set.all():
+        clone_attributes = {
+            'study_id': new_study_id,
+            'group_id': group_to_group.get(group.id)
+        }
+        # Horrible nested loops, can take a very long time!
+        for cell in group.assaygroupcell_set.all():
+            make_clone(request, cell, attributes_to_change=clone_attributes)
+        for compound in group.assaygroupcompound_set.all():
+            make_clone(request, compound, attributes_to_change=clone_attributes)
+        for setting in group.assaygroupsetting_set.all():
+            make_clone(request, setting, attributes_to_change=clone_attributes)
+
     # Don't clone references or supporting data
 
     matrix_to_matrix = {}
@@ -4852,10 +4879,12 @@ def clone_study(request):
 
     matrix_item_to_matrix_item = {}
 
-    for matrix_item in study_to_clone.assaymatrixitem_set.all():
+    # Contrivance: ordering
+    for matrix_item in study_to_clone.assaymatrixitem_set.all().order_by('pk'):
         clone_attributes = {
             'study_id': new_study_id,
-            'matrix_id': matrix_to_matrix.get(matrix_item.matrix_id)
+            'matrix_id': matrix_to_matrix.get(matrix_item.matrix_id),
+            'group_id': group_to_group.get(matrix_item.group_id)
         }
         original_matrix_item_id = matrix_item.id
         new_matrix_item_id = make_clone(request, matrix_item, attributes_to_change=clone_attributes)
@@ -4863,19 +4892,20 @@ def clone_study(request):
             original_matrix_item_id: new_matrix_item_id
         })
 
+    # OLD SCHEMA: USELESS
     # Double loop is goofy
-    for matrix_item in study_to_clone.assaymatrixitem_set.all():
-        clone_attributes = {
-            'study_id': new_study_id,
-            'matrix_item_id': matrix_item_to_matrix_item.get(matrix_item.id)
-        }
-        # Horrible nested loops, can take a very long time!
-        for cell in matrix_item.assaysetupcell_set.all():
-            make_clone(request, cell, attributes_to_change=clone_attributes)
-        for compound in matrix_item.assaysetupcompound_set.all():
-            make_clone(request, compound, attributes_to_change=clone_attributes)
-        for setting in matrix_item.assaysetupsetting_set.all():
-            make_clone(request, setting, attributes_to_change=clone_attributes)
+    # for matrix_item in study_to_clone.assaymatrixitem_set.all():
+    #     clone_attributes = {
+    #         'study_id': new_study_id,
+    #         'matrix_item_id': matrix_item_to_matrix_item.get(matrix_item.id)
+    #     }
+    #     # Horrible nested loops, can take a very long time!
+    #     for cell in matrix_item.assaysetupcell_set.all():
+    #         make_clone(request, cell, attributes_to_change=clone_attributes)
+    #     for compound in matrix_item.assaysetupcompound_set.all():
+    #         make_clone(request, compound, attributes_to_change=clone_attributes)
+    #     for setting in matrix_item.assaysetupsetting_set.all():
+    #         make_clone(request, setting, attributes_to_change=clone_attributes)
 
     data.update({
         'new_study_id': AssayStudy.objects.get(id=new_study_id).get_absolute_url()
