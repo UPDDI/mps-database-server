@@ -45,7 +45,6 @@ from .models import (
     PhysicalUnits,
     AssayGroup,
     AssayOmicDataFileUpload,
-    AssayOmicDataGroup,
     AssayOmicDataPoint,
 )
 from microdevices.models import (

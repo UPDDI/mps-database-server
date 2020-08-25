@@ -5006,36 +5006,34 @@ class SpeciesParameters(models.Model):
         return '{} - {} ({})'.format(self.species, self.organ, self.reference)
 
 
-##### Start Assay Omic Section
-class AssayOmicDataGroup(LockableModel):
-    """Assay omic data groups - pk used to tie chip and sample metadata to a data group."""
-    # plan is to replace this with "treatment groups"
-
-    class Meta(object):
-        verbose_name = 'Assay Omic Data Group'
-        verbose_name_plural = 'Assay Omic Data Groups'
-        unique_together = [('study', 'name')]
-
-    study = models.ForeignKey(
-        AssayStudy,
-        default=1,
-        on_delete=models.CASCADE,
-        verbose_name='This Study'
-    )
-    name = models.CharField(
-        max_length=100,
-        default=set_default_description(),
-        verbose_name='Group Name'
-    )
-    number = models.IntegerField(
-        default=999,
-        blank=True,
-        verbose_name='Group Number'
-    )
-
-    def __str__(self):
-        return '{}'.format(self.name)
-
+# class AssayOmicDataGroup(LockableModel):
+#     """Assay omic data groups - pk used to tie chip and sample metadata to a data group."""
+#     # plan is to replace this with "treatment groups"
+#
+#     class Meta(object):
+#         verbose_name = 'Assay Omic Data Group'
+#         verbose_name_plural = 'Assay Omic Data Groups'
+#         unique_together = [('study', 'name')]
+#
+#     study = models.ForeignKey(
+#         AssayStudy,
+#         default=1,
+#         on_delete=models.CASCADE,
+#         verbose_name='This Study'
+#     )
+#     name = models.CharField(
+#         max_length=100,
+#         default=set_default_description(),
+#         verbose_name='Group Name'
+#     )
+#     number = models.IntegerField(
+#         default=999,
+#         blank=True,
+#         verbose_name='Group Number'
+#     )
+#
+#     def __str__(self):
+#         return '{}'.format(self.name)
 
 assay_omic_pipeline_choices = [
     ('deseq2', 'DESeq2'),
@@ -5117,9 +5115,29 @@ class AssayOmicDataFileUpload(LockableModel):
         verbose_name='Method'
     )
 
+    # # data groups could be empty for the norm count and raw count data
+    # group_1 = models.ForeignKey(
+    #     AssayOmicDataGroup,
+    #     null=True,
+    #     blank=True,
+    #     on_delete=models.CASCADE,
+    #     related_name='group_1',
+    #     help_text='Data Processing Group 1',
+    #     verbose_name='Group 1*'
+    # )
+    # group_2 = models.ForeignKey(
+    #     AssayOmicDataGroup,
+    #     null=True,
+    #     blank=True,
+    #     on_delete=models.CASCADE,
+    #     related_name='group_2',
+    #     help_text='Data Processing Group 2',
+    #     verbose_name='Group 2*'
+    # )
+
     # data groups could be empty for the norm count and raw count data
     group_1 = models.ForeignKey(
-        AssayOmicDataGroup,
+        AssayGroup,
         null=True,
         blank=True,
         on_delete=models.CASCADE,
@@ -5128,7 +5146,7 @@ class AssayOmicDataFileUpload(LockableModel):
         verbose_name='Group 1*'
     )
     group_2 = models.ForeignKey(
-        AssayOmicDataGroup,
+        AssayGroup,
         null=True,
         blank=True,
         on_delete=models.CASCADE,
