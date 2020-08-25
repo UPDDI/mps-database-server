@@ -30,6 +30,8 @@
             {% if object.assaydatafileupload_set.count %}
                 with {% include 'plural_include.html' with label="Data Point" count=object.assaydatapoint_set.count %}
             {% endif %}
+            <br>
+            <small>A description of "Data Files" that clearly indicates how they are different from Omics and Assay Plate Data would be fruitful, but I couldn't think of anything succinct.</small>
         </h3>
         {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
         <a href="{% url 'assays-assaystudy-upload' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to Upload a Data File</a>
@@ -47,5 +49,18 @@
         </h3>
         <a href="{% url 'assayplatereadermap-index' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to View/Add Assay Plate Reader Maps and Process Data</a>
         <a href="{% url 'assayplatereaderfile-index' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to View/Add Assay Plate Reader Files</a>
+    </div>
+
+    {# NOTE: STAGE ONLY #}
+    <div class="well">
+        <h3>
+            There are {% include 'plural_include.html' with label="Omic Data File" count=log2fold_files.count %}
+            {% if log2fold_files.count %}
+                with {% include 'plural_include.html' with label="Data Point" count=log2fold_points.count %}
+            {% endif %}
+            <br>
+            <small>We could put a small description for Omics data here, only log2fold is displayed at the moment by request.</small>
+        </h3>
+        <a href="{% url 'assayomicdatafileupload-index' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to View/Add Omics Data with a Test Group and a Reference Group (e.g. Log 2 Fold Change)</a>
     </div>
 {% endblock %}
