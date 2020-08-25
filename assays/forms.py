@@ -56,7 +56,7 @@ from assays.models import (
     upload_file_location,
     AssayOmicDataFileUpload,
     AssayOmicDataPoint,
-    AssayOmicDataGroup,
+    # AssayOmicDataGroup,
 )
 from compounds.models import Compound, CompoundInstance, CompoundSupplier
 from microdevices.models import (
@@ -5013,7 +5013,10 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
 
         # for now, limit to the same study - we will need to revisit this when we think about
         # inter study and transitioning to treatment groups
-        data_groups_filtered = AssayOmicDataGroup.objects.filter(
+        # data_groups_filtered = AssayOmicDataGroup.objects.filter(
+        #     study_id=self.instance.study.id
+        # )
+        data_groups_filtered = AssayGroup.objects.filter(
             study_id=self.instance.study.id
         )
         # find the pk for the method tempo-seq
