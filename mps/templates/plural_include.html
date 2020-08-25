@@ -1,0 +1,17 @@
+{% load humanize %}
+
+{% if count == 1 %}
+    <span class="text-success">{{ count|intcomma }}</span> {{ label }}
+{% elif count > 1 %}
+    {% if not plural_override %}
+        <span class="text-success">{{ count|intcomma }}</span> {{ label }}s
+    {% else %}
+        <span class="text-success">{{ count|intcomma }}</span> {{ plural_override }}
+    {% endif %}
+{% else %}
+    {% if not plural_override %}
+        <span class="text-danger">0 {{ label }}s</span>
+    {% else %}
+        <span class="text-danger">0 {{ plural_override }}</span>
+    {% endif %}
+{% endif %}

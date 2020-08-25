@@ -2331,7 +2331,9 @@ class AssayMatrix(FlaggableModel):
 
     # TODO
     def get_absolute_url(self):
-        return '/assays/assaymatrix/{}/'.format(self.id)
+        # NO!
+        # return '/assays/assaymatrix/{}/'.format(self.id)
+        return reverse('assays-assaymatrix-plate-update', args=[self.pk])
 
     def get_post_submission_url(self):
         # return self.study.get_post_submission_url()

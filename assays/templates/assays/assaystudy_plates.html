@@ -31,10 +31,9 @@
     <h1>
         Edit <em>{{ object }}</em> Plates
     <br>
-    {% csrf_token %}
     </h1>
 
-    {% include "submit.html" with flag="y" group=form.instance.group.name %}
+    {% include "submit.html" %}
 
     {% include 'errors.html' %}
 

@@ -16,6 +16,7 @@ from assays.views import (
     AssayStudyPlateAdd,
     AssayStudyPlateUpdate,
     AssayStudyAssays,
+    AssayStudyDataIndex,
     AssayMatrixItemDetail,
     AssayMatrixItemUpdate,
     AssayMatrixItemDelete,
@@ -143,11 +144,14 @@ urlpatterns = [
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/plates/$', AssayStudyPlates.as_view(), name='assays-assaystudy-update-plates'),
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/assays/$', AssayStudyAssays.as_view(), name='assays-assaystudy-update-assays'),
 
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/data_index/$', AssayStudyDataIndex.as_view(), name='assays-assaystudy-data-index'),
+
     # Just redirect for now
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/update/$', RedirectView.as_view(pattern_name='assays-assaystudy-update-details', permanent=True), name='assays-assaystudy-update'),
 
     url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assayplate/add/$', AssayStudyPlateAdd.as_view(), name='assays-assaymatrix-plate-add'),
     url(r'^assays/assayplate/(?P<pk>[0-9]+)/plate/$', AssayStudyPlateUpdate.as_view(), name='assays-assaymatrix-plate-update'),
+    url(r'^assays/assayplate/(?P<pk>[0-9]+)/plate/delete/$', AssayMatrixDelete.as_view(), name='assays-assaymatrix-plate-delete'),
 
     # NEW_TO_BE_REVISED
     url(r'^assays/assaystudy/$', AssayStudyList.as_view(), name='assays-assaystudy-list'),
@@ -289,6 +293,7 @@ urlpatterns = [
     # Ajax
     url(r'^assays_ajax/$', assays.ajax.ajax),
 
+    # Maybe we ought to change the name for consistency?
     # Plate Map (add and update will go to the same page, content = True for one of them...)
     # Note pk vs. study_id
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/assayplatereadermap/$', AssayPlateReaderMapIndex.as_view(), name='assayplatereadermap-index'),

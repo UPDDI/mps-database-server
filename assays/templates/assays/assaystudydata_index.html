@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/">Studies</a></li>
+    <li><a href="{{ object.get_absolute_url }}">{{ object }}</a></li>
+    <li class="active">Data</li>
+{% endblock %}
+
+{% block load_js %}
+    <script src="{% static "assays/assaystudy_tabs.js" %}"></script>
+    <script src="{% static "assays/assaystudydata_index.js" %}"></script>
+{% endblock %}
+
+{% block content %}
+    {# Get the tabs #}
+    {% include 'assays/assaystudy_tabs.html' with study=object %}
+
+    <h1>
+        Study Data
+    <br>
+    </h1>
+
+    {% include "submit.html" %}
+
+    <div class="well">
+        <h3>
+            There are {% include 'plural_include.html' with label="Data File" count=object.assaydatafileupload_set.count %}
+            {% if object.assaydatafileupload_set.count %}
+                with {% include 'plural_include.html' with label="Data Point" count=object.assaydatapoint_set.count %}
+            {% endif %}
+        </h3>
+        {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
+        <a href="{% url 'assays-assaystudy-upload' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to Upload a Data File</a>
+        {% endif %}
+    </div>
+
+    <div class="well">
+        <h3>
+            There are {% include 'plural_include.html' with label="Assay Plate Reader Map" count=object.assayplatereadermap_set.count %}
+            {% if object.assayplatereadermap_set.count %}
+                with {% include 'plural_include.html' with label="Assay Plate Reader File" count=object.assayplatereaderfile_set.count %}
+            {% endif %}
+            <br>
+            <small>Assay Plate Data is calibrated and converted into processed Data Points</small>
+        </h3>
+        <a href="{% url 'assayplatereadermap-index' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to View/Add Assay Plate Reader Maps and Process Data</a>
+        <a href="{% url 'assayplatereaderfile-index' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to View/Add Assay Plate Reader Files</a>
+    </div>
+{% endblock %}

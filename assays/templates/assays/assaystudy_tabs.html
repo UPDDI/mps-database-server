@@ -26,8 +26,8 @@
     <li role="presentation" data-interface="assays">
         <a href="{% url 'assays-assaystudy-update-assays' study.id %}">Assays</a>
     </li>
-    <li role="presentation" data-interface="upload">
-        <a href="{% url 'assays-assaystudy-upload' study.id %}">Upload Data</a>
+    <li role="presentation" data-interface="data_index">
+        <a href="{% url 'assays-assaystudy-data-index' study.id %}">Upload Data</a>
     </li>
     {% else %}
     <li role="presentation" data-interface="details">
@@ -39,7 +39,7 @@
     <li role="presentation" data-interface="assays" class="disabled" title="Please submit the details page before continuing.">
         <a href="#">Assays</a>
     </li>
-    <li role="presentation" data-interface="upload" class="disabled" title="Please submit the details page before continuing.">
+    <li role="presentation" data-interface="data_index" class="disabled" title="Please submit the details page before continuing.">
         <a href="#">Upload Data</a>
     </li>
     {% endif %}

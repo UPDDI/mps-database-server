@@ -99,7 +99,7 @@ $(document).ready(function() {
 
         // CRUMMY CONDITIONAL
         // Special exception for upload by request
-        if (redirect_url.val().indexOf('/upload/') > -1) {
+        if (redirect_url.val().indexOf('/data_index/') > -1) {
             // VERY ODD
             let popup_ref = $('div[aria-describedby="post_submission_override_confirm"]');
             popup_ref.find('.alert-warning').find('span').eq(2).text('Clicking next will bring you to an interface where you can upload data points. If you haven\'t run this study yet, or you are awaiting data, cancel and click "Submit" to save and conclude editing instead.');
