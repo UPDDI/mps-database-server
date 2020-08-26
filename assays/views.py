@@ -899,7 +899,7 @@ class AssayStudyDataIndex(StudyViewerMixin, AssayStudyMixin, DetailView):
             # STAGE ONLY SUBJECT TO CHANGE
             # Count only log2fold for the moment?
             'log2fold_files': log2fold_files,
-            'log2fold_points': AssayOmicDataFileUpload.objects.filter(
+            'log2fold_points': AssayOmicDataPoint.objects.filter(
                 omic_data_file__in=log2fold_files
             ),
         })
