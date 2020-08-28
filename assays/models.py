@@ -25,7 +25,7 @@ import urllib.request, urllib.parse, urllib.error
 # Avoid wildcards when possible
 from mps.utils import *
 
-import reversion
+
 
 import datetime
 from django.urls import reverse
@@ -155,7 +155,6 @@ def get_center_id(group_id):
 
     return data
 
-@reversion.register(follow=['physicalunits_set'])
 class UnitType(LockableModel):
     """Unit types for physical units"""
 
@@ -1448,12 +1447,6 @@ class AssayDataUpload(FlaggableRestrictedModel):
         return urllib.parse.unquote(self.file_location.split('/')[-1])
 
 
-# By following the datapoins, we can restore them with django-reversion
-# "replaced" should be deprecated
-@reversion.register(follow=[
-    'study',
-    # 'assaydatapoint_set'
-])
 class AssayDataFileUpload(FlaggableModel):
     """Shows the history of data uploads for a study; functions as inline"""
 
@@ -1476,10 +1469,6 @@ class AssayDataFileUpload(FlaggableModel):
         return urllib.parse.unquote(self.file_location.split('/')[-1])
 
 
-# NEW MODELS, TO BE INTEGRATED FURTHER LATER
-@reversion.register(follow=[
-    'methods',
-])
 class AssayTarget(FrontEndModel, LockableModel):
     """Describes what was sought by a given Assay"""
 
@@ -1529,9 +1518,6 @@ class AssaySubtarget(FlaggableModel):
         return self.name
 
 
-@reversion.register(follow=[
-    'assaymethod_set',
-])
 class AssayMeasurementType(FrontEndModel, LockableModel):
     """Describes what was measures with a given method"""
 
@@ -1552,9 +1538,6 @@ class AssayMeasurementType(FrontEndModel, LockableModel):
         return self.name
 
 
-@reversion.register(follow=[
-    'assaymethod_set',
-])
 class AssaySupplier(FrontEndModel, LockableModel):
     """Assay Supplier so we can track where kits came from"""
 
@@ -1575,10 +1558,6 @@ class AssaySupplier(FrontEndModel, LockableModel):
         return self.name
 
 
-@reversion.register(follow=[
-    'measurement_type',
-    'supplier',
-])
 class AssayMethod(FrontEndModel, LockableModel):
     """Describes how an assay was performed"""
     # We may want to modify this so that it is unique on name in combination with measurement type?
@@ -1631,12 +1610,6 @@ class AssayMethod(FrontEndModel, LockableModel):
         return self.name
 
 
-# Making follows for this would be dificult, there are a lot of things
-@reversion.register(follow=[
-    'assaysetupcompound_set',
-    'assaysetupcell_set',
-    'assaysetupsetting_set',
-])
 class AssaySampleLocation(FrontEndModel, LockableModel):
     """Describes a location for where a sample was acquired"""
 
@@ -1691,14 +1664,6 @@ def upload_file_location(instance, filename):
     return '/'.join(['data_points', str(instance.id), filename])
 
 
-@reversion.register(follow=[
-    'assaymatrix_set',
-    'assaystudyassay_set',
-    'assaydatafileupload_set',
-    'assaymatrixitem_set',
-    'assaystudyset_set',
-    # 'assaydatapoint_set',
-])
 class AssayStudy(FlaggableModel):
     """The encapsulation of all data concerning a project"""
     class Meta(object):
@@ -2213,11 +2178,6 @@ class AssayStudy(FlaggableModel):
         return '/assays/assaystudy/'
 
 
-# ON THE FRONT END, MATRICES ARE LIKELY TO BE CALLED STUDY SETUPS
-@reversion.register(follow=[
-    'study',
-    'assaymatrixitem_set'
-])
 class AssayMatrix(FlaggableModel):
     """Used to organize data in the interface. An Matrix is a set of setups"""
     class Meta(object):
@@ -3363,11 +3323,6 @@ class AssayMatrixItem(FlaggableModel):
         return '{}delete/'.format(self.get_absolute_url())
 
 
-# Controversy has arisen over whether to put this in an organ model or not
-# This name is somewhat deceptive, it describes the quantity of cells, not a cell (rename please)
-@reversion.register(follow=[
-    'matrix_item'
-])
 class AssaySetupCell(models.Model):
     """Individual cell parameters for setup used in inline"""
     class Meta(object):
@@ -3682,9 +3637,6 @@ class AssayDataPoint(models.Model):
         )
 
 
-@reversion.register(follow=[
-    'matrix_item'
-])
 class AssaySetupCompound(models.Model):
     """An instance of a compound used in an assay; used in M2M with setup"""
 
@@ -3855,9 +3807,6 @@ class AssaySetting(FrontEndModel, LockableModel):
         return self.name
 
 
-@reversion.register(follow=[
-    'matrix_item'
-])
 class AssaySetupSetting(models.Model):
     """Defines a setting as it relates to a setup"""
     class Meta(object):
@@ -4043,7 +3992,6 @@ class AssayStudyStakeholder(models.Model):
     )
 
 
-@reversion.register(follow=['study'])
 class AssayStudyAssay(models.Model):
     """Specific assays used in the 'inlines'"""
     study = models.ForeignKey(
@@ -4250,7 +4198,6 @@ class AssayImage(models.Model):
         return '{}'.format(self.file_name)
 
 
-@reversion.register(follow=['studies', 'assays'])
 class AssayStudySet(FlaggableModel):
     # Name for the set
     name = models.CharField(

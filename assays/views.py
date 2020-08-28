@@ -196,7 +196,7 @@ from mps.settings import TEMPLATE_VALIDATION_STARTING_COLUMN_INDEX
 
 # TODO TODO TODO render_to_response is DEPRECATED: USE render INSTEAD
 
-import reversion
+
 
 
 def add_study_fields_to_form(self, form, add_study=False):

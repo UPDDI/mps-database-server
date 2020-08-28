@@ -259,7 +259,6 @@ INSTALLED_APPS = (
     'compressor',
 
     'django_registration',
-    'reversion'
 )
 
 # Google Analytics ID

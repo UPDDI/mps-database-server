@@ -10,10 +10,7 @@ from django.urls import reverse
 
 from mps.utils import *
 
-import reversion
 
-
-@reversion.register(follow=['celltype_set'])
 class Organ(LockableModel):
     """Organ details an organ name and (with an inline) the cell types associated with it"""
     organ_name = models.CharField(
@@ -29,7 +26,6 @@ class Organ(LockableModel):
         return '{}'.format(self.organ_name)
 
 
-@reversion.register(follow=['cellsubtype_set'])
 class CellType(FrontEndModel, LockableModel):
     """CellType details a type (e.g. hepatocyte), a species, and an organ"""
     class Meta(object):
@@ -73,8 +69,6 @@ class CellType(FrontEndModel, LockableModel):
         )
 
 
-
-@reversion.register(follow=['cell_type'])
 class CellSubtype(FrontEndModel, LockableModel):
     """CellSubtype details a subtype (e.g. a cell line)
 
@@ -107,7 +101,6 @@ class CellSubtype(FrontEndModel, LockableModel):
 
 
 # TODO: Just having this be "supplier" is confusing, supplier of what? Should be specific or general
-@reversion.register(follow=['cellsample_set'])
 class Supplier(FrontEndModel, LockableModel):
     """Supplier gives information for institutions that distribute cell samples and related materials"""
     class Meta(object):
@@ -139,8 +132,6 @@ class Supplier(FrontEndModel, LockableModel):
         return '{}'.format(self.name)
 
 
-
-@reversion.register(follow=['assaysetupcell_set'])
 class Biosensor(FrontEndModel, LockableModel):
     """Biosensor describes a biosensor used on cell samples"""
     class Meta(object):
@@ -177,7 +168,6 @@ class Biosensor(FrontEndModel, LockableModel):
         return '{}'.format(self.name)
 
 
-@reversion.register(follow=['cell_type', 'cell_subtype'])
 class CellSample(FrontEndModel, FlaggableModel):
     """A Cell Sample describes a particular selection of cells used for experiments"""
 

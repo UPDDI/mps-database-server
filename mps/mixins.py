@@ -25,8 +25,6 @@ from django.views.generic import UpdateView
 
 import urllib
 
-from reversion.views import RevisionMixin
-
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 
 from django.contrib.admin.utils import (

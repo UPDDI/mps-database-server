@@ -8,10 +8,8 @@ who created the item and who last edited the item
 
 from import_export.admin import ImportExportModelAdmin
 
-from reversion.admin import VersionAdmin
 
-
-class TrackableAdmin(VersionAdmin, ImportExportModelAdmin):
+class TrackableAdmin(ImportExportModelAdmin):
     """The class that all other "normal" admin classes subclass by default.
 
     "Normal" being defined as a class that ought to subclass admin.ModelAdmin
