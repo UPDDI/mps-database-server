@@ -238,7 +238,8 @@
             <div class="well">
                 <h3>
                     {# There are <span class="text-success">{{ chip_groups.count }}</span> Chip Groups in this Study #}
-                    There are <span class="text-success">{{ number_of_chips }}</span> Chips and <span class="text-success">{{ chip_groups.count }}</span> Chip Groups in this Study
+                    {# There are <span class="text-success">{{ number_of_chips }}</span> Chips and <span class="text-success">{{ chip_groups.count }}</span> Chip Groups in this Study #}
+                    {% include 'plural_include.html' with label="Chip" count=number_of_chips %} and {% include 'plural_include.html' with label="Chip Group" count=chip_groups.count %}
                 </h3>
                 {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
                 <a href="{% url 'assays-assaystudy-update-groups' object.id %}" class="btn btn-primary" role="button">View/Edit Groups</a>
@@ -251,7 +252,8 @@
             <div class="well">
                 <h3>
                     {# There are <span class="text-success">{{ plate_groups.count }}</span> Plate Groups in this Study #}
-                    There are <span class="text-success">{{ plates.count }}</span> Plates and <span class="text-success">{{ plate_groups.count }}</span> Plate Groups in this Study
+                    {# There are <span class="text-success">{{ plates.count }}</span> Plates and <span class="text-success">{{ plate_groups.count }}</span> Plate Groups in this Study #}
+                    {% include 'plural_include.html' with label="Plate" count=plates.count %} and {% include 'plural_include.html' with label="Plate Group" count=plate_groups.count %}
                 </h3>
                 {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
                 <a href="{% url 'assays-assaystudy-update-groups' object.id %}" class="btn btn-primary" role="button">View/Edit Groups</a>

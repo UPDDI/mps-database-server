@@ -1962,7 +1962,7 @@ class AssayStudy(FlaggableModel):
             'assaygroupcell_set',
             # Shame we need to do this
             # BUT COMPOUND SCHEMA IS STUPID
-            'assaygroupcompound_set__compound_instance',
+            'assaygroupcompound_set__compound_instance__supplier',
             'assaygroupsetting_set',
             # Guess I need to eat the cost...
             'organ_model__device'

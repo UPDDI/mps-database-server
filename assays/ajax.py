@@ -380,6 +380,7 @@ def get_data_as_list_of_lists(ids, data_points=None, both_assay_names=False, inc
 
             # Is going through the matrix item too expensive here?
             'matrix_item__group__assaygroupcompound_set__compound_instance__compound',
+            'matrix_item__group__assaygroupcompound_set__compound_instance__supplier',
             'matrix_item__group__assaygroupcompound_set__concentration_unit',
             'matrix_item__group__assaygroupcompound_set__addition_location',
             'matrix_item__group__assaygroupcell_set__cell_sample__cell_type__organ',
@@ -852,6 +853,7 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
             'assaygroupcell_set__density_unit',
             'assaygroupcell_set__addition_location',
             'assaygroupcompound_set__compound_instance__compound',
+            'assaygroupcompound_set__compound_instance__supplier',
             'assaygroupcompound_set__concentration_unit',
             'assaygroupcompound_set__addition_location',
             # SOMEWHAT FOOLISH
@@ -2519,6 +2521,7 @@ def acquire_post_filter(studies, assays, groups, matrix_items, data_points):
     # Groups here
     groups = groups.prefetch_related(
         'assaygroupcompound_set__compound_instance__compound',
+        'assaygroupcompound_set__compound_instance__supplier',
         'assaygroupcompound_set__concentration_unit',
         'assaygroupcompound_set__addition_location',
         'assaygroupcell_set__cell_sample__cell_type__organ',

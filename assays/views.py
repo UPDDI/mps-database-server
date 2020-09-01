@@ -806,6 +806,9 @@ class AssayStudyPlates(ObjectGroupRequiredMixin, AssayStudyMixin, DetailView):
                 # device__isnull=False,
                 organ_model__isnull=False,
                 study_id=self.object.id
+            ).prefetch_related(
+                'organ_model',
+                'assaymatrixitem_set'
             )
         })
 
@@ -873,7 +876,7 @@ class AssayStudyAssays(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
 class AssayStudyDataIndex(StudyViewerMixin, AssayStudyMixin, DetailView):
     """Show all data sections for a given study"""
     model = AssayStudy
-    template_name = 'assays/assaystudydata_index.html'
+    template_name = 'assays/assaystudy_data_index.html'
 
     # For permission mixin NOT AS USELESS AS IT SEEMS
     def get_object(self, queryset=None):
@@ -1079,6 +1082,7 @@ class AssayStudyIndex(StudyViewerMixin, DetailView):
             # Stupid way to acquire group values, but expedient I guess
 
             'group__assaygroupcompound_set__compound_instance__compound',
+            'group__assaygroupcompound_set__compound_instance__supplier',
             'group__assaygroupcompound_set__concentration_unit',
             'group__assaygroupcompound_set__addition_location',
             'group__assaygroupcell_set__cell_sample__cell_type__organ',
@@ -1146,6 +1150,9 @@ class AssayStudyIndex(StudyViewerMixin, DetailView):
             # device__isnull=False,
             organ_model__isnull=False,
             study_id=self.object.id
+        ).prefetch_related(
+            'organ_model',
+            'assaymatrixitem_set'
         )
 
         context.update({

@@ -10,7 +10,7 @@
 
 {% block load_js %}
     <script src="{% static "assays/assaystudy_tabs.js" %}"></script>
-    <script src="{% static "assays/assaystudydata_index.js" %}"></script>
+    <script src="{% static "assays/assaystudy_data_index.js" %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -26,7 +26,7 @@
 
     <div class="well">
         <h3>
-            There are {% include 'plural_include.html' with label="Data File" count=object.assaydatafileupload_set.count %}
+            {% include 'plural_include.html' with label="Data File" count=object.assaydatafileupload_set.count %}
             {% if object.assaydatafileupload_set.count %}
                 with {% include 'plural_include.html' with label="Data Point" count=object.assaydatapoint_set.count %}
             {% endif %}
@@ -40,7 +40,7 @@
 
     <div class="well">
         <h3>
-            There are {% include 'plural_include.html' with label="Assay Plate Reader Map" count=object.assayplatereadermap_set.count %}
+            {% include 'plural_include.html' with label="Assay Plate Reader Map" count=object.assayplatereadermap_set.count %}
             {% if object.assayplatereadermap_set.count %}
                 with {% include 'plural_include.html' with label="Assay Plate Reader File" count=object.assayplatereaderfile_set.count %}
             {% endif %}
