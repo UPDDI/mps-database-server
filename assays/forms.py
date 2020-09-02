@@ -1402,7 +1402,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
             for current_chip in all_chip_data:
                 # Terminate early if no group
                 # BE CAREFUL, ZERO IS FALSY
-                if current_chip.get('group_index', None) is not None:
+                if current_chip.get('group_index', None) is not None and len(all_setup_data) > current_chip.get('group_index'):
                     setup_group = all_setup_data[current_chip.get('group_index')]
                 else:
                     continue

@@ -1,6 +1,7 @@
 // TODO: Things like prefixes should be listed here to avoid repetition!
 // Perhaps even selectors for things we know shouldn't change
 // (Also should think of a better scheme for dependency injection)
+// TODO: VERY SLOW FOR LARGE TABLES FOR A NUMBER OF REASONS
 window.GROUPS = {
     make_difference_table: null,
     make_group_preview: null,
@@ -54,7 +55,7 @@ $(document).ready(function () {
     // For the moment, the difference table content is stored as an array
     // Each index is a group
     // Each group's data is likewise an array, each index being a column
-    var difference_table_content = [];
+    // var difference_table_content = [];
 
     // This may be a good file to make these shared?
     // Prefixes
@@ -492,6 +493,7 @@ $(document).ready(function () {
                 )
             }
 
+            // TERRIBLE FOR LARGE TABLES!
             if (diverging_prefixes['organ_model_protocol_id'] && relevant_group_data[index]['organ_model_protocol_id']) {
                 $('<div>').text('Version: ' + organ_model_protocol_full.find('option[value="' + relevant_group_data[index]['organ_model_protocol_id'] + '"]').text()).appendTo(mps_model_td);
             }
