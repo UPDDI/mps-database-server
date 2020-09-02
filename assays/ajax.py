@@ -6986,6 +6986,74 @@ def fetch_omic_sample_info_from_upload_data_table(request):
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
+# sck omic data find sample information if group already in the upload file
+def fetch_omic_method_target_unit_combos(request):
+    """
+        Assay Omic Data File get the study setup method, target, unit combos to match up dropdowns.
+    """
+
+    # if called_from is add, have to do both (did them here to avoid race errors)
+    called_from = request.POST.get('called_from', '0')
+    groupId = request.POST.get('groupId', '0')
+    groupPk = request.POST.get('groupPk', '0')
+    groupId2 = request.POST.get('groupId2', '0')
+    groupPk2 = request.POST.get('groupPk2', '0')
+
+    queryset1 = None
+    queryset2 = None
+
+    timemess = ""
+    locmess = ""
+    day = None
+    hour = None
+    minute = None
+    loc_pk = None
+    timemess2 = ""
+    locmess2 = ""
+    day2 = None
+    hour2 = None
+    minute2 = None
+    loc_pk2 = None
+
+    sample_info = sub_fetch_omic_sample_info_from_upload_data_table(groupId, groupPk)
+    timemess = sample_info[0]
+    locmess = sample_info[1]
+    day = sample_info[2]
+    hour = sample_info[3]
+    minute = sample_info[4]
+    loc_pk = sample_info[5]
+
+    # if add, have to do the second one too
+    if called_from == 'add':
+        sample_info = sub_fetch_omic_sample_info_from_upload_data_table(groupId2, groupPk2)
+        timemess2 = sample_info[0]
+        locmess2 = sample_info[1]
+        day2 = sample_info[2]
+        hour2 = sample_info[3]
+        minute2 = sample_info[4]
+        loc_pk2 = sample_info[5]
+
+    # if the mess is found, the replace will happen in the form field in the html file
+    data = {}
+    data.update({
+        'timemess': timemess,
+        'day': day,
+        'hour': hour,
+        'minute': minute,
+        'locmess': locmess,
+        'sample_location_pk': loc_pk,
+        'timemess2': timemess2,
+        'day2': day2,
+        'hour2': hour2,
+        'minute2': minute2,
+        'locmess2': locmess2,
+        'sample_location_pk2': loc_pk2
+        })
+
+    # print(data)
+    return HttpResponse(json.dumps(data), content_type="application/json")
+
+
 def sub_fetch_omic_sample_info_from_upload_data_table(groupId, groupPk):
     timemess = ""
     locmess = ""
@@ -7215,6 +7283,9 @@ switch = {
     },
     'fetch_omics_data': {
         'call': fetch_omics_data
+    },
+    'fetch_omic_method_target_unit_combos': {
+        'call': fetch_omic_method_target_unit_combos
     },
 }
 

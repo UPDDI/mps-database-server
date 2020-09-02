@@ -56,6 +56,7 @@ from assays.models import (
     upload_file_location,
     AssayOmicDataFileUpload,
     AssayOmicDataPoint,
+    AssayOmicAnalysisTarget,
     # AssayOmicDataGroup,
 )
 from compounds.models import Compound, CompoundInstance, CompoundSupplier
@@ -4572,6 +4573,7 @@ class AssayPlateReaderMapForm(BootstrapForm):
 
 # What is this? Can't you just write the dictionary in the other direction?
 # this finds the key for the value provided as thisHeader
+# could create a reverse dictionary (using a list comprehension or otherwise), but if just once, can use this
 def find_a_key_by_value_in_dictionary(this_dict, this_header):
     """This is a function to find a key by value."""
     my_key = ''
@@ -4984,8 +4986,30 @@ AssayPlateReaderMapDataFileBlockFormSetFactory = inlineformset_factory(
 #####
 # Start omics section
 
-# use this to get the key from the value
-# returned_key = find_a_key_by_value_in_dictionary(OMIC_COLUMN_HEADER_TO_TARGET_DICT, 'blah-baseMean')
+# to work correctly, there is a study method, target, unit that is stored in the study setup
+# these are saved with the uploaded file
+# the only thing we care about is that the target selected is associated with category "Gene Expression"
+# OMIC RULES - All method, target, unit (for both category "Gene Expression" and "Computational") must be IN a priori
+# OMIC RULES - the target selected in the assay setup must have category "Gene Expression"
+# example:
+# make/confirm methods, such as TempO-Seq and DESeq2
+# make/confirm targets, such as Human 1500+ and assign to method TempO-Seq (category: Gene Expression)
+# make/confirm targets, such as baseMean and assign to method DESeq2 (category: Computational)
+# make/confirm categories Gene Expression and Computational and assign the targets to them (as indicated above)
+
+# OMIC RULES - The table AssayOmicAnalysisTarget must have a row for each computational target a priori
+# OMIC RULES - The table AssayOmicAnalysisTarget field data_type content must match exactly to the hard coded options in assay_omic_data_type_choices
+# OMIC RULES - The table AssayOmicAnalysisTarget field name content must match exactly the column headers of the input file (INCLUDING THE CASE - at least, as of 20200902)
+# OMIC RULES - The table AssayOmicAnalysisTarget field method content must match exactly method selected in the GUI as the Data Analysis Method
+
+# monkey patch to display method target and unit combo as needed in the assay omic page
+class AbstractClassAssayStudyAssayOmic(AssayStudyAssay):
+    class Meta:
+        proxy = True
+
+    def __str__(self):
+        return 'TARGET: {0} METHOD: {1} UNIT: {2}'.format(self.target, self.method, self.unit)
+
 
 class AssayOmicDataFileUploadForm(BootstrapForm):
     """Form Upload an AssayOmicDataFileUpload file and associated metadata """
@@ -5024,17 +5048,121 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         data_groups_filtered = AssayGroup.objects.filter(
             study_id=self.instance.study.id
         )
-        # find the pk for the method tempo-seq
-        obj = AssayMethod.objects.filter(name='TempO-Seq').first()
-        if obj is not None:
-            method_pk = obj.id
-            self.fields['method'].initial = method_pk
+
+        # The rules for getting the list of study assays in the upload GUI
+        # 1 category = gene expression
+        # 2 the target must be associated to that category
+        gene_targets = AssayTarget.objects.filter(assaycategory__name="Gene Expression")
+
+        # HANDY, to get pks from a queryset, gene_targets_pks=gene_targets.values_list('pk',flat=True)
+        # gene_target_pks = []
+        # for each in gene_targets:
+        #     gene_target_pks.append(each.id)
+
+        # this would be what the user set up in the assay setup tab (e.g. Human 1500+, TempO-Seq, Fold Change)
+        study_assay_queryset = AbstractClassAssayStudyAssayOmic.objects.filter(
+            study_id=self.study
+        ).filter(
+            # HANDY to use a queryset as a filter instead of pks
+            # instead of getting a list of pks and using them here      target_id__in=gene_targets_pks
+            target__in=gene_targets
+        ).prefetch_related(
+            'target',
+            'method',
+            'unit',
+        )
+
+        if len(study_assay_queryset) == 0:
+            study_assay_queryset = AbstractClassAssayStudyAssayOmic.objects.filter(
+                study_id=self.study
+            ).prefetch_related(
+                'target',
+                'method',
+                'unit',
+            )
+
+        self.fields['study_assay'].queryset = study_assay_queryset
+
+        initial_study_assay = None
+        for each in study_assay_queryset:
+            this_unit = each.unit.unit.lower()
+            # may need to change this to give something else a priority
+            # Mark had units of 'Fold Change' and 'Count', Tongying has 'Unitless' for all omic data...see how plays out
+            if this_unit.find("fold") >= 0:
+                # so a unit with a fold in it will get priority
+                initial_study_assay = each.id
+                break
+            else:
+                initial_study_assay = each.id
+
+        self.fields['study_assay'].initial = initial_study_assay
+
+        # study_method_target_unit = AssayStudyAssay.objects.filter(
+        #     study_id=self.instance.study.id
+        # ).prefetch_related(
+        #     'target',
+        #     'method',
+        #     'unit',
+        # )
+
+        # first_gene_method = None
+        # first_gene_target = None
+        # first_gene_unit = None
+
+        # study_gene_target_method_dict = {}
+        # for each in study_method_target_unit:
+        #     # print("-----\neach: ", each)
+        #     # print("each: ", each.id)
+        #     # print("each: ", each.method_id)
+        #     # print("each: ", each.target_id)
+        #     # print("each: ", each.unit_id)
+        #     # print("each: ", each.method)
+        #     # print("each: ", each.target)
+        #     # print("each: ", each.unit)
+        #     if each.target_id in gene_target_dict:
+        #         study_gene_target_method_dict[each.id] = [
+        #             each.method_id,
+        #             each.target_id,
+        #             each.unit_id,
+        #             each.method,
+        #             each.target,
+        #             each.unit
+        #         ]
+        #         first_gene_method = each.method_id
+        #         first_gene_target = each.target_id
+        #         first_gene_unit = each.unit_id
+
+        omic_computational_methods_list = AssayOmicAnalysisTarget.objects.values('method').distinct()
+        omic_computational_method_pks = []
+        for each in omic_computational_methods_list:
+            omic_computational_method_pks.append(each["method"])
+
+        omic_computational_methods = AssayMethod.objects.filter(
+            id__in=omic_computational_method_pks
+        )
+
+        initial_omic_computational_method = None
+        if len(omic_computational_methods) > 0:
+            for each in omic_computational_methods:
+                initial_computational_method = each
+                break
+
+        initial_computational_methods = omic_computational_methods
+        self.fields['analysis_method'].queryset = initial_computational_methods
+        self.fields['analysis_method'].initial = initial_computational_method
 
         # HANDY to limit options in a dropdown on a model field in a form
         self.fields['group_1'].queryset = data_groups_filtered
         self.fields['group_2'].queryset = data_groups_filtered
 
-        self.fields['group_2'].widget.attrs['class'] += ' required'
+        # when these are visible, they should be class required
+        # HANDY for adding classes in forms
+        # the following could remove other classes, so stick with the below
+        # NO self.fields['group_1'].widget.attrs.update({'class': ' required'})
+        # YES self.fields['group_1'].widget.attrs['class'] += 'required'
+
+        self.fields['group_1'].widget.attrs['class'] += 'required'
+        self.fields['group_2'].widget.attrs['class'] += 'required'
 
         if self.instance.time_1:
             time_1_instance = self.instance.time_1
@@ -5118,26 +5246,32 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
                      code='invalid'
                 )
 
+        # ONGOING - add to the list with all data types that are two groups required
+        if data['data_type'] in ['log2fc']:
+            if data['group_1'] == None or data['group_1'] == None:
+                true_to_continue = False
+                raise ValidationError(
+                     'For data type that compares two groups, both groups must be selected.',
+                     code='invalid'
+                )
+
         if true_to_continue:
             data_file_pk = self.instance.id
             data_type = data['data_type']
-            pipeline = data['pipeline']
+            analysis_method = data['analysis_method']
 
-            # here here when decide on other data types
-            if data_type == 'log2fc':
-                # if 5==5:
-                if calledme == 'clean':
-                    # this function is in utils.py
-                    # print('form clean')
-                    data_file = data.get('omic_data_file')
-                    amessage = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, pipeline)
-                    # print(amessage)
-                else:
-                    # print('form save')
-                    queryset = AssayOmicDataFileUpload.objects.get(id=data_file_pk)
-                    data_file = queryset.omic_data_file.open()
-                    amessage = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, pipeline)
-                    # print(amessage)
+            if calledme == 'clean':
+                # this function is in utils.py
+                # print('form clean')
+                data_file = data.get('omic_data_file')
+                amessage = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, analysis_method)
+                # print(amessage)
+            else:
+                # print('form save')
+                queryset = AssayOmicDataFileUpload.objects.get(id=data_file_pk)
+                data_file = queryset.omic_data_file.open()
+                amessage = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, analysis_method)
+                # print(amessage)
 
         return data
 

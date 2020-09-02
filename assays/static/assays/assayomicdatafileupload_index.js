@@ -5,11 +5,13 @@ $(document).ready(function() {
     {'targets': [1], 'visible': true,},
     {'targets': [2], 'visible': true,},
     {'targets': [3], 'visible': true,},
+
     {'targets': [4], 'visible': true,},
-    {'targets': [5], 'visible': true,},
+    {'targets': [5], 'visible': false,},
     {'targets': [6], 'visible': true,},
-    {'targets': [7], 'visible': true,},
-    {'targets': [8], 'visible': false,},
+    {'targets': [7], 'visible': false,},
+    {'targets': [8], 'visible': true,},
+
     {'targets': [9], 'visible': false,},
     {'targets': [10], 'visible': false,},
     {'targets': [11], 'visible': false,},

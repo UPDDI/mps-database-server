@@ -9,7 +9,7 @@
 {% block breadcrumbs %}
     <li><a href="/assays/assaystudy/">Studies</a></li>
     <li><a href="{{ object.get_absolute_url }}">{{ object }}</a></li>
-    <li class="active">Assay Omic Data Files</li>
+    <li class="active">Omic Data Files</li>
 {% endblock %}
 
 {% block content %}
@@ -19,7 +19,7 @@
     <div class="padded-bottom">
         <div class="well">
             <h1 class="text-center">
-                <em><b>Assay Omic Data File Upload List</b></em><br><br>
+                <em><b>Omic Data File Upload List</b></em><br><br>
                 Study: {{ object }}
             </h1>
         </div>
@@ -27,7 +27,7 @@
         <div>
             <div class="container">
                 <div class="row">
-                    <div class="col-md-7">
+                    <div class="col-md-4">
                         {# Hide setup add buttons if the study is marked reviewed #}
                         {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
                             {% if not review %}
@@ -37,7 +37,12 @@
                                 {% endif %}
                         {% endif %}
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-4">
+                        <div>
+                            <a href="{{ object.get_absolute_url }}omics/" class="btn btn-primary" role="button">Jump to Volcano Plots</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
                     </div>
                 </div>
             </div>
@@ -47,7 +52,7 @@
         {% if datafiles %}
         <div>
             <div><p id="omic_file_index_tooltip"></p>
-                <label for="omic_file_index_tooltip">Assay Omic Data File List &nbsp;</label>
+                <label for="omic_file_index_tooltip">Omic Data File List &nbsp;</label>
             </div>
 
             <table id="assayomicdatafileuploads" class="display table table-striped table-hover" cellspacing="0" width="100%">
@@ -57,11 +62,13 @@
                     <th>Edit</th>
                     <th>File</th>
                     <th># Points</th>
+
                     <th>Description</th>
-                    <th>Method</th>
+                    <th>Assay</th>
                     <th>Data Type</th>
-                    <th>Name</th>
-                    <th>Pipeline</th>
+                    <th>Gene Nomenclature</th>
+                    <th>Analysis Method</th>
+
                     <th>Group 1</th>
                     <th>Time 1 (min)</th>
                     <th>Location 1</th>
@@ -88,11 +95,12 @@
                     </td>
 
                     <td>{{ file.point_count }}</td>
+
                     <td>{{ file.description }}</td>
-                    <td>{{ file.method }}</td>
+                    <td>{{ file.study_assay }}</td>
                     <td>{{ file.data_type }}</td>
                     <td>{{ file.name_reference }}</td>
-                    <td>{{ file.pipeline }}</td>
+                    <td>{{ file.analysis_method }}</td>
                     <td>{{ file.group_1 }}</td>
                     <td>{{ file.time_1 }}</td>
                     <td>{{ file.location_1 }}</td>

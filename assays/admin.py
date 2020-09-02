@@ -58,6 +58,7 @@ from assays.models import (
     # AssayOmicDataGroup,
     AssayOmicDataFileUpload,
     AssayOmicDataPoint,
+    AssayOmicAnalysisTarget,
 )
 from microdevices.models import MicrophysiologyCenter
 # from compounds.models import Compound
@@ -1358,7 +1359,7 @@ admin.site.register(SpeciesParameters, SpeciesParametersAdmin)
 
 class AssayOmicDataFileUploadAdmin(ImportExportModelAdmin):
     model = AssayOmicDataFileUpload
-    list_display = ('study', 'omic_data_file', 'description', 'data_type', 'method', 'pipeline',
+    list_display = ('study', 'omic_data_file', 'description', 'study_assay', 'analysis_method', 'data_type',
                     'group_1', 'group_2', 'time_1', 'time_2', 'location_1', 'location_2', 'name_reference')
     search_fields = ('description', )
 
@@ -1366,7 +1367,16 @@ admin.site.register(AssayOmicDataFileUpload, AssayOmicDataFileUploadAdmin)
 
 class AssayOmicDataPointAdmin(ImportExportModelAdmin):
     model = AssayOmicDataPoint
-    list_display = ('study', 'omic_data_file', 'name', 'target', 'value')
-    search_fields = ('name', 'target', 'study', 'omic_data_file' )
+    list_display = ('study', 'omic_data_file', 'name', 'analysis_target', 'value')
+    search_fields = ('name', 'analysis_target', 'study', 'omic_data_file')
 
 admin.site.register(AssayOmicDataPoint, AssayOmicDataPointAdmin)
+
+class AssayOmicAnalysisTargetAdmin(ImportExportModelAdmin):
+    """Admin for Analysis Targets"""
+    model = AssayOmicAnalysisTarget
+    list_display = ('name', 'target', 'data_type', 'method', 'unit')
+    search_fields = ('name', 'target', 'data_type', 'method', 'unit')
+
+admin.site.register(AssayOmicAnalysisTarget, AssayOmicAnalysisTargetAdmin)
+

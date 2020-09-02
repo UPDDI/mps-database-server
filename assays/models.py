@@ -4955,6 +4955,63 @@ class SpeciesParameters(models.Model):
         return '{} - {} ({})'.format(self.species, self.organ, self.reference)
 
 
+class AssayOmicAnalysisTarget(models.Model):
+    """A cross reference for omic file headers """
+    # this table is queried in the code to return the 'name', which = import file header
+
+    class Meta(object):
+        verbose_name = 'Assay Omic Analysis Target'
+        unique_together = [
+            ('name', 'data_type', 'method'),
+        ]
+    # The omic data upload will search this table for the name (header) and data_type to return a list to work with
+    name = models.CharField(
+        max_length=512,
+        help_text='Input File Headers for omics upload (e.g. baseMean, normscount). Do not change without checking with omic upload developer.',
+        verbose_name='Input File Headers'
+    )
+    data_type = models.CharField(
+        max_length=25,
+        default='log2fc',
+        help_text='Data Type (must match exactly the hardcoded assay omic data type choices). Do not change without checking with omic upload developer.',
+        verbose_name='Data Type'
+    )
+    # need this here to query the this table in the code
+    method = models.ForeignKey(
+        AssayMethod,
+        on_delete=models.CASCADE,
+        help_text='Data Analysis Method (Computational Method). Do not change without checking with omic upload developer.',
+        verbose_name='Data Analysis Method'
+    )
+    target = models.ForeignKey(
+        AssayTarget,
+        on_delete=models.CASCADE,
+        help_text='Data Analysis Target - computational feature.',
+        verbose_name='Data Analysis Target'
+    )
+    # not sure if need the unit but keep for now
+    unit = models.ForeignKey(
+        PhysicalUnits,
+        on_delete=models.CASCADE,
+        help_text='Data Analysis Unit - unit of computational feature.',
+        verbose_name='Data Analysis Unit'
+    )
+
+    def __str__(self):
+        return '{0}'.format(self.name)
+
+
+# the keys from this dict are used in other places (hardcoded)
+# and in the AssayOmicAnalysisTarget table
+# be mindful of changing them
+# OMIC RULES - do not change assay_omic_data_type_choices unless change EVERYWHERE they are hardcoded!
+assay_omic_data_type_choices = [
+    ('log2fc', 'Log 2 Fold Change'),
+    ('normcounts', 'Normalized Counts'),
+    ('rawcounts', 'Raw Counts')
+]
+
+
 # class AssayOmicDataGroup(LockableModel):
 #     """Assay omic data groups - pk used to tie chip and sample metadata to a data group."""
 #     # plan is to replace this with "treatment groups"
@@ -4984,18 +5041,6 @@ class SpeciesParameters(models.Model):
 #     def __str__(self):
 #         return '{}'.format(self.name)
 
-assay_omic_pipeline_choices = [
-    ('deseq2', 'DESeq2'),
-    ('limma', 'limma'),
-    ('other', 'other')
-]
-
-# the keys from this dict are used in other places (hardcoded), be mindful of changing them
-assay_omic_data_type_choices = [
-    ('log2fc', 'Log 2 Fold Change'),
-    ('normcounts', 'Normalized Counts'),
-    ('rawcounts', 'Raw Counts')
-]
 assay_omic_gene_name_choices = [
     ('temposeq_probe', 'TempO-Seq Probe ID'),
     ('entrez_gene', 'NCBI Gene ID (Entrez)'),
@@ -5004,6 +5049,7 @@ assay_omic_gene_name_choices = [
     ('affymerix_probe', 'Affymerix Probeset ID'),
     ('gene_symbol', 'Gene Symbol')
 ]
+
 
 class AssayOmicDataFileUpload(LockableModel):
     """Assay omic data - usually export from a DEG tool."""
@@ -5021,48 +5067,49 @@ class AssayOmicDataFileUpload(LockableModel):
 
     description = models.CharField(
         max_length=2000,
-        blank=True,
         default=set_default_description(),
         verbose_name='File Description'
     )
     # if not required, and user tries to have two empty, will get error
     omic_data_file = models.FileField(
         upload_to='omic_data_file',
-        help_text='Omic Data File',
+        help_text='Omic data file to be uploaded to the database.',
         verbose_name='Omic Data File*'
-    )
-
-    data_type = models.CharField(
-        max_length=25,
-        default='log2fc',
-        choices=assay_omic_data_type_choices,
-        help_text='Type of Results',
-        verbose_name='Data Type'
     )
 
     name_reference = models.CharField(
         max_length=25,
         default='temposeq_probe',
         choices=assay_omic_gene_name_choices,
-        help_text='Gene ID Reference (genenames.org)',
-        verbose_name='Gene Reference'
+        help_text='Gene or probe ID (nomenclature used in import file)',
+        verbose_name='Gene or Probe ID'
     )
 
-    pipeline = models.CharField(
-        max_length=25,
-        default='deseq2',
-        # blank=True,
-        choices=assay_omic_pipeline_choices,
-        help_text='Primary Data Processing Tool',
-        verbose_name='Pipeline'
+    study_assay = models.ForeignKey(
+        'assays.AssayStudyAssay',
+        help_text='Category, Target, Method, Unit as entered in the Study Assay Setup.',
+        on_delete=models.CASCADE,
+        verbose_name='Upload File Assay'
     )
-
-    method = models.ForeignKey(
+    # this is also stored, as part of the link to AssayOmicAnalysisTarget, in the data point file
+    # it is here only to limit the list of targets selected from the AssayOmicAnalysisTarget table
+    # could make is just a form field, but, it may be helpful to have it stored here
+    # could remove it from one or the other, maybe, but leave for now
+    analysis_method = models.ForeignKey(
         AssayMethod,
         on_delete=models.CASCADE,
-        help_text='Assay Method',
-        verbose_name='Method'
+        help_text='Data analysis method or computational tool (e.g. DESeq2).',
+        verbose_name='Data Analysis Method'
     )
+
+    data_type = models.CharField(
+        max_length=25,
+        default='log2fc',
+        choices=assay_omic_data_type_choices,
+        help_text='Type of computational results.',
+        verbose_name='Data Type'
+    )
+
 
     # # data groups could be empty for the norm count and raw count data
     # group_1 = models.ForeignKey(
@@ -5085,38 +5132,39 @@ class AssayOmicDataFileUpload(LockableModel):
     # )
 
     # data groups could be empty for the norm count and raw count data
+    # when they are visible on the form, they are required, so put the * here
     group_1 = models.ForeignKey(
         AssayGroup,
-        null=True,
-        blank=True,
         on_delete=models.CASCADE,
         related_name='group_1',
-        help_text='Data Processing Group 1',
-        verbose_name='Group 1*'
+        null=True,
+        blank=True,
+        help_text='Data Processing Test Group',
+        verbose_name='Test Group*'
     )
     group_2 = models.ForeignKey(
         AssayGroup,
-        null=True,
-        blank=True,
         on_delete=models.CASCADE,
         related_name='group_2',
-        help_text='Data Processing Group 2',
-        verbose_name='Group 2*'
+        null=True,
+        blank=True,
+        help_text='Data Processing Reference Group',
+        verbose_name='Reference Group*'
     )
 
     time_1 = models.FloatField(
         default=0,
         null=True,
         blank=True,
-        help_text='Sample Time Group 1',
-        verbose_name='Sample Time 1'
+        help_text='Sample Time for the Test Group',
+        verbose_name='Test Group Sample Time'
     )
     time_2 = models.FloatField(
         default=0,
         null=True,
         blank=True,
-        help_text='Sample Time Group 2',
-        verbose_name='Sample Time 2'
+        help_text='Sample Time for the Reference Group',
+        verbose_name='Reference Group Sample Time'
     )
 
     location_1 = models.ForeignKey(
@@ -5125,7 +5173,8 @@ class AssayOmicDataFileUpload(LockableModel):
         blank=True,
         on_delete=models.CASCADE,
         related_name="location_1",
-        verbose_name='Sample Location Group 1'
+        help_text='Sample Location for the Test Group',
+        verbose_name='Test Group Sample Location'
     )
     location_2 = models.ForeignKey(
         'AssaySampleLocation',
@@ -5133,7 +5182,8 @@ class AssayOmicDataFileUpload(LockableModel):
         blank=True,
         on_delete=models.CASCADE,
         related_name="location_2",
-        verbose_name='Sample Location Group 2'
+        help_text='Sample Location for the Reference Group',
+        verbose_name='Reference Group Sample Location'
     )
 
     def __str__(self):
@@ -5150,7 +5200,7 @@ class AssayOmicDataFileUpload(LockableModel):
 
 
 class AssayOmicDataPoint(models.Model):
-    """Individual points of omic data for data that is group to group comparison"""
+    """Individual points of omic data """
 
     class Meta(object):
         verbose_name = 'Assay Omic Data Point'
@@ -5166,27 +5216,21 @@ class AssayOmicDataPoint(models.Model):
 
     omic_data_file = models.ForeignKey(
         AssayOmicDataFileUpload,
-        null=False,
-        blank=False,
         on_delete=models.CASCADE,
         verbose_name='Data File'
     )
-
+    # this might be replaced later with a pk to a master table
     name = models.CharField(
         max_length=100,
-        blank=False,
-        null=False,
-        help_text='Gene Reference',
+        help_text='Gene or Probe ID',
         verbose_name='Name'
     )
-
-    target = models.ForeignKey(
-        AssayTarget,
-        blank=False,
-        null=False,
+    # to a table with the header and analysis target
+    analysis_target = models.ForeignKey(
+        AssayOmicAnalysisTarget,
         on_delete=models.CASCADE,
-        help_text='Computational Target',
-        verbose_name='Computational Target'
+        help_text='Analysis Target',
+        verbose_name='Analysis Target'
     )
 
     value = models.FloatField(
@@ -5195,31 +5239,11 @@ class AssayOmicDataPoint(models.Model):
         verbose_name='Computed Value'
     )
 
-    # count data 'might/may' require header with match to MPS Matrix Item
-    # may want to make a separate table of count data...decide later
-    # might want place to store a cross reference (sample ID) - especially if pull from GEO
-    # might want to store group id for this value, not sure yet
-    # matrix_item = models.ForeignKey(
-    #     'assays.AssayMatrixItem',
-    #     on_delete=models.CASCADE,
-    #     verbose_name='Matrix Item'
-    # )
-    # Cross reference for storing sample id (GEO .bam sample ids - maybe
-    # cross_reference = models.CharField(
-    #     max_length=255,
-    #     default='',
-    #     verbose_name='Cross Reference'
-    # )
-    # data groups could be stored here for the norm count and raw count data
-    # group_1 = models.ForeignKey(
-    #     AssayOmicDataGroup,
-    #     null=True,
-    #     blank=True,
-    #     on_delete=models.CASCADE,
-    #     related_name='group_1',
-    #     help_text='Data Processing Group 1',
-    #     verbose_name='Group 1'
-    # )
+    # when doing the count data, will need to add a link to something
+    # could be to the chip (matrix item) or could be to a table that has
+    # pks for matrix item, sample time, sample location, sample cross reference
+    # for now, just do not add it as it would be NULL for 2 group comparison data
+    # although, later, if we did relate chips to a group, a pk to that info could go here .....
 
     def __str__(self):
         return '{0}'.format(self.id)

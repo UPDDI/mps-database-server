@@ -38,6 +38,7 @@ from .models import (
     AssaySampleLocation,
     PhysicalUnits,
     AssayOmicDataPoint,
+    AssayOmicAnalysisTarget
 )
 
 from mps.templatetags.custom_filters import VIEWER_SUFFIX, ADMIN_SUFFIX
@@ -6490,7 +6491,8 @@ def sandrasGeneralFormatNumberFunction(this_number_in):
 
 
 # sck called from forms.py when save or change omic data file
-def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, file_extension, called_from, data_type, pipeline):
+def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, file_extension,
+                                          called_from, data_type, analysis_method):
     """
     Assay Omics Data File Add or Change the file (utility).
     """
@@ -6507,36 +6509,40 @@ def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, fi
     # that means only need one list_of_instances for all the sheets
     list_of_instances = []
     instance_counter = 0
+    target_to_pk_dict = {}
+    omic_target_text_header_list = []
 
-    df_column_headers_stripped = []
-    target_text_lower_list = []
-    target_pk_list = []
-
-    target_to_pk_dict = {target.name: target.id for target in AssayTarget.objects.all()}
-
-    # will need to handle the targets differently for the different import formats
-    # get the list of target pks needed (may only need one, that is okay)
-    if data_type == 'log2fc' and pipeline == 'deseq2':
-        targets_and_pks = omic_deseq2_log2fc_upload_get_file_headers_and_targets(target_to_pk_dict)
-        target_text_lower_list = targets_and_pks[0]
-        target_pk_list = targets_and_pks[1]
-    elif data_type == 'normcounts':
-        target_text = 'Normalized Count'
-        target_pk_single = target_to_pk_dict.get(target_text, 1)
-        target_text_lower_list = [target_text.lower()]
-        target_pk_list = [target_pk_single]
-    elif data_type == 'rawcounts':
-        target_text = 'Raw Count'
-        target_pk_single = target_to_pk_dict.get(target_text, 1)
-        target_text_lower_list = [target_text.lower()]
-        target_pk_list = [target_pk_single]
+    if data_type == 'log2fc':
+        pass
+        # print("~continue ", save)
     else:
-        error_message = error_message + 'No option for this combination of data type and pipeline has been programmed. Contact the MPS Database Admins.'
+        error_message = error_message + 'Currently only working for data type log2fc'
         raise forms.ValidationError(error_message)
         continue_outer_if_true = False
 
-    # print(target_text_lower_list)
-    # print(target_pk_list)
+    if continue_outer_if_true:
+        # fill omic_target_text_header_list = [] and target_pk_list = []
+        # pull from the AssayOmicAnalysisTarget
+        # where file_header is true and data_type matches data_type and analysis_method matches analysis_method
+        # HANDY combine filters with commas in queryset
+        target_matches = AssayOmicAnalysisTarget.objects.filter(
+            data_type=data_type,
+            method=analysis_method
+        )
+        # print(target_matches)
+        target_to_pk_dict = {target.name: target.id for target in target_matches}
+        if len(target_to_pk_dict) == 0:
+            error_message = error_message + 'No option for this combination of data type and analysis method has been programmed. Contact the MPS Database Admins (AssayOmicAnalysisTargets not found).'
+            raise forms.ValidationError(error_message)
+            continue_outer_if_true = False
+        else:
+            omic_target_pks_header_list = list(target_to_pk_dict.values())
+            omic_target_text_header_list = list(target_to_pk_dict.keys())
+
+    # print("~dict ",target_to_pk_dict)
+    # {'padj': 1, 'baseMean': 2, 'lfcSE': 3, 'stat': 4, 'log2FoldChange': 5, 'pvalue': 6}
+    # print("~pk ",omic_target_pks_header_list)
+    # print("~text ",omic_target_text_header_list)
 
     if continue_outer_if_true:
         # get the number of sheets need to loop through and check to see if valid
@@ -6553,74 +6559,61 @@ def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, fi
     if continue_outer_if_true:
         # each sheet will be checked for data
         # not all sheets need to be valid, a sheet can be skipped and others imported
-
         while sheet_index < looper:
+            # when working with count data, will need metadata, not sure what yet????
+            matrix_item_pk_list = []
+
             # Guts of opening the file or sheet and find and return the dataframe
             # same for all data import types - no splitting by data type is needed
-            sub_find_dataframe = data_file_to_data_frame(data_file, file_extension, workbook, sheet_index)
-            continue_this_sheet_if_true = sub_find_dataframe[0]
-            error_message = error_message + sub_find_dataframe[1]
-            df = sub_find_dataframe[2]
-
+            find_dataframe = data_file_to_data_frame(data_file, file_extension, workbook, sheet_index)
+            continue_this_sheet_if_true = find_dataframe[0]
+            error_message = error_message + find_dataframe[1]
+            df = find_dataframe[2]
             # avoid problems with leading or trailing spaces
             df.columns = df.columns.str.strip()
             # save these in a list, because, need for some data (headers are chip ID names, sample names, group names)
             df_column_headers_stripped = df.columns
-            df.columns = map(str.lower, df.columns)
-            matrix_item_pk_list = []
+            # does the file have a column named 'gene' or 'name'?
+            gene_id_field_header_plus = omic_determine_if_field_with_header_for_gene(df_column_headers_stripped)
+            continue_this_sheet_if_true = gene_id_field_header_plus[0]
+            gene_id_field_header = gene_id_field_header_plus[1]
+
+            # print("~gene ",gene_id_field_header)
 
             if continue_this_sheet_if_true:
                 qc_each_file_or_worksheet_level = []
                 # Guts of the QC for the omics data point file
                 # functions should return continue and error message (and other stuff if needed for data type)
-                if data_type == 'log2fc' and pipeline == 'deseq2':
-                    qc_each_file_or_worksheet_level = omic_deseq2_log2fc_qc_the_fold_change_file_level(
-                        df, target_text_lower_list)
-                    continue_this_sheet_if_true = qc_each_file_or_worksheet_level[0]
-                    error_message = error_message + qc_each_file_or_worksheet_level[1]
-                    gene_id_field_name_if_app = qc_each_file_or_worksheet_level[2]
-                elif data_type == 'normcounts':
-                    qc_each_file_or_worksheet_level = omic_count_qc_the_count_file_level(df, study_id)
-                    continue_this_sheet_if_true = qc_each_file_or_worksheet_level[0]
-                    error_message = error_message + qc_each_file_or_worksheet_level[1]
-                    matrix_item_pk_list = qc_each_file_or_worksheet_level[2]
-                    gene_id_field_name_if_app = 'name'
-                elif data_type == 'rawcounts':
-                    qc_each_file_or_worksheet_level = omic_count_qc_the_count_file_level(df, study_id)
-                    continue_this_sheet_if_true = qc_each_file_or_worksheet_level[0]
-                    error_message = error_message + qc_each_file_or_worksheet_level[1]
-                    matrix_item_pk_list = qc_each_file_or_worksheet_level[2]
-                    gene_id_field_name_if_app = 'name'
-                else:
-                    continue_this_sheet_if_true = False
+                qc_each_file_or_worksheet_level = omic_qc_data_file(df, omic_target_text_header_list, data_type)
+                continue_this_sheet_if_true = qc_each_file_or_worksheet_level[0]
+                error_message = error_message + qc_each_file_or_worksheet_level[1]
+                list_of_relevant_headers_in_file = qc_each_file_or_worksheet_level[2]
 
-            data_loaded_to_list_of_instances = [continue_this_sheet_if_true, error_message, list_of_instances, instance_counter]
+                # print("~match headers ",list_of_relevant_headers_in_file)
+
             if continue_this_sheet_if_true:
                 # Guts of data loading for omic data file
                 # functions should return continue, error message, and a list of instances and an instance counter
-                if data_type == 'log2fc' and pipeline == 'deseq2':
-                    data_loaded_to_list_of_instances = omic_deseq2_log2fc_data_to_list_of_instances(
+                if data_type == 'log2fc':
+                    data_loaded_to_list_of_instances = omic_two_group_data_to_list_of_instances(
                         list_of_instances, instance_counter, df,
-                        study_id, omic_data_file_id, target_pk_list,
-                        target_text_lower_list, called_from, gene_id_field_name_if_app)
-                elif data_type == 'normcounts':
-                    data_loaded_to_list_of_instances = omic_counts_data_to_list_of_instances(
-                        list_of_instances, instance_counter, df,
-                        study_id, omic_data_file_id, target_pk_list,
-                        matrix_item_pk_list, called_from, gene_id_field_name_if_app)
-                elif data_type == 'rawcounts':
-                    data_loaded_to_list_of_instances = omic_counts_data_to_list_of_instances(
-                        list_of_instances, instance_counter, df,
-                        study_id, omic_data_file_id, target_pk_list,
-                        matrix_item_pk_list, called_from, gene_id_field_name_if_app)
+                        study_id, omic_data_file_id, target_to_pk_dict,
+                        list_of_relevant_headers_in_file, called_from, gene_id_field_header)
+                    continue_this_sheet_if_true = data_loaded_to_list_of_instances[0]
+                    error_message = data_loaded_to_list_of_instances[1]
+                    list_of_instances = data_loaded_to_list_of_instances[2]
+                    instance_counter = data_loaded_to_list_of_instances[3]
+
+                    # print("~list_of_instances ",list_of_instances)
+
+                elif data_type == 'normcounts' or data_type == 'rawcounts':
+                    pass
+                    # data_loaded_to_list_of_instances = omic_metadata_data_to_list_of_instances(
+                    #     list_of_instances, instance_counter, df,
+                    #     study_id, omic_data_file_id, target_to_pk_dict,
+                    #     matrix_item_pk_list, called_from, gene_id_field_name_if_app)
                 else:
                     continue_this_sheet_if_true = False
-
-            if continue_this_sheet_if_true:
-                continue_this_sheet_if_true = data_loaded_to_list_of_instances[0]
-                error_message = error_message + data_loaded_to_list_of_instances[1]
-                list_of_instances = data_loaded_to_list_of_instances[2]
-                instance_counter = data_loaded_to_list_of_instances[3]
 
             sheet_index = sheet_index + 1
 
@@ -6630,12 +6623,163 @@ def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, fi
         continue_outer_if_true = False
 
     if called_from == 'save' and continue_outer_if_true:
-        omic_upload_remove_and_add(omic_data_file_id, list_of_instances, error_message)
+        omic_data_upload_remove_and_add(omic_data_file_id, list_of_instances, error_message)
 
     return 'done'
 
 
-def omic_upload_remove_and_add(data_file_pk, list_of_instances, error_message):
+def omic_determine_if_field_with_header_for_gene(df_column_headers_stripped):
+    continue_this_sheet_if_true = True
+    # may need other options here (eg probe_id, refseq name, etc), but these will do for now
+    gene_id_field_name = ''
+    if 'gene' in df_column_headers_stripped:
+        gene_id_field_name = 'gene'
+    elif 'name' in df_column_headers_stripped:
+        gene_id_field_name = 'name'
+    else:
+        # for this sheet or file, the HEADER for the target field could not be found, skip this sheet
+        continue_this_sheet_if_true = False
+    return [continue_this_sheet_if_true, gene_id_field_name]
+
+
+def omic_qc_data_file(df, omic_target_text_header_list, data_type):
+    error_message = ''
+    continue_this_sheet_if_true = True
+
+    list_of_relevant_headers_in_file = []
+    found_foldchange_true = False
+    for file_header in df.columns:
+        if file_header.find('fc') >= 0 or file_header.find('fold') >= 0 or file_header.find(
+                'FC') >= 0 or file_header.find('Fold') >= 0:
+            found_foldchange_true = True
+        if file_header in omic_target_text_header_list:
+            list_of_relevant_headers_in_file.append(file_header)
+
+    if found_foldchange_true:
+        pass
+    else:
+        continue_this_sheet_if_true = False
+        error_message = error_message + ' Required header containing "fc" or "fold" or "FC" or "Fold" is missing. '
+
+    # todo when ready to deal with count data
+    # if data_type != 'log2fc':
+    #     matrix_item_name_to_pk = {matrix_item.name: matrix_item.id for matrix_item in AssayMatrixItem.objects.filter(study_id=study_id)}
+    #
+    #     matrix_item_pk_list = []
+    #     i = 0
+    #     for each in df.columns:
+    #         pk = matrix_item_name_to_pk.get(each, 0)
+    #         matrix_item_pk_list.append(pk)
+    #         if pk == 0 and i > 0:
+    #             # build the error string just in case NONE of the fields are valid, but otherwise, just ignore them
+    #             # continue_this_sheet_if_true = False
+    #             error_message = error_message + ' Chip/Well Name ' + each + ' not found in this study. '
+    #         i = i + 1
+
+    return [continue_this_sheet_if_true, error_message, list_of_relevant_headers_in_file]
+
+
+def omic_two_group_data_to_list_of_instances(
+    list_of_instances, instance_counter, df,
+    study_id, omic_data_file_id, target_to_pk_dict,
+    list_of_relevant_headers_in_file, called_from, gene_id_field_header):
+
+    error_message = ''
+    continue_this_sheet_if_true = True
+
+    for index, row in df.iterrows():
+        name = row[gene_id_field_header]
+        for each in list_of_relevant_headers_in_file:
+            target_pk = target_to_pk_dict[each]
+            value = row[each]
+            if np.isnan(value):
+                value = None
+
+            # print("instance_counter ",instance_counter)
+            # print("~each ", each)
+            # print("~target_pk ", target_pk)
+            # print("~value ", value)
+
+            # creating an instance causes an error in the clean since there is no pk for this file on the add form
+            # but we want the rest to go through the save AND we want to make sure instances are being counted in the clean
+            if called_from == 'save':
+                instance = AssayOmicDataPoint(
+                    study_id=study_id,
+                    omic_data_file_id=omic_data_file_id,
+                    name=name,
+                    analysis_target_id=target_pk,
+                    value=value
+                )
+                # add this list to the list of lists
+                list_of_instances.append(instance)
+
+            instance_counter = instance_counter + 1
+
+    return [continue_this_sheet_if_true, error_message, list_of_instances, instance_counter]
+
+
+def omic_metadata_data_to_list_of_instances(
+    list_of_instances, instance_counter, df,
+    study_id, omic_data_file_id, target_pk_list,
+    matrix_item_pk_list, called_from, gene_id_field_name_if_app
+    ):
+    # TODO fix this
+
+    error_message = ''
+    continue_this_sheet_if_true = True
+
+    if len(matrix_item_pk_list) != len(df.columns):
+        error_message = 'There is a problem with finding the list of matrix items. Notify the MPS Database Admins.'
+        continue_this_sheet_if_true = False
+        print(error_message)
+    else:
+        target = int(target_pk_list[0])
+        data_cols = []
+        i = 0
+        for each in df.columns:
+            if i > 0:
+                data_cols.append(each)
+            i = i + 1
+
+        for index, row in df.iterrows():
+
+            # assume for now there will be only one header row and it was row 0 and we specified a header row so it is not called here
+            # if there are additional header rows, deal with them here ....
+
+            name = row[gene_id_field_name_if_app]
+            print('name for this row ',name)
+            c = 0
+
+            while c < len(data_cols):
+                print('c ', c, ' data_cols[c] ', data_cols[c])
+                value = row[data_cols[c]]
+                # note the +1 because the first one was not popped off as the data_cols was
+                this_matrix_item = int(matrix_item_pk_list[c + 1])
+                # print('index ',index,'  instance_counter ', instance_counter ,'  i ',i,'  name ',name,'  target ',target, '  value ',value)
+
+                # creating an instance causes an error in the clean since there is no pk for this file on the add form
+                # but we want the rest to go through the save AND we want to make sure instances are being counted in the clean
+
+                if called_from == 'save' and this_matrix_item > 0:
+                    instance = AssayOmicDataPoint(
+                        study_id=study_id,
+                        omic_data_file_id=omic_data_file_id,
+                        name=name,
+                        target_id=target,
+                        value=value
+                        # , matrix_item_id=this_matrix_item
+                        #     may want a group id or a cross reference, depends on what team decides
+                    )
+                    # add this list to the list of lists
+                    list_of_instances.append(instance)
+
+                instance_counter = instance_counter + 1
+                c = c + 1
+
+    return [continue_this_sheet_if_true, error_message, list_of_instances, instance_counter]
+
+
+def omic_data_upload_remove_and_add(data_file_pk, list_of_instances, error_message):
     # Guts of removing old and saving the data to the DataPoint Table.
     # double check that there are data ready to add to the DataPoint table before continuing
     if len(list_of_instances) > 0:
@@ -6692,172 +6836,3 @@ def data_file_to_data_frame(data_file, file_extension, workbook=None, sheet_inde
             true_if_dataframe_found = False
 
     return [true_if_dataframe_found, error_message, df]
-
-
-def omic_deseq2_log2fc_upload_get_file_headers_and_targets(target_to_pk_dict):
-    # in forms.py, this finds the key for the value provided as thisHeader
-    # def find_a_key_by_value_in_dictionary(this_dict, this_header):
-
-    # Make a dictionary of headers from file and team display target names
-    OMIC_COLUMN_HEADER_TO_TARGET_DICT = {
-        'baseMean': 'baseMean',
-        'log2FoldChange': 'log2FoldChange',
-        'lfcSE': 'lfcSE',
-        'stat': 'stat',
-        'pvalue': 'pvalue',
-        'padj': 'padj',
-        # 'padj': 'DESeq2-padj',
-    }
-
-    omic_deseq2_headers = []
-    omic_deseq2_headers_lower = []
-    omic_deseq2_targets = []
-    omic_deseq2_targets_pk = []
-    for ke, va in OMIC_COLUMN_HEADER_TO_TARGET_DICT.items():
-        omic_deseq2_headers.append(ke)
-        omic_deseq2_headers_lower.append(ke.lower())
-        omic_deseq2_targets.append(va)
-
-    for name in omic_deseq2_targets:
-        target_pk = target_to_pk_dict.get(name, 1)
-        omic_deseq2_targets_pk.append(target_pk)
-    return [omic_deseq2_headers_lower, omic_deseq2_targets_pk]
-
-
-def omic_deseq2_log2fc_qc_the_fold_change_file_level(df, target_text_lower_list):
-    error_message = ''
-    continue_this_sheet_if_true = True
-    # may need other options here (eg probe_id, refseq name, etc), but these will do for now
-    gene_id_field_name_if_app = ''
-    if 'gene' in df.columns:
-        gene_id_field_name_if_app = 'gene'
-    elif 'name' in df.columns:
-        gene_id_field_name_if_app = 'name'
-    else:
-        # for this sheet or file, the HEADER for the target field could not be found, skip this sheet
-        continue_this_sheet_if_true = False
-    # make sure all the required target_text_lower_list are in this file
-    for each in target_text_lower_list:
-        if each in df.columns:
-            pass
-        else:
-            continue_this_sheet_if_true = False
-            error_message = error_message + ' Required field ' + each + ' is missing. '
-    return [continue_this_sheet_if_true, error_message, gene_id_field_name_if_app]
-
-
-def omic_count_qc_the_count_file_level(df, study_id):
-    error_message = ''
-    continue_this_sheet_if_true = True
-
-    matrix_item_name_to_pk = {matrix_item.name: matrix_item.id for matrix_item in AssayMatrixItem.objects.filter(study_id=study_id)}
-
-    matrix_item_pk_list = []
-    i = 0
-    for each in df.columns:
-        pk = matrix_item_name_to_pk.get(each, 0)
-        matrix_item_pk_list.append(pk)
-        if pk == 0 and i > 0:
-            # build the error string just in case NONE of the fields are valid, but otherwise, just ignore them
-            # continue_this_sheet_if_true = False
-            error_message = error_message + ' Chip/Well Name ' + each + ' not found in this study. '
-        i = i + 1
-    return [continue_this_sheet_if_true, error_message, matrix_item_pk_list]
-
-
-def omic_deseq2_log2fc_data_to_list_of_instances(
-    list_of_instances, instance_counter, df,
-    study_id, omic_data_file_id, target_pk_list,
-    target_text_lower_list, called_from, gene_id_field_name_if_app
-    ):
-
-    error_message = ''
-    continue_this_sheet_if_true = True
-
-    for index, row in df.iterrows():
-        i = 0
-        while i < len(target_text_lower_list):
-            name = row[gene_id_field_name_if_app]
-            target = int(target_pk_list[i])
-            value = row[target_text_lower_list[i]]
-            if np.isnan(value):
-                value = None
-
-            # print('index ',index,'  instance_counter ', instance_counter ,'  i ',i,'  name ',name,'  target ',target, '  value ',value)
-
-            # creating an instance causes an error in the clean since there is no pk for this file on the add form
-            # but we want the rest to go through the save AND we want to make sure instances are being counted in the clean
-            if called_from == 'save':
-                instance = AssayOmicDataPoint(
-                    study_id=study_id,
-                    omic_data_file_id=omic_data_file_id,
-                    name=name,
-                    target_id=target,
-                    value=value
-                )
-                # add this list to the list of lists
-                list_of_instances.append(instance)
-
-            instance_counter = instance_counter + 1
-            i = i + 1
-
-    return [continue_this_sheet_if_true, error_message, list_of_instances, instance_counter]
-
-def omic_counts_data_to_list_of_instances(
-    list_of_instances, instance_counter, df,
-    study_id, omic_data_file_id, target_pk_list,
-    matrix_item_pk_list, called_from, gene_id_field_name_if_app
-    ):
-
-    error_message = ''
-    continue_this_sheet_if_true = True
-
-    if len(matrix_item_pk_list) != len(df.columns):
-        error_message = 'There is a problem with finding the list of matrix items. Notify the MPS Database Admins.'
-        continue_this_sheet_if_true = False
-        print(error_message)
-    else:
-        target = int(target_pk_list[0])
-        data_cols = []
-        i = 0
-        for each in df.columns:
-            if i > 0:
-                data_cols.append(each)
-            i = i + 1
-
-        for index, row in df.iterrows():
-
-            # assume for now there will be only one header row and it was row 0 and we specified a header row so it is not called here
-            # if there are additional header rows, deal with them here ....
-
-            name = row[gene_id_field_name_if_app]
-            print('name for this row ',name)
-            c = 0
-
-            while c < len(data_cols):
-                print('c ', c, ' data_cols[c] ', data_cols[c])
-                value = row[data_cols[c]]
-                # note the +1 because the first one was not popped off as the data_cols was
-                this_matrix_item = int(matrix_item_pk_list[c + 1])
-                # print('index ',index,'  instance_counter ', instance_counter ,'  i ',i,'  name ',name,'  target ',target, '  value ',value)
-
-                # creating an instance causes an error in the clean since there is no pk for this file on the add form
-                # but we want the rest to go through the save AND we want to make sure instances are being counted in the clean
-
-                if called_from == 'save' and this_matrix_item > 0:
-                    instance = AssayOmicDataPoint(
-                        study_id=study_id,
-                        omic_data_file_id=omic_data_file_id,
-                        name=name,
-                        target_id=target,
-                        value=value
-                        # , matrix_item_id=this_matrix_item
-                        #     may want a group id or a cross reference, depends on what team decides
-                    )
-                    # add this list to the list of lists
-                    list_of_instances.append(instance)
-
-                instance_counter = instance_counter + 1
-                c = c + 1
-
-    return [continue_this_sheet_if_true, error_message, list_of_instances, instance_counter]

@@ -2,19 +2,17 @@ $(document).ready(function () {
 
     // $('.has-popover').popover({'trigger':'hover'});
 
-    let global_omic_upload_group_id_working = 0
-    let global_omic_upload_group_pk_working = 0
-    let global_omic_upload_group_id_working2 = 0
-    let global_omic_upload_group_pk_working2 = 0
-    let global_omic_upload_called_from = 'add'
+    let global_omic_upload_group_id_working = 0;
+    let global_omic_upload_group_pk_working = 0;
+    let global_omic_upload_group_id_working2 = 0;
+    let global_omic_upload_group_pk_working2 = 0;
+    let global_omic_upload_called_from = 'add';
+    let global_omic_file = null;
 
-    let global_omic_current_group1 = $('#id_group_1')[0].selectize.items[0]
-    let global_omic_current_group2 = $('#id_group_2')[0].selectize.items[0]
+    let global_omic_current_group1 = $('#id_group_1')[0].selectize.items[0];
+    let global_omic_current_group2 = $('#id_group_2')[0].selectize.items[0];
 
     let global_make_the_group_change = true;
-
-    //start this hidden
-    $('#omic_file_format_details_section').hide();
 
     //set the required ness of the groups on load based on data type on load
     changed_data_type();
@@ -35,15 +33,14 @@ $(document).ready(function () {
 
     // tool tip requirements
     // here here update the tool tips for the different file formats
-    let global_omic_upload_omic_file_format_deseq2_log2fc_tooltip = 'For DESeq2 Log2Fold change data, the following headers are required to be located in the first row of the file or worksheet: baseMean, log2FoldChange, lfcSE, stat, pvalue, padj, and gene or name.';
+    let global_omic_upload_omic_file_format_deseq2_log2fc_tooltip = 'For DESeq2 Log2Fold change data, the header "log2FoldChange" must be in the first row. Other optional columns headers are: "baseMean", "lfcSE", "stat", "pvalue", "padj", and "gene" (or "name").';
     $('#omic_file_format_deseq2_log2fc_tooltip').next().html($('#omic_file_format_deseq2_log2fc_tooltip').next().html() + make_escaped_tooltip(global_omic_upload_omic_file_format_deseq2_log2fc_tooltip));
-    let global_omic_upload_omic_file_format_normcounts_tooltip = 'Under Development - Normalized counts data files must have one header row. the first column must be named "name" and contain a reference to the gene. The remaining columns must be named with the chip or well name as assigned in the MPS Database. ';
+    let global_omic_upload_omic_file_format_normcounts_tooltip = 'Under Development - ?????? Normalized counts data files must have one header row. the first column must be named "name" and contain a reference to the gene. The remaining columns must be named with the chip or well name as assigned in the MPS Database. ';
     $('#omic_file_format_normcounts_tooltip').next().html($('#omic_file_format_normcounts_tooltip').next().html() + make_escaped_tooltip(global_omic_upload_omic_file_format_normcounts_tooltip));
-    let global_omic_upload_omic_file_format_rawcounts_tooltip = 'Under Development - Raw counts data files must have one header row. The first column must be named "name" and contain a reference to the gene. The remaining columns must be named with the chip or well name as assigned in the MPS Database. ';
+    let global_omic_upload_omic_file_format_rawcounts_tooltip = 'Under Development - ???????? Raw counts data files must have one header row. The first column must be named "name" and contain a reference to the gene. The remaining columns must be named with the chip or well name as assigned in the MPS Database. ';
     $('#omic_file_format_rawcounts_tooltip').next().html($('#omic_file_format_rawcounts_tooltip').next().html() + make_escaped_tooltip(global_omic_upload_omic_file_format_rawcounts_tooltip));
-let global_omic_method_tooltip = 'Assay Method';
-    $('#omic_method_tooltip').next().html($('#omic_method_tooltip').next().html() + make_escaped_tooltip(global_omic_method_tooltip));
-
+    let global_omic_anaylsis_method_tooltip = 'The method (i.e. data processing tool, pipeline, etc.) used to process data.';
+    $('#omic_anaylsis_method_tooltip').next().html($('#omic_anaylsis_method_tooltip').next().html() + make_escaped_tooltip(global_omic_anaylsis_method_tooltip));
 
     // activates Bootstrap tooltips, must be AFTER tooltips are created - keep
     $('[data-toggle="tooltip"]').tooltip({container:'body', html: true});
@@ -63,9 +60,53 @@ let global_omic_method_tooltip = 'Assay Method';
         return new_span.html();
     }
 
+    /**
+     * On click to toggle
+    */
     $('#fileFormatDetailsButton').click(function () {
         $('#omic_file_format_details_section').toggle();
     });
+    $('#omicPreviewTheGraphsButton').click(function () {
+        $('#omic_preview_the_graphs_section').toggle();
+    });
+
+    /**
+     * On change data type, change what is required
+    */
+    $('#id_omic_data_file').on("change", function (e) {
+        // global_omic_file = e.target.files[0];
+        // console.log("file")
+        // console.log(global_omic_file)
+        if ($('#id_data_type')[0].selectize.items[0] == 'log2fc') {
+            //google.charts.setOnLoadCallback(fetchOmicsData);
+            //fetchOmicsData(global_omic_file);
+
+            $('#omic_preview_button_section').show();
+        }
+    });
+    // $('#id_omic_data_file').change(function () {
+    //     console.log("file1: "+$('#id_omic_data_file').val())
+    //     console.log("file2: "+document.getElementById("id_omic_data_file").files[0].name);
+    //     var input = document.getElementById("id_omic_data_file");
+    //     var fReader = new FileReader();
+    //     // fReader.readAsDataURL(input.files[0]);
+    //     // fReader.onloadend = function(event){
+    //     //     var img = document.getElementById("yourImgTag");
+    //     //     img.src = event.target.result;
+    //     // }
+    // });
+// var input = document.getElementById("inputFile");
+// var fReader = new FileReader();
+// fReader.readAsDataURL(input.files[0]);
+// fReader.onloadend = function(event){
+//     var img = document.getElementById("yourImgTag");
+//     img.src = event.target.result;
+// }
+
+    // need to set the upload_file to make the selected file
+    //$("#check_load").html().trim() === 'add')
+    //$("#upload_file").val();
+    //console.log("file: "+$('#id_omic_data_file').val())
 
 
     /**
@@ -108,11 +149,11 @@ let global_omic_method_tooltip = 'Assay Method';
     /**
      * On change method
     */
-    $('#id_method').change(function () {
-        method_value = $('#id_method')[0].selectize.items[0];
+    $('#id_study_assay').change(function () {
+        study_assay_value = $('#id_study_assay')[0].selectize.items[0];
         try {
-            method_text = $('#id_method')[0].selectize.options[method_value]['text'];
-            if (method_text.toLowerCase() == 'tempo-seq') {
+            study_assay_text = $('#id_study_assay')[0].selectize.options[study_assay_value]['text'];
+            if (study_assay_text.toLowerCase().includes('tempo-seq')) {
                 new_value = 'temposeq_probe';
             } else {
                 new_value = 'entrez_gene';
