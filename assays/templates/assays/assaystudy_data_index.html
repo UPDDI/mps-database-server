@@ -54,13 +54,13 @@
     {# NOTE: STAGE ONLY #}
     <div class="well">
         <h3>
-            There are {% include 'plural_include.html' with label="Omic Data File" count=log2fold_files.count %}
+            {% include 'plural_include.html' with label="Omic Data File" count=log2fold_files.count %}
             {% if log2fold_files.count %}
                 with {% include 'plural_include.html' with label="Data Point" count=log2fold_points.count %}
             {% endif %}
             <br>
             <small>We could put a small description for Omics data here, only log2fold is displayed at the moment by request.</small>
         </h3>
-        <a href="{% url 'assayomicdatafileupload-index' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to View/Add Omics Data with a Test Group and a Reference Group (e.g. Log 2 Fold Change)</a>
+        <a href="{% url 'assayomicdatafileupload-index' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to Upload or Remove Omic Data Files or Update File Metadata</a>
     </div>
 {% endblock %}
