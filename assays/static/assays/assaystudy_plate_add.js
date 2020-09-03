@@ -11,8 +11,6 @@ $(document).ready(function () {
     // TEMPORARY
     // FULL DATA
 
-    console.log(series_data_selector.val());
-
     var full_series_data = JSON.parse(series_data_selector.val());
 
     if (series_data_selector.val() === '{}') {
@@ -39,7 +37,6 @@ $(document).ready(function () {
 
     var matrix_item_data =  matrix_item_data = full_series_data.plates;
 
-    console.log(plate_id);
     // Try to get the plate
     // TODO: IF WE ARE EDITING ONLY ONE PLATE AT A TIME, THIS IS POINTLESS
     // The only possible benefit is strange front-end validation?
@@ -166,8 +163,6 @@ $(document).ready(function () {
         var current_number_of_columns = number_of_columns_selector.val();
 
         var largest_row_name_length = Math.pow(current_number_of_columns, 1/10);
-
-        console.log(largest_row_name_length);
 
         // Iterate over every well
         // Iterating over the data itself means more queries
@@ -979,4 +974,83 @@ $(document).ready(function () {
     $('#apply_plate_names_no_zero').click(function() {
         plate_style_name_creation(false);
     });
+
+    // Charting business
+    // Load core chart package
+    // Only bother if charts exist
+    var charts = $('#charts');
+
+    if (charts[0]) {
+        google.charts.load('current', {'packages':['corechart']});
+        // Set the callback
+        google.charts.setOnLoadCallback(get_readouts);
+
+        // Name for the charts for binding events etc
+        var charts_name = 'charts';
+        var first_run = true;
+
+        window.GROUPING.refresh_function = get_readouts;
+
+        window.CHARTS.call = 'fetch_data_points';
+        window.CHARTS.matrix_id = plate_id;
+
+        // PROCESS GET PARAMS INITIALLY
+        window.GROUPING.process_get_params();
+        // window.GROUPING.generate_get_params();
+
+        function get_readouts() {
+            var data = {
+                // TODO TODO TODO CHANGE CALL
+                call: 'fetch_data_points',
+                matrix: plate_id,
+                criteria: JSON.stringify(window.GROUPING.group_criteria),
+                post_filter: JSON.stringify(window.GROUPING.current_post_filter),
+                csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
+            };
+
+            window.CHARTS.global_options = window.CHARTS.prepare_chart_options();
+            var options = window.CHARTS.global_options.ajax_data;
+
+            data = $.extend(data, options);
+
+            // Show spinner
+            window.spinner.spin(
+                document.getElementById("spinner")
+            );
+
+            $.ajax({
+                url: "/assays_ajax/",
+                type: "POST",
+                dataType: "json",
+                data: data,
+                success: function (json) {
+                    // Stop spinner
+                    window.spinner.stop();
+
+                    window.CHARTS.prepare_side_by_side_charts(json, charts_name);
+                    window.CHARTS.make_charts(json, charts_name, first_run);
+
+                    // Recalculate responsive and fixed headers
+                    $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
+                    $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+
+                    first_run = false;
+                },
+                error: function (xhr, errmsg, err) {
+                    first_run = false;
+
+                    // Stop spinner
+                    window.spinner.stop();
+
+                    console.log(xhr.status + ": " + xhr.responseText);
+                }
+            });
+        }
+    }
+    else {
+        // GET RID OF SIDEBAR INITIALLY
+        if ($('#sidebar').hasClass('active')) {
+            $('.toggle_sidebar_button').first().trigger('click');
+        }
+    }
 });

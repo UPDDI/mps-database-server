@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block extra_head %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    {% if detail %}
+        <script src="{% static "assays/grouping_filtering.js" %}"></script>
+        <script src="{% static "assays/chart_display.js" %}"></script>
+    {% endif %}
+{% endblock %}
+
 {% block load_js %}
     <script src="{% static "js/enter_override.js" %}"></script>
     {# Should any page be flaggable? #}
@@ -23,12 +31,18 @@
     <li class="active">
         {% if update %}
         Edit Plate <em>{{ object }}</em>
-        {% if not detail %}
+        {% elif not detail %}
         Add Plate
         {% else %}
         <em>{{ object }}</em>
         {% endif %}
     </li>
+{% endblock %}
+
+{% block sidebar %}
+    {% if detail %}
+        {% include 'assays/grouping_filtering.html' with charts="true" %}
+    {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -147,6 +161,19 @@
 
     {% include 'assays/group_difference_table.html' %}
 
+    {% if detail %}
+        <div>
+        {% include 'assays/sidebar_extras.html' with show_hide="true" %}
+
+        {# Note indicating no data to display initially #}
+        <div id="charts" class="padded-bottom">
+            No data to display
+        </div>
+
+        {% include 'assays/group_table.html' %}
+        </div>
+    {% endif %}
+
     {# TODO CHANGE #}
     <div hidden>
         {# OLD #}
@@ -218,5 +245,4 @@
 {% if not detail %}
 </form>
 {% endif %}
-
 {% endblock %}
