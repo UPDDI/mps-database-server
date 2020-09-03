@@ -7,25 +7,25 @@
 {% endblock %}
 
 {% block content %}
-    {% comment %}
-    {% if what_is_new %}
-    <div class="row">
-        <div class="col-xs-12">
-            <div class="alert alert-info" role="alert">
-                <span class="sr-only">Info:</span>
-                <h4>
-                    What's New:
-                </h4>
-                <ul>
-            {% for entry in what_is_new %}
-                <li>{{ entry.short_contents|safe }}</li>
-            {% endfor %}
-                </ul>
-             </div>
-        </div>
+    {# Hard coded for the moment #}
+    <div hidden class="panel panel-primary" id="webinar_banner">
+    <div class="panel-heading">
+        <h2>
+            Microphysiology Systems Database Webinar
+            <a role="button" id="close_webinar_banner" class="btn btn-danger pull-right">
+                <span class="glyphicon glyphicon-remove"></span>
+            </a>
+        </h2>
     </div>
-    {% endif %}
-    {% endcomment %}
+    <div class="panel-body">
+        <h3>
+        UPDDI is hosting a webinar on {DATE} to better acquaint users with the database.
+        </h3>
+        <p>
+            <a class="btn btn-primary btn-lg" href="#" role="button">Click here to Register</a>
+        </p>
+    </div>
+    </div>
 
     <div class="row">
         <div class="col-xs-12">
