@@ -821,6 +821,11 @@ class AssayStudyPlateMixin(FormHandlerMixin):
     # Might actually be a formset or something?
     form_class = AssayStudyPlateForm
 
+    # CRUDE: BUT PREVENTS LOOKING AT NON PLATE MATRICES
+    def get_object(self, queryset=None):
+        current_object = super(AssayStudyPlateMixin, self).get_object()
+        return get_object_or_404(AssayMatrix, pk=current_object.id, representation='plate')
+
     def get_context_data(self, **kwargs):
         context = super(AssayStudyPlateMixin, self).get_context_data(**kwargs)
 
@@ -860,6 +865,21 @@ class AssayStudyPlateAdd(StudyGroupMixin, AssayStudyPlateMixin, CreateView):
 
 class AssayStudyPlateUpdate(StudyGroupMixin, AssayStudyPlateMixin, UpdateView):
     pass
+
+
+class AssayStudyPlateDetail(StudyGroupMixin, AssayStudyPlateMixin, DetailView):
+    detail = True
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyPlateDetail, self).get_context_data(**kwargs)
+
+        context.update({
+            'form': AssayStudyPlateForm(instance=self.object),
+            'detail': True
+        })
+
+        return context
+
 
 
 class AssayStudyAssays(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):

@@ -41,9 +41,11 @@
 
     <legend>Study Plates</legend>
 
+    {% if not object.signed_off_by %}
     <div class="padded-bottom">
         <a href="{% url 'assays-assaymatrix-plate-add' object.id %}" class="btn btn-success" role="button">Add Plate</a>
     </div>
+    {% endif %}
 
     <table hidden id="plates" class="display table table-striped table-hover" cellspacing="0" width="100%">
         <thead>
@@ -61,7 +63,7 @@
             <tr>
                 <td>
                     <a class="btn btn-primary"
-                       href="{% url 'assays-assaymatrix-plate-update' plate.id %}">
+                       href="{% url 'assays-assaymatrix-plate-detail' plate.id %}">
                         View/Edit
                     </a>
                 </td>

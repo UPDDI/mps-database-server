@@ -23,8 +23,10 @@
     <li class="active">
         {% if update %}
         Edit Plate <em>{{ object }}</em>
-        {% else %}
+        {% if not detail %}
         Add Plate
+        {% else %}
+        <em>{{ object }}</em>
         {% endif %}
     </li>
 {% endblock %}
@@ -32,13 +34,19 @@
 {% block content %}
 
 {# Get the tabs #}
+{% if not detail %}
 {% include 'assays/assaystudy_tabs.html' with study=form.instance.study %}
+{% endif %}
 
+{% if not detail %}
 <form enctype="multipart/form-data" class="form-horizontal" method="post">
+{% endif %}
 
     <h1>
         {% if update %}
         Edit Plate <em>{{ object }}</em>
+        {% elif detail %}
+        <em>{{ object }}</em>
         {% else %}
         Add Plate
         {% endif %}
@@ -46,15 +54,20 @@
     {% csrf_token %}
     </h1>
 
+    {% if not detail %}
     {% include "submit.html" with flag="y" group=form.instance.group.name %}
 
     {% include 'errors.html' %}
+    {% endif %}
 
     {% include 'tracking.html' %}
 
     <legend>Plate Details</legend>
 
     {# TODO #}
+    {% if detail %}
+    <div hidden>
+    {% endif %}
 
     {# This section is to select a plate #}
     {# There a number of reasons that having a dropdown for this is tricky #}
@@ -90,6 +103,35 @@
             <a role="button" id="apply_plate_names_no_zero" class="btn btn-primary matrix_item-section add_name_section" style="display: inline-block;" hidden="">Apply Default Plate Names (Don't Append Zero)</a>
         </div>
     </div>
+
+    {% if detail %}
+    </div>
+    {% endif %}
+
+    {% if detail %}
+    <table class="table table-striped table-bordered table-nonfluid" style="background-color: #AAB3AB;">
+        <tbody>
+            <tr>
+                <th>
+                    MPS Model
+                </th>
+                <td>
+                    <a href="{{ object.organ_model.get_absolute_url }}">{{ object.organ_model }}</a>
+                </td>
+            </tr>
+            {% if object.notes %}
+            <tr>
+                <th>
+                    Notes
+                </th>
+                <td>
+                    {{ object.notes }}
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    {% endif %}
 
     {# Not currently used, excldued for now #}
     {# {% include 'assays/group_visibility_section.html' %} #}
@@ -172,5 +214,9 @@
 
     {# For displaying cells etc. #}
     {% include 'assays/component_displays.html' %}
+
+{% if not detail %}
 </form>
+{% endif %}
+
 {% endblock %}
