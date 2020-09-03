@@ -1,7 +1,7 @@
 # coding=utf-8
 import ujson as json
 # Ask if folks mind the pvalues getting truncated, non-U-json fixes this
-# import json
+import json as default_json
 # from collections import defaultdict
 from django.http import (
     HttpResponse,
@@ -46,6 +46,8 @@ from .models import (
     AssayGroup,
     AssayOmicDataFileUpload,
     AssayOmicDataPoint,
+    AssayOmicAnalysisTarget,
+    AssayGroup,
 )
 from microdevices.models import (
     MicrophysiologyCenter,
@@ -7136,11 +7138,14 @@ def fetch_omics_data(request):
         )
 
     # TODO - Put this in loop below
-    data['file_id_to_name'] = {file.id: "_vs_".join([file.group_1.name.split('-')[-1].strip(), file.group_2.name.split('-')[-1].strip()]) for file in AssayOmicDataFileUpload.objects.filter(study=study)}
+    data['file_id_to_name'] = {}
+    data['table'] = {}
 
     for datafile in datafiles:
-        if data['file_id_to_name'][datafile.id] not in data['data']:
-            data['data'][data['file_id_to_name'][datafile.id]] = {}
+        joint_name = " vs ".join([datafile.group_1.name.split('-')[-1].strip(), datafile.group_2.name.split('-')[-1].strip()])
+        data['data'][joint_name] = {}
+        data['file_id_to_name'][datafile.id] = joint_name
+        data['table'][joint_name] = datafile.description
 
     datapoints = AssayOmicDataPoint.objects.filter(study=study).exclude(value__isnull=True)
 
@@ -7149,16 +7154,16 @@ def fetch_omics_data(request):
     for datapoint in datapoints:
         if datapoint.name not in data['data'][data['file_id_to_name'][datapoint.omic_data_file_id]]:
             data['data'][data['file_id_to_name'][datapoint.omic_data_file_id]][datapoint.name] = {}
-        data['data'][data['file_id_to_name'][datapoint.omic_data_file_id]][datapoint.name][datapoint.target_id] = datapoint.value
+        data['data'][data['file_id_to_name'][datapoint.omic_data_file_id]][datapoint.name][datapoint.analysis_target_id] = datapoint.value
 
         target_ids.update({
-            datapoint.target_id: True
+            datapoint.analysis_target_id: True
         })
 
-    data['target_name_to_id'] = {target.name: target.id for target in AssayTarget.objects.filter(id__in=target_ids)}
+    data['target_name_to_id'] = {target.name: target.id for target in AssayOmicAnalysisTarget.objects.filter(id__in=target_ids)}
 
     return HttpResponse(
-        json.dumps(data),
+        default_json.dumps(data),
         content_type='application/json'
     )
 

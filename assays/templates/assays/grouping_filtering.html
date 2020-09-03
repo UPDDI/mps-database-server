@@ -1014,10 +1014,10 @@
         </div>
         <div class="row small-padding-top">
             <div class="col-xs-6">
-                <label for="log2foldchange-threshold" style="margin-left: 15px">Log2FoldChange</label>
+                <label for="log2foldchange-threshold" style="margin-left: 15px">Log2(FoldChange)</label>
             </div>
             <div class="col-xs-5">
-                <input type="number" id="log2foldchange-threshold" size="10" value="1.5" style="width: 100%">
+                <input type="number" id="log2foldchange-threshold" size="10" value="0.5849625" style="width: 100%">
             </div>
         </div>
         <h3 class="text-center">
@@ -1061,22 +1061,36 @@
                 <u>Quantitative Filters</u>
             </h3>
             <div class="row">
-                <div class="col-12">
-                    <label for="pvalue">P-Value</label>
+                <div id="pvalue-filter1" class="col-12">
+                    <label for="pvalue">P-Value</label>&nbsp;<a class="swap-pvalue" title="Click to swap to -Log10(P-Value) filter type."><span class="glyphicon glyphicon-random"></span></a>
                     <br>
                     <input type="number" id="pvalue-low" class="filter-input" style="width: 80px">&nbsp;to&nbsp;<input type="number" id="pvalue-high" style="width: 80px">
                     <br><br>
                     <div class="text-center" style="width: 77.5%; margin-left: 32px"><div id="slider-range-pvalue"></div></div>
                 </div>
+                <div id="pvalue-filter2" class="col-12" style="display: none">
+                    <label for="pvalue">-Log10(P-Value)</label>&nbsp;<a class="swap-pvalue" title="Click to swap to P-Value filter."><span class="glyphicon glyphicon-random"></span></a>
+                    <br>
+                    <input type="number" id="pvalue-low-neg" class="filter-input" style="width: 80px">&nbsp;to&nbsp;<input type="number" id="pvalue-high-neg" style="width: 80px">
+                    <br><br>
+                    <div class="text-center" style="width: 77.5%; margin-left: 32px"><div id="slider-range-pvalue-neg"></div></div>
+                </div>
             </div>
             <br>
             <div class="row">
-                <div class="col-12">
-                    <label for="log2foldchange">Log2FoldChange</label>
+                <div id="l2fc-filter1" class="col-12">
+                    <label for="log2foldchange">Log2(FoldChange)</label>&nbsp;<a class="swap-l2fc" title="Click to swap to +/- Log2(FoldChange) filter."><span class="glyphicon glyphicon-random"></span></a>
                     <br>
                     <input type="number" id="log2foldchange-low" style="width: 80px">&nbsp;to&nbsp;<input type="number" id="log2foldchange-high" style="width: 80px">
                     <br><br>
                     <div class="text-center" style="width: 77.5%; margin-left: 32px"><div id="slider-range-log2foldchange"></div></div>
+                </div>
+                <div id="l2fc-filter2" class="col-12" style="display: none">
+                    <label for="log2foldchange">+/- Log2(FoldChange)</label>&nbsp;<a class="swap-l2fc" title="Click to swap to Log2(FoldChange) filter."><span class="glyphicon glyphicon-random"></span></a>
+                    <br>
+                    <input type="number" id="log2foldchange-abs" style="width: 80px">
+                    <br><br>
+                    <div class="text-center" style="width: 77.5%; margin-left: 32px"><div id="slider-log2foldchange-abs"></div></div>
                 </div>
             </div>
         </div>
