@@ -209,7 +209,6 @@ $(document).ready(function () {
     // This uses just a strict short hand
     // The consequence is that if a parameter like addition time diverges, one wouldn't know until they looked at the popup or the group table
     function get_shorthand_display(prefix, content) {
-
             // Just start with an empty div
             // var html_contents = $('<div>');
             var text_to_use = '';
@@ -384,11 +383,54 @@ $(document).ready(function () {
     // This determines whether any of the cells, compounds, or settings of the groups differ and shows a table depicting as much
     // NOTE: Depends on a particular element for table
     // NOTE: Depends on a particular input for data (contrived JSON)
+    let difference_data_table = null;
+
+    // let diverging_prefixes = {
+    //     'cell': false,
+    //     'compound': false,
+    //     'setting': false,
+    //     // These are called 'non_prefixes' above, should resolve naming convention
+    //     'organ_model_id': false,
+    //     'organ_model_protocol_id': false,
+    //     'test_type': false,
+    // };
+
     window.GROUPS.make_difference_table = function(restrict_to, organ_model_id) {
         // console.log("DIFFERENCE TABLE START");
 
+        // Make data table if necessary
+        if (!difference_data_table) {
+            difference_data_table = $('#difference_table').DataTable({
+                dom: '<Bl<"row">frptip>',
+                fixedHeader: {headerOffset: 50},
+            });
+
+            $.each(prefixes, function(index, prefix) {
+                // Make all of the popups
+                var current_dialog = $('#' + prefix + '_full_contents_popup');
+                current_dialog.dialog({
+                    width: $(document).width(),
+                    height: 500,
+                    buttons: [
+                        {
+                            text: 'Close',
+                            click: function() {
+                               $(this).dialog('close');
+                            }
+                        }
+                    ]
+                });
+                current_dialog.removeProp('hidden');
+
+                // Triggers for spawning the popups
+                $('#spawn_' + prefix + '_full_contents_popup').click(function() {
+                    $('#' + prefix + '_full_contents_popup').dialog('open');
+                });
+            });
+        }
+
         // We needs to know whether or not to show a column for a particular prefix
-        var diverging_prefixes = {
+        let diverging_prefixes = {
             'cell': false,
             'compound': false,
             'setting': false,
@@ -399,7 +441,8 @@ $(document).ready(function () {
         };
 
         // CONTRIVED FOR NOW: REPLACE WITH CACHED SELECTOR
-        $('#difference_table').find('tbody').empty();
+        // $('#difference_table').find('tbody').empty();
+        difference_data_table.clear();
 
         // FULL DATA
         // TEMPORARY
@@ -517,6 +560,15 @@ $(document).ready(function () {
                 test_type_td,
             );
 
+            let current_row_array = [
+                // Name
+                name_td.text(),
+                // MPS Model (and version)
+                mps_model_td.text().replace('Version', '<br>Version'),
+                // Test type
+                test_type_td.text(),
+            ];
+
             stored_tds = {
                 model: mps_model_td,
                 test_type: test_type_td
@@ -525,9 +577,17 @@ $(document).ready(function () {
             $.each(prefixes, function(prefix_index, prefix) {
                 var content_indices = current_content[prefix];
                 var current_column = $('<td>');
+
+                let current_string = [];
+
                 if (Object.keys(content_indices).length > 0) {
                     // Har har
                     $.each(content_indices, function(content_index) {
+                        let current_shorthand = get_shorthand_display(
+                            prefix,
+                            relevant_group_data[index][prefix][content_index]
+                        );
+
                         current_column.append(
                             // $('<div>').html(
                                 // get_difference_display(
@@ -536,76 +596,64 @@ $(document).ready(function () {
                                 // )
                             // )
                             $('<div>').text(
-                                get_shorthand_display(
-                                    prefix,
-                                    relevant_group_data[index][prefix][content_index]
-                                )
+                                current_shorthand
                             )
                         );
+
+                        current_string.push(current_shorthand);
                     });
                 }
 
                 current_row.append(current_column);
 
                 stored_tds[prefix] = current_column.clone();
+
+                current_row_array.push(current_string.join('<br>'));
             });
 
             // CONTRIVED FOR NOW: REPLACE WITH CACHED SELECTOR
-            $('#difference_table').find('tbody').append(current_row);
+            // $('#difference_table').find('tbody').append(current_row);
+
+            difference_data_table.row.add(current_row_array).draw(false);
 
             // ASSUMES UNIQUE NAMES
             window.GROUPS.difference_table_displays[relevant_group_data[index]['name']] = stored_tds;
         });
 
         // Show all initially
-        $('#difference_table td, #difference_table th').show();
+        // $('#difference_table td, #difference_table th').show();
         window.GROUPS.hidden_columns = {};
+
+        // SHOW ALL COLUMNS INITIALLY
+        difference_data_table.columns([1, 2, 3, 4, 5]).visible(true);
 
         // Determine what to hide
         // TODO: Subject to revision
         // Crude and explicit for the moment
         if (!diverging_prefixes['organ_model_id'] && !diverging_prefixes['organ_model_protocol_id']) {
-            $('#difference_table td:nth-child(2), #difference_table th:nth-child(2)').hide();
+            // $('#difference_table td:nth-child(2), #difference_table th:nth-child(2)').hide();
+            difference_data_table.column(1).visible(false);
             window.GROUPS.hidden_columns['model'] = true;
         }
         if (!diverging_prefixes['test_type']) {
-            $('#difference_table td:nth-child(3), #difference_table th:nth-child(3)').hide();
+            // $('#difference_table td:nth-child(3), #difference_table th:nth-child(3)').hide();
+            difference_data_table.column(2).visible(false);
             window.GROUPS.hidden_columns['test_type'] = true;
         }
         if (!diverging_prefixes['cell']) {
-            $('#difference_table td:nth-child(4), #difference_table th:nth-child(4)').hide();
+            // $('#difference_table td:nth-child(4), #difference_table th:nth-child(4)').hide();
+            difference_data_table.column(3).visible(false);
             window.GROUPS.hidden_columns['cell'] = true;
         }
         if (!diverging_prefixes['compound']) {
-            $('#difference_table td:nth-child(5), #difference_table th:nth-child(5)').hide();
+            // $('#difference_table td:nth-child(5), #difference_table th:nth-child(5)').hide();
+            difference_data_table.column(4).visible(false);
             window.GROUPS.hidden_columns['compound'] = true;
         }
         if (!diverging_prefixes['setting']) {
-            $('#difference_table td:nth-child(6), #difference_table th:nth-child(6)').hide();
+            // $('#difference_table td:nth-child(6), #difference_table th:nth-child(6)').hide();
+            difference_data_table.column(5).visible(false);
             window.GROUPS.hidden_columns['setting'] = true;
         }
     };
-
-    $.each(prefixes, function(index, prefix) {
-        // Make all of the popups
-        var current_dialog = $('#' + prefix + '_full_contents_popup');
-        current_dialog.dialog({
-            width: $(document).width(),
-            height: 500,
-            buttons: [
-                {
-                    text: 'Close',
-                    click: function() {
-                       $(this).dialog('close');
-                    }
-                }
-            ]
-        });
-        current_dialog.removeProp('hidden');
-
-        // Triggers for spawning the popups
-        $('#spawn_' + prefix + '_full_contents_popup').click(function() {
-            $('#' + prefix + '_full_contents_popup').dialog('open');
-        });
-    });
 });
