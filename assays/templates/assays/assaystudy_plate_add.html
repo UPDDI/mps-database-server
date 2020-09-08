@@ -23,7 +23,12 @@
 
 {# TODO REVISE #}
 {% block breadcrumbs %}
+    {# REVISE URLS SOON #}
+    {% if not detail %}
     <li><a href="/assays/assaystudy/editable_studies/">Editable Studies</a></li>
+    {% else %}
+    <li><a href="/assays/assaystudy/">Studies</a></li>
+    {% endif %}
     {# TODO REVISE #}
     <li>
         <a href="{{ form.instance.study.get_absolute_url }}">{{ form.instance.study }}</a>

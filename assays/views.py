@@ -1180,6 +1180,7 @@ class AssayStudyIndex(StudyViewerMixin, DetailView):
             'plate_groups': plate_groups,
             'number_of_chips': number_of_chips,
             'plates': plates,
+            'form': AssayStudyGroupForm(instance=self.object)
         })
 
         return context

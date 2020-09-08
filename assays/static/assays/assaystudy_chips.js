@@ -235,8 +235,8 @@ $(document).ready(function () {
         // ASSUMES UNIQUE NAMES
         var current_stored_tds = window.GROUPS.difference_table_displays[current_group_name];
 
-        console.log(index, chip);
-        console.log(window.GROUPS.difference_table_displays);
+        // console.log(index, chip);
+        // console.log(window.GROUPS.difference_table_displays);
 
         var new_row = $('<tr>');
 

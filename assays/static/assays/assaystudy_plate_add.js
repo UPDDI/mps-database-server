@@ -897,9 +897,29 @@ $(document).ready(function () {
         // Just draws from the difference table
         // Be careful with conditionals! Zero has the truthiness of *false*!
         if (series_data[current_group] !== undefined) {
-            full_row.append(
-                $('tr[data-group-name="' + series_data[current_group].name + '"]').clone()
-            );
+            // full_row.append(
+            //     $('tr[data-group-name="' + series_data[current_group].name + '"]').clone()
+            // );
+
+            // NOT VERY ELEGANT
+            let current_stored_tds = window.GROUPS.difference_table_displays[series_data[current_group].name];
+
+            // Determine row hiding
+            let columns_to_check = [
+                'model',
+                'test_type',
+                'cell',
+                'compound',
+                'setting'
+            ];
+
+            $.each(columns_to_check, function(index, key) {
+                if (!window.GROUPS.hidden_columns[key]) {
+                    full_row.append(
+                        current_stored_tds[key].clone(),
+                    )
+                }
+            });
         }
 
         // var full_row = $('<div>').append(

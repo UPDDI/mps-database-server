@@ -8,6 +8,9 @@
 {% endblock %}
 
 {% block load_js %}
+    <script src="{% static "js/split_time.js" %}"></script>
+    <script src="{% static "assays/cell_sample_selection.js" %}"></script>
+    <script src="{% static "assays/group_display.js" %}"></script>
     <script src="{% static "assays/assaystudy_index.js" %}"></script>
 {% endblock %}
 
@@ -263,6 +266,13 @@
 
             <legend>
                 <h2>
+                    Groups
+                </h2>
+            </legend>
+            {% include 'assays/group_difference_table.html' %}
+
+            <legend>
+                <h2>
                     Plates
                 </h2>
             </legend>
@@ -490,4 +500,10 @@
     </div>
     </div>
     {% endif %}
+
+    {# For displaying cells etc. #}
+    <div hidden>
+        {{ form.series_data }}
+    </div>
+    {% include 'assays/component_displays.html' %}
 {% endblock %}

@@ -2,6 +2,9 @@ $(document).ready(function() {
     // Prevent CSS conflict with Bootstrap
     // $.fn.button.noConflict();
 
+    // Make the difference table
+    window.GROUPS.make_difference_table();
+
     // Prevent accidental form submission
     $(document).on("keypress", ":input:not(textarea)", function(event) {
         return event.keyCode != 13;

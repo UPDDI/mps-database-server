@@ -8,12 +8,12 @@ $(document).ready(function() {
     window.GROUPING.refresh_function = get_readout;
 
     // If chips
-    if ($('#id_series_data').val().indexOf('"plates":{}') !== -1) {
+    if ($('#id_series_data')[0] && $('#id_series_data').val().indexOf('"plates":{}') !== -1) {
         // Make the difference table
         window.GROUPS.make_difference_table('chip');
     }
-    // If plates
-    else {
+    // If plates AND THERE IS A FORM
+    else if ($('#id_series_data')[0]) {
         // MAKE SURE TO RESTRICT TO THE CORRECT ORGAN MODEL
         // HUGELY IMPORTANT
         // Is pre-populated for form!

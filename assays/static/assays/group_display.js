@@ -395,7 +395,7 @@ $(document).ready(function () {
     //     'test_type': false,
     // };
 
-    window.GROUPS.make_difference_table = function(restrict_to, organ_model_id) {
+    window.GROUPS.make_difference_table = function(restrict_to, organ_model_id, view) {
         // console.log("DIFFERENCE TABLE START");
 
         // Make data table if necessary
@@ -423,7 +423,9 @@ $(document).ready(function () {
                 current_dialog.removeProp('hidden');
 
                 // Triggers for spawning the popups
-                $('#spawn_' + prefix + '_full_contents_popup').click(function() {
+                $('#spawn_' + prefix + '_full_contents_popup').click(function(e) {
+                    // DON'T SEND CLICK TO PARENT
+                    e.stopPropagation();
                     $('#' + prefix + '_full_contents_popup').dialog('open');
                 });
             });
@@ -560,7 +562,12 @@ $(document).ready(function () {
                 test_type_td,
             );
 
+            // TODO: VIEW BUTTON
+            let view_button = '<button>TEST</button>';
+
             let current_row_array = [
+                // View Button
+                view_button,
                 // Name
                 name_td.text(),
                 // MPS Model (and version)
@@ -625,35 +632,41 @@ $(document).ready(function () {
         window.GROUPS.hidden_columns = {};
 
         // SHOW ALL COLUMNS INITIALLY
-        difference_data_table.columns([1, 2, 3, 4, 5]).visible(true);
+        difference_data_table.columns([0, 2, 3, 4, 5, 6]).visible(true);
 
         // Determine what to hide
         // TODO: Subject to revision
         // Crude and explicit for the moment
         if (!diverging_prefixes['organ_model_id'] && !diverging_prefixes['organ_model_protocol_id']) {
             // $('#difference_table td:nth-child(2), #difference_table th:nth-child(2)').hide();
-            difference_data_table.column(1).visible(false);
+            difference_data_table.column(2).visible(false);
             window.GROUPS.hidden_columns['model'] = true;
         }
         if (!diverging_prefixes['test_type']) {
             // $('#difference_table td:nth-child(3), #difference_table th:nth-child(3)').hide();
-            difference_data_table.column(2).visible(false);
+            difference_data_table.column(3).visible(false);
             window.GROUPS.hidden_columns['test_type'] = true;
         }
         if (!diverging_prefixes['cell']) {
             // $('#difference_table td:nth-child(4), #difference_table th:nth-child(4)').hide();
-            difference_data_table.column(3).visible(false);
+            difference_data_table.column(4).visible(false);
             window.GROUPS.hidden_columns['cell'] = true;
         }
         if (!diverging_prefixes['compound']) {
             // $('#difference_table td:nth-child(5), #difference_table th:nth-child(5)').hide();
-            difference_data_table.column(4).visible(false);
+            difference_data_table.column(5).visible(false);
             window.GROUPS.hidden_columns['compound'] = true;
         }
         if (!diverging_prefixes['setting']) {
             // $('#difference_table td:nth-child(6), #difference_table th:nth-child(6)').hide();
-            difference_data_table.column(5).visible(false);
+            difference_data_table.column(6).visible(false);
             window.GROUPS.hidden_columns['setting'] = true;
+        }
+
+        if (!view) {
+            difference_data_table.column(0).visible(false);
+            // NOPE!
+            // window.GROUPS.hidden_columns['view'] = true;
         }
     };
 });
