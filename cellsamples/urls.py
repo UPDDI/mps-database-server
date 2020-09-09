@@ -3,6 +3,7 @@ from .views import (
     CellSampleAdd,
     CellSampleList,
     CellSampleUpdate,
+    CellSampleDetail,
     CellTypeAdd,
     CellTypeList,
     CellTypeUpdate,
@@ -24,6 +25,7 @@ urlpatterns = [
     url(r'^cellsamples/cellsample/add/$', CellSampleAdd.as_view(), name='cellsamples-cellsample-add'),
     url(r'^cellsamples/cellsample/$', CellSampleList.as_view(), name='cellsamples-cellsample-list'),
     url(r'^cellsamples/cellsample/(?P<pk>[0-9]+)/$', CellSampleUpdate.as_view(), name='cellsamples-cellsample-update'),
+    url(r'^cellsamples/cellsample/(?P<pk>[0-9]+)/detail/$', CellSampleDetail.as_view(), name='cellsamples-cellsample-detail'),
 
     url(r'^cellsamples/celltype/add/$', CellTypeAdd.as_view(), name='cellsamples-celltype-add'),
     url(r'^cellsamples/celltype/$', CellTypeList.as_view(), name='cellsamples-celltype-list'),

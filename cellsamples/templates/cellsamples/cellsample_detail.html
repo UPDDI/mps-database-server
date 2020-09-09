@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{# TODO REQUIRES AESTHETIC REVISION #}
+
+{% block breadcrumbs %}
+    <li><a href="{% url 'assays-studycomponents' %}">Study Components</a></li>
+    <li><a href="/cellsamples/cellsample/">Cell Samples</a></li>
+    <li class="active">
+        <em>Cell Sample ID #{{ object.id }}</em>
+    </li>
+{% endblock %}
+
+{% block content %}
+    <h1>
+        {{ object.name}}
+    </h1>
+
+    {# One huge table or split them out? #}
+    <legend>Cell Sample Details</legend>
+    <table class="table table-striped table-bordered table-nonfluid" style="background-color: #AAB3AB;">
+        <tbody>
+            <tr>
+                <td>
+                    <b>Cell Type</b>
+                </td>
+                <td>
+                    {{ object.cell_type }}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>Cell Origin</b>
+                </td>
+                <td>
+                    {{ object.cell_subtype }}
+                </td>
+            </tr>
+            {# IGNORING GROUP FOR NOW #}
+            <tr>
+                <td>
+                    <b>Supplier</b>
+                </td>
+                <td>
+                    {{ object.supplier }}
+                </td>
+            </tr>
+            {# Skip image for now? #}
+            {% for field, value in cellsample_fields.items %}
+                <tr>
+                    <td>
+                        <b>{{ field }}</b>
+                    </td>
+                    <td>
+                        {{ value }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

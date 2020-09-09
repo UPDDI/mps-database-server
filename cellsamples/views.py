@@ -41,6 +41,43 @@ class CellSampleUpdate(CreatorAndNotInUseMixin, CellSampleMixin, UpdateView):
     # required_group_name = 'Change Cell Samples Front'
     pass
 
+# Everyone can look at cell samples
+class CellSampleDetail(DetailView):
+    model = CellSample
+    template_name = 'cellsamples/cellsample_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(CellSampleDetail, self).get_context_data(**kwargs)
+
+        cellsample_fields = {}
+
+        fields_to_check = [
+            'product_id',
+            'barcode',
+            'notes',
+            'isolation_datetime',
+            'isolation_method',
+            'isolation_notes',
+            'viable_count',
+            'percent_viability',
+            'patient_age',
+            'patient_gender',
+            'patient_condition',
+        ]
+
+        # Stupid
+        for field in fields_to_check:
+            if getattr(self.object, field, None):
+                cellsample_fields.update({
+                    CellSample._meta.get_field(field).verbose_name: getattr(self.object, field)
+                })
+
+        context.update({
+            'cellsample_fields': cellsample_fields
+        })
+
+        return context
+
     # For the moment, superusers only
     # @method_decorator(login_required)
     # @method_decorator(user_passes_test(user_is_active))
@@ -57,7 +94,8 @@ class CellSampleUpdate(CreatorAndNotInUseMixin, CellSampleMixin, UpdateView):
     #     return super(CellSampleUpdate, self).dispatch(*args, **kwargs)
 
 
-class CellSampleList(LoginRequiredMixin, ListView):
+# Log in is no longer required, I guess
+class CellSampleList(ListView):
     """Displays a list of Cell Samples"""
     template_name = 'cellsamples/cellsample_list.html'
 
