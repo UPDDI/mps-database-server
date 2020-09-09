@@ -25,6 +25,7 @@
         <table hidden id="cellsamples" class="display table table-striped" cellspacing="0" width="100%">
             <thead>
                 <tr>
+                    <th>View</th>
                     <th>Edit</th>
                     <th>ID #</th>
                     <th>Receipt Date</th>
@@ -41,6 +42,7 @@
             <tbody>
             {% for cellsample in object_list %}
                 <tr>
+                    <td><a class="btn btn-primary" href="{% url 'cellsamples-cellsample-detail' cellsample.id %}">View</a></td>
                     <td><a class="btn btn-primary" href="{{ cellsample.id }}">Edit</a></td>
                     {# May seem odd, but including the id can help demystify the ID that appears in add interface #}
                     <td>{{ cellsample.id }}</td>

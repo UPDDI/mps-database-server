@@ -5,6 +5,7 @@ from .models import CompoundAdverseEvent, OpenFDACompound, AdverseEvent
 import ujson as json
 # TODO TODO TODO REVISE IN PYTHON 3
 import cgi
+import html
 
 # imports by Dale
 import urllib
@@ -225,11 +226,11 @@ def fetch_adverse_events_data(request):
                 'view': ae.get('compound_id'),
                 'compound': {
                     'id': ae.get('compound__compound_id'),
-                    'name': cgi.escape(ae.get('compound__compound__name'))
+                    'name': html.escape(ae.get('compound__compound__name'))
                 },
                 'event': {
-                    'lower': cgi.escape(ae.get('event__event').lower()),
-                    'name': cgi.escape(ae.get('event__event'))
+                    'lower': html.escape(ae.get('event__event').lower()),
+                    'name': html.escape(ae.get('event__event'))
                 },
                 'number_of_reports': '{:,}'.format(
                     ae.get('frequency')
@@ -279,8 +280,8 @@ def fetch_aggregate_ae_by_compound(request):
         checkbox = '<input class="table-checkbox big-checkbox compound" type="checkbox" value="{}">'.format(compound.compound.name)
 
         data.append({
-            # 'checkbox': cgi.escape(compound.compound.name),
-            'checkbox': cgi.escape(checkbox),
+            # 'checkbox': html.escape(compound.compound.name),
+            'checkbox': html.escape(checkbox),
             'compound': compound.compound.name,
             'estimated_usage': estimated_usage,
             'frequency': '{:,}'.format(sum(compound_frequency.get(compound.id, [0])))
@@ -320,8 +321,8 @@ def fetch_aggregate_ae_by_event(request):
 
         if frequency:
             data.append({
-                # 'checkbox': cgi.escape(adverse_event.event),
-                'checkbox': cgi.escape(checkbox),
+                # 'checkbox': html.escape(adverse_event.event),
+                'checkbox': html.escape(checkbox),
                 'event': adverse_event.event,
                 'organ': organ_name,
                 'frequency': '{:,}'.format(frequency)
