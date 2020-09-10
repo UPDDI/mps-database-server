@@ -395,7 +395,8 @@ $(document).ready(function () {
     //     'test_type': false,
     // };
 
-    window.GROUPS.make_difference_table = function(restrict_to, organ_model_id, view) {
+    // window.GROUPS.make_difference_table = function(restrict_to, organ_model_id, view) {
+    window.GROUPS.make_difference_table = function(restrict_to, organ_model_id) {
         // console.log("DIFFERENCE TABLE START");
 
         // Make data table if necessary
@@ -403,6 +404,14 @@ $(document).ready(function () {
             difference_data_table = $('#difference_table').DataTable({
                 dom: '<Bl<"row">frptip>',
                 fixedHeader: {headerOffset: 50},
+                order: [[1, 'asc']],
+                columnDefs: [
+                    {
+                        sortable: false,
+                        targets: [0],
+                        width: '8%',
+                    }
+                ]
             });
 
             $.each(prefixes, function(index, prefix) {
@@ -523,9 +532,12 @@ $(document).ready(function () {
         // console.log(diverging_contents);
         // console.log(diverging_prefixes);
 
+        let show_view = false;
+
         // TODO TODO TODO
         // Generate the difference table
         $.each(diverging_contents, function(index, current_content) {
+            show_view = false;
             var stored_tds = {};
 
             var name_td = $('<td>').html(relevant_group_data[index]['name']);
@@ -563,7 +575,13 @@ $(document).ready(function () {
             );
 
             // TODO: VIEW BUTTON
-            let view_button = '<button>TEST</button>';
+            // SLOPPY: BAD
+            let view_button = '';
+
+            if (parseInt(relevant_group_data[index]['id'])) {
+                view_button = '<a class="btn btn-primary" href="/assays/assaygroup/' + parseInt(relevant_group_data[index]['id']) + '">View</a>';
+                show_view = true;
+            }
 
             let current_row_array = [
                 // View Button
@@ -663,7 +681,7 @@ $(document).ready(function () {
             window.GROUPS.hidden_columns['setting'] = true;
         }
 
-        if (!view) {
+        if (!show_view) {
             difference_data_table.column(0).visible(false);
             // NOPE!
             // window.GROUPS.hidden_columns['view'] = true;

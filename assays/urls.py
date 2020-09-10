@@ -18,6 +18,7 @@ from assays.views import (
     AssayStudyPlateDetail,
     AssayStudyAssays,
     AssayStudyDataIndex,
+    AssayGroupDetail,
     AssayMatrixItemDetail,
     AssayMatrixItemUpdate,
     AssayMatrixItemDelete,
@@ -154,6 +155,9 @@ urlpatterns = [
     url(r'^assays/assayplate/(?P<pk>[0-9]+)/plate/$', AssayStudyPlateDetail.as_view(), name='assays-assaymatrix-plate-detail'),
     url(r'^assays/assayplate/(?P<pk>[0-9]+)/plate/update/$', AssayStudyPlateUpdate.as_view(), name='assays-assaymatrix-plate-update'),
     url(r'^assays/assayplate/(?P<pk>[0-9]+)/plate/delete/$', AssayMatrixDelete.as_view(), name='assays-assaymatrix-plate-delete'),
+
+    # Group detail
+    url(r'^assays/assaygroup/(?P<pk>[0-9]+)/$', AssayGroupDetail.as_view(), name='assays-assaygroup-detail'),
 
     # NEW_TO_BE_REVISED
     url(r'^assays/assaystudy/$', AssayStudyList.as_view(), name='assays-assaystudy-list'),

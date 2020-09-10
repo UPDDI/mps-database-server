@@ -1585,6 +1585,15 @@ def fetch_data_points(request):
         pre_filter.update({
             'matrix_item_id__in': matrix_items
         })
+    elif request.POST.get('group', ''):
+        matrix_item = None
+        group = AssayGroup.objects.get(pk=int(request.POST.get('group', None)))
+        matrix_items = AssayMatrixItem.objects.filter(group_id=int(request.POST.get('group')))
+        study = group.study
+        pre_filter.update({
+            'matrix_item_id__in': matrix_items
+        })
+
     else:
         return HttpResponseServerError()
 
@@ -4270,6 +4279,9 @@ def study_viewer_validation(request):
         # GET STUDY FROM THE MATRIX ITEM
         matrix = get_object_or_404(AssayMatrix, pk=request.POST.get('matrix'))
         study = matrix.study
+    elif request.POST.get('group', ''):
+        group = get_object_or_404(AssayGroup, pk=request.POST.get('group'))
+        study = group.study
 
     if study:
         return user_is_valid_study_viewer(request.user, study)

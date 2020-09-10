@@ -9,19 +9,12 @@
 {% block load_js %}
     <script src="{% static "assays/grouping_filtering.js" %}"></script>
     <script src="{% static "assays/chart_display.js" %}"></script>
-    <script src="{% static "assays/assaymatrixitem_add.js" %}"></script>
+    <script src="{% static "assays/assaygroup_detail.js" %}"></script>
 {% endblock %}
 
 {% block breadcrumbs %}
     <li><a href="/assays/assaystudy/">Studies</a></li>
     <li><a href="{{ object.study.get_absolute_url }}">{{ object.study }}</a></li>
-    {# ONLY SHOW THIS IF PLATE #}
-    {% if object.matrix.representation == 'plate' %}
-    <li><a href="{{ object.matrix.get_absolute_url }}">{{ object.matrix }}</a></li>
-    {% endif %}
-    <li>
-        <a href="{{ object.group.get_absolute_url }}">{{ object.group }}</a>
-    </li>
     <li class="active">
         <em>{{ object }}</em>
     </li>
@@ -35,76 +28,45 @@
 
     <h1><em>{{ object }}</em></h1>
 
-    {% if form.instance.matrix.representation == 'plate' or object.matrix.representation == 'plate' %}
-        <legend>Well Details</legend>
-    {% else %}
-        <legend>Chip Details</legend>
-    {% endif %}
-
     <table class="table table-striped table-bordered table-nonfluid" style="background-color: #AAB3AB;">
         <tbody>
-{#            <tr>#}
-{#                <th>#}
-{#                    Name#}
-{#                </th>#}
-{#                <td>#}
-{#                    {{ object.name }}#}
-{#                </td>#}
-{#            </tr>#}
-            <tr>
-                <th>
-                    Setup Date
-                </th>
-                <td>
-                    {{ object.setup_date }}
-                </td>
-            </tr>
-            <tr>
-                <th>
-                    Test Type
-                </th>
-                <td>
-                    {{ object.get_test_type_display }}
-                </td>
-            </tr>
-            <tr>
-                <th>
-                    Device
-                </th>
-                <td>
-                    <a href="{{ object.device.get_absolute_url }}">{{ object.device }}</a>
-                </td>
-            </tr>
-            {% if object.organ_model %}
             <tr>
                 <th>
                     MPS Model
                 </th>
                 <td>
-                    <a href="{{ object.organ_model.get_absolute_url }}">
-                        {{ object.organ_model }}
-                        {% if object.organ_model_protocol %}
-                            {{ object.organ_model_protocol }}
-                        {% endif %}
-                    </a>
+                    <a href="{% url 'microdevices-organmodel-detail' object.id %}">{{ object.organ_model }}</a>
                 </td>
             </tr>
-            {% if object.variance_from_organ_model_protocol %}
+            {% if object.organ_model_version %}
             <tr>
                 <th>
                     MPS Model Version
                 </th>
                 <td>
-                    {{ object.variance_from_organ_model_protocol }}
+                    {{ object.organ_model_verion }}
                 </td>
+            </tr>
+            {% endif %}
             <tr>
-            {% endif %}
-            {% endif %}
+                <th>
+                    {% if object.organ_model.device.device_type == 'chip' %}
+                        Chips
+                    {% else %}
+                        Wells
+                    {% endif %}
+                </th>
+                <td>
+                    {% for item in items %}
+                        <a href="{{ item.get_absolute_url }}">{{ item }}</a>;
+                    {% endfor %}
+                </td>
+            </tr>
         </tbody>
     </table>
 
     {# NOTE: MOVED TO NEW SCHEMA: OLD ENTRIES WILL BREAK #}
-    {% if object.group and object.group.assaygroupcell_set.count %}
+    {% if object.assaygroupcell_set.count %}
     <legend>Cells</legend>
     <table class="table table-striped table-bordered">
         <thead>
@@ -120,7 +82,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for cell in object.group.assaygroupcell_set.all %}
+        {% for cell in object.assaygroupcell_set.all %}
             <tr>
                 <td>{{ cell.cell_sample }}</td>
                 <td>{{ cell.biosensor }}</td>
@@ -136,7 +98,7 @@
     </table>
     {% endif %}
 
-    {% if object.group and object.group.assaygroupcompound_set.count %}
+    {% if object.assaygroupcompound_set.count %}
     <legend>Compounds</legend>
     <table class="table table-striped table-bordered">
         <thead>
@@ -152,7 +114,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for compound in object.group.assaygroupcompound_set.all %}
+        {% for compound in object.assaygroupcompound_set.all %}
             <tr>
                 <td>
                     <a href="{% url 'compounds-compound-detail' compound.compound_instance.compound.id %}">
@@ -172,7 +134,7 @@
     </table>
     {% endif %}
 
-    {% if object.group and object.group.assaygroupsetting_set.count %}
+    {% if object.assaygroupsetting_set.count %}
     <legend>Settings</legend>
     <table class="table table-striped table-bordered">
         <thead>
@@ -186,7 +148,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for setting in object.group.assaygroupsetting_set.all %}
+        {% for setting in object.assaygroupsetting_set.all %}
             <tr>
                 <td>{{ setting.setting }}</td>
                 <td>{{ setting.value|intcomma }}</td>
@@ -203,26 +165,4 @@
     {% include 'assays/sidebar_extras.html' with show_hide="true" %}
 
     <div id="charts" class="padded-bottom"></div>
-
-    <div>
-        <table class="table cell-border" id="current_data_table">
-            <thead>
-                <tr class="bg-primary">
-                    <th>Name</th>
-                    <th>Time</th>
-                    <th>Target Analyte</th>
-                    <th>Method Kit</th>
-                    <th>Sample Location</th>
-                    <th>Value</th>
-                    <th>Value Unit</th>
-                    <th>Caution Flag</th>
-                    <th>Notes</th>
-                    <th>Data File</th>
-                </tr>
-            </thead>
-            <tbody id="table_body">
-            </tbody>
-        </table>
-    </div>
-
 {% endblock %}

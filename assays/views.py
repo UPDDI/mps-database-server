@@ -766,6 +766,23 @@ class AssayStudyGroups(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
         # Otherwise it will just go to assays, like usual
         return super(AssayStudyGroups, self).extra_form_processing(form)
 
+
+class AssayGroupDetail(StudyGroupMixin, DetailView):
+    # Why not have the mixin look for DetailView?
+    model = AssayGroup
+    detail = True
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayGroupDetail, self).get_context_data(**kwargs)
+
+        context.update({
+            'detail': True,
+            'items': AssayMatrixItem.objects.filter(group=self.object).order_by('name')
+        })
+
+        return context
+
+
 class AssayStudyChips(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     template_name = 'assays/assaystudy_chips.html'
     # Might end up being a formset?
