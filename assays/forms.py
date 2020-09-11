@@ -5087,6 +5087,7 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         for each in study_assay_queryset:
             this_unit = each.unit.unit.lower()
             # may need to change this to give something else a priority
+            # just to get an initial one
             # Mark had units of 'Fold Change' and 'Count', Tongying has 'Unitless' for all omic data...see how plays out
             if this_unit.find("fold") >= 0:
                 # so a unit with a fold in it will get priority
@@ -5132,16 +5133,13 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         #         first_gene_target = each.target_id
         #         first_gene_unit = each.unit_id
 
-        omic_computational_methods_list = AssayOmicAnalysisTarget.objects.values('method').distinct()
-        omic_computational_method_pks = []
-        for each in omic_computational_methods_list:
-            omic_computational_method_pks.append(each["method"])
-
+        omic_computational_methods_distinct = AssayOmicAnalysisTarget.objects.values('method').distinct()
         omic_computational_methods = AssayMethod.objects.filter(
-            id__in=omic_computational_method_pks
+            id__in=omic_computational_methods_distinct
         )
 
         initial_omic_computational_method = None
+        # just get the first one for the default, if there is one
         if len(omic_computational_methods) > 0:
             for each in omic_computational_methods:
                 initial_computational_method = each
@@ -5235,7 +5233,9 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
 
         file_extension = os.path.splitext(data.get('omic_data_file').name)[1]
 
-        if 'omic_data_file' in self.changed_data or self.instance.id is None:
+        # there are a few fields, in addition to the change of the data file, that would cause the data to need replaced
+        # including analysis_method and data_type
+        if 'omic_data_file' in self.changed_data or 'analysis_method' in self.changed_data or 'data_type' in self.changed_data or self.instance.id is None:
             # Run file extension check
             if file_extension in ['.csv', '.tsv', '.txt', '.xls', '.xlsx']:
                 true_to_continue = True
@@ -5264,14 +5264,12 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
                 # this function is in utils.py
                 # print('form clean')
                 data_file = data.get('omic_data_file')
-                amessage = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, analysis_method)
-                # print(amessage)
+                a_returned = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, analysis_method)
             else:
                 # print('form save')
                 queryset = AssayOmicDataFileUpload.objects.get(id=data_file_pk)
                 data_file = queryset.omic_data_file.open()
-                amessage = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, analysis_method)
-                # print(amessage)
+                a_returned = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, analysis_method)
 
         return data
 

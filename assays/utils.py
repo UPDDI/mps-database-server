@@ -6509,8 +6509,19 @@ def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, fi
     # that means only need one list_of_instances for all the sheets
     list_of_instances = []
     instance_counter = 0
-    target_to_pk_dict = {}
+    analysis_target_name_to_pk_dict = {}
+    analysis_target_pk_to_sc_target_pk_dict = {}
+    sc_target_pk_to_name_dict = {}
     omic_target_text_header_list = []
+    # data_dicts is all about the preview from the upload page
+    data_dicts = {'data': {}}
+    data_dicts['file_id_to_name'] = {}
+    data_dicts['table'] = {}
+    joint_name = "New/Changed File Preview"
+    data_dicts['data'][joint_name] = {}
+    data_dicts['file_id_to_name'][1] = joint_name
+    data_dicts['table'][joint_name] = 'Preview Chosen File'
+    data_dicts['target_name_to_id'] = {}
 
     if data_type == 'log2fc':
         pass
@@ -6529,19 +6540,22 @@ def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, fi
             data_type=data_type,
             method=analysis_method
         )
-        # print(target_matches)
-        target_to_pk_dict = {target.name: target.id for target in target_matches}
-        if len(target_to_pk_dict) == 0:
+        analysis_target_name_to_pk_dict = {target.name: target.id for target in target_matches}
+        analysis_target_pk_to_sc_target_pk_dict = {target.id: target.target_id for target in target_matches}
+        if len(analysis_target_name_to_pk_dict) == 0:
             error_message = error_message + 'No option for this combination of data type and analysis method has been programmed. Contact the MPS Database Admins (AssayOmicAnalysisTargets not found).'
             raise forms.ValidationError(error_message)
             continue_outer_if_true = False
         else:
-            omic_target_pks_header_list = list(target_to_pk_dict.values())
-            omic_target_text_header_list = list(target_to_pk_dict.keys())
+            omic_target_text_header_list = list(analysis_target_name_to_pk_dict.keys())
+            sc_target_pk_header_list = list(analysis_target_pk_to_sc_target_pk_dict.values())
+            sc_target_matches = AssayTarget.objects.filter(
+                id__in=sc_target_pk_header_list
+            )
+            sc_target_pk_to_name_dict = {target.id: target.name for target in sc_target_matches}
 
-    # print("~dict ",target_to_pk_dict)
+    # print("~dict ",analysis_target_name_to_pk_dict)
     # {'padj': 1, 'baseMean': 2, 'lfcSE': 3, 'stat': 4, 'log2FoldChange': 5, 'pvalue': 6}
-    # print("~pk ",omic_target_pks_header_list)
     # print("~text ",omic_target_text_header_list)
 
     if continue_outer_if_true:
@@ -6590,6 +6604,8 @@ def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, fi
                 list_of_relevant_headers_in_file = qc_each_file_or_worksheet_level[2]
 
                 # print("~match headers ",list_of_relevant_headers_in_file)
+                # to be compatible with the graphing, need this dict
+                data_dicts['target_name_to_id'] = {y: analysis_target_name_to_pk_dict[y] for y in list_of_relevant_headers_in_file}
 
             if continue_this_sheet_if_true:
                 # Guts of data loading for omic data file
@@ -6597,20 +6613,34 @@ def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, fi
                 if data_type == 'log2fc':
                     data_loaded_to_list_of_instances = omic_two_group_data_to_list_of_instances(
                         list_of_instances, instance_counter, df,
-                        study_id, omic_data_file_id, target_to_pk_dict,
-                        list_of_relevant_headers_in_file, called_from, gene_id_field_header)
+                        study_id, omic_data_file_id, analysis_target_name_to_pk_dict,
+                        sc_target_pk_to_name_dict, analysis_target_pk_to_sc_target_pk_dict,
+                        list_of_relevant_headers_in_file, called_from, gene_id_field_header,
+                        data_dicts['data'][joint_name])
                     continue_this_sheet_if_true = data_loaded_to_list_of_instances[0]
                     error_message = data_loaded_to_list_of_instances[1]
                     list_of_instances = data_loaded_to_list_of_instances[2]
                     instance_counter = data_loaded_to_list_of_instances[3]
+                    data_dicts['data'][joint_name] = data_loaded_to_list_of_instances[4]
+                    # max_fold_change = data_loaded_to_list_of_instances[5]
+                    # max_pvalue = data_loaded_to_list_of_instances[6]
+                    # min_fold_change = data_loaded_to_list_of_instances[7]
+                    # min_pvalue = data_loaded_to_list_of_instances[8]
+                    # data_dicts['max_fold_change'] = max_fold_change
+                    # data_dicts['max_pvalue'] = max_pvalue
+                    # data_dicts['min_fold_change'] = min_fold_change
+                    # data_dicts['min_pvalue'] = min_pvalue
 
+                    # print("~max_pvalue returned ", max_pvalue)
+                    # print("~max_fold_change returned ", max_fold_change)
                     # print("~list_of_instances ",list_of_instances)
 
                 elif data_type == 'normcounts' or data_type == 'rawcounts':
                     pass
                     # data_loaded_to_list_of_instances = omic_metadata_data_to_list_of_instances(
                     #     list_of_instances, instance_counter, df,
-                    #     study_id, omic_data_file_id, target_to_pk_dict,
+                    #     study_id, omic_data_file_id, analysis_target_name_to_pk_dict,
+                    #                         sc_target_pk_to_name_dict, analysis_target_pk_to_sc_target_pk_dict,
                     #     matrix_item_pk_list, called_from, gene_id_field_name_if_app)
                 else:
                     continue_this_sheet_if_true = False
@@ -6625,7 +6655,10 @@ def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, fi
     if called_from == 'save' and continue_outer_if_true:
         omic_data_upload_remove_and_add(omic_data_file_id, list_of_instances, error_message)
 
-    return 'done'
+    # the returned is ONLY used for the preview on the upload page
+    # can change it to whatever is needed for the graph preview
+    # print(data_dicts)
+    return data_dicts
 
 
 def omic_determine_if_field_with_header_for_gene(df_column_headers_stripped):
@@ -6636,6 +6669,8 @@ def omic_determine_if_field_with_header_for_gene(df_column_headers_stripped):
         gene_id_field_name = 'gene'
     elif 'name' in df_column_headers_stripped:
         gene_id_field_name = 'name'
+    elif 'gene reference' in df_column_headers_stripped:
+        gene_id_field_name = 'gene reference'
     else:
         # for this sheet or file, the HEADER for the target field could not be found, skip this sheet
         continue_this_sheet_if_true = False
@@ -6649,11 +6684,13 @@ def omic_qc_data_file(df, omic_target_text_header_list, data_type):
     list_of_relevant_headers_in_file = []
     found_foldchange_true = False
     for file_header in df.columns:
-        if file_header.find('fc') >= 0 or file_header.find('fold') >= 0 or file_header.find(
-                'FC') >= 0 or file_header.find('Fold') >= 0:
-            found_foldchange_true = True
         if file_header in omic_target_text_header_list:
             list_of_relevant_headers_in_file.append(file_header)
+        # only required field is the fold change field - if not found, ignore this sheet
+        if data_type == 'log2fc':
+            if file_header.find('fc') >= 0 or file_header.find('fold') >= 0 or file_header.find(
+                    'FC') >= 0 or file_header.find('Fold') >= 0:
+                found_foldchange_true = True
 
     if found_foldchange_true:
         pass
@@ -6661,7 +6698,7 @@ def omic_qc_data_file(df, omic_target_text_header_list, data_type):
         continue_this_sheet_if_true = False
         error_message = error_message + ' Required header containing "fc" or "fold" or "FC" or "Fold" is missing. '
 
-    # todo when ready to deal with count data
+    # todo when ready to deal with count data or more qc for other data
     # if data_type != 'log2fc':
     #     matrix_item_name_to_pk = {matrix_item.name: matrix_item.id for matrix_item in AssayMatrixItem.objects.filter(study_id=study_id)}
     #
@@ -6679,45 +6716,97 @@ def omic_qc_data_file(df, omic_target_text_header_list, data_type):
     return [continue_this_sheet_if_true, error_message, list_of_relevant_headers_in_file]
 
 
+# two group data only
 def omic_two_group_data_to_list_of_instances(
     list_of_instances, instance_counter, df,
-    study_id, omic_data_file_id, target_to_pk_dict,
-    list_of_relevant_headers_in_file, called_from, gene_id_field_header):
+    study_id, omic_data_file_id, analysis_target_name_to_pk_dict,
+    sc_target_pk_to_name_dict, analysis_target_pk_to_sc_target_pk_dict,
+    list_of_relevant_headers_in_file, called_from, gene_id_field_header,
+    data_dict):
 
     error_message = ''
     continue_this_sheet_if_true = True
 
+    # these are for the preview and might not be needed...checking with Quinn to see if needed
+    # max_fold_change_r = -999.0
+    # max_pvalue_r = -999.0
+    # max_fold_change = -999.0
+    # max_pvalue = -999.0
+    # min_fold_change_r = 9999999.0
+    # min_pvalue_r = 9999999.0
+    # min_fold_change = 9999999.0
+    # min_pvalue = 9999999.0
+
     for index, row in df.iterrows():
         name = row[gene_id_field_header]
-        for each in list_of_relevant_headers_in_file:
-            target_pk = target_to_pk_dict[each]
-            value = row[each]
-            if np.isnan(value):
-                value = None
+        # for the preview of the graphs
+        # testing
+        # if name.find('MZ') >= 0:
+        if 0 == 0:
+            data_dict[name] = {}
+            for each in list_of_relevant_headers_in_file:
+                target_pk = analysis_target_name_to_pk_dict[each]
+                value = row[each]
+                if np.isnan(value):
+                    value = None
+                else:
+                    value = float(value)
 
-            # print("instance_counter ",instance_counter)
-            # print("~each ", each)
-            # print("~target_pk ", target_pk)
-            # print("~value ", value)
+                # if value != None:
+                #
+                #     if each.find('val') >= 0:
+                #         if value > max_pvalue:
+                #             max_pvalue = value
+                #         if value < min_pvalue:
+                #             min_pvalue = value
+                #
+                #     if each.find('fold') >= 0 or each.find('fc') >= 0 or each.find('FC') >= 0 or each.find('Fold') >= 0:
+                #         if value > max_fold_change:
+                #             max_fold_change = value
+                #         if value < min_fold_change:
+                #             min_fold_change = value
 
-            # creating an instance causes an error in the clean since there is no pk for this file on the add form
-            # but we want the rest to go through the save AND we want to make sure instances are being counted in the clean
-            if called_from == 'save':
-                instance = AssayOmicDataPoint(
-                    study_id=study_id,
-                    omic_data_file_id=omic_data_file_id,
-                    name=name,
-                    analysis_target_id=target_pk,
-                    value=value
-                )
-                # add this list to the list of lists
-                list_of_instances.append(instance)
+                # print("instance_counter ",instance_counter)
+                # print("~each ", each)
+                # print("~target_pk ", target_pk)
+                # print("~value ", value)
 
-            instance_counter = instance_counter + 1
+                # creating an instance causes an error in the clean since there is no pk for this file on the add form
+                # but we want the rest to go through the save AND we want to make sure instances are being counted in the clean
+                if called_from == 'save':
+                    instance = AssayOmicDataPoint(
+                        study_id=study_id,
+                        omic_data_file_id=omic_data_file_id,
+                        name=name,
+                        analysis_target_id=target_pk,
+                        value=value
+                    )
+                    # add this list to the list of lists
+                    list_of_instances.append(instance)
+                else:
+                    # this will be for the preview on the page when the file is changed
+                    # gene name, analysis target pk, header,
+                    # study component target pk, study component target name, value
+                    # sc_target_pk = analysis_target_pk_to_sc_target_pk_dict.get(target_pk)
+                    # sc_target_name = sc_target_pk_to_name_dict.get(sc_target_pk)
+                    # listance = [name, target_pk, each, sc_target_pk, sc_target_name, value]
+                    # list_of_instances.append(listance)
 
-    return [continue_this_sheet_if_true, error_message, list_of_instances, instance_counter]
+                    # This if for the graph preview on the upload page
+                     data_dict[name][target_pk] = value
+
+                instance_counter = instance_counter + 1
+
+        # max_fold_change_r = max_fold_change
+        # max_pvalue_r = max_pvalue
+        # min_fold_change_r = min_fold_change
+        # min_pvalue_r = min_pvalue
+
+    # return [continue_this_sheet_if_true, error_message, list_of_instances, instance_counter, data_dict, max_fold_change_r, max_pvalue_r, min_fold_change_r, min_pvalue_r]
+    return [continue_this_sheet_if_true, error_message, list_of_instances, instance_counter, data_dict]
 
 
+# one group data only
 def omic_metadata_data_to_list_of_instances(
     list_of_instances, instance_counter, df,
     study_id, omic_data_file_id, target_pk_list,
@@ -6747,11 +6836,11 @@ def omic_metadata_data_to_list_of_instances(
             # if there are additional header rows, deal with them here ....
 
             name = row[gene_id_field_name_if_app]
-            print('name for this row ',name)
+            # print('name for this row ',name)
             c = 0
 
             while c < len(data_cols):
-                print('c ', c, ' data_cols[c] ', data_cols[c])
+                # print('c ', c, ' data_cols[c] ', data_cols[c])
                 value = row[data_cols[c]]
                 # note the +1 because the first one was not popped off as the data_cols was
                 this_matrix_item = int(matrix_item_pk_list[c + 1])
@@ -6772,6 +6861,10 @@ def omic_metadata_data_to_list_of_instances(
                     )
                     # add this list to the list of lists
                     list_of_instances.append(instance)
+                else:
+                    # this will be for the preview on the page when the file is changed
+                    listance = [name, target, value]
+                    list_of_instances.append(listance)
 
                 instance_counter = instance_counter + 1
                 c = c + 1
@@ -6805,6 +6898,9 @@ def data_file_to_data_frame(data_file, file_extension, workbook=None, sheet_inde
     # make a default data frame
     df = pd.DataFrame(columns=['one'])
 
+    # print("df empty")
+    # print(df)
+
     try_again = False
     true_if_dataframe_found = True
     error_message = ''
@@ -6834,5 +6930,8 @@ def data_file_to_data_frame(data_file, file_extension, workbook=None, sheet_inde
         except:
             error_message = 'ERROR - file was not in a recognized format.'
             true_if_dataframe_found = False
+
+    # print("df loaded")
+    # print(df)
 
     return [true_if_dataframe_found, error_message, df]
