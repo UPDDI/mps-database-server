@@ -263,9 +263,13 @@
                 <a href="{% url 'assays-assaystudy-update-plates' object.id %}" class="btn btn-primary" role="button">View/Edit Plates</a>
                 {% endif %}
             </div>
+        {% endif %}
 
+        {% if plate_groups or chip_groups %}
             {% include 'assays/group_difference_table.html' %}
+        {% endif %}
 
+        {% if plate_groups %}
             <legend>
                 <h2>
                     Plates
