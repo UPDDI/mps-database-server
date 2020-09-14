@@ -155,8 +155,8 @@ $(document).ready(function () {
             }
 
             // Create Omics info table on first pass
-            if (firstTime && called_from == 'anaylsis') {
-                $("#omics_table_body").html($("#omics_table_body").html()+"<tr><td class='dt-center'><input type='checkbox' class='big-checkbox'></td><td>" + x + "</td><td>" + omics_table[x] + "</td></tr>")
+            if (firstTime && called_from === "analysis") {
+                $("#omics_table_body").html($("#omics_table_body").html()+"<tr><td class='dt-center'><input type='checkbox' class='big-checkbox' data-checkbox-id='" + x.replace(/\s+/g, '') + "' checked></td><td>" + x + "</td><td>" + omics_data['table'][x] + "</td></tr>")
             }
 
             // For each gene probe ID
@@ -229,9 +229,9 @@ $(document).ready(function () {
 
         if (firstTime) {
             createSliders();
-            if (called_from == 'anaylsis') {
+            if (called_from === "analysis") {
                 $("#omics_table").DataTable({
-                    order: [1, 'asc'],
+                    order: [],
                     responsive: true,
                     dom: 'B<"row">lfrtip',
                     paging: false,
@@ -252,9 +252,8 @@ $(document).ready(function () {
         // $('#volcano-plots').append("<div class='row'>");
         // $('#ma-plots').append("<div class='row'>");
         for (const prop in chartData) {
-            // console.log(prop)
-            volcano_chart_row.append("<div class='col-lg-6'><div id='volcano-" + prop + "'></div></div>");
-            ma_chart_row.append("<div class='col-lg-6'><div id='ma-" + prop + "'></div></div>");
+            volcano_chart_row.append("<div class='col-lg-6'><div id='volcano-" + prop.replace(/\s+/g, '') + "'></div></div>");
+            ma_chart_row.append("<div class='col-lg-6'><div id='ma-" + prop.replace(/\s+/g, '') + "'></div></div>");
         }
 
         $('#volcano-plots').html(volcano_chart_row);
@@ -264,8 +263,8 @@ $(document).ready(function () {
             volcanoData = google.visualization.arrayToDataTable(chartData[prop]['volcano']);
             maData = google.visualization.arrayToDataTable(chartData[prop]['ma']);
 
-            volcanoChart = new google.visualization.LineChart(document.getElementById('volcano-' + prop));
-            maChart = new google.visualization.LineChart(document.getElementById('ma-' + prop));
+            volcanoChart = new google.visualization.LineChart(document.getElementById('volcano-' + prop.replace(/\s+/g, '')));
+            maChart = new google.visualization.LineChart(document.getElementById('ma-' + prop.replace(/\s+/g, '')));
 
             volcanoOptions['title'] = prop
             maOptions['title'] = prop

@@ -32,11 +32,11 @@
         </div>
         <div class="row text-center small-padding-top">
             <a href="{{ object.get_summary_url }}" class="btn btn-primary" role="button">Study Summary</a>
-            <a href="" class="btn btn-info" role="button">TODO Download Filtered Data</a>
+            <button href="#" id="download-filtered-data" class="btn btn-info" role="button">Download Filtered Data</a>
         </div>
     </div>
 
-    <table id="omics_table" class="table table-bordered">
+    <table id="omics_table" class="table table-bordered" hidden>
         <thead>
             <tr>
                 <td>
@@ -46,7 +46,7 @@
                     <label>Treatment Group</label>
                 </td>
                 <td>
-                    <label>Treatment Group Description</label>
+                    <label>Data Description</label>
                 </td>
             </tr>
         </thead>
