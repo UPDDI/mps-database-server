@@ -19,6 +19,8 @@ from assays.views import (
     AssayStudyAssays,
     AssayStudyDataIndex,
     AssayGroupDetail,
+    AssayDataFileUploadDetail,
+    AssayDataFileUploadList,
     AssayMatrixItemDetail,
     AssayMatrixItemUpdate,
     AssayMatrixItemDelete,
@@ -147,6 +149,10 @@ urlpatterns = [
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/assays/$', AssayStudyAssays.as_view(), name='assays-assaystudy-update-assays'),
 
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/data_index/$', AssayStudyDataIndex.as_view(), name='assays-assaystudy-data-index'),
+
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/data_files/$', AssayDataFileUploadList.as_view(), name='assays-assaydatafileupload-list'),
+
+    url(r'^assays/assaydatafileupload/(?P<pk>[0-9]+)/$', AssayDataFileUploadDetail.as_view(), name='assays-assaydatafileupload-detail'),
 
     # Just redirect for now
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/update/$', RedirectView.as_view(pattern_name='assays-assaystudy-update-details', permanent=True), name='assays-assaystudy-update'),

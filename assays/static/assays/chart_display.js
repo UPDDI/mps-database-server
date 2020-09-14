@@ -490,6 +490,8 @@ $(document).ready(function () {
             // TODO MATRIX AND MATRIX ITEM
             matrix: window.CHARTS.matrix_id,
             matrix_item: window.CHARTS.matrix_item_id,
+            group: window.CHARTS.group_id,
+            file: window.CHARTS.file_id,
             // TRICKY: STUDY SET
             study_set_id: window.CHARTS.study_set_id,
             criteria: JSON.stringify(window.GROUPING.group_criteria),

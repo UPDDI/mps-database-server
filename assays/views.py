@@ -1878,6 +1878,40 @@ class AssayStudyTemplate(ObjectGroupRequiredMixin, DetailView):
         return response
 
 
+class AssayDataFileUploadList(StudyViewerMixin, DetailView):
+    # Why not have the mixin look for DetailView?
+    model = AssayStudy
+    detail = True
+
+    template_name = 'assays/assaydatafileupload_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayDataFileUploadList, self).get_context_data(**kwargs)
+
+        context.update({
+            'detail': True,
+        })
+
+        return context
+
+
+class AssayDataFileUploadDetail(StudyGroupMixin, DetailView):
+    # Why not have the mixin look for DetailView?
+    model = AssayDataFileUpload
+    detail = True
+
+    template_name = 'assays/assaydatafileupload_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayDataFileUploadDetail, self).get_context_data(**kwargs)
+
+        context.update({
+            'detail': True,
+        })
+
+        return context
+
+
 def get_cell_samples_for_selection(user, setups=None):
     """Returns the cell samples to be listed in setup views
 

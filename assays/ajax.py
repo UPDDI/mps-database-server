@@ -16,6 +16,7 @@ from .models import (
     AssayMatrix,
     AssayStudyAssay,
     AssayDataPoint,
+    AssayDataFileUpload,
     # ????
     AssayChipReadout,
     AssayChipSetup,
@@ -1591,6 +1592,15 @@ def fetch_data_points(request):
         group = AssayGroup.objects.get(pk=int(request.POST.get('group', None)))
         matrix_items = AssayMatrixItem.objects.filter(group_id=int(request.POST.get('group')))
         study = group.study
+        pre_filter.update({
+            'matrix_item_id__in': matrix_items
+        })
+    elif request.POST.get('file', ''):
+        matrix_item = None
+        current_file = AssayDataFileUpload.objects.get(pk=int(request.POST.get('file', None)))
+        # TERRIBLE TERRIBLE TERRIBLE
+        matrix_items = AssayMatrixItem.objects.filter(assaydatapoint__data_file_upload_id=int(request.POST.get('file'))).distinct()
+        study = current_file.study
         pre_filter.update({
             'matrix_item_id__in': matrix_items
         })
@@ -4283,6 +4293,9 @@ def study_viewer_validation(request):
     elif request.POST.get('group', ''):
         group = get_object_or_404(AssayGroup, pk=request.POST.get('group'))
         study = group.study
+    elif request.POST.get('file', ''):
+        current_file = get_object_or_404(AssayDataFileUpload, pk=request.POST.get('file'))
+        study = current_file.study
 
     if study:
         return user_is_valid_study_viewer(request.user, study)

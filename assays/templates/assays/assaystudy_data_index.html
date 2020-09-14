@@ -19,7 +19,6 @@
 
     <h1>
         Study Data
-    <br>
     </h1>
 
     {% include "submit.html" %}
@@ -36,6 +35,7 @@
         {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
         <a href="{% url 'assays-assaystudy-upload' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to Upload a Data File</a>
         {% endif %}
+        <a href="{% url 'assays-assaydatafileupload-list' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to View Uploaded Files</a>
     </div>
 
     <div class="well">

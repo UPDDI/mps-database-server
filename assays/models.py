@@ -1468,6 +1468,9 @@ class AssayDataFileUpload(FlaggableModel):
     def __str__(self):
         return urllib.parse.unquote(self.file_location.split('/')[-1])
 
+    def get_absolute_url(self):
+        return reverse('assays-assaydatafileupload-detail', args=[self.pk])
+
 
 class AssayTarget(FrontEndModel, LockableModel):
     """Describes what was sought by a given Assay"""
