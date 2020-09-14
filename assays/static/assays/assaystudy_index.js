@@ -58,6 +58,10 @@ $(document).ready(function() {
                 "targets": [0]
             },
             {
+                type: 'natural',
+                targets: [1],
+            },
+            {
                 visible: false,
                 targets: [7]
             }

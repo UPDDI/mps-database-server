@@ -409,8 +409,12 @@ $(document).ready(function () {
                     {
                         sortable: false,
                         targets: [0],
-                        width: '8%',
-                    }
+                        width: '5%',
+                    },
+                    {
+                        type: 'natural',
+                        targets: [1, 4, 5, 6],
+                    },
                 ]
             });
 
