@@ -30,12 +30,9 @@
                 with {% include 'plural_include.html' with label="Data Point" count=object.assaydatapoint_set.count %}
             {% endif %}
             <br>
-            <small>A description of "Data Files" that clearly indicates how they are different from Omics and Assay Plate Data would be fruitful, but I couldn't think of anything succinct.</small>
+            <small>Processed assay data formatted for direct upload into the Study Summary for visualization and analysis using the biological assay visualization and analysis tools. Data to be uploaded must be in the MPS Import Friendly-Columnar (MIF-C) file format.</small>
         </h3>
-        {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
-        <a href="{% url 'assays-assaystudy-upload' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to Upload a Data File</a>
-        {% endif %}
-        <a href="{% url 'assays-assaydatafileupload-list' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to View Uploaded Files</a>
+        <a href="{% url 'assays-assaydatafileupload-list' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add or Remove Processed Data Files</a>
     </div>
 
     <div class="well">
@@ -45,10 +42,10 @@
                 with {% include 'plural_include.html' with label="Assay Plate Reader File" count=object.assayplatereaderfile_set.count %}
             {% endif %}
             <br>
-            <small>Assay Plate Data is calibrated and converted into processed Data Points</small>
+            <small>Assay plate reader data that will be processed using the assay plate reader tools and subsequently submitted to the Study Summary for visualization and analysis using the biological assay visualization and analysis tools. Data to be uploaded should come directly from the assay plate reader.</small>
         </h3>
-        <a href="{% url 'assayplatereadermap-index' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to View/Add Assay Plate Reader Maps and Process Data</a>
-        <a href="{% url 'assayplatereaderfile-index' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to View/Add Assay Plate Reader Files</a>
+        <a href="{% url 'assayplatereadermap-index' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add, Remove, or Edit an Assay Plate Map or Calibrate Uploaded Data</a>
+        <a href="{% url 'assayplatereaderfile-index' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add or Remove Assay Plate Reader Data Files</a>
     </div>
 
     {# NOTE: STAGE ONLY #}
@@ -59,8 +56,8 @@
                 with {% include 'plural_include.html' with label="Data Point" count=log2fold_points.count %}
             {% endif %}
             <br>
-            <small>We could put a small description for Omics data here, only log2fold is displayed at the moment by request.</small>
+            <small>Omic data that will use the MPS-Db Omic visualization and analysis tools (i.e. fold change, normalized counts, raw counts). Data to be uploaded must be formatted specifically as omic data in the file format corresponding to the type of omic data being uploaded.</small>
         </h3>
-        <a href="{% url 'assayomicdatafileupload-index' object.id %}" class="btn btn-lg btn-primary" role="button">Click here to Upload or Remove Omic Data Files or Update File Metadata</a>
+        <a href="{% url 'assayomicdatafileupload-index' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add or Remove Omic Data File or Update File Metadata</a>
     </div>
 {% endblock %}
