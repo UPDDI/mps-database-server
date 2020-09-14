@@ -5019,7 +5019,8 @@ assay_omic_data_type_choices = [
     ('rawcounts', 'Raw Counts')
 ]
 
-
+# This is the why we allowed grouping while Luke was finishing the treatment group naming
+# probably will not need this, but keep unitl we are sure we do not want a separate group
 # class AssayOmicDataGroup(LockableModel):
 #     """Assay omic data groups - pk used to tie chip and sample metadata to a data group."""
 #     # plan is to replace this with "treatment groups"
@@ -5059,6 +5060,9 @@ assay_omic_gene_name_choices = [
 ]
 
 
+# this is for all omics files
+# we were going to separate into two group data and one group data
+# but the project PI strongly opposed this idea (he wanted all the files together)
 class AssayOmicDataFileUpload(LockableModel):
     """Assay omic data - usually export from a DEG tool."""
 
@@ -5076,7 +5080,8 @@ class AssayOmicDataFileUpload(LockableModel):
     description = models.CharField(
         max_length=2000,
         default=set_default_description(),
-        verbose_name='File Description'
+        help_text='Description of the data being uploaded in this file (e.g., "Treated vrs Control" or "Treated with 1uM Calcifidiol".',
+        verbose_name='Data Description'
     )
     # if not required, and user tries to have two empty, will get error
     omic_data_file = models.FileField(
@@ -5118,7 +5123,8 @@ class AssayOmicDataFileUpload(LockableModel):
         verbose_name='Data Type'
     )
 
-
+    # these were during development when we were using separate groups
+    # probably will not need again, but keep just in case
     # # data groups could be empty for the norm count and raw count data
     # group_1 = models.ForeignKey(
     #     AssayOmicDataGroup,
@@ -5206,6 +5212,48 @@ class AssayOmicDataFileUpload(LockableModel):
     def get_delete_url(self):
         return '{}delete/'.format(self.get_absolute_url())
 
+#
+# class AssayOmicSampleMetadata(models.Model):
+#     """Model for omic sample metadata associated to count data."""
+#
+#     class Meta(object):
+#         verbose_name = 'Omic Sample Metadata'
+#
+#     study = models.ForeignKey(
+#         'assays.AssayStudy',
+#         on_delete=models.CASCADE,
+#         verbose_name='Study'
+#     )
+#     # sample id
+#     cross_reference = models.CharField(
+#         max_length=255,
+#         default='',
+#         verbose_name='Cross Reference'
+#     )
+#
+#     # assay_well_id = models.CharField(max_length=255, default='N/A')
+#
+#     matrix_item = models.ForeignKey(
+#         'assays.AssayMatrixItem',
+#         on_delete=models.CASCADE,
+#         verbose_name='Matrix Item'
+#     )
+#
+#     sample_location = models.ForeignKey(
+#         'assays.AssaySampleLocation',
+#         on_delete=models.CASCADE,
+#         verbose_name='Sample Location'
+#     )
+#
+#     # PLEASE NOTE THAT THIS IS IN MINUTES
+#     time = models.FloatField(
+#         default=0,
+#         verbose_name='Time'
+#     )
+#
+#     def __str__(self):
+#         return '{0}'.format(self.id)
+
 
 class AssayOmicDataPoint(models.Model):
     """Individual points of omic data """
@@ -5247,13 +5295,16 @@ class AssayOmicDataPoint(models.Model):
         verbose_name='Computed Value'
     )
 
-    # when doing the count data, will need to add a link to something
-    # could be to the chip (matrix item) or could be to a table that has
-    # pks for matrix item, sample time, sample location, sample cross reference
-    # for now, just do not add it as it would be NULL for 2 group comparison data
-    # although, later, if we did relate chips to a group, a pk to that info could go here .....
+    # when doing the count data, need to add a link to metadata table, else will be null
+    # sample_metadata = models.ForeignKey(
+    #     AssayOmicSampleMetadata,
+    #     blank=True,
+    #     null=True,
+    #     on_delete=models.CASCADE,
+    #     verbose_name='Metadata'
+    # )
 
     def __str__(self):
         return '{0}'.format(self.id)
 
-##### End Assay Omic Section - Phase 1 design
+##### End Assay Omic Section - Phase 1 and 2 design

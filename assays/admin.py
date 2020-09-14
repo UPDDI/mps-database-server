@@ -59,6 +59,7 @@ from assays.models import (
     AssayOmicDataFileUpload,
     AssayOmicDataPoint,
     AssayOmicAnalysisTarget,
+    # AssayOmicSampleMetadata,
 )
 from microdevices.models import MicrophysiologyCenter
 # from compounds.models import Compound
@@ -1380,3 +1381,10 @@ class AssayOmicAnalysisTargetAdmin(ImportExportModelAdmin):
 
 admin.site.register(AssayOmicAnalysisTarget, AssayOmicAnalysisTargetAdmin)
 
+# class AssayOmicSampleMetadataAdmin(ImportExportModelAdmin):
+#     """Admin for Sample Metadata"""
+#     model = AssayOmicSampleMetadata
+#     list_display = ('study', 'cross_reference', 'matrix_item', 'sample_location', 'time', 'replicate','assay_well_id')
+#     search_fields = ('study', 'matrix_item', 'sample_location', 'time')
+#
+# admin.site.register(AssayOmicSampleMetadata, AssayOmicSampleMetadataAdmin)

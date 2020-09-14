@@ -44,9 +44,9 @@ $(document).ready(function () {
     let global_omic_upload_omic_file_format_deseq2_log2fc_headers = '"name", "baseMean", "log2FoldChange", "lfcSE", "stat", "pvalue", "padj"';
     let global_omic_upload_omic_file_format_deseq2_log2fc_tooltip = 'For DESeq2 Log2Fold change data, the header "log2FoldChange" must be in the first row. Other optional columns headers are: "baseMean", "lfcSE", "stat", "pvalue", "padj", and "gene reference" (or "name" or "gene").';
     $('#omic_file_format_deseq2_log2fc_tooltip').next().html($('#omic_file_format_deseq2_log2fc_tooltip').next().html() + make_escaped_tooltip(global_omic_upload_omic_file_format_deseq2_log2fc_tooltip));
-    let global_omic_upload_omic_file_format_normcounts_tooltip = 'Under Development - ?????? Normalized counts data files must have one header row. the first column must be named "name" and contain a reference to the gene. The remaining columns must be named with the chip or well name as assigned in the MPS Database. ';
+    let global_omic_upload_omic_file_format_normcounts_tooltip = 'Under Development - Normalized counts data files must have one header row labeled "Sample ID" with each column labeled with a sampled ID or an assay well plate ID. ';
     $('#omic_file_format_normcounts_tooltip').next().html($('#omic_file_format_normcounts_tooltip').next().html() + make_escaped_tooltip(global_omic_upload_omic_file_format_normcounts_tooltip));
-    let global_omic_upload_omic_file_format_rawcounts_tooltip = 'Under Development - ???????? Raw counts data files must have one header row. The first column must be named "name" and contain a reference to the gene. The remaining columns must be named with the chip or well name as assigned in the MPS Database. ';
+    let global_omic_upload_omic_file_format_rawcounts_tooltip = 'Under Development - Raw counts data files must have one header row labeled "Sample ID" with each column labeled with a sampled ID or an assay well plate ID. ';
     $('#omic_file_format_rawcounts_tooltip').next().html($('#omic_file_format_rawcounts_tooltip').next().html() + make_escaped_tooltip(global_omic_upload_omic_file_format_rawcounts_tooltip));
     let global_omic_anaylsis_method_tooltip = 'The method (i.e. data processing tool, pipeline, etc.) used to process data.';
     $('#omic_anaylsis_method_tooltip').next().html($('#omic_anaylsis_method_tooltip').next().html() + make_escaped_tooltip(global_omic_anaylsis_method_tooltip));
@@ -224,7 +224,7 @@ $(document).ready(function () {
             },
             error: function (xhr, errmsg, err) {
                 window.spinner.stop();
-                alert('an error in processing data');
+                alert('Encountered an error when trying to make a preview plot. Check to make sure the Data Type selected matches the file selected.');
                 console.log(xhr.status + ': ' + xhr.responseText);
             }
         });
