@@ -17,7 +17,11 @@ $(document).ready(function() {
             {
                 "className": "dt-center",
                 "targets": [2,3,4,5]
-            }
+            },
+            {
+                'className': 'none',
+                'targets': [6]
+            },
         ]
     });
 

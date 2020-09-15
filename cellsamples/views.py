@@ -41,8 +41,8 @@ class CellSampleUpdate(CreatorAndNotInUseMixin, CellSampleMixin, UpdateView):
     # required_group_name = 'Change Cell Samples Front'
     pass
 
-# Everyone can look at cell samples
-class CellSampleDetail(DetailView):
+# Logged in users can look at cell samples
+class CellSampleDetail(LoginRequiredMixin, DetailView):
     model = CellSample
     template_name = 'cellsamples/cellsample_detail.html'
 
@@ -94,8 +94,8 @@ class CellSampleDetail(DetailView):
     #     return super(CellSampleUpdate, self).dispatch(*args, **kwargs)
 
 
-# Log in is no longer required, I guess
-class CellSampleList(ListView):
+# Logged in users can see list
+class CellSampleList(LoginRequiredMixin, ListView):
     """Displays a list of Cell Samples"""
     template_name = 'cellsamples/cellsample_list.html'
 
