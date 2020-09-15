@@ -20,9 +20,11 @@
             </h2>
         </legend>
 
+        {% if user_is_group_editor and not object.signed_off_by %}
         <div class="row text-center padded-bottom">
             <a href="{% url 'assays-assaystudy-upload' object.id %}" class="btn btn-lg btn-success" role="button">Click here to Upload a Data File</a>
         </div>
+        {% endif %}
 
         <table hidden id="data_file_uploads" class="display table table-striped" cellspacing="0" width="100%">
             <thead>

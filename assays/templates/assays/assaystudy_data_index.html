@@ -14,8 +14,10 @@
 {% endblock %}
 
 {% block content %}
-    {# Get the tabs #}
+    {# Get the tabs IF this is for editing #}
+    {% if user_is_group_editor and not object.signed_off_by %}
     {% include 'assays/assaystudy_tabs.html' with study=object %}
+    {% endif %}
 
     <h1>
         Study Data

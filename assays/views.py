@@ -1197,7 +1197,12 @@ class AssayStudyIndex(StudyViewerMixin, DetailView):
             'plate_groups': plate_groups,
             'number_of_chips': number_of_chips,
             'plates': plates,
-            'form': AssayStudyGroupForm(instance=self.object)
+            'form': AssayStudyGroupForm(instance=self.object),
+            'cellsamples': CellSample.objects.all().prefetch_related(
+                'cell_type__organ',
+                'supplier',
+                'cell_subtype__cell_type'
+            )
         })
 
         return context
