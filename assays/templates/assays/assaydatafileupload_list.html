@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
+{# May be worth it just to load this in base? #}
+{% load custom_filters %}
 
 {% block load_js %}
     <script src="{% static "assays/assaydatafileupload_list.js" %}"></script>
@@ -20,7 +22,7 @@
             </h2>
         </legend>
 
-        {% if user_is_group_editor and not object.signed_off_by %}
+        {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
         <div class="row text-center padded-bottom">
             <a href="{% url 'assays-assaystudy-upload' object.id %}" class="btn btn-lg btn-success" role="button">Click here to Upload a Data File</a>
         </div>

@@ -771,6 +771,7 @@ class AssayGroupDetail(StudyGroupMixin, DetailView):
     # Why not have the mixin look for DetailView?
     model = AssayGroup
     detail = True
+    no_update = True
 
     def get_context_data(self, **kwargs):
         context = super(AssayGroupDetail, self).get_context_data(**kwargs)

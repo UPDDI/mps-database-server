@@ -176,6 +176,8 @@ class StudyGroupMixin(object):
     update_redirect_url - where to to redirect in the case of detail redirect
     """
     detail = False
+    # Stupid, should use a try catch or something
+    no_update = False
     # Default value for url to redirect to
     update_redirect_url = 'update/'
 
@@ -213,7 +215,7 @@ class StudyGroupMixin(object):
             if is_group_editor(self.request.user, study.group.name) and not study.signed_off_by:
                 # Redirects either to url + update or the specified url + object ID (as an attribute)
                 # This is a little tricky if you don't look for {} in update_redirect_url
-                if self.detail:
+                if self.detail and not self.no_update:
                     return redirect(self.update_redirect_url.format(current_object.id))
                 else:
                     return super(StudyGroupMixin, self).dispatch(*args, **kwargs)
