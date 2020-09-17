@@ -27,15 +27,13 @@ $(document).ready(function () {
             }
         )
         .success(function(data) {
-            console.log("DATA", data)
+            // console.log("DATA", data)
 
             if (!('error' in data)) {
                 window.OMICS.omics_data = JSON.parse(JSON.stringify(data))
                 window.OMICS.draw_plots(window.OMICS.omics_data, true, 0, 0, 0, 0, 0, 0, 0);
                 for (var chart in data['table']) {
-                    console.log(data['table'][chart])
                     visible_charts[data['table'][chart][1]] = true;
-                    console.log(visible_charts)
                 }
             } else {
                 console.log(data['error']);
@@ -69,10 +67,6 @@ $(document).ready(function () {
     $("#download-filtered-data").click(function(e) {
         e.preventDefault()
 
-        console.log(visible_charts)
-
-        console.log($("#slider-range-pvalue-neg").slider("option", "values"))
-
         get_params = {
             "negative_log10_pvalue": $("#pvalue-filter1").css("display") !== "none",
             "absolute_log2_foldchange": $("#l2fc-filter2").css("display") !== "none",
@@ -90,10 +84,6 @@ $(document).ready(function () {
             "abs_log2_foldchange": parseFloat($("#slider-log2foldchange-abs").slider("option", "value")).toFixed(3),
             "visible_charts": Object.keys(visible_charts).filter(function(key) { return visible_charts[key]}).join("+")
         }
-
-        console.log(get_params)
-        console.log($.param(get_params))
-        console.log(Object.keys(visible_charts).filter(function(key) { return visible_charts[key]}).join("+"))
 
         window.open(window.location.href + "download/?" + $.param(get_params), "_blank")
     });

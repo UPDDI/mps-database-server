@@ -253,7 +253,6 @@ $(document).ready(function () {
         // $('#volcano-plots').append("<div class='row'>");
         // $('#ma-plots').append("<div class='row'>");
         for (const prop in chartData) {
-            console.log(omics_data['table'][prop][1])
             volcano_chart_row.append("<div class='col-lg-6'><div id='volcano-" + omics_data['table'][prop][1] + "'></div></div>");
             ma_chart_row.append("<div class='col-lg-6'><div id='ma-" + omics_data['table'][prop][1] + "'></div></div>");
         }

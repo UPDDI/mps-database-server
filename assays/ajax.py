@@ -2,6 +2,7 @@
 import ujson as json
 # Ask if folks mind the pvalues getting truncated, non-U-json fixes this
 import json as default_json
+import math
 # from collections import defaultdict
 from django.http import (
     HttpResponse,
@@ -7220,15 +7221,125 @@ def fetch_omics_data_for_upload_preview_prep(request):
     )
 
 
-def get_filtered_omics_data_as_csv(ids, data_points=None, both_assay_names=False, include_header=False, include_all=False):
+def get_filtered_omics_data_as_csv(get_params):
     """Returns data points as a csv in the form of a string"""
-    data = get_data_as_list_of_lists(
-        ids,
-        data_points,
-        both_assay_names,
-        include_header,
-        include_all
+    ids = AssayOmicDataFileUpload.objects.filter(
+        id__in=get_params['visible_charts']
     )
+
+    data_points = AssayOmicDataPoint.objects.prefetch_related(
+        'omic_data_file',
+        'analysis_target__target',
+    ).filter(
+        omic_data_file__id__in=ids,
+    )
+
+    consolidated_targets = {}
+    unique_targets = []
+    data = []
+
+    for data_point in data_points:
+        name = data_point.name
+        target = data_point.analysis_target.name
+        value = data_point.value
+        if value is None:
+            value = ''
+        if name not in consolidated_targets:
+            datafile = data_point.omic_data_file
+            assay = str(datafile.study_assay)
+            group_1 = datafile.group_1.name
+            group_2 = datafile.group_2.name
+            time_1 = datafile.time_1
+            time_2 = datafile.time_2
+            location_1 = datafile.location_1
+            location_2 = datafile.location_2
+            consolidated_targets[name] = {
+                "assay": assay,
+                "group_1": group_1,
+                "group_2": group_2,
+                "time_1": time_1,
+                "time_2": time_2,
+                "location_1": location_1,
+                "location_2": location_2
+            }
+        consolidated_targets[name][target] = value
+        if target not in unique_targets:
+            unique_targets.append(target)
+
+    # Header Row
+    data.append(
+        [
+            "Probe ID",
+            "Expression",
+            "Assay",
+            "Group 1",
+            "Group 2",
+            "Time 1",
+            "Time 2",
+            "Location 1",
+            "Location 2"
+        ]
+    )
+
+    for target in unique_targets:
+        data[0].append(target)
+
+    expression_text = {
+        'over_expressed': "Over Expressed",
+        'under_expressed': "Under Expressed",
+        'neither_expressed': "General"
+    }
+
+    # Add filtered data
+    for name in consolidated_targets:
+        expression = ''
+
+        # PValue Filters
+        if get_params["negative_log10_pvalue"]:
+            if not ((-math.log10(consolidated_targets[name]["pvalue"]) >= get_params["min_negative_log10_pvalue"]) and (-math.log10(consolidated_targets[name]["pvalue"]) <= get_params["max_negative_log10_pvalue"])):
+                continue
+        else:
+            if not ((consolidated_targets[name]["pvalue"] >= get_params["min_pvalue"]) and (consolidated_targets[name]["pvalue"] <= get_params["max_pvalue"])):
+                continue
+
+        # Log2FoldChange Filters
+        if get_params["absolute_log2_foldchange"]:
+            if not ((consolidated_targets[name]["log2FoldChange"] >= -get_params["abs_log2_foldchange"]) and (consolidated_targets[name]["log2FoldChange"] <= get_params["abs_log2_foldchange"])):
+                continue
+        else:
+            if not ((consolidated_targets[name]["log2FoldChange"] >= get_params["min_log2_foldchange"]) and (consolidated_targets[name]["log2FoldChange"] <= get_params["max_log2_foldchange"])):
+                continue
+
+        # Determine Expression
+        if (consolidated_targets[name]["log2FoldChange"] >= get_params["threshold_log2_foldchange"]) and (consolidated_targets[name]["pvalue"] <= get_params["threshold_pvalue"]):
+            expression = 'over_expressed'
+        elif (consolidated_targets[name]["log2FoldChange"] <= -get_params["threshold_log2_foldchange"]) and (consolidated_targets[name]["pvalue"] <= get_params["threshold_pvalue"]):
+            expression = 'under_expressed'
+        else:
+            expression = 'neither_expressed'
+
+        # Expression Filter
+        if not get_params[expression]:
+            continue
+        else:
+            expression = expression_text[expression]
+
+        # Append any data that has made it this far
+        to_append = [
+            name,
+            expression,
+            consolidated_targets[name]['assay'],
+            consolidated_targets[name]['group_1'],
+            consolidated_targets[name]['group_2'],
+            consolidated_targets[name]['time_1'],
+            consolidated_targets[name]['time_2'],
+            consolidated_targets[name]['location_1'],
+            consolidated_targets[name]['location_2']
+        ]
+        for target in unique_targets:
+            to_append.append(consolidated_targets[name][target])
+
+        data.append(to_append)
 
     for index in range(len(data)):
         current_list = list(data[index])
