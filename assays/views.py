@@ -5694,3 +5694,47 @@ class AssayStudyOmics(StudyViewerMixin, DetailView):
     """Displays the omics interface for the current study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_omics.html'
+
+
+class AssayStudyOmicsDownload(StudyViewerMixin, DetailView):
+    """Returns a CSV of the filtered Omics Data for a study"""
+    model = AssayStudy
+
+    def render_to_response(self, context, **response_kwargs):
+        print(self.request)
+        # Make sure that the study exists, then continue
+        if self.object:
+
+            # If chip data
+            items = AssayMatrixItem.objects.filter(
+                study_id=self.object.id
+            )
+
+            negative_log10_pvalue = self.request.GET.get("negative_log10_pvalue") == "true"
+            absolute_log2_foldchange = self.request.GET.get("absolute_log2_foldchange") == "true"
+            over_expressed = self.request.GET.get("over_expressed") == "true"
+            under_expressed = self.request.GET.get("under_expressed") == "true"
+            neither_expressed = self.request.GET.get("neither_expressed") == "true"
+            threshold_pvalue = float(self.request.GET.get("threshold_pvalue"))
+            threshold_log2_foldchange = float(self.request.GET.get("threshold_log2_foldchange"))
+            min_pvalue = float(self.request.GET.get("min_pvalue"))
+            max_pvalue = float(self.request.GET.get("max_pvalue"))
+            min_negative_log10_pvalue = float(self.request.GET.get("min_negative_log10_pvalue"))
+            max_negative_log10_pvalue = float(self.request.GET.get("max_negative_log10_pvalue"))
+            min_log2_foldchange = float(self.request.GET.get("min_log2_foldchange"))
+            max_log2_foldchange = float(self.request.GET.get("max_log2_foldchange"))
+            abs_log2_foldchange = float(self.request.GET.get("abs_log2_foldchange"))
+            visible_charts = self.request.GET.get("visible_charts").split("+")
+
+            print([negative_log10_pvalue, absolute_log2_foldchange, over_expressed, under_expressed, neither_expressed, threshold_pvalue, threshold_log2_foldchange, min_pvalue, max_pvalue, min_negative_log10_pvalue, max_negative_log10_pvalue, min_log2_foldchange, max_log2_foldchange, abs_log2_foldchange, visible_charts])
+
+            data = get_filtered_omics_data_as_csv(items)
+
+            # For specifically text
+            response = HttpResponse(data, content_type='text/csv', charset='utf-8')
+            response['Content-Disposition'] = 'attachment;filename="' + str(self.object) + '.csv"'
+
+            # return response
+        # Return nothing otherwise
+        else:
+            return HttpResponse('', content_type='text/plain')

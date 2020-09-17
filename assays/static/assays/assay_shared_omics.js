@@ -35,10 +35,10 @@ $(document).ready(function () {
 
     // Correct filter inputs on slider change
     $(".filter-input").change(function() {
-        $("#slider-range-log2foldchange").slider("option", "values", [$("#log2foldchange-low").val(), $("#log2foldchange-high").val()])
-        $("#slider-log2foldchange-abs").slider("option", "value", [$("#log2foldchange-abs").val()])
-        $("#slider-range-pvalue").slider("option", "values", [$("#pvalue-low").val(), $("#pvalue-high").val()])
-        $("#slider-range-pvalue-neg").slider("option", "values", [$("#pvalue-low-neg").val(), $("#pvalue-high-neg").val()])
+        $("#slider-range-log2foldchange").slider("option", "values", [parseFloat($("#log2foldchange-low").val()), parseFloat($("#log2foldchange-high").val())])
+        $("#slider-log2foldchange-abs").slider("option", "value", [parseFloat($("#log2foldchange-abs").val())])
+        $("#slider-range-pvalue").slider("option", "values", [parseFloat($("#pvalue-low").val()), parseFloat($("#pvalue-high").val())])
+        $("#slider-range-pvalue-neg").slider("option", "values", [parseFloat($("#pvalue-low-neg").val()), parseFloat($("#pvalue-high-neg").val())])
     })
 
     // Apply filters and thresholds before drawing graphs
@@ -150,19 +150,20 @@ $(document).ready(function () {
             if (!(omics_data['data'][x] in chartData)) {
                 chartData[x] = {
                     'volcano': [['Log2(FoldChange)', 'Over Expressed', {'type': 'string', 'role': 'style'}, {'type': 'string', 'role': 'tooltip'}, 'Under Expressed', {'type': 'string', 'role': 'style'}, {'type': 'string', 'role': 'tooltip'}, 'Not Significant', {'type': 'string', 'role': 'style'}, {'type': 'string', 'role': 'tooltip'}]],
-                    'ma': [['Average Expression', 'Over Expressed', {'type': 'string', 'role': 'style'}, {'type': 'string', 'role': 'tooltip'}, 'Under Expressed', {'type': 'string', 'role': 'style'}, {'type': 'string', 'role': 'tooltip'}, 'Not Significant', {'type': 'string', 'role': 'style'}, {'type': 'string', 'role': 'tooltip'}]]
+                    'ma': [['Base Mean', 'Over Expressed', {'type': 'string', 'role': 'style'}, {'type': 'string', 'role': 'tooltip'}, 'Under Expressed', {'type': 'string', 'role': 'style'}, {'type': 'string', 'role': 'tooltip'}, 'Not Significant', {'type': 'string', 'role': 'style'}, {'type': 'string', 'role': 'tooltip'}]]
                 };
             }
 
             // Create Omics info table on first pass
             if (firstTime && called_from === "analysis") {
-                $("#omics_table_body").html($("#omics_table_body").html()+"<tr><td class='dt-center'><input type='checkbox' class='big-checkbox' data-checkbox-id='" + x.replace(/\s+/g, '') + "' checked></td><td>" + x + "</td><td>" + omics_data['table'][x] + "</td></tr>")
+                $("#omics_table_body").html($("#omics_table_body").html()+"<tr><td class='dt-center'><input type='checkbox' class='big-checkbox' data-checkbox-id='" + omics_data['table'][x][1] + "' checked></td><td>" + x + "</td><td>" + omics_data['table'][x][0] + "</td></tr>")
             }
 
             // For each gene probe ID
             for (y of Object.keys(omics_data['data'][x])) {
                 log2fc = parseFloat(omics_data['data'][x][y][omics_data['target_name_to_id']['log2FoldChange']]);
-                avgexpress = Math.log2(parseFloat(omics_data['data'][x][y][omics_data['target_name_to_id']['baseMean']]));
+                // avgexpress = Math.log2(parseFloat(omics_data['data'][x][y][omics_data['target_name_to_id']['baseMean']]));
+                baseMean = parseFloat(omics_data['data'][x][y][omics_data['target_name_to_id']['baseMean']])
                 pvalue = parseFloat(omics_data['data'][x][y][omics_data['target_name_to_id']['pvalue']]);
                 neglog10pvalue = -Math.log10(pvalue);
                 stat = parseFloat(omics_data['data'][x][y][omics_data['target_name_to_id']['stat']]);
@@ -214,13 +215,13 @@ $(document).ready(function () {
                     // Threshold determination and point addition.
                 	if (check_over && (log2fc >= log2fc_threshold && pvalue <= pvalue_threshold)) {
                 		chartData[x]['volcano'].push([log2fc, neglog10pvalue, null, 'Probe ID: ' + y + '\n-Log10(pvalue): ' + neglog10pvalue.toFixed(3) + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3), null, null, '', null, null, '']);
-                		chartData[x]['ma'].push([avgexpress, log2fc, null, 'Probe ID: ' + y + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nAverage Expression: ' + avgexpress.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3), null, null, '', null, null, '']);
+                		chartData[x]['ma'].push([baseMean, log2fc, null, 'Probe ID: ' + y + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nBaseMean: ' + baseMean.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3), null, null, '', null, null, '']);
                 	} else if (check_under && (log2fc <= -log2fc_threshold && pvalue <= pvalue_threshold)) {
                 		chartData[x]['volcano'].push([log2fc, null, null, '', neglog10pvalue, null, 'Probe ID: ' + y + '\n-Log10(pvalue): ' + neglog10pvalue.toFixed(3) + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3), null, null, '']);
-                		chartData[x]['ma'].push([avgexpress, null, null, '', log2fc, null, 'Probe ID: ' + y + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nAverage Expression: ' + avgexpress.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3), null, null, '']);
+                		chartData[x]['ma'].push([baseMean, null, null, '', log2fc, null, 'Probe ID: ' + y + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nBaseMean: ' + baseMean.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3), null, null, '']);
                 	} else if (check_neither && !(log2fc >= log2fc_threshold && pvalue <= pvalue_threshold) && !(log2fc <= -log2fc_threshold && pvalue <= pvalue_threshold)) {
                 		chartData[x]['volcano'].push([log2fc, null, null, '', null, null, '', neglog10pvalue, null, 'Probe ID: ' + y + '\n-Log10(pvalue): ' + neglog10pvalue.toFixed(3) + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3)]);
-                		chartData[x]['ma'].push([avgexpress, null, null, '', null, null, '', log2fc, null, 'Probe ID: ' + y + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nAverage Expression: ' + avgexpress.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3)]);
+                		chartData[x]['ma'].push([baseMean, null, null, '', null, null, '', log2fc, null, 'Probe ID: ' + y + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nBaseMean: ' + baseMean.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3)]);
                 	}
                 }
             }
@@ -252,8 +253,9 @@ $(document).ready(function () {
         // $('#volcano-plots').append("<div class='row'>");
         // $('#ma-plots').append("<div class='row'>");
         for (const prop in chartData) {
-            volcano_chart_row.append("<div class='col-lg-6'><div id='volcano-" + prop.replace(/\s+/g, '') + "'></div></div>");
-            ma_chart_row.append("<div class='col-lg-6'><div id='ma-" + prop.replace(/\s+/g, '') + "'></div></div>");
+            console.log(omics_data['table'][prop][1])
+            volcano_chart_row.append("<div class='col-lg-6'><div id='volcano-" + omics_data['table'][prop][1] + "'></div></div>");
+            ma_chart_row.append("<div class='col-lg-6'><div id='ma-" + omics_data['table'][prop][1] + "'></div></div>");
         }
 
         $('#volcano-plots').html(volcano_chart_row);
@@ -263,8 +265,8 @@ $(document).ready(function () {
             volcanoData = google.visualization.arrayToDataTable(chartData[prop]['volcano']);
             maData = google.visualization.arrayToDataTable(chartData[prop]['ma']);
 
-            volcanoChart = new google.visualization.LineChart(document.getElementById('volcano-' + prop.replace(/\s+/g, '')));
-            maChart = new google.visualization.LineChart(document.getElementById('ma-' + prop.replace(/\s+/g, '')));
+            volcanoChart = new google.visualization.LineChart(document.getElementById('volcano-' + omics_data['table'][prop][1]));
+            maChart = new google.visualization.LineChart(document.getElementById('ma-' + omics_data['table'][prop][1]));
 
             volcanoOptions['title'] = prop
             maOptions['title'] = prop
@@ -341,7 +343,7 @@ $(document).ready(function () {
             position: 'none',
         },
         hAxis: {
-            title: 'Average Expression',
+            title: 'Base Mean',
             textStyle: {
                 bold: true
             },

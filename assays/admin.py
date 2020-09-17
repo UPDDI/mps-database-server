@@ -1360,7 +1360,7 @@ admin.site.register(SpeciesParameters, SpeciesParametersAdmin)
 
 class AssayOmicDataFileUploadAdmin(ImportExportModelAdmin):
     model = AssayOmicDataFileUpload
-    list_display = ('study', 'omic_data_file', 'description', 'study_assay', 'analysis_method', 'data_type',
+    list_display = ('description', 'study', 'omic_data_file', 'study_assay', 'analysis_method', 'data_type',
                     'group_1', 'group_2', 'time_1', 'time_2', 'location_1', 'location_2', 'name_reference')
     search_fields = ('description', )
 

@@ -6520,7 +6520,7 @@ def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, fi
     joint_name = "New/Changed File Preview"
     data_dicts['data'][joint_name] = {}
     data_dicts['file_id_to_name'][1] = joint_name
-    data_dicts['table'][joint_name] = 'Preview Chosen File'
+    data_dicts['table'][joint_name] = ['Preview Chosen File', omic_data_file_id]
     data_dicts['target_name_to_id'] = {}
 
     if data_type == 'log2fc':

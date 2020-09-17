@@ -44,9 +44,11 @@ $(document).ready(function () {
     let global_omic_upload_omic_file_format_deseq2_log2fc_headers = '"name", "baseMean", "log2FoldChange", "lfcSE", "stat", "pvalue", "padj"';
     let global_omic_upload_omic_file_format_deseq2_log2fc_tooltip = 'For DESeq2 Log2Fold change data, the header "log2FoldChange" must be in the first row. Other optional columns headers are: "baseMean", "lfcSE", "stat", "pvalue", "padj", and "gene reference" (or "name" or "gene").';
     $('#omic_file_format_deseq2_log2fc_tooltip').next().html($('#omic_file_format_deseq2_log2fc_tooltip').next().html() + make_escaped_tooltip(global_omic_upload_omic_file_format_deseq2_log2fc_tooltip));
-    let global_omic_upload_omic_file_format_normcounts_tooltip = 'Under Development - Normalized counts data files must have one header row labeled "Sample ID" with each column labeled with a sampled ID or an assay well plate ID. ';
+
+    let global_count_files = 'Counts data files must have one header row labeled "Sample ID" with each column labeled with a sample ID. The metadata file must have headers: Sample ID, Chip ID, Sample Location, Day, Hour, Minute, and Assay Well ID. Headers are required but only the Sample ID and Chip ID are required to be filled in. The Sample ID must match the Sample ID provided in the count data file. ';
+    let global_omic_upload_omic_file_format_normcounts_tooltip = 'Under Development - Two files required: 1) normalized counts and 2) sample metadata. ' + global_count_files;
     $('#omic_file_format_normcounts_tooltip').next().html($('#omic_file_format_normcounts_tooltip').next().html() + make_escaped_tooltip(global_omic_upload_omic_file_format_normcounts_tooltip));
-    let global_omic_upload_omic_file_format_rawcounts_tooltip = 'Under Development - Raw counts data files must have one header row labeled "Sample ID" with each column labeled with a sampled ID or an assay well plate ID. ';
+    let global_omic_upload_omic_file_format_rawcounts_tooltip = 'Under Development - Two files required: 1) raw counts and 2) sample metadata. ' + global_count_files;
     $('#omic_file_format_rawcounts_tooltip').next().html($('#omic_file_format_rawcounts_tooltip').next().html() + make_escaped_tooltip(global_omic_upload_omic_file_format_rawcounts_tooltip));
     let global_omic_anaylsis_method_tooltip = 'The method (i.e. data processing tool, pipeline, etc.) used to process data.';
     $('#omic_anaylsis_method_tooltip').next().html($('#omic_anaylsis_method_tooltip').next().html() + make_escaped_tooltip(global_omic_anaylsis_method_tooltip));
