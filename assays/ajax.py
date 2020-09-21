@@ -7243,7 +7243,7 @@ def get_filtered_omics_data_as_csv(get_params):
         target = data_point.analysis_target.name
         value = data_point.value
         if value is None:
-            value = ''
+            continue
         if name not in consolidated_targets:
             datafile = data_point.omic_data_file
             assay = str(datafile.study_assay)
@@ -7292,6 +7292,8 @@ def get_filtered_omics_data_as_csv(get_params):
 
     # Add filtered data
     for name in consolidated_targets:
+        if "pvalue" not in consolidated_targets[name] or "log2FoldChange" not in consolidated_targets[name]:
+            continue
         expression = ''
 
         # PValue Filters
@@ -7337,7 +7339,10 @@ def get_filtered_omics_data_as_csv(get_params):
             consolidated_targets[name]['location_2']
         ]
         for target in unique_targets:
-            to_append.append(consolidated_targets[name][target])
+            if target in consolidated_targets[name]:
+                to_append.append(consolidated_targets[name][target])
+            else:
+                to_append.append('')
 
         data.append(to_append)
 
