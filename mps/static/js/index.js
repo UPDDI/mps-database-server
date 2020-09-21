@@ -39,4 +39,14 @@ $(function() {
         },
         minLength: 2
     });
+
+    // Hard coded at the moment
+    if (!localStorage.getItem('hide_banner')) {
+        $('#webinar_banner').show('slow');
+    }
+
+    $('#close_webinar_banner').click(function() {
+        $('#webinar_banner').hide('slow');
+        localStorage.setItem('hide_banner', 'TRUE');
+    });
 });
