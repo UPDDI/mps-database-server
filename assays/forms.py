@@ -1712,7 +1712,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                 new_compound.group_id = new_group_id
 
             if new_compounds:
-                AssayGroupCompound.objects.bulk_create(new_compounds)
+                AssayGroupCompound.objects.bulk_create(reversed(new_compounds))
 
             for new_cell in new_cells:
                 # We perform a little bit of sleight of hand here!
@@ -1725,7 +1725,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                 new_cell.group_id = new_group_id
 
             if new_cells:
-                AssayGroupCell.objects.bulk_create(new_cells)
+                AssayGroupCell.objects.bulk_create(reversed(new_cells))
 
             for new_setting in new_settings:
                 # We perform a little bit of sleight of hand here!
@@ -1738,7 +1738,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                 new_setting.group_id = new_group_id
 
             if new_settings:
-                AssayGroupSetting.objects.bulk_create(new_settings)
+                AssayGroupSetting.objects.bulk_create(reversed(new_settings))
 
             # Perform deletions
             if deleted_items:

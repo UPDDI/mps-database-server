@@ -1894,50 +1894,48 @@ class AssayStudy(FlaggableModel):
     # TODO VERY INEFFICIENT, BUT SHOULD WORK
     def get_indexing_information(self):
         """Exceedingly inefficient way to add some data for indexing studies"""
-        matrix_items = AssayMatrixItem.objects.filter(matrix__study_id=self.id).prefetch_related(
-            'matrix',
-            'assaysetupsetting_set__setting',
-            'assaysetupsetting_set__addition_location',
-            'assaysetupsetting_set__unit',
-            'assaysetupcell_set__cell_sample__cell_subtype',
-            'assaysetupcell_set__cell_sample__cell_type__organ',
-            'assaysetupcell_set__cell_sample__supplier',
-            'assaysetupcell_set__density_unit',
-            'assaysetupcell_set__addition_location',
-            'assaysetupcompound_set__compound_instance__compound',
-            'assaysetupcompound_set__concentration_unit',
-            'assaysetupcompound_set__addition_location',
+        groups = AssayGroup.objects.filter(study_id=self.id).prefetch_related(
+            'organ_model',
+            'assaygroupsetting_set__setting',
+            'assaygroupsetting_set__addition_location',
+            'assaygroupsetting_set__unit',
+            'assaygroupcell_set__cell_sample__cell_subtype',
+            'assaygroupcell_set__cell_sample__cell_type__organ',
+            'assaygroupcell_set__cell_sample__supplier',
+            'assaygroupcell_set__density_unit',
+            'assaygroupcell_set__addition_location',
+            'assaygroupcell_set__biosensor',
+            'assaygroupcompound_set__compound_instance__compound',
+            'assaygroupcompound_set__concentration_unit',
+            'assaygroupcompound_set__addition_location',
         )
 
         current_study = {}
 
-        for matrix_item in matrix_items:
-            organ_model_name = ''
+        for group in groups:
+            organ_model_name = group.organ_model.name
 
-            if matrix_item.organ_model:
-                organ_model_name = matrix_item.organ_model.name
-
-            current_study.setdefault('items', {}).update({
-                matrix_item.name: True
-            })
+            # current_study.setdefault('items', {}).update({
+            #     group.name: True
+            # })
             current_study.setdefault('organ_models', {}).update({
                 organ_model_name: True
             })
-            current_study.setdefault('devices', {}).update({
-                matrix_item.device.name: True
-            })
+            # current_study.setdefault('devices', {}).update({
+            #     group.device.name: True
+            # })
 
-            for compound in matrix_item.assaysetupcompound_set.all():
+            for compound in group.assaygroupcompound_set.all():
                 current_study.setdefault('compounds', {}).update({
                     str(compound): True
                 })
 
-            for cell in matrix_item.assaysetupcell_set.all():
+            for cell in group.assaygroupcell_set.all():
                 current_study.setdefault('cells', {}).update({
                     str(cell): True
                 })
 
-            for setting in matrix_item.assaysetupsetting_set.all():
+            for setting in group.assaygroupsetting_set.all():
                 current_study.setdefault('settings', {}).update({
                     str(setting): True
                 })
@@ -2875,7 +2873,7 @@ class AssayGroup(models.Model):
         dic = {
             # TODO May need to prefetch device (potential n+1)
             # 'Device': self.device.name,
-            'Device': 'TODO',
+            'Device': self.organ_model.device.name,
             'MPS User Group': self.study.group.name,
             'Study': self.get_hyperlinked_study(),
             'Matrix': 'TO BE REVISED TODO',

@@ -12,4 +12,4 @@
     {{ assay.unit }}
 {% endfor %}
 {# Extra info from items #}
-{# {{ object.get_indexing_information }} #}
+{{ object.get_indexing_information }}

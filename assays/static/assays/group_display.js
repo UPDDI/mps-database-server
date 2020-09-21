@@ -143,7 +143,10 @@ $(document).ready(function () {
             }
             else if (window.GROUPS.convert_to_numeric_view[field_name]) {
                 var parsed_as_float = parseFloat(field_value);
-                if (field_name !== 'value' || parsed_as_float) {
+                if (parsed_as_float && parsed_as_float < 1e-3) {
+                    return parsed_as_float.toExponential();
+                }
+                else if (field_name !== 'value' || parsed_as_float) {
                     return parsed_as_float.toLocaleString();
                 }
                 else if (field_name === 'value') {

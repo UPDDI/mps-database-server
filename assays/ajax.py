@@ -1865,7 +1865,7 @@ def fetch_assay_study_reproducibility(request):
     treatment_group_representatives, setup_to_treatment_group, treatment_header_keys = get_item_groups(
         None,
         criteria,
-        matrix_items
+        groups=groups,
     )
 
     repro_data = []
@@ -3372,7 +3372,7 @@ def fetch_data_points_from_filters(request):
 
         # TODO: BAD, CONTRIVED
         groups = AssayGroup.objects.filter(
-            study_id=study.id
+            study_id__in=studies,
         )
 
         # Not particularly DRY
@@ -3440,6 +3440,7 @@ def fetch_data_points_from_filters(request):
             data = get_inter_study_reproducibility(
                 data_points,
                 matrix_items,
+                groups,
                 inter_level,
                 max_interpolation_size,
                 initial_norm,
@@ -3479,7 +3480,7 @@ def fetch_data_points_from_study_set(request):
 
         # TODO: BAD, CONTRIVED
         groups = AssayGroup.objects.filter(
-            study_id=study.id
+            study_id__in=studies
         )
 
         # Not particularly DRY
@@ -3548,6 +3549,7 @@ def fetch_data_points_from_study_set(request):
             data = get_inter_study_reproducibility(
                 data_points,
                 matrix_items,
+                groups,
                 inter_level,
                 max_interpolation_size,
                 initial_norm,
@@ -3568,6 +3570,7 @@ def fetch_data_points_from_study_set(request):
 def get_inter_study_reproducibility(
         data_points,
         matrix_items,
+        groups,
         inter_level,
         max_interpolation_size,
         initial_norm,
@@ -3578,7 +3581,7 @@ def get_inter_study_reproducibility(
     treatment_group_representatives, setup_to_treatment_group, treatment_header_keys = get_item_groups(
         None,
         criteria,
-        matrix_items
+        groups=groups,
     )
 
     matrix_item_id_to_tooltip_string = {
@@ -4382,7 +4385,7 @@ def fetch_power_analysis_group_table(request):
     treatment_group_representatives, setup_to_treatment_group, treatment_header_keys = get_item_groups(
         None,
         criteria,
-        matrix_items
+        groups=groups,
     )
 
     data_point_treatment_groups = {}
