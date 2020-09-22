@@ -10,7 +10,8 @@ from resources.models import (
     ResourceSubtype,
     Definition,
     ComingSoonEntry,
-    WhatIsNewEntry
+    WhatIsNewEntry,
+    FeatureSourceXref,
 )
 from resources.forms import (
     ResourceForm,
@@ -139,10 +140,15 @@ class DefinitionAdmin(LockableAdmin):
     list_per_page = 300
     list_display = (
         'term',
+        'glossary_display',
+        'help_display',
         'definition',
-        'show_url',
+        'is_url',
+        'help_category',
+        'help_order',
+        'is_anchor',
+        'modified_on',
         'created_on',
-        'modified_on'
     )
     search_fields = ['term', 'definition', 'reference']
 
@@ -151,8 +157,13 @@ class DefinitionAdmin(LockableAdmin):
             None, {
                 'fields': (
                     'term',
+                    'glossary_display',
+                    'help_display',
                     'definition',
                     'reference',
+                    'help_category',
+                    'help_order',
+                    'help_reference',
                 )
             }
         ),
@@ -191,3 +202,11 @@ class WhatIsNewEntryAdmin(LockableAdmin):
     list_editable = ['contents', 'short_contents']
 
 admin.site.register(WhatIsNewEntry, WhatIsNewEntryAdmin)
+
+
+class FeatureSourceXrefAdmin(LockableAdmin):
+    model = FeatureSourceXref
+    list_display = ['database_feature', 'data_source']
+    search_fields = ['database_feature', 'data_source', ]
+
+admin.site.register(FeatureSourceXref, FeatureSourceXrefAdmin)

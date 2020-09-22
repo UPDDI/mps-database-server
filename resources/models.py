@@ -55,9 +55,29 @@ class Resource(LockableModel):
 
 class Definition(LockableModel):
     """A Definition is a definition for the glossary found in Help"""
+    class Meta(object):
+        verbose_name = 'Help - Glossary'
+        verbose_name_plural = 'Help - Glossary'
     term = models.CharField(max_length=60, unique=True)
     definition = models.CharField(max_length=2500, default='')
     reference = models.URLField(default='', blank=True)
+    help_category = models.CharField(max_length=30, default='', blank=True,
+        help_text=(
+            'Used in generating help tables. Options are feature, source, component-cell, component-assay, component-compound, component-model.'
+        ),)
+    help_order = models.IntegerField(default=0, blank=True,
+        help_text=(
+            'Used in generating help tables. Order is way they will be listed in their respective tables. Make sure they are unique within a help_category.'
+        ),)
+    help_reference = models.URLField(default='', blank=True)
+    glossary_display = models.BooleanField(default=True,
+       help_text=(
+           'Check to display in the glossary.'
+       ), )
+    help_display = models.BooleanField(default=True,
+       help_text=(
+           'Check to display in tables and other locations in the help page (does not apply to the glossary).'
+       ), )
 
     def __str__(self):
         return self.term
@@ -74,6 +94,28 @@ class Definition(LockableModel):
     show_url.short_description = "Ref URL"
     show_url.allow_tags = True
 
+    def show_anchor(self):
+        if self.help_reference:
+            return format_html(
+                "<a target='_blank' href='{url}'><span title='{url}' class='glyphicon glyphicon-link'></span></a>", url=self.help_reference
+            )
+        else:
+            return ""
+
+    show_anchor.short_description = "Ref Anchor"
+    show_anchor.allow_tags = True
+
+    def is_url(self):
+        if len(self.reference) > 2:
+            return "Y"
+        else:
+            return "n"
+
+    def is_anchor(self):
+        if len(self.help_reference) > 2:
+            return "Y"
+        else:
+            return "n"
 
 class ComingSoonEntry(LockableModel):
     """An entry for the About Page's "Coming Soon" Section"""
@@ -92,3 +134,25 @@ class WhatIsNewEntry(LockableModel):
 
     contents = models.TextField(default='')
     short_contents = models.TextField(default='')
+
+
+class FeatureSourceXref(LockableModel):
+    """Database Features - for table in Help"""
+    class Meta(object):
+        verbose_name = 'Help - Database Features & Sources'
+        verbose_name_plural = 'Help - Database Features & Sources'
+
+    database_feature = models.ForeignKey(
+        Definition,
+        default=1,
+        related_name='database_feature',
+        on_delete=models.CASCADE,
+        limit_choices_to={'help_category': 'feature'},
+    )
+    data_source = models.ForeignKey(
+        Definition,
+        default=1,
+        related_name='data_source',
+        on_delete=models.CASCADE,
+        limit_choices_to={'help_category': 'source'},
+    )
