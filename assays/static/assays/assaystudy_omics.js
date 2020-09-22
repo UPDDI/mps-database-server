@@ -1,3 +1,8 @@
+//GLOBAL-SCOPE
+window.OMICS = {
+    chart_visiblity: null
+};
+
 $(document).ready(function () {
     // Load core chart package
     google.charts.load('current', {'packages': ['corechart']});
@@ -61,7 +66,7 @@ $(document).ready(function () {
         } else {
             visible_charts[$(this).data("checkbox-id")] = false;
         }
-        console.log(visible_charts)
+        window.OMICS.chart_visiblity = visible_charts
     });
 
     $("#download-filtered-data").click(function(e) {

@@ -260,6 +260,19 @@ $(document).ready(function () {
         $('#volcano-plots').html(volcano_chart_row);
         $('#ma-plots').append(ma_chart_row);
 
+        var hide_ma = $("#ma-plots").css("display") == "none";
+        $("#volcano-plots").css("display", "block");
+        $("#ma-plots").css("display", "block");
+
+        if (called_from === "analysis" && window.OMICS.chart_visiblity !== null) {
+            for (chart in window.OMICS.chart_visiblity) {
+                if (window.OMICS.chart_visiblity[chart] == false) {
+                    $("#ma-"+chart).parent().css("display", "block");
+                    $("#volcano-"+chart).parent().css("display", "block");
+                }
+            }
+        }
+
         for (const prop in chartData) {
             volcanoData = google.visualization.arrayToDataTable(chartData[prop]['volcano']);
             maData = google.visualization.arrayToDataTable(chartData[prop]['ma']);
@@ -272,6 +285,25 @@ $(document).ready(function () {
 
             volcanoChart.draw(volcanoData, volcanoOptions);
             maChart.draw(maData, maOptions);
+        }
+
+        if (firstTime) {
+            $("#ma-plots").css("display", "none");
+        } else {
+            if (hide_ma) {
+                $("#ma-plots").css("display", "none");
+            } else {
+                $("#volcano-plots").css("display", "none");
+            }
+        }
+
+        if (called_from === "analysis" && window.OMICS.chart_visiblity !== null) {
+            for (chart in window.OMICS.chart_visiblity) {
+                if (window.OMICS.chart_visiblity[chart] == false) {
+                    $("#ma-"+chart).parent().css("display", "none");
+                    $("#volcano-"+chart).parent().css("display", "none");
+                }
+            }
         }
 
         // Stop spinner

@@ -7253,15 +7253,21 @@ def get_filtered_omics_data_as_csv(get_params):
             group_1 = datafile.group_1.name
             group_2 = datafile.group_2.name
             time_1 = datafile.time_1
+            time_1_dict = get_split_times(time_1)
             time_2 = datafile.time_2
+            time_2_dict = get_split_times(time_2)
             location_1 = datafile.location_1
             location_2 = datafile.location_2
             consolidated_targets[name] = {
                 "assay": assay,
                 "group_1": group_1,
                 "group_2": group_2,
-                "time_1": time_1,
-                "time_2": time_2,
+                "time_1_days": time_1_dict['day'],
+                "time_1_hours": time_1_dict['hour'],
+                "time_1_minutes": time_1_dict['minute'],
+                "time_2_days": time_2_dict['day'],
+                "time_2_hours": time_2_dict['hour'],
+                "time_2_minutes": time_2_dict['minute'],
                 "location_1": location_1,
                 "location_2": location_2
             }
@@ -7276,11 +7282,15 @@ def get_filtered_omics_data_as_csv(get_params):
             "Expression",
             "Assay",
             "Group 1",
-            "Group 2",
-            "Time 1",
-            "Time 2",
             "Location 1",
-            "Location 2"
+            "Time 1 (Days)",
+            "Time 1 (Hours)",
+            "Time 1 (Minutes)",
+            "Group 2",
+            "Location 2",
+            "Time 2 (Days)",
+            "Time 2 (Hours)",
+            "Time 2 (Minutes)"
         ]
     )
 
@@ -7335,11 +7345,15 @@ def get_filtered_omics_data_as_csv(get_params):
             expression,
             consolidated_targets[name]['assay'],
             consolidated_targets[name]['group_1'],
-            consolidated_targets[name]['group_2'],
-            consolidated_targets[name]['time_1'],
-            consolidated_targets[name]['time_2'],
             consolidated_targets[name]['location_1'],
-            consolidated_targets[name]['location_2']
+            consolidated_targets[name]['time_1_days'],
+            consolidated_targets[name]['time_1_hours'],
+            consolidated_targets[name]['time_1_minutes'],
+            consolidated_targets[name]['group_2'],
+            consolidated_targets[name]['location_2'],
+            consolidated_targets[name]['time_2_days'],
+            consolidated_targets[name]['time_2_hours'],
+            consolidated_targets[name]['time_2_minutes']
         ]
         for target in unique_targets:
             if target in consolidated_targets[name]:
