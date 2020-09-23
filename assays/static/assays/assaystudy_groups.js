@@ -114,7 +114,18 @@ $(document).ready(function () {
     // TRICKY: We need to paginate the groups, otherwise the DOM will detonate
     let current_page = 0;
     let number_of_pages = 1;
-    const display_length = 10;
+
+    const group_table_display_length = $('#id_group_table_length');
+    let display_length = parseInt(group_table_display_length.val());
+
+    // PUT TRIGGER IN A BETTER SPOT
+    // NOTE THAT THIS IS NOT TRIGGERED INITIALLY (DO NOT WANT TO REDRAW SUPERFLUOUSLY)
+    group_table_display_length.change(function() {
+        display_length = parseInt(group_table_display_length.val());
+        // GO BACK TO THE FIRST PAGE
+        rebuild_table(false, 0);
+    });
+
     // Selector clarity
     const pagination_previous_button_selector = $('.group-table-previous');
     const pagination_next_button_selector = $('.group-table-next');
@@ -123,7 +134,7 @@ $(document).ready(function () {
     // TODO TODO TODO: WE NEED TO GENERATE THE PAGINATOR(S) BEFORE THE TABLE
     // TODO TODO TODO: Obviously we need to know the number of pages etc.
     function revise_paginator_text() {
-        number_of_pages = Math.ceil(series_data.length / 10);
+        number_of_pages = Math.ceil(series_data.length / display_length);
 
         if (number_of_pages === 0) {
             number_of_pages = 1;
@@ -533,7 +544,8 @@ $(document).ready(function () {
 
         // ADD TO EXISTING ROWS AS EMPTY
         study_setup_body.find('tr').each(function(row_index) {
-            $(this).find('.' + prefix + '_start').last().after('<td class="' + prefix + '_start' + '">' + create_edit_button(prefix, row_index, column_index) + '</td>', false);
+            let offset_row_index = row_index + start_index;
+            $(this).find('.' + prefix + '_start').last().after('<td class="' + prefix + '_start' + '">' + create_edit_button(prefix, offset_row_index, column_index) + '</td>', false);
         });
 
         // Increment columns for this prefix
@@ -852,7 +864,7 @@ $(document).ready(function () {
         // TODO LAZY
 
         // SKIP TO LAST PAGE
-        let new_current_page = Math.ceil(series_data.length / 10) - 1;
+        let new_current_page = Math.ceil(series_data.length / display_length) - 1;
 
         rebuild_table(true, new_current_page);
     });
@@ -959,7 +971,7 @@ $(document).ready(function () {
         // change_matrix_visibility();
 
         // SKIP TO LAST PAGE
-        let new_current_page = Math.ceil(series_data.length / 10) - 1;
+        let new_current_page = Math.ceil(series_data.length / display_length) - 1;
 
         // TODO LAZY
         rebuild_table(true, new_current_page);
@@ -1137,6 +1149,9 @@ $(document).ready(function () {
         get_device_type(is_new);
     }
 
+    // Crude, make the start index file scope
+    let start_index = 0;
+
     function rebuild_table(data_change, new_current_page) {
         // GET RID OF ANYTHING IN THE TABLE
         study_setup_head.find('.new_column').remove();
@@ -1162,7 +1177,7 @@ $(document).ready(function () {
             // $.each(series_data, function(index, content) {
             //     spawn_row(content, false);
             // });
-            let start_index = current_page * display_length;
+            start_index = current_page * display_length;
             for (let index=0; index < display_length; index++) {
                 let row_index = index + start_index;
                 if (series_data[start_index + index]) {

@@ -1918,6 +1918,7 @@ class AssayDataFileUploadDetail(StudyGroupMixin, DetailView):
         return context
 
 
+# DEPRECATED REMOVE ASAP
 def get_cell_samples_for_selection(user, setups=None):
     """Returns the cell samples to be listed in setup views
 
@@ -2633,61 +2634,67 @@ class AssayDataFromFilters(TemplateView):
 
             accessible_studies = get_user_accessible_studies(self.request.user)
 
-            # Notice exclusion of missing organ model
-            matrix_items = AssayMatrixItem.objects.filter(
+            groups = AssayGroup.objects.filter(
                 study_id__in=accessible_studies
-            ).exclude(
-                organ_model_id=None
             ).prefetch_related(
                 'organ_model',
                 # 'assaysetupcompound_set__compound_instance',
                 # 'assaydatapoint_set__study_assay__target'
             )
 
+            # Notice exclusion of missing organ model
+            matrix_items = AssayMatrixItem.objects.filter(
+                group__in=groups
+            )
+
             if len(current_filters) and current_filters[0]:
                 organ_model_ids = [int(id) for id in current_filters[0].split(',') if id]
 
-                matrix_items = matrix_items.filter(
+                groups = groups.filter(
                     organ_model_id__in=organ_model_ids
                 )
             # Default to empty
             else:
-                matrix_items = AssayMatrixItem.objects.none()
+                groups = AssayGroup.objects.none()
 
             accessible_studies = accessible_studies.filter(
-                id__in=list(matrix_items.values_list('study_id', flat=True))
+                id__in=list(groups.values_list('study_id', flat=True))
             )
 
             matrix_items.prefetch_related(
-                'assaysetupcompound_set__compound_instance',
+                # 'assaysetupcompound_set__compound_instance',
                 'assaydatapoint_set__study_assay__target'
+            )
+
+            groups.prefetch_related(
+                'assaygroupcompound_set__compound_instance'
             )
 
             if len(current_filters) > 1 and current_filters[1]:
                 group_ids = [int(id) for id in current_filters[1].split(',') if id]
                 accessible_studies = accessible_studies.filter(group_id__in=group_ids)
 
-                matrix_items = matrix_items.filter(
+                groups = groups.filter(
                     study_id__in=accessible_studies
                 )
             else:
-                matrix_items = AssayMatrixItem.objects.none()
+                groups = AssayGroup.objects.none()
 
             if len(current_filters) > 2 and current_filters[2]:
                 compound_ids = [int(id) for id in current_filters[2].split(',') if id]
 
                 # See whether to include no compounds
                 if 0 in compound_ids:
-                    matrix_items = matrix_items.filter(
-                        assaysetupcompound__compound_instance__compound_id__in=compound_ids
-                    ) | matrix_items.filter(assaysetupcompound__isnull=True)
+                    groups = groups.filter(
+                        assaygroupcompound__compound_instance__compound_id__in=compound_ids
+                    ) | groups.filter(assaygroupcompound__isnull=True)
                 else:
-                    matrix_items = matrix_items.filter(
-                        assaysetupcompound__compound_instance__compound_id__in=compound_ids
+                    groups = groups.filter(
+                        assaygroupcompound__compound_instance__compound_id__in=compound_ids
                     )
 
             else:
-                matrix_items = AssayMatrixItem.objects.none()
+                groups = AssayGroup.objects.none()
 
             if len(current_filters) > 3 and current_filters[3]:
                 target_ids = [int(id) for id in current_filters[3].split(',') if id]
@@ -2702,6 +2709,8 @@ class AssayDataFromFilters(TemplateView):
             else:
                 matrix_items = AssayMatrixItem.objects.none()
 
+            matrix_items = matrix_items.filter(group__in=groups)
+
             pre_filter.update({
                 'matrix_item_id__in': matrix_items.filter(assaydatapoint__isnull=False).distinct()
             })
@@ -2712,14 +2721,34 @@ class AssayDataFromFilters(TemplateView):
             ).prefetch_related(
                 # TODO
                 'study__group__microphysiologycenter_set',
-                'matrix_item__assaysetupsetting_set__setting',
-                'matrix_item__assaysetupcell_set__cell_sample',
-                'matrix_item__assaysetupcell_set__density_unit',
-                'matrix_item__assaysetupcell_set__cell_sample__cell_type__organ',
-                'matrix_item__assaysetupcompound_set__compound_instance__compound',
-                'matrix_item__assaysetupcompound_set__concentration_unit',
-                'matrix_item__device',
-                'matrix_item__organ_model',
+
+                # Is going through the matrix item too expensive here?
+                'matrix_item__group__assaygroupcompound_set__compound_instance__compound',
+                'matrix_item__group__assaygroupcompound_set__compound_instance__supplier',
+                'matrix_item__group__assaygroupcompound_set__concentration_unit',
+                'matrix_item__group__assaygroupcompound_set__addition_location',
+                'matrix_item__group__assaygroupcell_set__cell_sample__cell_type__organ',
+                'matrix_item__group__assaygroupcell_set__cell_sample__cell_subtype',
+                'matrix_item__group__assaygroupcell_set__cell_sample__supplier',
+                'matrix_item__group__assaygroupcell_set__addition_location',
+                'matrix_item__group__assaygroupcell_set__density_unit',
+                'matrix_item__group__assaygroupsetting_set__setting',
+                'matrix_item__group__assaygroupsetting_set__unit',
+                'matrix_item__group__assaygroupsetting_set__addition_location',
+
+                # Old!
+                # 'matrix_item__assaysetupsetting_set__setting',
+                # 'matrix_item__assaysetupcell_set__cell_sample',
+                # 'matrix_item__assaysetupcell_set__density_unit',
+                # 'matrix_item__assaysetupcell_set__cell_sample__cell_type__organ',
+                # 'matrix_item__assaysetupcompound_set__compound_instance__compound',
+                # 'matrix_item__assaysetupcompound_set__concentration_unit',
+                # We ought to rely on the group's device and organ model, to be sure?
+                # 'matrix_item__device',
+                # 'matrix_item__organ_model',
+
+                'matrix_item__group__organ_model__device',
+
                 'matrix_item__matrix',
                 'study_assay__target',
                 'study_assay__method',
@@ -3177,15 +3206,34 @@ class AssayStudySetData(DetailView):
             ).prefetch_related(
                 # TODO
                 'study__group__microphysiologycenter_set',
-                'matrix_item__assaysetupsetting_set__setting',
-                'matrix_item__assaysetupcell_set__cell_sample',
-                'matrix_item__assaysetupcell_set__density_unit',
-                'matrix_item__assaysetupcell_set__cell_sample__cell_type__organ',
-                'matrix_item__assaysetupcompound_set__compound_instance__compound',
-                'matrix_item__assaysetupcompound_set__concentration_unit',
-                'matrix_item__device',
-                'matrix_item__organ_model',
-                'matrix_item__matrix',
+
+                # 'matrix_item__assaysetupsetting_set__setting',
+                # 'matrix_item__assaysetupcell_set__cell_sample',
+                # 'matrix_item__assaysetupcell_set__density_unit',
+                # 'matrix_item__assaysetupcell_set__cell_sample__cell_type__organ',
+                # 'matrix_item__assaysetupcompound_set__compound_instance__compound',
+                # 'matrix_item__assaysetupcompound_set__concentration_unit',
+                # 'matrix_item__device',
+                # 'matrix_item__organ_model',
+                # 'matrix_item__matrix',
+
+                # Is going through the matrix item too expensive here?
+                'matrix_item__group__assaygroupcompound_set__compound_instance__compound',
+                'matrix_item__group__assaygroupcompound_set__compound_instance__supplier',
+                'matrix_item__group__assaygroupcompound_set__concentration_unit',
+                'matrix_item__group__assaygroupcompound_set__addition_location',
+                'matrix_item__group__assaygroupcell_set__cell_sample__cell_type__organ',
+                'matrix_item__group__assaygroupcell_set__cell_sample__cell_subtype',
+                'matrix_item__group__assaygroupcell_set__cell_sample__supplier',
+                'matrix_item__group__assaygroupcell_set__addition_location',
+                'matrix_item__group__assaygroupcell_set__density_unit',
+                'matrix_item__group__assaygroupsetting_set__setting',
+                'matrix_item__group__assaygroupsetting_set__unit',
+                'matrix_item__group__assaygroupsetting_set__addition_location',
+
+                # Replace with group device and organ_model
+                'matrix_item__group__organ_model__device',
+
                 'study_assay__target',
                 'study_assay__method',
                 'study_assay__unit',

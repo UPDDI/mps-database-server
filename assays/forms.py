@@ -923,7 +923,8 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
             number_of_items = 0
 
             for setup_group in all_setup_data:
-                number_of_items += int(setup_group.get('number_of_items', '0'))
+                if setup_group.get('number_of_items'):
+                    number_of_items += int(setup_group.get('number_of_items', '0'))
 
             # Alternative for one row per group
             # # Find max for number of columns
@@ -1012,7 +1013,10 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
             # For now, chips are are all in one row
             for setup_row, setup_group in enumerate(all_setup_data):
-                items_in_group = int(setup_group.pop('number_of_items', '0'))
+                if setup_group.get('number_of_items') is None or setup_group.get('number_of_items') is '':
+                    continue
+
+                items_in_group = int(setup_group.get('number_of_items', '0'))
                 test_type = setup_group.get('test_type', '')
 
                 # To break out to prevent repeat errors

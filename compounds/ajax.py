@@ -236,7 +236,7 @@ def fetch_compound_report(request):
         excluded=False,
         study__use_in_calculations=True,
         study_id__in=studies,
-        matrix_item__assaysetupcompound__isnull=True
+        matrix_item__group__assaygroupcompound__isnull=True
     ).prefetch_related(
         # TODO
         'study',

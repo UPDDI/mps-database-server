@@ -50,8 +50,25 @@
     {% include 'assays/group_visibility_section.html' %}
 
     {# Set of buttons for adding cells, compounds, settings etc. #}
-    <div class="padded-bottom">
+    <div class="row padded-bottom">
+    <div class="col-sm-6">
     <a role="button" class="btn btn-success" id="add_series_button"><span class="glyphicon glyphicon-plus-sign"></span>Add Group</a>
+    </div>
+
+    <div class="col-sm-6">
+    <div style="float: right;">
+        <label>
+            Show
+            <select id="id_group_table_length" name="group_table_length" aria-controls="difference_table" class="input-sm no-selectize">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            entries
+        </label>
+    </div>
+    </div>
     </div>
 
     <div class="row padded-bottom">
