@@ -79,6 +79,3 @@ class DefinitionForm(forms.ModelForm):
             attrs={'rows': number_cats+2, 'cols': 75, 'readonly': 'readonly'}
         )
     )
-#     plate-label
-# map-label
-# , 'class': 'plate-map-special-well'

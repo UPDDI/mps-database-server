@@ -62,6 +62,17 @@ help_category_choices = [
     ('component-model', 'component-model')
 ]
 
+
+help_category_choices = [
+    ('feature', 'feature'),
+    ('source', 'source'),
+    ('component-cell', 'component-cell'),
+    ('component-assay', 'component-assay'),
+    ('component-compound', 'component-compound'),
+    ('component-model', 'component-model')
+]
+
+
 class Definition(LockableModel):
     """A Definition is a definition for the glossary found in Help"""
     class Meta(object):
@@ -87,6 +98,12 @@ class Definition(LockableModel):
        help_text=(
            'Check to display in tables and other locations in the help page (does not apply to the glossary).'
        ), )
+    data_sources = models.ManyToManyField(
+        to='self',
+        blank=True,
+        limit_choices_to={'help_category': 'source'},
+        related_name='data_sources',
+    )
 
     # def __str__(self):
     #     return self.term
@@ -132,6 +149,14 @@ class Definition(LockableModel):
             return False
     is_anchor.boolean = True
 
+    def is_data_sources(self):
+        if self.data_sources is None:
+            return True
+        else:
+            return False
+    is_data_sources.boolean = True
+
+
 class ComingSoonEntry(LockableModel):
     """An entry for the About Page's "Coming Soon" Section"""
     class Meta(object):
@@ -149,26 +174,3 @@ class WhatIsNewEntry(LockableModel):
 
     contents = models.TextField(default='')
     short_contents = models.TextField(default='')
-
-
-class FeatureSourceXref(LockableModel):
-    """Database Features - for table in Help"""
-    class Meta(object):
-        verbose_name = 'Help - Database Features & Sources'
-        verbose_name_plural = 'Help - Database Features & Sources'
-        unique_together = [('database_feature', 'data_source')]
-
-    database_feature = models.ForeignKey(
-        Definition,
-        default=1,
-        related_name='database_feature',
-        on_delete=models.CASCADE,
-        limit_choices_to={'help_category': 'feature'},
-    )
-    data_source = models.ForeignKey(
-        Definition,
-        default=1,
-        related_name='data_source',
-        on_delete=models.CASCADE,
-        limit_choices_to={'help_category': 'source'},
-    )
