@@ -63,16 +63,6 @@ help_category_choices = [
 ]
 
 
-help_category_choices = [
-    ('feature', 'feature'),
-    ('source', 'source'),
-    ('component-cell', 'component-cell'),
-    ('component-assay', 'component-assay'),
-    ('component-compound', 'component-compound'),
-    ('component-model', 'component-model')
-]
-
-
 class Definition(LockableModel):
     """A Definition is a definition for the glossary found in Help"""
     class Meta(object):

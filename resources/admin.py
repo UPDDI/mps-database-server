@@ -152,6 +152,8 @@ class DefinitionAdmin(LockableAdmin):
     )
     search_fields = ['term', 'definition', 'reference']
 
+    # HANDY m2m right side many to many admin boxes m2m right
+    filter_horizontal = ('data_sources',)
     fieldsets = (
         (
             None, {
@@ -163,7 +165,6 @@ class DefinitionAdmin(LockableAdmin):
                     'reference',
                     'help_category',
                     'data_sources',
-                    'order_numbers_already_assigned',
                     'help_order',
                     'help_reference',
                 )

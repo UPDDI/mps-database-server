@@ -35,7 +35,7 @@ class DefinitionForm(forms.ModelForm):
 
     class Meta(object):
         model = Definition
-        fields = ('order_numbers_already_assigned',)
+        exclude = ('',)
         widgets = {
             'term': forms.Textarea(attrs={'rows': 1, 'cols': 50}),
             'definition': forms.Textarea(attrs={'rows': 5, 'cols': 50}),
@@ -66,16 +66,13 @@ class DefinitionForm(forms.ModelForm):
                 this_list_string = ', '.join(map(str, value))
             except:
                 this_list_string = ''
-            if len(category_string) == 0:
-                category_string = category_string + 'Listed by Source (read only):\n\n' + key + ': ' + this_list_string
-            else:
-                category_string = category_string + '\n' + key + ': ' + this_list_string
+            category_string = category_string + '<br>' + key + ': ' + this_list_string
 
-        self.fields['order_numbers_already_assigned'].initial = category_string
+        self.fields['help_order'].help_text = 'Order controls order in Help page tables.'+category_string
 
-    number_cats = len(help_category_choices)
-    order_numbers_already_assigned = forms.CharField(
-        widget=forms.Textarea(
-            attrs={'rows': number_cats+2, 'cols': 75, 'readonly': 'readonly'}
-        )
-    )
+    # number_cats = len(help_category_choices)
+    # order_numbers_already_assigned = forms.CharField(
+    #     widget=forms.Textarea(
+    #         attrs={'rows': number_cats+2, 'cols': 75, 'readonly': 'readonly'}
+    #     )
+    # )

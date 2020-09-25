@@ -134,8 +134,7 @@ def custom_search(request):
 
 
 def mps_help(request):
-    glossary = Definition.objects.exclude(definition=''
-    ).prefetch_related('data_sources', )
+    glossary = Definition.objects.exclude(definition='')
 
     # get a subset of the features for the feature table
     feature = glossary.filter(help_category='feature').order_by('help_order')
@@ -170,8 +169,9 @@ def mps_help(request):
         'component_model': component_model,
         'component_compound': component_compound,
         'component_cell': component_cell,
-        'study_component_def': all_glossary.get('studycomponent_def', ''),
-        'study_component_ref': all_glossary.get('studycomponent_ref', ''),
+        'all_glossary': all_glossary,
+        # 'study_component_def': all_glossary.get('studycomponent_def', ''),
+        # 'study_component_ref': all_glossary.get('studycomponent_ref', ''),
     }
 
     return render(request, 'help.html', data)
