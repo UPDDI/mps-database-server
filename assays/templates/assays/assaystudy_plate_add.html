@@ -209,11 +209,32 @@
 
             <tr class="selection_dialog_naming_section">
                 <th>Incrementally Name Wells?</th>
-                <th>Initial Name</th>
+                <th>Initial Name / Prefix</th>
+                <th>Naming Method</th>
             </tr>
-            <tr class="selection_dialog_naming_section text-center">
-                <td><input id="id_use_incremental_well_naming" class="big-checkbox" type="checkbox"></td>
+            <tr class="selection_dialog_naming_section">
+                <td class="text-center"><input id="id_use_incremental_well_naming" class="big-checkbox" type="checkbox"></td>
                 <td><input id="id_incremental_well_naming" class="form-control"></td>
+                <td>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="well_naming_options" id="well_naming_options_incremental" value="incremental" checked>
+                            Increment Number
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="well_naming_options" id="well_naming_options_plate_0" value="plate_0">
+                            Default Plate Names (Append Zero)
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="well_naming_options" id="well_naming_options_plate" value="plate">
+                            Default Plate Names (Don't Append Zero)
+                        </label>
+                    </div>
+                <td>
             </tr>
 
             </table>
