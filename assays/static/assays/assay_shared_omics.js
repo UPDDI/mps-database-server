@@ -59,18 +59,20 @@ $(document).ready(function () {
             2: { color: $("#color-not-significant").val() }
         };
 
-        // Draw filtered plots
-        window.OMICS.draw_plots(
-            window.OMICS.omics_data,
-            false,
-            $("#slider-range-pvalue").slider("option", "values")[0],
-            $("#slider-range-pvalue").slider("option", "values")[1],
-            $("#slider-range-log2foldchange").slider("option", "values")[0],
-            $("#slider-range-log2foldchange").slider("option", "values")[1],
-            $("#slider-range-pvalue-neg").slider("option", "values")[0],
-            $("#slider-range-pvalue-neg").slider("option", "values")[1],
-            $("#slider-log2foldchange-abs").slider("option", "value")
-        );
+        setTimeout(function(){
+            // Draw filtered plots
+            window.OMICS.draw_plots(
+                window.OMICS.omics_data,
+                false,
+                $("#slider-range-pvalue").slider("option", "values")[0],
+                $("#slider-range-pvalue").slider("option", "values")[1],
+                $("#slider-range-log2foldchange").slider("option", "values")[0],
+                $("#slider-range-log2foldchange").slider("option", "values")[1],
+                $("#slider-range-pvalue-neg").slider("option", "values")[0],
+                $("#slider-range-pvalue-neg").slider("option", "values")[1],
+                $("#slider-log2foldchange-abs").slider("option", "value")
+            );
+        }, 500);
     })
 
     function createSliders() {
@@ -214,14 +216,14 @@ $(document).ready(function () {
                 if (firstTime || ((pvalue_filter) && (l2fc_filter))) {
                     // Threshold determination and point addition.
                 	if (check_over && (log2fc >= log2fc_threshold && pvalue <= pvalue_threshold)) {
-                		chartData[x]['volcano'].push([log2fc, neglog10pvalue, null, 'Probe ID: ' + y + '\n-Log10(pvalue): ' + neglog10pvalue.toFixed(3) + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3), null, null, '', null, null, '']);
-                		chartData[x]['ma'].push([baseMean, log2fc, null, 'Probe ID: ' + y + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nBaseMean: ' + baseMean.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3), null, null, '', null, null, '']);
+                		chartData[x]['volcano'].push([log2fc, neglog10pvalue, null, 'Probe ID: ' + y + '\nP-Value: ' + pvalue.toFixed(3) + '\n-Log10(P-Value): ' + neglog10pvalue.toFixed(3) + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3), null, null, '', null, null, '']);
+                		chartData[x]['ma'].push([baseMean, log2fc, null, 'Probe ID: ' + y + '\nP-Value: ' + pvalue.toFixed(3) + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nBaseMean: ' + baseMean.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3), null, null, '', null, null, '']);
                 	} else if (check_under && (log2fc <= -log2fc_threshold && pvalue <= pvalue_threshold)) {
-                		chartData[x]['volcano'].push([log2fc, null, null, '', neglog10pvalue, null, 'Probe ID: ' + y + '\n-Log10(pvalue): ' + neglog10pvalue.toFixed(3) + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3), null, null, '']);
-                		chartData[x]['ma'].push([baseMean, null, null, '', log2fc, null, 'Probe ID: ' + y + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nBaseMean: ' + baseMean.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3), null, null, '']);
+                		chartData[x]['volcano'].push([log2fc, null, null, '', neglog10pvalue, null, 'Probe ID: ' + y + '\nP-Value: ' + pvalue.toFixed(3) + '\n-Log10(P-Value): ' + neglog10pvalue.toFixed(3) + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3), null, null, '']);
+                		chartData[x]['ma'].push([baseMean, null, null, '', log2fc, null, 'Probe ID: ' + y + '\nP-Value: ' + pvalue.toFixed(3) + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nBaseMean: ' + baseMean.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3), null, null, '']);
                 	} else if (check_neither && !(log2fc >= log2fc_threshold && pvalue <= pvalue_threshold) && !(log2fc <= -log2fc_threshold && pvalue <= pvalue_threshold)) {
-                		chartData[x]['volcano'].push([log2fc, null, null, '', null, null, '', neglog10pvalue, null, 'Probe ID: ' + y + '\n-Log10(pvalue): ' + neglog10pvalue.toFixed(3) + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3)]);
-                		chartData[x]['ma'].push([baseMean, null, null, '', null, null, '', log2fc, null, 'Probe ID: ' + y + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nBaseMean: ' + baseMean.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3)]);
+                		chartData[x]['volcano'].push([log2fc, null, null, '', null, null, '', neglog10pvalue, null, 'Probe ID: ' + y + '\nP-Value: ' + pvalue.toFixed(3) + '\n-Log10(P-Value): ' + neglog10pvalue.toFixed(3) + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3)]);
+                		chartData[x]['ma'].push([baseMean, null, null, '', null, null, '', log2fc, null, 'Probe ID: ' + y + '\nP-Value: ' + pvalue.toFixed(3) + '\nLog2(FoldChange): ' + log2fc.toFixed(3) + '\nBaseMean: ' + baseMean.toFixed(3) + '\nStat: ' + stat.toFixed(3) + '\nAdjusted P-Value: ' + padj.toFixed(3)]);
                 	}
                 }
             }
