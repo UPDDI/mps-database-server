@@ -1894,8 +1894,17 @@ class AssayDataFileUploadList(StudyViewerMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(AssayDataFileUploadList, self).get_context_data(**kwargs)
 
+        valid_files = []
+
+        for current_file in AssayDataFileUpload.objects.filter(
+            study=self.object
+        ):
+            if current_file.assaydatapoint_set.count() and current_file.assaydatapoint_set.count() != current_file.assaydatapoint_set.filter(replaced=True).count():
+                valid_files.append(current_file)
+
         context.update({
             'detail': True,
+            'valid_files': valid_files
         })
 
         return context
@@ -1905,6 +1914,7 @@ class AssayDataFileUploadDetail(StudyGroupMixin, DetailView):
     # Why not have the mixin look for DetailView?
     model = AssayDataFileUpload
     detail = True
+    no_update = True
 
     template_name = 'assays/assaydatafileupload_detail.html'
 

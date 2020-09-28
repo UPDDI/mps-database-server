@@ -2,8 +2,14 @@
 {% load staticfiles %}
 {% load humanize %}
 
+{% block extra_head %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+
 {% block load_js %}
     {# <script src="{% static "js/project_filter.js" %}"></script> #}
+    {# Just import study list rather than non-DRY! #}
+    <script src="{% static "assays/assaystudy_list.js" %}"></script>
     <script src="{% static "diseases/disease_models.js" %}"></script>
 {% endblock %}
 
@@ -104,7 +110,7 @@
             </h2>
         </legend>
 
-        {% include 'assays/study_list.html' %}
+        {% include 'assays/study_list.html' with studies=studies %}
     </div>
 
 

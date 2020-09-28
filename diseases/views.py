@@ -1,7 +1,7 @@
 from django.views.generic import ListView, DetailView  # , CreateView
 # from mps.mixins import SpecificGroupRequiredMixin
 from .models import Disease
-from assays.models import AssayDataPoint
+from assays.models import AssayDataPoint, AssayStudy
 from microdevices.models import OrganModel
 from drugtrials.models import FindingResult
 from assays.utils import get_user_accessible_studies
@@ -18,6 +18,11 @@ class DiseaseList(ListView):
 
     def get_queryset(self):
         queryset = Disease.objects.all()
+
+        user_accessible_studies_ids = list(get_user_accessible_studies(
+            self.request.user
+        ).values_list('id', flat=True))
+
         for disease in queryset:
             disease.trials = FindingResult.objects.filter(
                 drug_trial__disease=disease
@@ -26,15 +31,15 @@ class DiseaseList(ListView):
             # TODO TODO TODO MUST REVISE
             disease.models = OrganModel.objects.filter(disease=disease)
 
-            disease.studies = get_user_accessible_studies(
-                self.request.user
-            ).filter(
-                assaymatrixitem__organ_model_id__in=disease.models
-            ).distinct()
+            disease.studies = AssayStudy.objects.filter(
+                id__in=user_accessible_studies_ids,
+                assaygroup__organ_model__in=disease.models
+            ).distinct().values_list('id', flat=True)
 
             disease.datapoints = AssayDataPoint.objects.filter(
                 study_id__in=disease.studies
             ).count()
+
         return queryset
 
 

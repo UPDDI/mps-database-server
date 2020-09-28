@@ -16,7 +16,7 @@
     <li><a href="/assays/assaystudy/">Studies</a></li>
     <li><a href="{{ object.study.get_absolute_url }}">{{ object.study }}</a></li>
     <li class="active">
-        <em>{{ object }}</em>
+        <em>Group {{ object }}</em>
     </li>
 {% endblock %}
 
@@ -26,7 +26,7 @@
 
 {% block content %}
 
-    <h1><em>{{ object }}</em></h1>
+    <h1><em>Group {{ object }}</em></h1>
 
     <table class="table table-striped table-bordered table-nonfluid" style="background-color: #AAB3AB;">
         <tbody>

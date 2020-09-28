@@ -39,7 +39,7 @@
             </thead>
 
             <tbody>
-            {% for data_file in object.assaydatafileupload_set.all %}
+            {% for data_file in valid_files %}
                 <tr>
                     <td><a class="btn btn-primary" href="{{ data_file.get_absolute_url }}">View</a></td>
                     <td>{{ data_file }}</td>
