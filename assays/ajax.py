@@ -3314,7 +3314,7 @@ def fetch_data_points_from_filters(request):
         else:
             groups = AssayGroup.objects.none()
 
-        matrix_items = matrix_items.filter(group__in=groups)
+        matrix_items = matrix_items.filter(group__in=groups, study__in=accessible_studies)
 
         if current_filters.get('targets', []):
             target_ids = [int(id) for id in current_filters.get('targets', []) if id]
