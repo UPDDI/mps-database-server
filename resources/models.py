@@ -54,12 +54,15 @@ class Resource(LockableModel):
 
 
 help_category_choices = [
-    ('feature', 'feature'),
-    ('source', 'source'),
-    ('component-cell', 'component-cell'),
-    ('component-assay', 'component-assay'),
-    ('component-compound', 'component-compound'),
-    ('component-model', 'component-model')
+    ('feature', 'Database Feature'),
+    ('source', 'Reference Data Source'),
+    ('component-cell', 'Cell Component'),
+    ('component-assay', 'Assay Component'),
+    ('component-compound', 'Compound Component'),
+    ('component-model', 'Model Component'),
+    ('component-compound', 'Compound Component'),
+    ('permission', 'Permission Structure'),
+    ('organization-study', 'Study Organization')
 ]
 
 
@@ -95,11 +98,11 @@ class Definition(LockableModel):
         related_name='data_sources',
     )
 
-    # def __str__(self):
-    #     return self.term
-
     def __str__(self):
-        return '{0} {1}'.format(self.term, self.help_order)
+        return self.term
+
+    # def __str__(self):
+    #     return '{0} {1}'.format(self.term, self.help_order)
 
     @mark_safe
     def show_url(self):
@@ -139,12 +142,18 @@ class Definition(LockableModel):
             return False
     is_anchor.boolean = True
 
-    def is_data_sources(self):
-        if self.data_sources is None:
-            return True
-        else:
-            return False
-    is_data_sources.boolean = True
+    def count_data_sources(self):
+        # gets the queryset, good if want to make a list
+        # print("self.data_sources ", self.data_sources.all())
+        #     if self.data_sources.count() == 0:
+        #         return False
+        #     else:
+        #         return True
+        return self.data_sources.count()
+    # is_data_sources.boolean = True
+
+    def short_definition(self):
+        return self.definition[:350]+"...."
 
 
 class ComingSoonEntry(LockableModel):

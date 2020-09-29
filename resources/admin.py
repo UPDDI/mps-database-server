@@ -141,16 +141,17 @@ class DefinitionAdmin(LockableAdmin):
         'term',
         'glossary_display',
         'help_display',
-        'definition',
+        'short_definition',
         'is_url',
-        'help_category',
-        'is_data_sources',
-        'help_order',
         'is_anchor',
+        'help_category',
+        'count_data_sources',
+        'help_order',
         'modified_on',
         'created_on',
     )
-    search_fields = ['term', 'definition', 'reference']
+    list_editable = ('glossary_display', 'help_display', 'help_category', 'help_order')
+    search_fields = ['term', 'definition', 'reference', 'help_category']
 
     # HANDY m2m right side many to many admin boxes m2m right
     filter_horizontal = ('data_sources',)
@@ -163,10 +164,10 @@ class DefinitionAdmin(LockableAdmin):
                     'help_display',
                     'definition',
                     'reference',
+                    'help_reference',
                     'help_category',
                     'data_sources',
                     'help_order',
-                    'help_reference',
                 )
             }
         ),
