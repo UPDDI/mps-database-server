@@ -1,3 +1,5 @@
+{# No permissions required for public studies #}
+{% if not study.signed_off_by or study.restricted %}
 ==PERMISSION START==
 {# Add the data group #}
 {{ study.group.name }}
@@ -18,4 +20,5 @@
             {{ access_group.name }}
         {% endfor %}
     {% endif %}
+{% endif %}
 {% endif %}
