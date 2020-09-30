@@ -48,7 +48,13 @@
             {% for model in object_list %}
                 <tr>
                     <td><a class="btn btn-primary" href="{{ model.id }}">View</a></td>
-                    <td><a class="btn btn-primary" href="{{ model.id }}/update/">Edit</a></td>
+                    <td>
+                    {% if model.is_editable %}
+                    <a class="btn btn-primary" href="{{ model.id }}/update/">Edit</a>
+                    {% else %}
+                    <button disabled class="btn btn-default" title="You do not have permission to edit this entry." >Edit</button>
+                    {% endif %}
+                    </td>
                     <td>{{ model.name }}</td>
                     <td><a href="/microdevices/center/{{ model.center.id }}" target='_blank'>{{ model.center|default_if_none:"" }}</a></td>
                     <td>

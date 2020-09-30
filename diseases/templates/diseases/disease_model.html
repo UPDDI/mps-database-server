@@ -76,8 +76,15 @@
             <tbody>
             {% for disease_model in disease_models %}
                 <tr>
+                    {# Why is the target blank here? #}
                     <td><a target="_blank" class="btn btn-primary" href="/microdevices/model/{{ disease_model.id }}">View</a></td>
-                    <td><a target="_blank" class="btn btn-primary" href="/microdevices/model/{{ disease_model.id }}/update/">Edit</a></td>
+                    <td>
+                    {% if disease_model.is_editable %}
+                    <a target="_blank" class="btn btn-primary" href="/microdevices/model/{{ disease_model.id }}/update/">Edit</a>
+                    {% else %}
+                    <button disabled class="btn btn-default" title="You do not have permission to edit this entry." >Edit</button>
+                    {% endif %}
+                    </td>
                     <td>{{ disease_model }}</td>
                     <td>{{ disease_model.organ|default_if_none:"" }}</td>
                     <td><a target="_blank" href="/microdevices/device/{{ disease_model.device.id }}">{{ disease_model.device|default_if_none:"" }}</a></td>

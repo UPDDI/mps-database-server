@@ -16,6 +16,7 @@ class DiseaseList(ListView):
     model = Disease
     template_name = 'diseases/disease_list.html'
 
+    # Messy querysets
     def get_queryset(self):
         queryset = Disease.objects.all()
 
@@ -36,9 +37,13 @@ class DiseaseList(ListView):
                 assaygroup__organ_model__in=disease.models
             ).distinct().values_list('id', flat=True)
 
-            disease.datapoints = AssayDataPoint.objects.filter(
-                study_id__in=disease.studies
-            ).count()
+
+            if disease.studies:
+                disease.datapoints = AssayDataPoint.objects.filter(
+                    study_id__in=disease.studies
+                ).count()
+            else:
+                disease.datapoints = 0
 
         return queryset
 
@@ -72,9 +77,22 @@ class DiseaseModel(DetailView):
     def get_context_data(self, **kwargs):
         context = {}
         context = super(DiseaseModel, self).get_context_data(**kwargs)
-        context['disease_models'] = OrganModel.objects.filter(
-            disease=self.object
+
+        disease_models = OrganModel.objects.filter(disease=self.object).prefetch_related(
+            'organ',
+            'center',
+            'device',
+            'base_model',
+            'organmodelprotocol_set',
+            'center__groups'
         )
+
+        user_group_ids = list(self.request.user.groups.all().values_list('id', flat=True))
+
+        for organ_model in disease_models:
+            organ_model.is_editable = organ_model.user_is_in_center(user_group_ids)
+
+        context['disease_models'] = disease_models
 
         combined = get_user_accessible_studies(self.request.user).filter(
             assaymatrixitem__organ_model_id__in=context['disease_models']
