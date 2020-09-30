@@ -39,7 +39,9 @@
                 {% for unit in object_list %}
                      <tr>
                         {# Luke doesn't like 'unit.unit', but I think it's just peachy.#}
-                        <td><a class="btn btn-primary" href="{{ unit.get_update_url }}">Edit</a></td>
+                        <td>
+                        {% include 'generic_edit_button.html' with object=unit %}
+                        </td>
                         <td>{{ unit.unit }}</td>
                         <td>{{ unit.unit_type }}</td>
                         <td>{{ unit.base_unit }}</td>

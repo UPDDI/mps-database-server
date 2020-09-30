@@ -58,7 +58,9 @@
             {% for compound in object_list %}
                 <tr>
                     <td><a class="btn btn-primary" href="{{ compound.id }}">View</a></td>
-                    <td><a class="btn btn-primary" href="{{ compound.id }}/update/">Edit</a></td>
+                    <td>
+                    {% include 'generic_edit_button.html' with object=compound %}
+                    </td>
                     <td class="text-wrapped">{{ compound.name }}</td>
                     <td><a href="https://www.ebi.ac.uk/chembl/compound/inspect/{{ compound.chemblid }}">{{ compound.chemblid }}</a></td>
                     <td>{{ compound.synonyms }}</td>
