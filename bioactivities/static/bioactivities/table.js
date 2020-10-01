@@ -55,18 +55,13 @@ $(document).ready(function () {
             responsive: true,
             "iDisplayLength": 100,
             // Needed to destroy old table
-            "bDestroy": true
+            "bDestroy": true,
+            order: [
+                [0, 'asc'],
+                [6, 'asc'],
+                [5, 'asc']
+            ]
         });
-
-        // Swap positions of filter and length selection
-        $('.dataTables_filter').css('float','left');
-        $('.dataTables_length').css('float','right');
-        // Reposition download/print/copy
-        $('.DTTT_container').css('float', 'none');
-
-        // Recalculate responsive and fixed headers
-        $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
-        $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
     }
 
     function submit() {
@@ -135,6 +130,9 @@ $(document).ready(function () {
                         $('#overflow').prop('hidden', true);
                         $('#length').html('');
                     }
+
+                    // Ensure table header (if present) is shown
+                    $('#table_header').show();
                 }
                 else {
                     if (json.error) {
