@@ -353,16 +353,16 @@ class OrganModel(FrontEndModel, LockableModel):
     def __str__(self):
         return self.name
 
-    def user_is_in_center(self, user_group_ids):
+    def user_is_in_center(self, user_group_names):
         # Get a dic of groups
         groups_to_check = {}
         for current_group in self.center.groups.all():
             groups_to_check.update({
-                current_group.id: True
+                current_group.name: True
             })
 
-        if len(user_group_ids) == 0 or self.center and not any(
-            current_id in groups_to_check for current_id in user_group_ids
+        if len(user_group_names) == 0 or self.center and not any(
+            current_name in groups_to_check for current_name in user_group_names.keys()
         ):
             return False
         else:

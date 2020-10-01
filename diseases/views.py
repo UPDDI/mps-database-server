@@ -87,10 +87,12 @@ class DiseaseModel(DetailView):
             'center__groups'
         )
 
-        user_group_ids = list(self.request.user.groups.all().values_list('id', flat=True))
+        user_group_names = {
+            user_group.name.replace(' Admin', ''): True for user_group in self.request.user.groups.all()
+        }
 
         for organ_model in disease_models:
-            organ_model.is_editable = organ_model.user_is_in_center(user_group_ids)
+            organ_model.is_editable = organ_model.user_is_in_center(user_group_names)
 
         context['disease_models'] = disease_models
 
