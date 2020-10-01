@@ -1,0 +1,6 @@
+{# {% if not user.id or user.is_superuser or object.created_by_id and object.created_by_id == user.id %} #}
+{% if user.is_superuser or object.created_by_id and object.created_by_id == user.id %}
+    <a class="btn btn-primary" href="{{ object.get_update_url }}">Edit</a>
+{% else %}
+    <button disabled class="btn btn-default" title="You do not have permission to edit this entry." >Edit</button>
+{% endif %}

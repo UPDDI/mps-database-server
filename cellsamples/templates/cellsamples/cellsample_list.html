@@ -43,7 +43,9 @@
             {% for cellsample in object_list %}
                 <tr>
                     <td><a class="btn btn-primary" href="{% url 'cellsamples-cellsample-detail' cellsample.id %}">View</a></td>
-                    <td><a class="btn btn-primary" href="{{ cellsample.id }}">Edit</a></td>
+                    <td>
+                    {% include 'generic_edit_button.html' with object=cellsample %}
+                    </td>
                     {# May seem odd, but including the id can help demystify the ID that appears in add interface #}
                     <td>{{ cellsample.id }}</td>
                     {# Adding a link to this row converts it from date to HTML = Really, REALLY annoying #}

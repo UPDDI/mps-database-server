@@ -159,16 +159,11 @@ class OrganModelUpdate(OrganModelMixin, UpdateView):
         """
         self.object = self.get_object()
 
-        # Get a dic of groups
-        groups_to_check = {}
-        for current_group in self.object.center.groups.all():
-            groups_to_check.update({
-                current_group.id: True
-            })
+        user_group_names = {
+            user_group.name.replace(' Admin', ''): True for user_group in self.request.user.groups.all()
+        }
 
-        if self.request.user.groups.all().count() == 0 or self.object.center and not any(
-            current_group.id in groups_to_check for current_group in self.request.user.groups.all()
-        ):
+        if not self.object.user_is_in_center(user_group_names):
             return PermissionDenied(self.request, 'You must be a member of the center ' + str(self.object.center))
 
         return super(OrganModelUpdate, self).dispatch(*args, **kwargs)
@@ -179,13 +174,23 @@ class OrganModelList(ListView):
     template_name = 'microdevices/organmodel_list.html'
 
     def get_queryset(self):
-        return OrganModel.objects.prefetch_related(
+        queryset = OrganModel.objects.all().prefetch_related(
             'organ',
             'center',
             'device',
             'base_model',
-            'organmodelprotocol_set'
-        ).all()
+            'organmodelprotocol_set',
+            'center__groups'
+        )
+
+        user_group_names = {
+            user_group.name.replace(' Admin', ''): True for user_group in self.request.user.groups.all()
+        }
+
+        for organ_model in queryset:
+            organ_model.is_editable = organ_model.user_is_in_center(user_group_names)
+
+        return queryset
 
 
 class OrganModelDetail(DetailView):

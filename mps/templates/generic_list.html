@@ -34,7 +34,9 @@
                 <tbody>
                 {% for object in object_list %}
                      <tr>
-                        <td><a class="btn btn-primary" href="{{ object.get_update_url }}">Edit</a></td>
+                        <td>
+                            {% include 'generic_edit_button.html'%}
+                        </td>
                         <td>{{ object.name }}</td>
                         {% if object_list.0.description != None %}
                         <td>{{ object.description }}</td>
