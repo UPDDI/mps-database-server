@@ -7142,8 +7142,24 @@ def fetch_omics_data_for_visualization(request):
     data['file_id_to_name'] = {}
     data['table'] = {}
 
+    # Account for multiple files with the same groups
+    # First, this is abysmally inefficient, there has to be a better way.
+    # Second, how do you perform underscore access of FK fields whose parent's name already has underscores? (ex. group_1_name)
+    group_combos = []
     for datafile in datafiles:
-        joint_name = " vs ".join([datafile.group_1.name, datafile.group_2.name])
+        group_combos.append("{}+{}".format(datafile.group_1.id, datafile.group_2.id))
+
+    for datafile in datafiles:
+        omics_token = "{}+{}".format(datafile.group_1.id, datafile.group_2.id)
+        if group_combos.count(omics_token) > 1:
+            split_times_1 = get_split_times(datafile.time_1)
+            split_times_2 = get_split_times(datafile.time_2)
+            joint_name = " vs ".join([
+                datafile.group_1.name + "(" + datafile.location_1.name + ") @ D:" + str(split_times_1['day']) + " H:" + str(split_times_1['hour']) + " M:" + str(split_times_1['minute']),
+                datafile.group_2.name + "(" + datafile.location_2.name + ") @ D:" + str(split_times_2['day']) + " H:" + str(split_times_2['hour']) + " M:" + str(split_times_2['minute'])
+            ])
+        else:
+            joint_name = " vs ".join([datafile.group_1.name, datafile.group_2.name])
         data['data'][joint_name] = {}
         data['file_id_to_name'][datafile.id] = joint_name
         data['table'][joint_name] = [datafile.description, datafile.id]
@@ -7249,6 +7265,7 @@ def get_filtered_omics_data_as_csv(get_params):
     data.append(
         [
             "Probe ID",
+            "Gene Name",
             "Expression",
             "Assay",
             "Group 1",
@@ -7312,6 +7329,7 @@ def get_filtered_omics_data_as_csv(get_params):
         # Append any data that has made it this far
         to_append = [
             name,
+            name.split("_")[0],
             expression,
             consolidated_targets[name]['assay'],
             consolidated_targets[name]['group_1'],
