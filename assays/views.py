@@ -66,6 +66,7 @@ from assays.forms import (
     AssayStudyAssayFormSetFactory,
     AssayStudyReferenceFormSetFactory,
     AssayStudyDeleteForm,
+    AssayStudyAccessForm,
     AssayMatrixForm,
     AssayMatrixItemFullForm,
     AssayMatrixItemFormSetFactory,
@@ -1897,6 +1898,84 @@ class AssayStudyTemplate(ObjectGroupRequiredMixin, DetailView):
         response['Content-Disposition'] = 'attachment;filename="' + str(self.object) + '.xlsx"'
 
         return response
+
+
+class AssayStudyAccess(UpdateView):
+    """Update the fields of a Study"""
+    model = AssayStudy
+    template_name = 'assays/assaystudy_access.html'
+    form_class = AssayStudyAccessForm
+    # form_class = AssayStudyForm
+
+    @method_decorator(login_required)
+    @method_decorator(user_passes_test(user_is_active))
+    def dispatch(self, *args, **kwargs):
+        # Get the study
+        study = get_object_or_404(AssayStudy, pk=self.kwargs['pk'])
+
+        user_group_names = {group.name for group in self.request.user.groups.all()}
+
+        valid_user = study.group.name + ADMIN_SUFFIX in user_group_names
+
+        # Deny permission
+        if not valid_user:
+            return PermissionDenied(self.request, 'You are missing the necessary credentials to change Access to this Study.')
+        # Otherwise return the view
+        return super(AssayStudyAccess, self).dispatch(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyAccess, self).get_context_data(**kwargs)
+
+        context['update'] = True
+
+        return context
+
+    # WAY TOO VERBOSE: NOT IN THE LEAST BIT DRY
+    def form_valid(self, form):
+        if form.is_valid():
+            if self.request.user.is_superuser:
+                previous_access_groups = {group.name:group.id for group in form.instance.access_groups.all()}
+
+                save_forms_with_tracking(self, form, update=True)
+
+                if self.object.signed_off_by:
+                    viewer_subject = 'Study {0} Now Available for Viewing'.format(self.object)
+
+                    access_group_names = {group.name: group.id for group in self.object.access_groups.all() if group.name not in previous_access_groups}
+
+                    matching_groups = list(set([
+                        group.id for group in Group.objects.all() if
+                        group.name.replace(ADMIN_SUFFIX, '').replace(VIEWER_SUFFIX, '') in access_group_names
+                    ]))
+                    exclude_groups = list(set([
+                        group.id for group in Group.objects.all() if
+                        group.name.replace(ADMIN_SUFFIX, '').replace(VIEWER_SUFFIX, '') in previous_access_groups
+                    ]))
+                    viewers_to_be_alerted = User.objects.filter(
+                        groups__id__in=matching_groups,
+                        is_active=True
+                    ).exclude(
+                        groups__id__in=exclude_groups
+                    ).distinct()
+
+                    for user_to_be_alerted in viewers_to_be_alerted:
+                        viewer_message = render_to_string(
+                            'assays/viewer_alert.txt',
+                            {
+                                'user': user_to_be_alerted,
+                                'study': self.object
+                            }
+                        )
+
+                        user_to_be_alerted.email_user(
+                            viewer_subject,
+                            viewer_message,
+                            DEFAULT_FROM_EMAIL
+                        )
+
+            return redirect(self.object.get_absolute_url())
+        else:
+            return self.render_to_response(self.get_context_data(form=form))
 
 
 class AssayDataFileUploadList(StudyViewerMixin, DetailView):
