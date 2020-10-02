@@ -19,6 +19,7 @@ from assays.views import (
     AssayStudyPlateDetail,
     AssayStudyAssays,
     AssayStudyDataIndex,
+    AssayStudyAccess,
     AssayGroupDetail,
     AssayDataFileUploadDetail,
     AssayDataFileUploadList,
@@ -148,6 +149,8 @@ urlpatterns = [
 
     # View the chips
     url(r'^assays/assaychips/(?P<pk>[0-9]+)/$', AssayStudyChipsDetail.as_view(), name='assays-assaymatrix-chips-detail'),
+
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/access/$', AssayStudyAccess.as_view(), name='assays-assaystudy-update-access'),
 
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/data_index/$', AssayStudyDataIndex.as_view(), name='assays-assaystudy-data-index'),
 

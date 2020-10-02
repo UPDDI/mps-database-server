@@ -2224,6 +2224,34 @@ class AssayStudyFormAdmin(BootstrapForm):
         if data.get('pbpk_bolus', '') and (not data.get('number_of_relevant_cells', '') or not data.get('total_device_volume', '')):
             raise forms.ValidationError('Bolus PBPK Requires Number of Cells Per MPS Model and Total Device Volume')
 
+        return data
+
+
+class AssayStudyAccessForm(forms.ModelForm):
+    """Form for changing access to studies"""
+    def __init__(self, *args, **kwargs):
+        super(AssayStudyAccessForm, self).__init__(*args, **kwargs)
+
+        groups_with_center = MicrophysiologyCenter.objects.all().values_list('groups', flat=True)
+
+        groups_without_repeat = Group.objects.filter(
+            id__in=groups_with_center
+        ).order_by(
+            'name'
+        ).exclude(
+            id=self.instance.group.id
+        )
+
+        self.fields['access_groups'].queryset = groups_without_repeat
+        self.fields['collaborator_groups'].queryset = groups_without_repeat
+
+    class Meta(object):
+        model = AssayStudy
+        fields = (
+            'collaborator_groups',
+            'access_groups',
+        )
+
 
 class AssayStudySupportingDataForm(BootstrapForm):
     class Meta(object):

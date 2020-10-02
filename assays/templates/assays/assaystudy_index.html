@@ -132,13 +132,16 @@
                 </span>
                 {% endcomment %}
 
-                {% if user_is_group_admin or user_is_stakeholder_admin or user.is_superuser or show_indicate_study_sign_off or not user_is_group_admin and user_is_group_editor and not object.signed_off_by%}
+                {% if user_is_group_admin or user_is_stakeholder_admin or user.is_superuser or show_indicate_study_sign_off or not user_is_group_admin and user_is_group_editor and not object.signed_off_by %}
                 <span class="dropdown btn-group">
                     <button class="btn btn-success dropdown-toggle" type="button" id="sign_off_permissions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                         Sign Off/Permission
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="sign_off_permissions">
+                        {% if user_is_group_admin and not object.signed_off_by %}
+                            <li><a href="access">Change Study Access</a></li>
+                        {% endif %}
                         {% if not user_is_group_admin and user_is_group_editor and not object.signed_off_by %}
                             <li><a id="indicate_study_is_ready_for_sign_off" role="button">Indicate Study is Ready for Sign Off</a></li>
                         {% endif %}
