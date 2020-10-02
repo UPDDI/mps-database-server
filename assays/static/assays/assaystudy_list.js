@@ -106,19 +106,19 @@ $(document).ready(function() {
                 },
                 {
                     "type": "numeric-comma",
-                    "targets": [5, 6, 7, 8, 9, 10]
+                    "targets": [5, 6, 7, 8, 9, 10, 11]
                 },
                 {
                     'visible': false,
-                    'targets': [7, 8, 9, 10, 14, 16, 17]
+                    'targets': [8, 9, 10, 11, 15, 17, 18]
                 },
                 {
                     'className': 'none',
-                    'targets': [11]
+                    'targets': [12]
                 },
                 {
                     'sortable': false,
-                    'targets': [12]
+                    'targets': [13]
                 }
             ],
             initComplete: function() {

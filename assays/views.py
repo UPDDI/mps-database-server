@@ -490,6 +490,20 @@ def get_queryset_with_number_of_data_points(queryset):
             plate_reader_file.study_id: current_value + 1
         })
 
+    omic_data_points = AssayOmicDataPoint.objects.filter(
+        study_id__in=study_ids
+    ).only('id', 'study_id')
+
+    omic_data_points_map = {}
+
+    for omic_data_point in omic_data_points:
+        current_value = omic_data_points_map.setdefault(
+            omic_data_point.study_id, 0
+        )
+        omic_data_points_map.update({
+            omic_data_point.study_id: current_value + 1
+        })
+
     images = AssayImage.objects.filter(
         setting__study_id__in=study_ids
     ).prefetch_related(
@@ -548,6 +562,7 @@ def get_queryset_with_number_of_data_points(queryset):
         study.supporting_data = supporting_data_map.get(study.id, 0)
         study.plate_maps = plate_maps_map.get(study.id, 0)
         study.plate_reader_files = plate_reader_files_map.get(study.id, 0)
+        study.omic_data_points = omic_data_points_map.get(study.id, 0)
 
 
 # TODO GET NUMBER OF DATA POINTS

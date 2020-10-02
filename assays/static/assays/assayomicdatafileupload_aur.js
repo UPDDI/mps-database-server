@@ -109,6 +109,7 @@ $(document).ready(function () {
     });
 
     function changed_something_important(called_from) {
+
         if ($('#id_data_type')[0].selectize.items[0] == 'log2fc') {
             $('#id_group_1').next().addClass('required');
             $('.one-group').show();
@@ -174,64 +175,72 @@ $(document).ready(function () {
             formData.append(index, contents);
         });
 
-        window.spinner.spin(document.getElementById('spinner'));
-        $.ajax({
-            url: '/assays_ajax/',
-            type: 'POST',
-            dataType: 'json',
-            cache: false,
-            contentType: false,
-            processData: false,
-            data: formData,
-            success: function (json) {
-                window.spinner.stop();
-                if (json.errors) {
-                    alert(json.errors);
+        let is_data = true;
+        if (document.getElementById("id_omic_data_file").files.length > 0) {
+            is_data = true;
+        } else {
+            is_data = false;
+        }
+
+        if (is_data) {
+            window.spinner.spin(document.getElementById('spinner'));
+            $.ajax({
+                url: '/assays_ajax/',
+                type: 'POST',
+                dataType: 'json',
+                cache: false,
+                contentType: false,
+                processData: false,
+                data: formData,
+                success: function (json) {
+                    window.spinner.stop();
+                    if (json.errors) {
+                        alert(json.errors);
+                    } else {
+                        let exist = true;
+                        // console.log("a DATA", json)
+                        // omics_data = json['data'];
+                        // omics_target_name_to_id = json['target_name_to_id'];
+                        // omics_file_id_to_name = json['file_id_to_name'];
+                        // omics_table = json['table'];
+                        // console.log("b data ", omics_data)
+                        // console.log("c target_name_to_id ", omics_target_name_to_id)
+                        // console.log("d file_id_to_name ", omics_file_id_to_name)
+                        // console.log("e table ", omics_table)
+                        window.OMICS.omics_data = JSON.parse(JSON.stringify(json));
+                        omics_file_id_to_name_all = window.OMICS.omics_data['file_id_to_name'];
+                        omics_file_id_to_name = omics_file_id_to_name_all[1];
+                        // maxL2FC_a = window.OMICS.omics_data['max_fold_change'];
+                        // maxPval_a = window.OMICS.omics_data['max_pvalue'];
+                        // minL2FC_a = window.OMICS.omics_data['min_fold_change'];
+                        // minPval_a = window.OMICS.omics_data['min_pvalue'];
+                        // console.log("a")
+                        // console.log(maxL2FC_a)
+                        // console.log(maxPval_a)
+                        // console.log(minL2FC_a)
+                        // console.log(minPval_a)
+                        // maxL2FC = -Math.log10(maxL2FC_a);
+                        // maxPval = -Math.log10(maxPval_a);
+                        // minL2FC = -Math.log10(minL2FC_a);
+                        // minPval = -Math.log10(minPval_a);
+                        // console.log("no a")
+                        // console.log(maxL2FC)
+                        // console.log(maxPval)
+                        // console.log(minL2FC)
+                        // console.log(minPval)
+                        // console.log("window.OMICS.omics_data ")
+                        // console.log(window.OMICS.omics_data)
+                        window.OMICS.draw_plots(window.OMICS.omics_data, true, 0, 0, 0, 0, 0, 0, 0, 'upload');
+                        // function(omics_data, firstTime, minPval, maxPval, minL2FC, maxL2FC, minPval_neg, maxPval_neg, L2FC_abs)
+                    }
+                },
+                error: function (xhr, errmsg, err) {
+                    window.spinner.stop();
+                    alert('Encountered an error when trying to make a preview plot. Check to make sure the Data Type selected matches the file selected.');
+                    console.log(xhr.status + ': ' + xhr.responseText);
                 }
-                else {
-                    let exist = true;
-                    // console.log("a DATA", json)
-                    // omics_data = json['data'];
-                    // omics_target_name_to_id = json['target_name_to_id'];
-                    // omics_file_id_to_name = json['file_id_to_name'];
-                    // omics_table = json['table'];
-                    // console.log("b data ", omics_data)
-                    // console.log("c target_name_to_id ", omics_target_name_to_id)
-                    // console.log("d file_id_to_name ", omics_file_id_to_name)
-                    // console.log("e table ", omics_table)
-                    window.OMICS.omics_data = JSON.parse(JSON.stringify(json));
-                    omics_file_id_to_name_all = window.OMICS.omics_data['file_id_to_name'];
-                    omics_file_id_to_name = omics_file_id_to_name_all[1];
-                    // maxL2FC_a = window.OMICS.omics_data['max_fold_change'];
-                    // maxPval_a = window.OMICS.omics_data['max_pvalue'];
-                    // minL2FC_a = window.OMICS.omics_data['min_fold_change'];
-                    // minPval_a = window.OMICS.omics_data['min_pvalue'];
-                    // console.log("a")
-                    // console.log(maxL2FC_a)
-                    // console.log(maxPval_a)
-                    // console.log(minL2FC_a)
-                    // console.log(minPval_a)
-                    // maxL2FC = -Math.log10(maxL2FC_a);
-                    // maxPval = -Math.log10(maxPval_a);
-                    // minL2FC = -Math.log10(minL2FC_a);
-                    // minPval = -Math.log10(minPval_a);
-                    // console.log("no a")
-                    // console.log(maxL2FC)
-                    // console.log(maxPval)
-                    // console.log(minL2FC)
-                    // console.log(minPval)
-                    // console.log("window.OMICS.omics_data ")
-                    // console.log(window.OMICS.omics_data)
-                    window.OMICS.draw_plots(window.OMICS.omics_data, true, 0, 0, 0, 0, 0, 0, 0, 'upload');
-                    // function(omics_data, firstTime, minPval, maxPval, minL2FC, maxL2FC, minPval_neg, maxPval_neg, L2FC_abs)
-                }
-            },
-            error: function (xhr, errmsg, err) {
-                window.spinner.stop();
-                alert('Encountered an error when trying to make a preview plot. Check to make sure the Data Type selected matches the file selected.');
-                console.log(xhr.status + ': ' + xhr.responseText);
-            }
-        });
+            });
+        }
     };
     // END section for preview page
 
@@ -301,11 +310,11 @@ $(document).ready(function () {
     */
     // Start file download.
     document.getElementById("fileFileFormatTwoGroup").addEventListener("click", function(){
-    // Start the download of yournewfile.txt file with the content from the text area
+    // Start the download of yournewfile.csv file with the content from the text area
         // could tie this to selections in the GUI later, if requested.
         // change with tool tip
         var text = global_omic_upload_omic_file_format_deseq2_log2fc_headers;
-        var filename = "TwoGroupDESeq2Omic.txt";
+        var filename = "TwoGroupDESeq2Omic.csv";
 
         download(filename, text);
     }, false);
