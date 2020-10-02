@@ -10,6 +10,10 @@ from assays.views import (
     get_queryset_with_number_of_data_points,
     get_queryset_with_stakeholder_sign_off
 )
+from mps.templatetags.custom_filters import (
+    ADMIN_SUFFIX,
+    VIEWER_SUFFIX,
+)
 
 
 class DiseaseList(ListView):
@@ -88,7 +92,7 @@ class DiseaseModel(DetailView):
         )
 
         user_group_names = {
-            user_group.name.replace(' Admin', ''): True for user_group in self.request.user.groups.all()
+            user_group.name.replace(ADMIN_SUFFIX, ''): True for user_group in self.request.user.groups.all()
         }
 
         for organ_model in disease_models:

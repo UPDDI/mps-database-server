@@ -47,6 +47,10 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
 from assays.models import AssayReference
 
+from mps.templatetags.custom_filters import (
+    ADMIN_SUFFIX,
+    VIEWER_SUFFIX,
+)
 
 class MicrodeviceMixin(FormHandlerMixin):
     model = Microdevice
@@ -160,7 +164,7 @@ class OrganModelUpdate(OrganModelMixin, UpdateView):
         self.object = self.get_object()
 
         user_group_names = {
-            user_group.name.replace(' Admin', ''): True for user_group in self.request.user.groups.all()
+            user_group.name.replace(ADMIN_SUFFIX, ''): True for user_group in self.request.user.groups.all()
         }
 
         if not self.object.user_is_in_center(user_group_names):
@@ -184,7 +188,7 @@ class OrganModelList(ListView):
         )
 
         user_group_names = {
-            user_group.name.replace(' Admin', ''): True for user_group in self.request.user.groups.all()
+            user_group.name.replace(ADMIN_SUFFIX, ''): True for user_group in self.request.user.groups.all()
         }
 
         for organ_model in queryset:
