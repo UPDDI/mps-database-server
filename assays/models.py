@@ -1670,6 +1670,9 @@ class AssayStudy(FlaggableModel):
             'efficacy',
             'disease',
             'cell_characterization',
+            'omics',
+            'pbpk_steady_state',
+            'pbpk_bolus',
             'start_date',
             'group'
         ))
@@ -1691,6 +1694,12 @@ class AssayStudy(FlaggableModel):
     cell_characterization = models.BooleanField(
         default=False,
         verbose_name='Cell Characterization'
+    )
+
+    # TODO: THESE REALLY SHOULDN'T BE ATTRIBUTES
+    omics = models.BooleanField(
+        default=False,
+        verbose_name='Omics'
     )
 
     # Subject to change
@@ -2120,6 +2129,8 @@ class AssayStudy(FlaggableModel):
             current_types.append('DM')
         if self.cell_characterization:
             current_types.append('CC')
+        if self.omics:
+            current_types.append('OMICS')
         if self.pbpk_steady_state or self.pbpk_bolus:
             current_types.append('PK')
         return '-'.join(current_types)

@@ -638,7 +638,7 @@ class AssayStudyAdmin(LockableAdmin):
         (
             'Study', {
                 'fields': (
-                    ('toxicity', 'efficacy', 'disease', 'cell_characterization'),
+                    ('toxicity', 'efficacy', 'disease', 'cell_characterization', 'omics'),
                     'study_configuration',
                     'start_date',
                     'name',

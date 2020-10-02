@@ -665,7 +665,7 @@ class AssayStudyForm(SignOffMixin, BootstrapForm):
         # clean the form data, before validation
         data = super(AssayStudyForm, self).clean()
 
-        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], data['pbpk_steady_state'], data['pbpk_bolus']]):
+        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], data['omics'], data['pbpk_steady_state'], data['pbpk_bolus']]):
             raise forms.ValidationError('Please select at least one study type')
 
         if data.get('pbpk_steady_state', '') and (not data.get('number_of_relevant_cells', '') or not data.get('flow_rate', '')):
@@ -700,6 +700,7 @@ class AssayStudyDetailForm(SignOffMixin, BootstrapForm):
             'efficacy',
             'disease',
             'cell_characterization',
+            'omics',
             'start_date',
             'use_in_calculations',
             'protocol',
@@ -718,7 +719,7 @@ class AssayStudyDetailForm(SignOffMixin, BootstrapForm):
         # clean the form data, before validation
         data = super(AssayStudyDetailForm, self).clean()
 
-        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], data['pbpk_steady_state'], data['pbpk_bolus']]):
+        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], data['omics'], data['pbpk_steady_state'], data['pbpk_bolus']]):
             raise forms.ValidationError('Please select at least one study type')
 
         if data.get('pbpk_steady_state', '') and (not data.get('number_of_relevant_cells', '') or not data.get('flow_rate', '')):
@@ -2196,7 +2197,7 @@ class AssayStudyFormAdmin(BootstrapForm):
         # clean the form data, before validation
         data = super(AssayStudyFormAdmin, self).clean()
 
-        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], data['pbpk_steady_state'], data['pbpk_bolus']]):
+        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], data['omics'], data['pbpk_steady_state'], data['pbpk_bolus']]):
             raise forms.ValidationError('Please select at least one study type')
 
         if data.get('pbpk_steady_state', '') and (not data.get('number_of_relevant_cells', '') or not data.get('flow_rate', '')):

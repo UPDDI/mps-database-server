@@ -79,11 +79,13 @@ $(document).ready(function () {
             $('#id_efficacy').prop('checked', false);
             $('#id_disease').prop('checked', false);
             $('#id_cell_characterization').prop('checked', false);
+            $('#id_omics').prop('checked', false);
 
             $('#id_toxicity').prop('disabled', true);
             $('#id_efficacy').prop('disabled', true);
             $('#id_disease').prop('disabled', true);
             $('#id_cell_characterization').prop('disabled', true);
+            $('#id_omics').prop('disabled', true);
         }
         else {
             pbpk_section.hide('slow');
@@ -95,6 +97,7 @@ $(document).ready(function () {
             $('#id_efficacy').prop('disabled', false);
             $('#id_disease').prop('disabled', false);
             $('#id_cell_characterization').prop('disabled', false);
+            $('#id_omics').prop('disabled', false);
         }
     }).trigger('change');
 
