@@ -5281,7 +5281,7 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
 
         # ONGOING - add to the list with all data types that are two groups required
         if data['data_type'] in ['log2fc']:
-            if data['group_1'] == None or data['group_1'] == None:
+            if data['group_1'] == None or data['group_2'] == None:
                 true_to_continue = False
                 raise ValidationError(
                      'For data type that compares two groups, both groups must be selected.',

@@ -1,5 +1,6 @@
  {% extends "base.html" %}
 {% load static %}
+{% load humanize %}
 {% load custom_filters %}
 
 {% block load_js %}
@@ -94,7 +95,7 @@
                         </a>
                     </td>
 
-                    <td>{{ file.point_count }}</td>
+                    <td>{{ file.point_count|intcomma }}</td>
 
                     <td>{{ file.description }}</td>
                     <td>{{ file.study_assay }}</td>
