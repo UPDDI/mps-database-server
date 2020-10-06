@@ -40,7 +40,7 @@ $(document).ready(function () {
             row += "<td><a href='https://www.ebi.ac.uk/chembl/assay/inspect/"+bio.chemblid+"'>" + bio.chemblid + "</a></td>";
             row += "<td><a href='https://pubchem.ncbi.nlm.nih.gov/assay/assay.cgi?aid="+bio.pubchem_id+"'>" + bio.pubchem_id + "</a></td>";
 
-            row += "<td>" + bio.notes + "</td>";
+            row += "<td>" + bio.description + "</td>";
             row += "<td class='text-danger'>" + bio.data_validity + "</td>";
 //            row += "<td>" + bio.bioactivity_type + "</td>";
 //            row += "<td>" + bio.value + "</td>";

@@ -95,9 +95,9 @@
                         {# Stupid conditional because images are not tied directly to studies? #}
                         <li><a href="omics">Gene Expression Analysis</a></li>
                         {% if object.assayimagesetting_set.count %}
-                        <li><a href="images">Images</a></li>
+                        <li><a href="images">Images and Videos</a></li>
                         {% else %}
-                        <li class="disabled" title="This study has no images or videos."><a href="images">Images</a></li>
+                        <li class="disabled" title="This study has no images or videos."><a href="images">Images and Videos</a></li>
                         {% endif %}
                         {% if user_is_group_editor %}
                             <li role="separator" class="divider"></li>

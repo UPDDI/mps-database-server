@@ -215,10 +215,14 @@ class OrganModelDetail(DetailView):
         # else:
         #     protocols = None
 
+        user_group_names = {
+            user_group.name.replace(ADMIN_SUFFIX, ''): True for user_group in self.request.user.groups.all()
+        }
+
         context.update({
             # 'assays': assays,
             # 'protocols': protocols,
-            'protocol_access': self.object.center and any(i in self.object.center.groups.all() for i in self.request.user.groups.all())
+            'protocol_access': self.object.user_is_in_center(user_group_names)
         })
 
         return context
@@ -290,8 +294,12 @@ class OrganModelProtocolDetail(DetailView):
     def get_context_data(self, **kwargs):
         context = super(OrganModelProtocolDetail, self).get_context_data(**kwargs)
 
+        user_group_names = {
+            user_group.name.replace(ADMIN_SUFFIX, ''): True for user_group in self.request.user.groups.all()
+        }
+
         context.update({
-            'protocol_access': self.object.organ_model.center and any(i in self.object.organ_model.center.groups.all() for i in self.request.user.groups.all())
+            'protocol_access': self.object.organ_model.user_is_in_center(user_group_names)
         })
 
         return context

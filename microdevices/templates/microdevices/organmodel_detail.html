@@ -207,11 +207,11 @@
                 <td>{{ protocol.description }}</td>
                 {% if protocol_access %}
                 <td>
-                    <a href="/media/{{ protocol.protocol_file }}">{{ protocol.protocol_file }}</a>
+                    <a target='_blank' class="btn btn-primary" href="/media/{{ protocol.protocol_file }}">Protocol Details</a>
                 </td>
                 {% else %}
-                <td class="text-danger">
-                    Log in with an account that has proper permissions to view Protocol details
+                <td>
+                    <button disabled class="btn btn-default" href="/media/{{ protocol.protocol_file }}" title="You do not have permission to view the details for this Protocol">Protocol Details</button>
                 </td>
                 {% endif %}
             </tr>

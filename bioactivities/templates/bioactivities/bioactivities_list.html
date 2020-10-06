@@ -46,7 +46,7 @@
                     <th>Standard Units</th>
                     <th>ChEMBL Link</th>
                     <th>PubChem Link</th>
-                    <th>Notes</th>
+                    <th>Description</th>
                     <th>Data Validity</th>
                 </tr>
             </thead>
@@ -80,7 +80,7 @@
                     <td><a href="https://pubchem.ncbi.nlm.nih.gov/assay/assay.cgi?aid={{ bioactivity.assay.pubchem_id }}">
                         {{ bioactivity.assay.pubchem_id|default:'' }}
                     </a></td>
-                    <td>{{ bioactivity.notes }}</td>
+                    <td>{{ bioactivity.assay.description }}</td>
                     <td class="text-danger">{{ bioactivity.get_data_validity_display }}</td>
                 </tr>
             {% endfor %}

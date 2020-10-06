@@ -1337,7 +1337,9 @@ def table(request):
             operator = bioactivity.operator
             standardized_units = bioactivity.standardized_units
 
-        notes = bioactivity.notes
+        # notes = bioactivity.notes
+
+        description = bioactivity.assay.description
 
         data_validity = bioactivity.get_data_validity_display()
 
@@ -1353,8 +1355,9 @@ def table(request):
             'standardized_units': standardized_units,
             'chemblid': chemblid,
             'pubchem_id': pubchem_id,
-            'notes': notes,
-            'data_validity': data_validity
+            # 'notes': notes,
+            'description': description,
+            'data_validity': data_validity,
         }
         data.append(obj)
 
