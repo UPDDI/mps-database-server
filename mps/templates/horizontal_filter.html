@@ -1,0 +1,35 @@
+<div class="form-group">
+<div class="col-sm-5 lead text-danger">
+    <label for="left_{{ field }}">
+        {{ label_1|default:'Unselected' }}
+    </label>
+    <select multiple="multiple" id="id_left_{{ field }}" class="form-control no-selectize" size='12'></select>
+</div>
+
+<div class="col-sm-2 text-center">
+    <br>
+    <br>
+    <a data-horizontal-filter-action="all_right" data-field="{{ field }}" class="btn btn-success btn-block">
+        Add All <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+    </a>
+    <br>
+    <a data-horizontal-filter-action="current_right" data-field="{{ field }}" class="btn btn-success btn-block">
+        Add <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+    </a>
+    <br>
+    <a data-horizontal-filter-action="current_left" data-field="{{ field }}" class="btn btn-danger btn-block">
+        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> Remove
+    </a>
+    <br>
+    <a data-horizontal-filter-action="all_left" data-field="{{ field }}" class="btn btn-danger btn-block">
+        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span><span class="glyphicon glyphicon-chevron-left"></span> Remove All
+    </a>
+</div>
+
+<div class="col-sm-5 lead text-success">
+    <label for="visible_to">
+        {{ label_2|default:'Selected' }}
+    </label>
+    <select multiple="multiple" id="id_right_{{ field }}" class="form-control no-selectize" size="12"></select>
+</div>
+</div>
