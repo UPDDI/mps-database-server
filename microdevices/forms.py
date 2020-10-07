@@ -21,6 +21,11 @@ from diseases.models import Disease
 from mps.forms import SignOffMixin, BootstrapForm, tracking
 from django.forms.models import inlineformset_factory
 
+from mps.templatetags.custom_filters import (
+    ADMIN_SUFFIX,
+    VIEWER_SUFFIX,
+)
+
 # A little strange to import this way: spaghetti
 from assays.forms import ModelFormSplitTime, PhysicalUnits
 
@@ -175,6 +180,22 @@ class MicrophysiologyCenterForm(BootstrapForm):
         widgets = {
             'description': forms.Textarea(attrs={'rows': 6}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super(MicrophysiologyCenterForm, self).__init__(*args, **kwargs)
+
+        non_admin_non_viewer_groups = Group.objects.exclude(
+            name__contains=ADMIN_SUFFIX
+        ).exclude(
+            name__contains=VIEWER_SUFFIX
+        )
+
+        bound_to_center = non_admin_non_viewer_groups.exclude(
+            center_groups__isnull=True
+        )
+
+        self.fields['groups'].queryset = non_admin_non_viewer_groups
+        self.fields['accessible_groups'].queryset = bound_to_center
 
 
 class GroupDeferralForm(BootstrapForm):

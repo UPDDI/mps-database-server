@@ -1246,7 +1246,7 @@ class AssayStudySetAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AssayStudySetAdminForm, self).__init__(*args, **kwargs)
         study_queryset = AssayStudy.objects.all().prefetch_related(
-            'group__microphysiologycenter_set'
+            'group__center_groups'
         )
         assay_queryset = AssayStudyAssay.objects.all().prefetch_related(
             'target',

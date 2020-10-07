@@ -1200,7 +1200,7 @@ class AssayStudySummary(StudyViewerMixin, TemplateView):
             'assaystudyassay_set__target',
             'assaystudyassay_set__method',
             'assaystudyassay_set__unit',
-            'group__microphysiologycenter_set'
+            'group__center_groups'
         )[0]
 
         context.update({
@@ -2728,7 +2728,7 @@ class AssayDataFromFilters(TemplateView):
                 **pre_filter
             ).prefetch_related(
                 # TODO
-                'study__group__microphysiologycenter_set',
+                'study__group__center_groups',
 
                 # Is going through the matrix item too expensive here?
                 'matrix_item__group__assaygroupcompound_set__compound_instance__compound',
@@ -3204,7 +3204,7 @@ class AssayStudySetData(DetailView):
                 study_assay_id__in=assays
             ).prefetch_related(
                 # TODO
-                'study__group__microphysiologycenter_set',
+                'study__group__center_groups',
 
                 # 'matrix_item__assaysetupsetting_set__setting',
                 # 'matrix_item__assaysetupcell_set__cell_sample',

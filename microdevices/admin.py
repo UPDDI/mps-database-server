@@ -28,7 +28,10 @@ class MicrophysiologyCenterAdmin(LockableAdmin):
         'name', 'center_id', 'institution', 'description', 'pi', 'contact_person', 'center_site'
     )
     list_per_page = 300
-    filter_horizontal = ('groups',)
+    filter_horizontal = (
+        'groups',
+        'accessible_groups'
+    )
     fieldsets = (
         (
             None, {
@@ -45,6 +48,7 @@ class MicrophysiologyCenterAdmin(LockableAdmin):
                     'pi_web_page',
                     'website',
                     'groups',
+                    'accessible_groups',
                 )
             }
         ),

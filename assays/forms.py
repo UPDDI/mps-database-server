@@ -2213,10 +2213,11 @@ class AssayStudyAccessForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AssayStudyAccessForm, self).__init__(*args, **kwargs)
 
-        groups_with_center = MicrophysiologyCenter.objects.all().values_list('groups', flat=True)
+        # NEED A MORE ELEGANT WAY TO GET THIS
+        first_center = self.instance.group.center_groups.first()
 
         groups_without_repeat = Group.objects.filter(
-            id__in=groups_with_center
+            id__in=first_center.accessible_groups.all().values_list('id', flat=True),
         ).order_by(
             'name'
         ).exclude(
@@ -3417,7 +3418,7 @@ class AssayStudySetForm(SignOffMixin, BootstrapForm):
         study_queryset = get_user_accessible_studies(
             self.user
         ).prefetch_related(
-            'group__microphysiologycenter_set',
+            'group__center_groups',
         )
         assay_queryset = AssayStudyAssay.objects.filter(
             study_id__in=study_queryset.values_list('id', flat=True)
