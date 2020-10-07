@@ -34,15 +34,6 @@
 
     {% include 'tracking.html' with study_submit='true' %}
 
-    <legend>Access Groups</legend>
-    <div class="alert alert-warning" role="alert">
-        <span class="sr-only">Warning:</span>
-        <strong>
-            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-            Please note that access to a study will change only after it has been signed off on.
-        </strong>
-    </div>
-
     {# Maybe we won't have "restricted" here yet... #}
     {% comment %}
     <div class="alert alert-info" role="alert">
@@ -58,9 +49,11 @@
     </div>
     {% endcomment %}
 
+    {% comment %}
     <div class="no-selectize" hidden>
         {{ form.access_groups }}
     </div>
+    {% endcomment %}
 
 {#    <div class="form-group">#}
 {#        <label for="restricted" class="col-sm-2 control-label">Restrict Access</label>#}
@@ -72,6 +65,7 @@
 {#        </div>#}
 {#    </div>#}
 
+    {% comment %}
     <div id="access_group_section">
     <div class="alert alert-info" role="alert">
         <span class="sr-only">Info:</span>
@@ -117,6 +111,47 @@
       <select multiple="multiple" id='id_visible_to' class="form-control no-selectize" size='12'></select>
     </div>
     </div>
+    {% endcomment %}
+
+    {# Avoid inline style #}
+    <div style="margin-top: 25px;" class="alert alert-info" role="alert">
+        <span class="sr-only">Info:</span>
+        <ul>
+        <li>
+        Grant access to members of a group by clicking a group name under "Unselected" and pressing "Add."
+        </li>
+        <li>
+        Revoke access by selecting a group under "Selected" and pressing "Remove."
+        </li>
+        <li>
+        You can select multiple groups by holding down control (or command on mac) and clicking the desired groups.
+        </li>
+        </ul>
+    </div>
+
+    <legend>Collaborator Groups</legend>
+    <div class="alert alert-warning" role="alert">
+        <span class="sr-only">Warning:</span>
+        <strong>
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            Please note that Collaborator Groups will immediately be granted viewership privileges to this Study.
+        </strong>
+    </div>
+    {% include 'horizontal_filter.html' with field='collaborator_groups' %}
+
+    <legend>Access Groups</legend>
+    <div class="alert alert-warning" role="alert">
+        <span class="sr-only">Warning:</span>
+        <strong>
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            Please note that Access Groups will only gain access to this Study after Sign Off.
+        </strong>
+    </div>
+    {% include 'horizontal_filter.html' with field='access_groups' %}
+
+    <div class="no-selectize" hidden>
+        {{ form.access_groups }}
+        {{ form.collaborator_groups }}
     </div>
 </form>
 {% endblock %}

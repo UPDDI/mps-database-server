@@ -383,7 +383,7 @@ def get_data_as_list_of_lists(ids, data_points=None, both_assay_names=False, inc
     if not data_points:
         # TODO ORDER SUBJECT TO CHANGE
         data_points = AssayDataPoint.objects.prefetch_related(
-            'study__group__microphysiologycenter_set',
+            'study__group__center_groups',
 
             # Is going through the matrix item too expensive here?
             'matrix_item__group__assaygroupcompound_set__compound_instance__compound',
@@ -845,7 +845,7 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
     #     'assaysetupcompound_set__concentration_unit',
     #     'assaysetupcompound_set__addition_location',
     #     # SOMEWHAT FOOLISH
-    #     'study__group__microphysiologycenter_set'
+    #     'study__group__center_groups'
     # )
 
     if groups:
@@ -864,7 +864,7 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
             'assaygroupcompound_set__concentration_unit',
             'assaygroupcompound_set__addition_location',
             # SOMEWHAT FOOLISH
-            'study__group__microphysiologycenter_set'
+            'study__group__center_groups'
         )
 
     if not criteria:
@@ -2421,7 +2421,7 @@ def acquire_post_filter(studies, assays, groups, matrix_items, data_points):
     post_filter = {}
 
     studies = studies.prefetch_related(
-        'group__microphysiologycenter_set'
+        'group__center_groups'
     )
 
     for study in studies:
@@ -2436,7 +2436,7 @@ def acquire_post_filter(studies, assays, groups, matrix_items, data_points):
         })
 
         # SLOPPY
-        first_center = study.group.microphysiologycenter_set.first()
+        first_center = study.group.center_groups.first()
 
         current.setdefault(
             'group_id__in', {}

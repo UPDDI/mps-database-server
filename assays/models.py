@@ -2151,7 +2151,7 @@ class AssayStudy(FlaggableModel):
 
     # TODO REVISE REVISE
     def __str__(self):
-        first_center = self.group.microphysiologycenter_set.first()
+        first_center = self.group.center_groups.first()
         if first_center:
             center_id = first_center.center_id
         else:
