@@ -83,6 +83,7 @@ from .utils import (
     calibration_choices,
     omic_data_file_process_data,
     COLUMN_HEADERS,
+    data_quality_clean_check_for_omic_file_upload,
 )
 
 from django.utils import timezone
@@ -96,7 +97,6 @@ import ujson as json
 import os
 import csv
 import re
-import copy
 
 from mps.utils import (
     get_split_times,
@@ -5241,18 +5241,8 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
 
     def clean(self):
         data = super(AssayOmicDataFileUploadForm, self).clean()
-        self.process_file(save=False, calledme='clean')
-        return data
 
-    def save(self, commit=True):
-        new_file = super(AssayOmicDataFileUploadForm, self).save(commit=commit)
-        if commit:
-            self.process_file(save=True, calledme='save')
-        return new_file
-
-    def process_file(self, save=False, calledme='c'):
-        true_to_continue = True
-        data = self.cleaned_data
+        # data are changed here, so NEED to return the data
         data['time_1'] = 0
         for time_unit, conversion in list(TIME_CONVERSIONS.items()):
             if data.get('time_1_' + time_unit) is not None:
@@ -5265,45 +5255,50 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
                 inttime = data.get('time_2_' + time_unit)
                 data.update({'time_2': data.get('time_2') + inttime * conversion,})
 
-        file_extension = os.path.splitext(data.get('omic_data_file').name)[1]
+        true_to_continue = self.qc_file(save=False, calledme='clean')
+        if not true_to_continue:
+            validation_message = 'This did not pass QC.'
+            raise ValidationError(validation_message, code='invalid')
+        self.process_file(save=False, calledme='clean')
+        return data
 
-        # there are a few fields, in addition to the change of the data file, that would cause the data to need replaced
-        # including analysis_method and data_type
-        if 'omic_data_file' in self.changed_data or 'analysis_method' in self.changed_data or 'data_type' in self.changed_data or self.instance.id is None:
-            # Run file extension check
-            if file_extension in ['.csv', '.tsv', '.txt', '.xls', '.xlsx']:
-                true_to_continue = True
-            else:
-                true_to_continue = False
-                raise ValidationError(
-                     'Invalid file extension - must be in csv, tsv, txt, xls, or xlsx',
-                     code='invalid'
-                )
+    def save(self, commit=True):
+        new_file = None
+        if commit:
+            new_file = super(AssayOmicDataFileUploadForm, self).save(commit=commit)
+            self.process_file(save=True, calledme='save')
+        return new_file
 
-        # ONGOING - add to the list with all data types that are two groups required
-        if data['data_type'] in ['log2fc']:
-            if data['group_1'] == None or data['group_2'] == None:
-                true_to_continue = False
-                raise ValidationError(
-                     'For data type that compares two groups, both groups must be selected.',
-                     code='invalid'
-                )
-
-        if true_to_continue:
+    def qc_file(self, save=False, calledme='c'):
+        data = self.cleaned_data
+        data_file_pk = 0
+        # self.instance.id is None for the add form
+        if self.instance.id:
             data_file_pk = self.instance.id
-            data_type = data['data_type']
-            analysis_method = data['analysis_method']
 
-            if calledme == 'clean':
-                # this function is in utils.py
-                # print('form clean')
-                data_file = data.get('omic_data_file')
-                a_returned = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, analysis_method)
-            else:
-                # print('form save')
-                queryset = AssayOmicDataFileUpload.objects.get(id=data_file_pk)
-                data_file = queryset.omic_data_file.open()
-                a_returned = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, analysis_method)
+        true_to_continue = data_quality_clean_check_for_omic_file_upload(self, data, data_file_pk)
+        return true_to_continue
+
+    def process_file(self, save=False, calledme='c'):
+        data = self.cleaned_data
+        data_file_pk = 0
+        if self.instance.id:
+            data_file_pk = self.instance.id
+        file_extension = os.path.splitext(data.get('omic_data_file').name)[1]
+        data_type = data['data_type']
+        analysis_method = data['analysis_method']
+
+        # HANDY for getting a file object and a file queryset when doing clean vrs save
+        if calledme == 'clean':
+            # this function is in utils.py
+            # print('form clean')
+            data_file = data.get('omic_data_file')
+            a_returned = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, analysis_method)
+        else:
+            # print('form save')
+            queryset = AssayOmicDataFileUpload.objects.get(id=data_file_pk)
+            data_file = queryset.omic_data_file.open()
+            a_returned = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, analysis_method)
 
         return data
 

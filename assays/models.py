@@ -5073,6 +5073,10 @@ assay_omic_gene_name_choices = [
     ('gene_symbol', 'Gene Symbol')
 ]
 
+# Get omic data file location
+def omic_data_file_location(instance, filename):
+    return '/'.join(['omic_data_file', str(instance.study_id), filename])
+
 
 # this is for all omics files
 # we were going to separate into two group data and one group data
@@ -5099,7 +5103,7 @@ class AssayOmicDataFileUpload(LockableModel):
     )
     # if not required, and user tries to have two empty, will get error
     omic_data_file = models.FileField(
-        upload_to='omic_data_file',
+        upload_to=omic_data_file_location,
         help_text='Omic data file to be uploaded to the database.',
         verbose_name='Omic Data File*'
     )

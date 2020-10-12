@@ -5,16 +5,21 @@ window.OMICS = {
 };
 
 $(document).ready(function () {
+    //show the validation stuff
+    $('#form_errors').show()
     // Load core chart package
     google.charts.load('current', {'packages': ['corechart']});
     google.charts.load('visualization', '1', {'packages': ['imagechart']});
 
     // $('.has-popover').popover({'trigger':'hover'});
-
-    let global_omic_upload_group_id_working = 0;
-    let global_omic_upload_group_pk_working = 0;
-    let global_omic_upload_group_id_working2 = 0;
-    let global_omic_upload_group_pk_working2 = 0;
+    
+    let global_omic_upload_group_id_change = 0;
+    let global_omic_upload_group_pk_change = 0;
+    
+    let global_omic_upload_group_id_load_1 = 0;
+    let global_omic_upload_group_pk_load_1 = 0;
+    let global_omic_upload_group_id_load_2 = 0;
+    let global_omic_upload_group_pk_load_2 = 0;
     let global_omic_upload_called_from = 'add';
 
     let global_omic_current_group1 = $('#id_group_1')[0].selectize.items[0];
@@ -26,17 +31,25 @@ $(document).ready(function () {
     changed_something_important("load");
 
     let global_omic_upload_check_load = $('#check_load').html().trim();
+
     if (global_omic_upload_check_load === 'review') {
+        global_omic_upload_called_from = 'load-review' 
         // HANDY - to make everything on a page read only (for review page)
         $('.selectized').each(function() { this.selectize.disable() });
         $(':input').attr('disabled', 'disabled');
-    } else if (global_omic_upload_check_load === 'add') {
-        global_omic_upload_called_from = 'add'
-        global_omic_upload_group_id_working = 1
-        global_omic_upload_group_pk_working = $('#id_group_1')[0].selectize.items[0]
-        global_omic_upload_group_id_working2 = 2
-        global_omic_upload_group_pk_working2 = $('#id_group_2')[0].selectize.items[0]
-        get_group_sample_info()
+    } else {
+        global_omic_upload_group_id_load_1 = 1
+        global_omic_upload_group_pk_load_1 = $('#id_group_1')[0].selectize.items[0]
+        global_omic_upload_group_id_load_2 = 2
+        global_omic_upload_group_pk_load_2 = $('#id_group_2')[0].selectize.items[0]      
+        
+        if (global_omic_upload_check_load === 'add') {
+            global_omic_upload_called_from = 'load-add'
+            get_group_sample_info('load-add')
+        } else {
+            global_omic_upload_called_from = 'load-update'
+            get_group_sample_info('load-update')
+        }
     }
 
     // tool tip requirements
@@ -74,13 +87,20 @@ $(document).ready(function () {
     }
 
     /**
+     * A function to clear the validation errors on change of any field
+     */
+    function clear_validation_errors() {
+        $('#form_errors').hide();
+    }
+
+    /**
      * On click to toggle
     */
+    // the file format details
     $('#fileFormatDetailsButton').click(function () {
         $('#omic_file_format_details_section').toggle();
     });
-
-    // hide/show the graph sections
+    // the graph sections
     $('#omicPreviewTheGraphsButton').click(function () {
         $('#omic_preview_the_graphs_section').toggle();
         $('#omic_preview_the_graphs_section2').toggle();
@@ -89,6 +109,7 @@ $(document).ready(function () {
      * On change data file
     */
     $('#id_omic_data_file').on('change', function (e) {
+        clear_validation_errors();
         //when first change the file, make the preview button available
         $('#omic_preview_button_section').show();
         $('#omic_preview_the_graphs_section').show();
@@ -99,12 +120,14 @@ $(document).ready(function () {
      * On change data type, change what is required page logic
     */
     $('#id_data_type').change(function () {
+        clear_validation_errors();
         changed_something_important("data_type");
     });
     /**
      * On changes that affect the graphs/plots on the preview page
     */
     $('#id_anaylsis_method').on('change', function (e) {
+        clear_validation_errors();
         changed_something_important("analysis_method");
     });
 
@@ -116,7 +139,7 @@ $(document).ready(function () {
             $('#id_group_2').next().addClass('required');
             $('.two-groups').show();
             if (called_from != 'load') {
-                get_data_for_this_file_ready_for_preview()
+                get_data_for_this_file_ready_for_preview(called_from)
             }
         } else {
             //here here to update when ready
@@ -155,7 +178,7 @@ $(document).ready(function () {
     // id="plots"
     // id="volcano-plots"
     // id="ma-plots"
-    function get_data_for_this_file_ready_for_preview() {
+    function get_data_for_this_file_ready_for_preview(called_from) {
         let data = {
             call: 'fetch_omics_data_for_upload_preview_prep',
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
@@ -232,6 +255,15 @@ $(document).ready(function () {
                         // console.log(window.OMICS.omics_data)
                         window.OMICS.draw_plots(window.OMICS.omics_data, true, 0, 0, 0, 0, 0, 0, 0, 'upload');
                         // function(omics_data, firstTime, minPval, maxPval, minL2FC, maxL2FC, minPval_neg, maxPval_neg, L2FC_abs)
+
+                        // put here to avoid race errors
+                        if (called_from == 'data_file') {
+                            try {
+                                id_omic_data_file = $('#id_omic_data_file').val();
+                                check_file_add_update(id_omic_data_file);
+                            } catch {
+                            }
+                        }
                     }
                 },
                 error: function (xhr, errmsg, err) {
@@ -248,6 +280,7 @@ $(document).ready(function () {
      * On change method
     */
     $('#id_study_assay').change(function () {
+        clear_validation_errors();
         study_assay_value = $('#id_study_assay')[0].selectize.items[0];
         try {
             study_assay_text = $('#id_study_assay')[0].selectize.options[study_assay_value]['text'];
@@ -265,30 +298,32 @@ $(document).ready(function () {
      * On change a group, call a function that gets sample info
     */
     $('#id_group_1').change(function () {
+        clear_validation_errors();
         //console.log('change 1')
         if (global_make_the_group_change) {
             if ($('#id_group_1')[0].selectize.items[0] == $('#id_group_2')[0].selectize.items[0]) {
                 $('#id_group_1')[0].selectize.setValue(global_omic_current_group1);
-                send_user_different_message();
+                send_user_groups_are_different_message();
             } else {
                 global_omic_upload_called_from = 'change';
-                global_omic_upload_group_id_working = 1;
-                global_omic_upload_group_pk_working = $('#id_group_1')[0].selectize.items[0];
+                global_omic_upload_group_id_change = 1;
+                global_omic_upload_group_pk_change = $('#id_group_1')[0].selectize.items[0];
                 get_group_sample_info('change');
             }
             global_omic_current_group1 = $('#id_group_1')[0].selectize.items[0];
         }
     });
     $('#id_group_2').change(function () {
+        clear_validation_errors();
         if (global_make_the_group_change) {
             if ($('#id_group_1')[0].selectize.items[0] == $('#id_group_2')[0].selectize.items[0]) {
                 $('#id_group_2')[0].selectize.setValue(global_omic_current_group2);
-                send_user_different_message();
+                send_user_groups_are_different_message();
             } else {
                 global_omic_upload_called_from = 'change';
                 //console.log('change 2')
-                global_omic_upload_group_id_working = 2;
-                global_omic_upload_group_pk_working = $('#id_group_2')[0].selectize.items[0];
+                global_omic_upload_group_id_change = 2;
+                global_omic_upload_group_pk_change = $('#id_group_2')[0].selectize.items[0];
                 get_group_sample_info('change');
             }
             global_omic_current_group2 = $('#id_group_2')[0].selectize.items[0];
@@ -319,7 +354,7 @@ $(document).ready(function () {
         download(filename, text);
     }, false);
 
-    function send_user_different_message() {
+    function send_user_groups_are_different_message() {
         if (typeof $('#id_group_1')[0].selectize.items[0] !== 'undefined') {
             alert('Group 1 and Group 2 must be different or both must be empty.');
         }
@@ -329,8 +364,11 @@ $(document).ready(function () {
       * When a group is changed, if that group has already been added to the data upload file
       * get the first occurrence that has sample information.
     */
-    function get_group_sample_info() {
-        // console.log(global_omic_upload_group_id_working)
+    function get_group_sample_info(called_from) {
+        // console.log('1: '+global_omic_upload_group_pk_change)
+        // console.log('2: '+global_omic_upload_group_pk_load_1)
+        // console.log('3: '+global_omic_upload_group_pk_load_2)
+        // console.log('4: '+global_omic_upload_called_from)
 
         // HANDY if using js split time
         // time_in_minutes = 121
@@ -340,13 +378,19 @@ $(document).ready(function () {
         //     console.log(time_value)
         // });
 
+        // if changing a group, need to get all the updated info
+        // if an add page, need to call to clear out the location list
+        // if update page, need to get the model location list
+
         let data = {
             call: 'fetch_omic_sample_info_from_upload_data_table',
             called_from: global_omic_upload_called_from,
-            groupId: global_omic_upload_group_id_working,
-            groupPk: global_omic_upload_group_pk_working,
-            groupId2: global_omic_upload_group_id_working2,
-            groupPk2: global_omic_upload_group_pk_working2,
+            groupIdc: global_omic_upload_group_id_change,
+            groupPkc: global_omic_upload_group_pk_change,
+            groupId1: global_omic_upload_group_id_load_1,
+            groupPk1: global_omic_upload_group_pk_load_1,
+            groupId2: global_omic_upload_group_id_load_2,
+            groupPk2: global_omic_upload_group_pk_load_2,
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
         };
         window.spinner.spin(document.getElementById('spinner'));
@@ -369,7 +413,7 @@ $(document).ready(function () {
             // error callback
             error: function (xhr, errmsg, err) {
                 window.spinner.stop();
-                alert('An error has occurred (finding group sample information). Enter the information manually.');
+                alert('An error has occurred (finding group sample information). ');
                 console.log(xhr.status + ': ' + xhr.responseText);
             }
         });
@@ -381,34 +425,64 @@ $(document).ready(function () {
     let get_group_sample_info_ajax = function (json, exist) {
         // bringing back the D, H, M, and sample location (if found)
 
-        // console.log('--- '+global_omic_upload_group_id_working)
-        // console.log(json.timemess)
-        // console.log(json.day)
-        // console.log(json.hour)
-        // console.log(json.minute)
-        // console.log(json.locmess)
-        // console.log(json.sample_location_pk)
+        // console.log('--- '+global_omic_upload_group_id_load_1)
+        // console.log(json.timemess1)
+        // console.log(json.day1)
+        // console.log(json.hour1)
+        // console.log(json.minute1)
+        // console.log(json.locmess1)
+        // console.log(json.sample_location_pk1)
+        // console.log(json.location_dict1)
         // console.log(json.timemess2)
         // console.log(json.day2)
         // console.log(json.hour2)
         // console.log(json.minute2)
         // console.log(json.locmess2)
         // console.log(json.sample_location_pk2)
+        // console.log(json.location_dict2)
 
-        if (global_omic_upload_called_from == 'add') {
-            $('#id_time_1_day').val(json.day);
-            $('#id_time_1_hour').val(json.hour);
-            $('#id_time_1_minute').val(json.minute);
-            $('#id_location_1')[0].selectize.setValue(json.sample_location_pk);
-            $('#id_time_2_day').val(json.day2);
-            $('#id_time_2_hour').val(json.hour2);
-            $('#id_time_2_minute').val(json.minute2);
-            $('#id_location_2')[0].selectize.setValue(json.sample_location_pk2);
+        if (global_omic_upload_called_from == 'load-add') {
+            // just do the location lists
+        } else if (global_omic_upload_called_from == 'load-update') {
+            // just do the location lists to restrict to the model
+            let $this_dropdown1 = $(document.getElementById('id_location_1'));
+            let pk_loc_1 = $('#id_location_1')[0].selectize.items[0];
+            $this_dropdown1.selectize()[0].selectize.clearOptions();
+            let this_dict1 = $this_dropdown1[0].selectize;
+            // fill the dropdown with what brought back from ajax call
+            $.each(json.location_dict1[0], function( pk, text ) {
+                // console.log(" "+pk+ "  "+text)
+                this_dict1.addOption({value: pk, text: text});
+            });
+            $('#id_location_1')[0].selectize.setValue(pk_loc_1);
+            let $this_dropdown2 = $(document.getElementById('id_location_2'));
+            let pk_loc_2 = $('#id_location_2')[0].selectize.items[0];
+            $this_dropdown2.selectize()[0].selectize.clearOptions();
+            let this_dict2 = $this_dropdown2[0].selectize;
+            // fill the dropdown with what brought back from ajax call
+            $.each(json.location_dict2[0], function( pk, text ) {
+                // console.log(" "+pk+ "  "+text)
+                this_dict2.addOption({value: pk, text: text});
+            });
+            $('#id_location_2')[0].selectize.setValue(pk_loc_2);
         } else {
-            $('#id_time_'+global_omic_upload_group_id_working+'_day').val(json.day);
-            $('#id_time_'+global_omic_upload_group_id_working+'_hour').val(json.hour);
-            $('#id_time_'+global_omic_upload_group_id_working+'_minute').val(json.minute);
-            $('#id_location_'+global_omic_upload_group_id_working)[0].selectize.setValue(json.sample_location_pk);
+            // called from a change of one of the groups
+            $('#id_time_'+global_omic_upload_group_id_change+'_day').val(json.day1);
+            $('#id_time_'+global_omic_upload_group_id_change+'_hour').val(json.hour1);
+            $('#id_time_'+global_omic_upload_group_id_change+'_minute').val(json.minute1);
+
+            // https://github.com/selectize/selectize.js/blob/master/docs/api.md
+            // HANDY to set the options of selectized dropdown
+            let $this_dropdown = $(document.getElementById('id_location_'+global_omic_upload_group_id_change));
+            $this_dropdown.selectize()[0].selectize.clearOptions();
+            let this_dict = $this_dropdown[0].selectize;
+            // fill the dropdown with what brought back from ajax call
+            //the changed one is always returned as the first
+            $.each(json.location_dict1[0], function( pk, text ) {
+                // console.log(" "+pk+ "  "+text)
+                this_dict.addOption({value: pk, text: text});
+            });
+            $('#id_location_'+global_omic_upload_group_id_change)[0].selectize.setValue(json.sample_location_pk1);
         }
 
         //HANDY get the value from selectized
@@ -419,6 +493,51 @@ $(document).ready(function () {
         //global_omic_upload_aa = $('#id_aa')[0].selectize.options[global_omic_upload_aa]['text'];
 
     };
+
+     /**
+      * When the file is changed and is not null, check to see if the file
+      * is already in this study
+    */
+    function check_file_add_update(id_omic_data_file) {
+        if ($("#check_load").html().trim() === 'add') {
+            data_file_pk = 0;
+        } else {
+            parseInt(document.getElementById("this_file_id").innerText.trim())
+        }
+        let data = {
+            call: 'fetch_this_file_is_this_study',
+            omic_data_file: id_omic_data_file,
+            study_id: parseInt(document.getElementById("this_study_id").innerText.trim()),
+            data_file_pk: data_file_pk,
+            csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
+        };
+        window.spinner.spin(document.getElementById('spinner'));
+        $.ajax({
+            url: '/assays_ajax/',
+            type: 'POST',
+            dataType: 'json',
+            data: data,
+            success: function (json) {
+                window.spinner.stop();
+                if (json.errors) {
+                    // Display errors
+                    alert(json.errors);
+                }
+                else {
+                    let exist = true;
+                    if (json.true_to_continue.toString().toLowerCase() === 'false') {
+                       alert(json.message);
+                    }
+                }
+            },
+            // error callback
+            error: function (xhr, errmsg, err) {
+                window.spinner.stop();
+                alert('An error has occurred checking the file name. ');
+                console.log(xhr.status + ': ' + xhr.responseText);
+            }
+        });
+    }
 
 });
 

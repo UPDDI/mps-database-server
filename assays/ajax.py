@@ -52,6 +52,7 @@ from .models import (
     AssayOmicDataPoint,
     AssayOmicAnalysisTarget,
     AssayGroup,
+    AssaySampleLocation,
 )
 from microdevices.models import (
     MicrophysiologyCenter,
@@ -60,6 +61,7 @@ from microdevices.models import (
     OrganModelProtocol,
     OrganModelProtocolCell,
     OrganModelProtocolSetting,
+    OrganModelLocation,
 )
 from compounds.models import (
     Compound
@@ -94,6 +96,7 @@ from .utils import (
     calculate_pk_parameters,
     plate_reader_data_file_process_data,
     omic_data_file_process_data,
+    this_file_same_as_another_in_this_study,
     sandrasGeneralFormatNumberFunction,
 )
 
@@ -6932,137 +6935,107 @@ def fetch_omic_sample_info_from_upload_data_table(request):
         Assay Omic Data File get the sample info if the group previously added to upload table
     """
 
-    # if called_from is add, have to do both (did them here to avoid race errors)
+    # if changing a group, need to get all the updated info
+    # if an add page, need to call to clear out the location list
+    # if update page, need to get the model location list
+
+    # if called_from a load, have to do both (did them here to avoid race errors)
     called_from = request.POST.get('called_from', '0')
-    groupId = request.POST.get('groupId', '0')
-    groupPk = request.POST.get('groupPk', '0')
-    groupId2 = request.POST.get('groupId2', '0')
-    groupPk2 = request.POST.get('groupPk2', '0')
+    # could be called from change, load-add, load-update
+    groupIDc = int(request.POST.get('groupIDc', '0'))
+    groupPkc = int(request.POST.get('groupPkc', '0'))
+    groupID1 = int(request.POST.get('groupID1', '0'))
+    groupPk1 = int(request.POST.get('groupPk1', '0'))
+    groupId2 = int(request.POST.get('groupId2', '0'))
+    groupPk2 = int(request.POST.get('groupPk2', '0'))
 
-    queryset1 = None
-    queryset2 = None
+    # when called from is a change, we are only working with ONE, the groupIDc and groupPkc
+    # note that the ID is the id of the changed group (could be first or second on the form)
+    # or the IDs on the form (1 and 2 - for the load-add and load-update)
 
-    timemess = ""
-    locmess = ""
-    day = None
-    hour = None
-    minute = None
-    loc_pk = None
+    # these will hold the change results or form group 1
+    timemess1 = ""
+    locmess1 = ""
+    day1 = None
+    hour1 = None
+    minute1 = None
+    loc_pk1 = None
+    location_dict1 = {}
+    # these are the group 2 form defaults
     timemess2 = ""
     locmess2 = ""
     day2 = None
     hour2 = None
     minute2 = None
     loc_pk2 = None
+    location_dict2 = {}
 
-    sample_info = sub_fetch_omic_sample_info_from_upload_data_table(groupId, groupPk)
-    timemess = sample_info[0]
-    locmess = sample_info[1]
-    day = sample_info[2]
-    hour = sample_info[3]
-    minute = sample_info[4]
-    loc_pk = sample_info[5]
+    if called_from == 'change' and groupPkc > 0:
+        sample_info = sub_fetch_omic_sample_info_from_upload_data_table(groupPkc)
+        timemess1 = sample_info[0]
+        locmess1 = sample_info[1]
+        day1 = sample_info[2]
+        hour1 = sample_info[3]
+        minute1 = sample_info[4]
+        loc_pk1 = sample_info[5]
 
-    # if add, have to do the second one too
-    if called_from == 'add':
-        sample_info = sub_fetch_omic_sample_info_from_upload_data_table(groupId2, groupPk2)
-        timemess2 = sample_info[0]
-        locmess2 = sample_info[1]
-        day2 = sample_info[2]
-        hour2 = sample_info[3]
-        minute2 = sample_info[4]
-        loc_pk2 = sample_info[5]
+        model_row = AssayGroup.objects.only('organ_model').get(pk=groupPkc).organ_model
+        this_model_pk = model_row.id
+        location_dict1 = sub_fetch_model_location_dictionary(this_model_pk)
+
+    if called_from == 'load-update' and groupPk1 > 0:
+        # loading an update page, get the correct list for group1
+        model_row = AssayGroup.objects.only('organ_model').get(pk=groupPk1).organ_model
+        this_model_pk = model_row.id
+        location_dict1 = sub_fetch_model_location_dictionary(this_model_pk)
+
+    if called_from == 'load-update' and groupPk2 > 0:
+        # loading an update page, get the correct list for group2
+        model_row = AssayGroup.objects.only('organ_model').get(pk=groupPk2).organ_model
+        this_model_pk = model_row.id
+        location_dict2 = sub_fetch_model_location_dictionary(this_model_pk)
 
     # if the mess is found, the replace will happen in the form field in the html file
     data = {}
     data.update({
-        'timemess': timemess,
-        'day': day,
-        'hour': hour,
-        'minute': minute,
-        'locmess': locmess,
-        'sample_location_pk': loc_pk,
+        'timemess1': timemess1,
+        'day1': day1,
+        'hour1': hour1,
+        'minute1': minute1,
+        'locmess1': locmess1,
+        'sample_location_pk1': loc_pk1,
+        'location_dict1': location_dict1,
         'timemess2': timemess2,
         'day2': day2,
         'hour2': hour2,
         'minute2': minute2,
         'locmess2': locmess2,
-        'sample_location_pk2': loc_pk2
-        })
+        'sample_location_pk2': loc_pk2,
+        'location_dict2': location_dict2,
+    })
 
     # print(data)
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-# sck omic data find sample information if group already in the upload file
-def fetch_omic_method_target_unit_combos(request):
-    """
-        Assay Omic Data File get the study setup method, target, unit combos to match up dropdowns.
-    """
+def fetch_this_file_is_this_study(request):
+    omic_data_file = request.POST.get('omic_data_file', '0')
+    study_id = int(request.POST.get('study_id', '0'))
+    data_file_pk = int(request.POST.get('data_file_pk', '0'))
 
-    # if called_from is add, have to do both (did them here to avoid race errors)
-    called_from = request.POST.get('called_from', '0')
-    groupId = request.POST.get('groupId', '0')
-    groupPk = request.POST.get('groupPk', '0')
-    groupId2 = request.POST.get('groupId2', '0')
-    groupPk2 = request.POST.get('groupPk2', '0')
+    continue_message = this_file_same_as_another_in_this_study(omic_data_file, study_id, data_file_pk)
+    true_to_continue = continue_message[0]
+    message = continue_message[1]
 
-    queryset1 = None
-    queryset2 = None
-
-    timemess = ""
-    locmess = ""
-    day = None
-    hour = None
-    minute = None
-    loc_pk = None
-    timemess2 = ""
-    locmess2 = ""
-    day2 = None
-    hour2 = None
-    minute2 = None
-    loc_pk2 = None
-
-    sample_info = sub_fetch_omic_sample_info_from_upload_data_table(groupId, groupPk)
-    timemess = sample_info[0]
-    locmess = sample_info[1]
-    day = sample_info[2]
-    hour = sample_info[3]
-    minute = sample_info[4]
-    loc_pk = sample_info[5]
-
-    # if add, have to do the second one too
-    if called_from == 'add':
-        sample_info = sub_fetch_omic_sample_info_from_upload_data_table(groupId2, groupPk2)
-        timemess2 = sample_info[0]
-        locmess2 = sample_info[1]
-        day2 = sample_info[2]
-        hour2 = sample_info[3]
-        minute2 = sample_info[4]
-        loc_pk2 = sample_info[5]
-
-    # if the mess is found, the replace will happen in the form field in the html file
     data = {}
     data.update({
-        'timemess': timemess,
-        'day': day,
-        'hour': hour,
-        'minute': minute,
-        'locmess': locmess,
-        'sample_location_pk': loc_pk,
-        'timemess2': timemess2,
-        'day2': day2,
-        'hour2': hour2,
-        'minute2': minute2,
-        'locmess2': locmess2,
-        'sample_location_pk2': loc_pk2
-        })
-
-    # print(data)
+        'true_to_continue': true_to_continue,
+        'message': message,
+    })
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-def sub_fetch_omic_sample_info_from_upload_data_table(groupId, groupPk):
+def sub_fetch_omic_sample_info_from_upload_data_table(this_pk):
     locmess = "no"
     loc_pk = None
     timemess = "no"
@@ -7072,11 +7045,12 @@ def sub_fetch_omic_sample_info_from_upload_data_table(groupId, groupPk):
     minute = None
 
     # find time if a previous instance with this group has been saved
+    # note that, must search when saved as EITHER a group 1 or a group 2
     queryset1 = AssayOmicDataFileUpload.objects.filter(
-        group_1=groupPk
+        group_1=this_pk
     ).aggregate(Max('time_1'))['time_1__max']
     queryset2 = AssayOmicDataFileUpload.objects.filter(
-        group_2=groupPk
+        group_2=this_pk
     ).aggregate(Max('time_2'))['time_2__max']
 
     if queryset1 is not None and queryset2 is not None:
@@ -7097,7 +7071,7 @@ def sub_fetch_omic_sample_info_from_upload_data_table(groupId, groupPk):
 
     # find location if this group has previously been saved with a group
     queryset1 = AssayOmicDataFileUpload.objects.filter(
-        group_1=groupPk
+        group_1=this_pk
     ).aggregate(Max('location_1'))['location_1__max']
 
     if queryset1 is not None:
@@ -7105,7 +7079,7 @@ def sub_fetch_omic_sample_info_from_upload_data_table(groupId, groupPk):
         loc_pk = queryset1
     else:
         queryset2 = AssayOmicDataFileUpload.objects.filter(
-            group_2=groupPk
+            group_2=this_pk
         ).aggregate(Max('location_2'))['location_2__max']
 
         if queryset2 is not None:
@@ -7113,6 +7087,29 @@ def sub_fetch_omic_sample_info_from_upload_data_table(groupId, groupPk):
             loc_pk = queryset2
 
     return [timemess, locmess, day, hour, minute, loc_pk]
+
+
+def sub_fetch_model_location_dictionary(this_pk):
+    location_dict = {}
+
+    qs_locations = OrganModelLocation.objects.filter(
+        organ_model_id=this_pk
+    ).prefetch_related(
+        'sample_location'
+    )
+    if len(qs_locations) > 0:
+        for each in qs_locations:
+            location_dict[each.sample_location.id] = each.sample_location.name
+    else:
+        qs_locations = AssaySampleLocation.objects.all()
+        for each in qs_locations:
+            if each.name.lower() == 'na' or each.name.lower() == 'unspecified':
+                pass
+            else:
+                location_dict[each.id] = each.name
+
+    # print('location_dict ', location_dict)
+    return [location_dict]
 
 
 def fetch_omics_data_for_visualization(request):
@@ -7500,12 +7497,13 @@ switch = {
     'fetch_omics_data_for_visualization': {
         'call': fetch_omics_data_for_visualization
     },
-    'fetch_omic_method_target_unit_combos': {
-        'call': fetch_omic_method_target_unit_combos
-    },
     'fetch_omics_data_for_upload_preview_prep': {
         'call': fetch_omics_data_for_upload_preview_prep
     },
+    'fetch_this_file_is_this_study': {
+        'call': fetch_this_file_is_this_study
+    },
+
 }
 
 

@@ -69,29 +69,32 @@
                 {% include "submit.html" with flag="y" creator=object.created_by.id %}
             {% endif %}
 
-            {% include "errors.html" %}
-            {% if form.errors %}
-                {% for field in form %}
-                    {% if field.errors %}
-                        {% for error in field.errors %}
-                            <div class="alert alert-danger" role="alert">
-                                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                                <span class="sr-only">Error:</span>
-                                {{field.label}}: {{error}}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger" role="alert">
-                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                    <span class="sr-only">Error:</span>
-                    {{ form.non_field_errors }}
-                    form.errors<br>
-                    {{ form.errors }}<br>
-                </div>
-            {% endif %}
+            <div id="form_errors" class="toggle-display-none">
+                {% include "errors.html" %}
+            </div>
+
+{#            {% if form.errors %}#}
+{#                {% for field in form %}#}
+{#                    {% if field.errors %}#}
+{#                        {% for error in field.errors %}#}
+{#                            <div id="form_errors" class="alert alert-danger" role="alert">#}
+{#                                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>#}
+{#                                <span class="sr-only">Error:</span>#}
+{#                                {{field.label}}: {{error}}#}
+{#                            </div>#}
+{#                        {% endfor %}#}
+{#                    {% endif %}#}
+{#                {% endfor %}#}
+{#            {% endif %}#}
+{#            {% if form.non_field_errors %}#}
+{#                <div id="non_form_errors" class="alert alert-danger" role="alert">#}
+{#                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>#}
+{#                    <span class="sr-only">Error:</span>#}
+{#                    {{ form.non_field_errors }}#}
+{#                    form.errors<br>#}
+{#                    {{ form.errors }}<br>#}
+{#                </div>#}
+{#            {% endif %}#}
 
             {# main #}
 {#            <div class="container">   NO CONTAINERs   #}
@@ -246,7 +249,7 @@
                     <div class="col-md-2">
                     </div>
                     <div class="col-md-10">
-                        <label>Group 1 - Test Group</label>
+                        <label>Group 1 - Test Group*</label>
                     </div>
                 </div>
 
@@ -262,8 +265,8 @@
                     <div class="col-md-10">
                         <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
                             <tr>
-                                <th class="bg-success" colspan="3">Sample Time 1</th>
-                                <th class="bg-warning">Sample Location 1</th>
+                                <th class="bg-success" colspan="3">Sample Time 1*</th>
+                                <th class="bg-warning">Sample Location 1*</th>
                             </tr>
                             <tr>
                                 <th class="bg-success">Day</th>
@@ -296,7 +299,7 @@
                     <div class="col-md-2">
                     </div>
                     <div class="col-md-10">
-                        <label>Group 2 - Reference Group</label>
+                        <label>Group 2 - Reference Group*</label>
                     </div>
                 </div>
 
@@ -308,8 +311,8 @@
                     <div class="col-md-10">
                         <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
                             <tr>
-                                <th class="bg-success" colspan="3">Sample Time 2</th>
-                                <th class="bg-warning">Sample Location 2</th>
+                                <th class="bg-success" colspan="3">Sample Time 2*</th>
+                                <th class="bg-warning">Sample Location 2*</th>
                             </tr>
                             <tr>
                                 <th class="bg-success">Day</th>
