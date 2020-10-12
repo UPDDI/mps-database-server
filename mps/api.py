@@ -5,26 +5,51 @@ from django.contrib.auth.models import Group
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
+from django.utils.translation import ugettext_lazy as _
+from rest_framework.serializers import ListSerializer
+from rest_framework.exceptions import ValidationError
+from rest_framework.fields import SkipField
+from rest_framework.settings import api_settings
 
-# Mixin for differentiating list and detail
-class DetailSerializerMixin(object):
-    def get_serializer_class(self):
-        if self.action == 'retrieve':
-            if hasattr(self, 'detail_serializer_class'):
-                return self.detail_serializer_class
+# Via https://github.com/claytondaley/drf-keyed-list
+class KeyedListSerializer(ListSerializer):
+    default_error_messages = {
+        'not_a_dict': _('Expected a dict of items but got type "{input_type}".'),
+        'empty': _('This dict may not be empty.')
+    }
 
-        return super(DetailSerializerMixin, self).get_serializer_class()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        meta = getattr(self.child, 'Meta', None)
+        assert hasattr(meta, 'keyed_list_serializer_field'), \
+            "Must provide a field name at keyed_list_serializer_field when using KeyedListSerializer"
+        self._keyed_field = meta.keyed_list_serializer_field
+
+    def to_internal_value(self, data):
+        if not isinstance(data, dict):
+            message = self.error_messages['not_a_dict'].format(
+                input_type=type(data).__name__
+            )
+            raise ValidationError({
+                api_settings.NON_FIELD_ERRORS_KEY: [message]
+            }, code='not_a_dict')
+        if not self.allow_empty and len(data) == 0:
+            if self.parent and self.partial:
+                raise SkipField()
+
+            message = self.error_messages['empty']
+            raise ValidationError({
+                api_settings.NON_FIELD_ERRORS_KEY: [message]
+            }, code='empty')
+        data = [{**v, **{self._keyed_field: k}} for k, v in data.items()]
+        return super().to_internal_value(data)
+
+    def to_representation(self, data):
+        response = super().to_representation(data)
+        return {v.pop(self._keyed_field): v for v in response}
 
 
-# Serializers define the API representation.
 # Maybe we ought to have serializers in a different file?
-# Unfortunately, we more or less have to manually indicate what we want from every constituent component
-class AssayStudySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AssayStudy
-        fields = ['id', 'name']
-
-
 class AssayDataPointSerializer(serializers.ModelSerializer):
     # An exception is thrown when repeating the source... for some reason?
     # If it defaults to the attribute name, why complain about passing source extraneously?
@@ -136,6 +161,7 @@ class AssayGroupSerializer(serializers.ModelSerializer):
         model = AssayGroup
         fields = [
             # Need the id for matching
+            # It will be part of the representation
             'id',
             'mps_model',
             'mps_model_version',
@@ -143,6 +169,9 @@ class AssayGroupSerializer(serializers.ModelSerializer):
             'cells',
             'settings',
         ]
+
+        list_serializer_class = KeyedListSerializer
+        keyed_list_serializer_field = 'id'
 
 
 class AssayStudyAssaySerializer(serializers.ModelSerializer):
@@ -160,6 +189,9 @@ class AssayStudyAssaySerializer(serializers.ModelSerializer):
             'unit',
         ]
 
+        list_serializer_class = KeyedListSerializer
+        keyed_list_serializer_field = 'id'
+
 
 class AssayMatrixItemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -171,6 +203,22 @@ class AssayMatrixItemSerializer(serializers.ModelSerializer):
             'name',
         ]
 
+        list_serializer_class = KeyedListSerializer
+        keyed_list_serializer_field = 'id'
+
+
+# Want a fast url
+class AssayStudySerializer(serializers.HyperlinkedModelSerializer):
+    data_group = serializers.StringRelatedField(source='group')
+
+    class Meta:
+        model = AssayStudy
+        fields = [
+            'id',
+            'url',
+            'name',
+            'data_group',
+        ]
 
 
 class AssayStudyDataSerializer(serializers.ModelSerializer):
@@ -184,6 +232,7 @@ class AssayStudyDataSerializer(serializers.ModelSerializer):
         model = AssayStudy
         depth = 1
         fields = [
+            # Redundant, but for clarity
             'id',
             'data',
             'groups',
@@ -193,6 +242,17 @@ class AssayStudyDataSerializer(serializers.ModelSerializer):
 
 
 # ViewSets define the view behavior.
+
+# Mixin for differentiating list and detail
+class DetailSerializerMixin(object):
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            if hasattr(self, 'detail_serializer_class'):
+                return self.detail_serializer_class
+
+        return super(DetailSerializerMixin, self).get_serializer_class()
+
+
 # Maybe we ought to have ViewSets in a different file?
 class AssayStudyViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
     # Contrived
@@ -212,7 +272,12 @@ class AssayStudyViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
         ).exclude(
             signed_off_by__isnull=True,
         )
-        serializer = AssayStudySerializer(queryset, many=True)
+        # NOTICE CONTEXT FOR HOST
+        serializer = AssayStudySerializer(
+            queryset,
+            many=True,
+            context={'request': request}
+        )
 
         return Response(serializer.data)
 
@@ -233,6 +298,7 @@ class AssayStudyViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
             'assaygroup_set__assaygroupcell_set__cell_sample__supplier',
             'assaygroup_set__assaygroupcell_set__addition_location',
             'assaygroup_set__assaygroupcell_set__density_unit',
+            'assaygroup_set__assaygroupcell_set__biosensor',
             'assaygroup_set__assaygroupsetting_set__setting',
             'assaygroup_set__assaygroupsetting_set__unit',
             'assaygroup_set__assaygroupsetting_set__addition_location',
