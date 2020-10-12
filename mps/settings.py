@@ -430,16 +430,9 @@ CONN_MAX_AGE = 6000
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
 
 REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES': (
-        'drf_ujson.renderers.UJSONRenderer',
-    ),
-    'DEFAULT_PARSER_CLASSES': (
-        'drf_ujson.parsers.UJSONParser',
-    ),
     # Use hyperlinked styles by default.
     # Only used if the `serializer_class` attribute is not set on a view.
-    'DEFAULT_MODEL_SERIALIZER_CLASS':
-        'rest_framework.serializers.HyperlinkedModelSerializer',
+    # 'DEFAULT_MODEL_SERIALIZER_CLASS': 'rest_framework.serializers.HyperlinkedModelSerializer',
 
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
