@@ -55,9 +55,9 @@ class AssayDataPointSerializer(serializers.ModelSerializer):
     # If it defaults to the attribute name, why complain about passing source extraneously?
     sample_location = serializers.StringRelatedField()
     # Alias
-    assay_id = serializers.PrimaryKeyRelatedField(source='study_assay', read_only=True)
+    assay_id = serializers.StringRelatedField(source='study_assay_id', read_only=True)
 
-    item_id = serializers.PrimaryKeyRelatedField(source='matrix_item', read_only=True)
+    item_id = serializers.StringRelatedField(source='matrix_item_id', read_only=True)
 
     time = serializers.StringRelatedField(source='get_time_string')
 
@@ -194,6 +194,9 @@ class AssayStudyAssaySerializer(serializers.ModelSerializer):
 
 
 class AssayMatrixItemSerializer(serializers.ModelSerializer):
+    # Force string ID
+    group_id = serializers.StringRelatedField(read_only=True)
+
     class Meta:
         model = AssayMatrixItem
         fields = [
@@ -201,6 +204,12 @@ class AssayMatrixItemSerializer(serializers.ModelSerializer):
             'id',
             'group_id',
             'name',
+            # Setup date generally is the same as study's...
+            # Error on the side of more?
+            'scientist',
+            'notebook',
+            'notebook_page',
+            'notes',
         ]
 
         list_serializer_class = KeyedListSerializer
@@ -209,6 +218,10 @@ class AssayMatrixItemSerializer(serializers.ModelSerializer):
 
 # Want a fast url
 class AssayStudySerializer(serializers.HyperlinkedModelSerializer):
+    # Force string ID
+    id = serializers.StringRelatedField(read_only=True)
+
+    study_types = serializers.StringRelatedField(source='get_study_types_string')
     data_group = serializers.StringRelatedField(source='group')
 
     class Meta:
@@ -218,15 +231,24 @@ class AssayStudySerializer(serializers.HyperlinkedModelSerializer):
             'url',
             'name',
             'data_group',
+            'study_types',
+            'start_date',
+            'description',
         ]
 
 
 class AssayStudyDataSerializer(serializers.ModelSerializer):
+    # Force string ID
+    id = serializers.StringRelatedField(read_only=True)
+
+    study_types = serializers.StringRelatedField(source='get_study_types_string')
+    data_group = serializers.StringRelatedField(source='group')
+
     data = AssayDataPointSerializer(source='assaydatapoint_set', read_only=True, many=True)
     groups = AssayGroupSerializer(source='assaygroup_set', read_only=True, many=True)
     assays = AssayStudyAssaySerializer(source='assaystudyassay_set', read_only=True, many=True)
-    # I don't know
-    chips_and_wells = AssayMatrixItemSerializer(source='assaymatrixitem_set', read_only=True, many=True)
+    # Are we sticking with this nomenclature?
+    items = AssayMatrixItemSerializer(source='assaymatrixitem_set', read_only=True, many=True)
 
     class Meta:
         model = AssayStudy
@@ -234,10 +256,19 @@ class AssayStudyDataSerializer(serializers.ModelSerializer):
         fields = [
             # Redundant, but for clarity
             'id',
-            'data',
+            # Study fields
+            # Stringification gives study types etc.
+            # Do we want the stringification or split up?
+            # '__str__',
+            'name',
+            'data_group',
+            'study_types',
+            'start_date',
+            'description',
             'groups',
+            'items',
             'assays',
-            'chips_and_wells',
+            'data',
         ]
 
 
