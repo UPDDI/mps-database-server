@@ -308,7 +308,19 @@ $(document).ready(function () {
                 global_omic_upload_called_from = 'change';
                 global_omic_upload_group_id_change = 1;
                 global_omic_upload_group_pk_change = $('#id_group_1')[0].selectize.items[0];
-                get_group_sample_info('change');
+
+                if ($('#id_group_'+global_omic_upload_group_id_change)[0].selectize.items[0] != null) {
+                    get_group_sample_info('change');
+                } else {
+                    $('#id_group_'+global_omic_upload_group_id_change)[0].selectize.items[0];
+                    $('#id_time_'+global_omic_upload_group_id_change+'_day').val(null);
+                    $('#id_time_'+global_omic_upload_group_id_change+'_hour').val(null);
+                    $('#id_time_'+global_omic_upload_group_id_change+'_minute').val(null);
+
+                    let $this_dropdown = $(document.getElementById('id_location_'+global_omic_upload_group_id_change));
+                    $this_dropdown.selectize()[0].selectize.clearOptions();
+                    $('#id_location_'+global_omic_upload_group_id_change)[0].selectize.setValue();
+                }
             }
             global_omic_current_group1 = $('#id_group_1')[0].selectize.items[0];
         }
@@ -324,7 +336,19 @@ $(document).ready(function () {
                 //console.log('change 2')
                 global_omic_upload_group_id_change = 2;
                 global_omic_upload_group_pk_change = $('#id_group_2')[0].selectize.items[0];
-                get_group_sample_info('change');
+
+                if ($('#id_group_'+global_omic_upload_group_id_change)[0].selectize.items[0] != null) {
+                    get_group_sample_info('change');
+                } else {
+                    $('#id_group_'+global_omic_upload_group_id_change)[0].selectize.items[0];
+                    $('#id_time_'+global_omic_upload_group_id_change+'_day').val(null);
+                    $('#id_time_'+global_omic_upload_group_id_change+'_hour').val(null);
+                    $('#id_time_'+global_omic_upload_group_id_change+'_minute').val(null);
+
+                    let $this_dropdown = $(document.getElementById('id_location_'+global_omic_upload_group_id_change));
+                    $this_dropdown.selectize()[0].selectize.clearOptions();
+                    $('#id_location_'+global_omic_upload_group_id_change)[0].selectize.setValue();
+                }
             }
             global_omic_current_group2 = $('#id_group_2')[0].selectize.items[0];
         }
