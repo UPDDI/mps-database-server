@@ -98,6 +98,8 @@ from .utils import (
     omic_data_file_process_data,
     this_file_same_as_another_in_this_study,
     sandrasGeneralFormatNumberFunction,
+    get_model_location_dictionary,
+    sandrasGeneralFormatNumberFunction,
 )
 
 import csv
@@ -6995,6 +6997,9 @@ def fetch_omic_sample_info_from_upload_data_table(request):
         this_model_pk = model_row.id
         location_dict2 = sub_fetch_model_location_dictionary(this_model_pk)
 
+    # print("l1 ",location_dict1)
+    # print("l2 ", location_dict2)
+
     # if the mess is found, the replace will happen in the form field in the html file
     data = {}
     data.update({
@@ -7089,26 +7094,8 @@ def sub_fetch_omic_sample_info_from_upload_data_table(this_pk):
     return [timemess, locmess, day, hour, minute, loc_pk]
 
 
-def sub_fetch_model_location_dictionary(this_pk):
-    location_dict = {}
-
-    qs_locations = OrganModelLocation.objects.filter(
-        organ_model_id=this_pk
-    ).prefetch_related(
-        'sample_location'
-    )
-    if len(qs_locations) > 0:
-        for each in qs_locations:
-            location_dict[each.sample_location.id] = each.sample_location.name
-    else:
-        qs_locations = AssaySampleLocation.objects.all()
-        for each in qs_locations:
-            if each.name.lower() == 'na' or each.name.lower() == 'unspecified':
-                pass
-            else:
-                location_dict[each.id] = each.name
-
-    # print('location_dict ', location_dict)
+def sub_fetch_model_location_dictionary(this_model_pk):
+    location_dict = get_model_location_dictionary(this_model_pk)
     return [location_dict]
 
 

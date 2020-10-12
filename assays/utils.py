@@ -41,6 +41,9 @@ from .models import (
     AssayOmicAnalysisTarget,
     AssayOmicDataFileUpload,
 )
+from microdevices.models import (
+    OrganModelLocation,
+)
 
 from mps.templatetags.custom_filters import VIEWER_SUFFIX, ADMIN_SUFFIX
 
@@ -7177,9 +7180,9 @@ def this_file_name_is_similar_to_another_in_this_study(omic_data_file, study_id,
     file_name = file_name_as_list[len(file_name_as_list)-1]
 
     file_name_as_list_2 = file_name.split('.')
-    file_name_as_list_2 = file_name_as_list_2[:len(file_name_as_list_2)-1]
+    # file_name_as_list_2 = file_name_as_list_2[:len(file_name_as_list_2)-1]
+    file_name_as_list_2 = file_name_as_list_2[:1]
     file_name_no_extension = ''.join(file_name_as_list_2)
-
     files_in_study = AssayOmicDataFileUpload.objects.filter(
         study_id=study_id
     )
@@ -7206,3 +7209,26 @@ def this_file_name_is_similar_to_another_in_this_study(omic_data_file, study_id,
         message = 'Similar file names already in this study [' + potential_dup_string + ']. Make sure you are uploading the correct file.'
 
     return [true_to_continue, message]
+
+
+def get_model_location_dictionary(this_model_pk):
+    location_dict = {}
+
+    qs_locations = OrganModelLocation.objects.filter(
+        organ_model_id=this_model_pk
+    ).prefetch_related(
+        'sample_location'
+    )
+    if len(qs_locations) > 0:
+        for each in qs_locations:
+            location_dict[each.sample_location.id] = each.sample_location.name
+    else:
+        qs_locations = AssaySampleLocation.objects.all()
+        for each in qs_locations:
+            if each.name.lower() == 'na' or each.name.lower() == 'unspecified':
+                pass
+            else:
+                location_dict[each.id] = each.name
+
+    # print('location_dict ', location_dict)
+    return location_dict
