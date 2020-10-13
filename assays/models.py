@@ -2884,10 +2884,15 @@ class AssayGroup(models.Model):
         dic = {
             # TODO May need to prefetch device (potential n+1)
             # 'Device': self.device.name,
-            'Device': self.organ_model.device.name,
+            # ???
+            # OBJECTIVELY BAD
+            'Center': self.study.group.microphysiologycenter_set.first().name,
+            # TODO May need to prefetch device (potential n+1)
+            # 'Device': self.organ_model.device.name,
             'MPS User Group': self.study.group.name,
             'Study': self.get_hyperlinked_study(),
-            'Matrix': 'TO BE REVISED TODO',
+            # We don't get the matrix here, we cram it in from the matrix item
+            # 'Matrix': 'TO BE REVISED TODO',
             'MPS Model': self.get_hyperlinked_model_or_device(),
             'Compounds': self.stringify_compounds(criteria.get('compound', None)),
             'Cells': self.stringify_cells(criteria.get('cell', None)),
@@ -3279,41 +3284,54 @@ class AssayMatrixItem(FlaggableModel):
 
     # SPAGHETTI CODE
     # TERRIBLE, BLOATED
+    # def quick_dic(
+    #     self,
+    #     compound_profile=False,
+    #     matrix_item_compound_post_filters=None,
+    #     criteria=None
+    # ):
+    #     if not criteria:
+    #         criteria = {}
+    #     dic = {
+    #         # TODO May need to prefetch device (potential n+1)
+    #         'Device': self.device.name,
+    #         'MPS User Group': self.study.group.name,
+    #         'Study': self.get_hyperlinked_study(),
+    #         'Matrix': self.get_hyperlinked_matrix(),
+    #         'MPS Model': self.get_hyperlinked_model_or_device(),
+    #         'Compounds': self.stringify_compounds(criteria.get('compound', None)),
+    #         'Cells': self.stringify_cells(criteria.get('cell', None)),
+    #         'Settings': self.stringify_settings(criteria.get('setting', None)),
+    #         'Trimmed Compounds': self.stringify_compounds({
+    #             'compound_instance.compound_id': True,
+    #             'concentration': True
+    #         }),
+    #         'Items with Same Treatment': [],
+    #         'item_ids': []
+    #     }
+
+    #     if compound_profile:
+    #         dic.update({
+    #             'compound_profile': self.get_compound_profile(matrix_item_compound_post_filters)
+    #         })
+
+    #     return dic
+
+    # Basically, stitch together the groups dictionary and the matrix's dictionary with this
+    # A suboptimal approach: Revise when possible
+    # Strictly speaking, we only *really* need the matrix
+    # But perhaps something else will come up?
     def quick_dic(
         self,
-        compound_profile=False,
-        matrix_item_compound_post_filters=None,
-        criteria=None
+        group_dic
     ):
-        if not criteria:
-            criteria = {}
-        dic = {
-            # 'device': self.device.name,
-            # OBJECTIVELY BAD
-            'Center': self.study.group.microphysiologycenter_set.first().name,
-            # TODO May need to prefetch device (potential n+1)
+        group_dic.update({
+            # Ought this be here? Should it likewise be a hyperlink?
             'Device': self.device.name,
-            'MPS User Group': self.study.group.name,
-            'Study': self.get_hyperlinked_study(),
             'Matrix': self.get_hyperlinked_matrix(),
-            'MPS Model': self.get_hyperlinked_model_or_device(),
-            'Compounds': self.stringify_compounds(criteria.get('compound', None)),
-            'Cells': self.stringify_cells(criteria.get('cell', None)),
-            'Settings': self.stringify_settings(criteria.get('setting', None)),
-            'Trimmed Compounds': self.stringify_compounds({
-                'compound_instance.compound_id': True,
-                'concentration': True
-            }),
-            'Items with Same Treatment': [],
-            'item_ids': []
-        }
+        })
 
-        if compound_profile:
-            dic.update({
-                'compound_profile': self.get_compound_profile(matrix_item_compound_post_filters)
-            })
-
-        return dic
+        return group_dic
 
     # TODO THESE ARE NOT DRY
     def get_hyperlinked_name(self):

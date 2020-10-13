@@ -176,6 +176,7 @@ def mps_help(request):
 
     return render(request, 'help.html', data)
 
+
 #added sck
 # TODO NOT DRY
 def mps_about(request):

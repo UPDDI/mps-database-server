@@ -67,7 +67,8 @@ def run():
         treatment_group_representatives, setup_to_treatment_group, treatment_header_keys = get_item_groups(
             None,
             criteria,
-            groups=groups
+            groups=groups,
+            matrix_items=matrix_items,
         )
 
         repro_data = []

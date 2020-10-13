@@ -829,55 +829,39 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
     setup_to_treatment_group = {}
     header_keys = []
 
-    # By pulling the setups for the study, I avoid problems with preview data
-    # NOTE THAT STUDY CAN BE MULTIPLE STUDIES, HENCE DIFFERENT FILTER
-    # if matrix_items is None:
-    #     matrix_items = AssayMatrixItem.objects.filter(
-    #         study_id__in=study
-    #     )
+    # In theory, we could generate the tuple for each item
+    # It would be more efficient to generate the group comparison tuples separately, however
+    # An interesting, albeit maybe not all that terrible, consequence is that we will stitch together the groups quick dictionary and the matrix_items
+    # The Group cannot acquire the Matrix, after all
+    group_treatment_groups = {}
+    group_id_to_setup_tuple = {}
 
-    # setups = matrix_items.prefetch_related(
-    #     'matrix',
-    #     'organ_model',
-    #     'assaysetupsetting_set__setting',
-    #     'assaysetupsetting_set__addition_location',
-    #     'assaysetupsetting_set__unit',
-    #     'assaysetupcell_set__cell_sample__cell_subtype',
-    #     'assaysetupcell_set__cell_sample__cell_type__organ',
-    #     'assaysetupcell_set__density_unit',
-    #     'assaysetupcell_set__addition_location',
-    #     'assaysetupcompound_set__compound_instance__compound',
-    #     'assaysetupcompound_set__concentration_unit',
-    #     'assaysetupcompound_set__addition_location',
-    #     # SOMEWHAT FOOLISH
-    #     'study__group__center_groups'
-    # )
-
-    if groups:
-        setups = groups.prefetch_related(
-            # Needed?
-            # 'organ_model',
-            'assaygroupsetting_set__setting',
-            'assaygroupsetting_set__addition_location',
-            'assaygroupsetting_set__unit',
-            'assaygroupcell_set__cell_sample__cell_subtype',
-            'assaygroupcell_set__cell_sample__cell_type__organ',
-            'assaygroupcell_set__density_unit',
-            'assaygroupcell_set__addition_location',
-            'assaygroupcompound_set__compound_instance__compound',
-            'assaygroupcompound_set__compound_instance__supplier',
-            'assaygroupcompound_set__concentration_unit',
-            'assaygroupcompound_set__addition_location',
-            # SOMEWHAT FOOLISH
-            'study__group__center_groups'
-        )
+    setups = groups.prefetch_related(
+        # Needed if we are going to get device from group in lieu of item
+        # 'organ_model__device',
+        'assaygroupsetting_set__setting',
+        'assaygroupsetting_set__addition_location',
+        'assaygroupsetting_set__unit',
+        'assaygroupcell_set__cell_sample__cell_subtype',
+        'assaygroupcell_set__cell_sample__cell_type__organ',
+        'assaygroupcell_set__density_unit',
+        'assaygroupcell_set__addition_location',
+        'assaygroupcompound_set__compound_instance__compound',
+        'assaygroupcompound_set__compound_instance__supplier',
+        'assaygroupcompound_set__concentration_unit',
+        'assaygroupcompound_set__addition_location',
+        # SOMEWHAT FOOLISH
+        'study__group__microphysiologycenter_set'
+    )
 
     if not criteria:
         criteria = {
             'setup': DEFAULT_SETUP_CRITERIA,
             'setting': DEFAULT_SETTING_CRITERIA,
             'compound': DEFAULT_COMPOUND_CRITERIA,
-            'cell': DEFAULT_CELL_CRITERIA
+            'cell': DEFAULT_CELL_CRITERIA,
+            # CONTRIVED
+            'item': []
         }
 
     # BAD
@@ -887,7 +871,10 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
 
     # TODO TODO TODO REVISE THESE MAGIC KEYS
     if criteria.get('setup', '') or criteria.get('special', ''):
-        if 'organ_model_id' in criteria.get('setup', []):
+        # Could get device here
+        # if 'organ_model__device_id' in criteria.get('setup'):
+        #     header_keys.append('Device')
+        if 'organ_model_id' in criteria.get('setup'):
             header_keys.append('MPS Model')
         # KLUDGE, BAD
         if use_center:
@@ -896,8 +883,16 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
             header_keys.append('MPS User Group')
         if 'study_id' in criteria.get('setup', []):
             header_keys.append('Study')
-        if 'matrix_id' in criteria.get('setup', []):
+    # Item has redundant fields
+    # Interestingly, only the Item has a device for the moment
+    # BE SURE THE TWO DO NOT BECOME DIVORCED
+    if criteria.get('item', ''):
+        # This one is non-negotiable, we can't have matrix come from a group
+        if 'matrix_id' in criteria.get('item'):
             header_keys.append('Matrix')
+        # Could get this from group in theory
+        if 'device_id' in criteria.get('item'):
+            header_keys.append('Device')
     if criteria.get('compound', ''):
         header_keys.append('Compounds')
     if criteria.get('cell', ''):
@@ -908,6 +903,7 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
     header_keys.append('Items with Same Treatment')
 
     setup_attribute_getter = tuple_attrgetter(*criteria.get('setup', ['']))
+    item_attribute_getter = tuple_attrgetter(*criteria.get('item', ['']))
 
     for setup in setups:
         treatment_group_tuple = []
@@ -930,14 +926,18 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
 
         treatment_group_tuple = tuple(treatment_group_tuple)
 
-        current_representative = treatment_groups.get(treatment_group_tuple, None)
+        current_representative = group_treatment_groups.get(treatment_group_tuple, None)
 
         if current_representative is None:
             current_representative = setup.quick_dic(compound_profile=compound_profile,
             matrix_item_compound_post_filters=matrix_item_compound_post_filters, criteria=criteria)
-            treatment_groups.update({
+            group_treatment_groups.update({
                 treatment_group_tuple: current_representative
             })
+
+        group_id_to_setup_tuple.update({
+            setup.id: treatment_group_tuple
+        })
 
         # current_representative.get('Items with Same Treatment').append(
             # TODO TODO TODO
@@ -945,18 +945,54 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
         # )
 
         # BAD: INEFFICIENT
-        for matrix_item in setup.assaymatrixitem_set.all():
-            current_representative.get('Items with Same Treatment').append(
-                matrix_item.get_hyperlinked_name()
+        # for matrix_item in setup.assaymatrixitem_set.all():
+        #     current_representative.get('Items with Same Treatment').append(
+        #         matrix_item.get_hyperlinked_name()
+        #     )
+        #     current_representative.get('item_ids').append(
+        #         matrix_item.id
+        #     )
+        #     current_representative.setdefault('names for items', []).append(
+        #         matrix_item.name
+        #     )
+        #     # NOTE: Not a great idea
+        #     setup_to_treatment_group.update({matrix_item.id: current_representative})
+
+    for matrix_item in matrix_items:
+        current_group_setup_tuple = group_id_to_setup_tuple.get(matrix_item.group_id)
+        current_group_quick_dic = group_treatment_groups.get(current_group_setup_tuple)
+
+        # Somewhat contrived
+        if criteria.get('item', ''):
+            item_treatment_group_tuple = item_attribute_getter(matrix_item)
+        else:
+            item_treatment_group_tuple = tuple([])
+
+        # CONCATENATING TUPLES *SHOULD* MAKE A NEW TUPLE
+        treatment_group_tuple = current_group_setup_tuple + item_treatment_group_tuple
+
+        current_representative = treatment_groups.get(treatment_group_tuple, None)
+
+        if current_representative is None:
+            current_representative = matrix_item.quick_dic(
+                current_group_quick_dic
             )
-            current_representative.get('item_ids').append(
-                matrix_item.id
-            )
-            current_representative.setdefault('names for items', []).append(
-                matrix_item.name
-            )
-            # NOTE: Not a great idea
-            setup_to_treatment_group.update({matrix_item.id: current_representative})
+            treatment_groups.update({
+                treatment_group_tuple: current_representative
+            })
+
+        current_representative.get('Items with Same Treatment').append(
+            matrix_item.get_hyperlinked_name()
+        )
+        current_representative.get('item_ids').append(
+            matrix_item.id
+        )
+        current_representative.setdefault('names for items', []).append(
+            matrix_item.name
+        )
+
+        # NOTE: Not a great idea
+        setup_to_treatment_group.update({matrix_item.id: current_representative})
 
     # Attempt to sort reasonably
     # TODO SHOULD STUDY BE PLACED HERE?
@@ -1894,6 +1930,7 @@ def fetch_assay_study_reproducibility(request):
         None,
         criteria,
         groups=groups,
+        matrix_items=matrix_items,
     )
 
     repro_data = []
@@ -2515,6 +2552,16 @@ def acquire_post_filter(studies, assays, groups, matrix_items, data_points):
         0: '-No Settings-'
     })
 
+    # Contrived: Add no organ_model_protocol
+    # Again, ought to be done automatically
+    # post_filter.setdefault('group', {}).setdefault(
+    #     'organ_model_protocol_id__in', {}
+    # ).update({
+    #     # DANGEROUS MAGIC STRINGS
+    #     # PLEASE AVOID
+    #     0: '-No MPS Model Version-'
+    # })
+
     # Groups here
     groups = groups.prefetch_related(
         'assaygroupcompound_set__compound_instance__compound',
@@ -2534,11 +2581,29 @@ def acquire_post_filter(studies, assays, groups, matrix_items, data_points):
     for group in groups:
         current = post_filter.setdefault('group', {})
 
+        # We really ought not manually add these
         current.setdefault(
             'organ_model_id__in', {}
         ).update({
             group.organ_model_id: group.organ_model.name
         })
+
+        # Maybe this is better in items?
+        # Rather ugly, to be honest (not even workable with a "getter")
+        # current.setdefault(
+        #     'organ_model__device_id__in', {}
+        # ).update({
+        #     group.organ_model__device_id: group.organ_model__device.name
+        # })
+
+        # THE TRICKY PART OF THIS IS THAT NOT ALL GROUPS HAVE PROTOCOLS
+        # Worse still, the definition of a protocol is likely in flux
+        # if group.organ_model_protocol:
+        #     current.setdefault(
+        #         'organ_model_protocol_id__in', {}
+        #     ).update({
+        #         group.organ_model_protocol_id: group.organ_model_protocol.name
+        #     })
 
         for compound in group.assaygroupcompound_set.all():
             current.setdefault(
@@ -2734,9 +2799,10 @@ def acquire_post_filter(studies, assays, groups, matrix_items, data_points):
         # 'assaysetupsetting_set__setting',
         # 'assaysetupsetting_set__addition_location',
         # 'assaysetupsetting_set__unit',
-        'organ_model',
+        # 'organ_model',
+        # 'study',
         'matrix',
-        'study'
+        'device',
     )
 
     for matrix_item in matrix_items:
@@ -2752,6 +2818,12 @@ def acquire_post_filter(studies, assays, groups, matrix_items, data_points):
             'matrix_id__in', {}
         ).update({
             matrix_item.matrix_id: '{} ({})'.format(matrix_item.matrix.name, matrix_item.study.name)
+        })
+
+        current.setdefault(
+            'device_id__in', {}
+        ).update({
+            matrix_item.device_id: matrix_item.device.name
         })
 
         # REMOVED
@@ -3556,6 +3628,7 @@ def get_inter_study_reproducibility(
         None,
         criteria,
         groups=groups,
+        matrix_items=matrix_items,
     )
 
     matrix_item_id_to_tooltip_string = {
@@ -4361,6 +4434,7 @@ def fetch_power_analysis_group_table(request):
         None,
         criteria,
         groups=groups,
+        matrix_items=matrix_items,
     )
 
     data_point_treatment_groups = {}
@@ -5750,12 +5824,14 @@ def get_pbpk_info(data_points, matrix_items, groups):
         None,
         criteria,
         groups=groups,
+        matrix_items=matrix_items,
     )
 
     cell_group_representives, setup_to_cell_group, cell_header_keys = get_item_groups(
         None,
         {'cell': ['cell_sample_id']},
         groups=groups,
+        matrix_items=matrix_items,
     )
 
     matrix_item_id_to_tooltip_string = {
