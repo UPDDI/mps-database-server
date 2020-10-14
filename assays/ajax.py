@@ -909,16 +909,26 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
         treatment_group_tuple = []
 
         if criteria.get('setup', ''):
-            treatment_group_tuple = setup_attribute_getter(setup)
+            treatment_group_tuple.append(setup_attribute_getter(setup))
+        else:
+            treatment_group_tuple.append(((),))
 
         if criteria.get('setting', ''):
-            treatment_group_tuple += setup.devolved_settings(criteria.get('setting'))
+            treatment_group_tuple.append(setup.devolved_settings(criteria.get('setting')))
+        else:
+            treatment_group_tuple.append(((),))
 
         if criteria.get('compound', ''):
-            treatment_group_tuple += setup.devolved_compounds(criteria.get('compound'))
+            treatment_group_tuple.append(setup.devolved_compounds(criteria.get('compound')))
+        else:
+            treatment_group_tuple.append(((),))
 
         if criteria.get('cell', ''):
-            treatment_group_tuple += setup.devolved_cells(criteria.get('cell'))
+            treatment_group_tuple.append(setup.devolved_cells(criteria.get('cell')))
+        else:
+            treatment_group_tuple.append(((),))
+
+        treatment_group_tuple = tuple(treatment_group_tuple)
 
         # BAD
         if use_center:
@@ -966,7 +976,7 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
         if criteria.get('item', ''):
             item_treatment_group_tuple = item_attribute_getter(matrix_item)
         else:
-            item_treatment_group_tuple = tuple([])
+            item_treatment_group_tuple = ((),)
 
         # CONCATENATING TUPLES *SHOULD* MAKE A NEW TUPLE
         treatment_group_tuple = current_group_setup_tuple + item_treatment_group_tuple
