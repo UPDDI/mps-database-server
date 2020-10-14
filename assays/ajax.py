@@ -874,7 +874,7 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
         # Could get device here
         # if 'organ_model__device_id' in criteria.get('setup'):
         #     header_keys.append('Device')
-        if 'organ_model_id' in criteria.get('setup'):
+        if 'organ_model_id' in criteria.get('setup', []):
             header_keys.append('MPS Model')
         # KLUDGE, BAD
         if use_center:
