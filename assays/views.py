@@ -1580,8 +1580,9 @@ class AssayStudySignOff(HistoryMixin, UpdateView):
             ))
 
 
-class AssayStudyDataUpload(AssayStudyMixin, ObjectGroupRequiredMixin, UpdateView):
+class AssayStudyDataUpload(ObjectGroupRequiredMixin, FormHandlerMixin, UpdateView):
     """Upload an Excel Sheet for storing multiple sets of Readout data at one"""
+    model = AssayStudy
     template_name = 'assays/assaystudy_upload.html'
     form_class = AssayStudyDataUploadForm
 
