@@ -22,32 +22,18 @@
                 <em><b>Assay Plate Reader File List</b></em><br><br>
                 Study: {{ object }}
             </h1>
-        </div>
-
-        <div>
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-7">
-                        {# Hide setup add buttons if the study is marked reviewed #}
-                        {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
-                            {% if not review %}
-                            <div>
-                                <a href="{% url 'assayplatereaderfile-add' object.id %}" class="btn btn-success" role="button">Add Assay Plate Reader File</a>
-                            </div>
-                                {% endif %}
-                        {% endif %}
-                    </div>
-                    <div class="col-md-5">
-                        <div>
-                            <a href="{% url 'assayplatereadermap-index' object.id %}" class="btn btn-primary" role="button">Jump to Assay Plate Map List</a>
-{#                            <a href="{% url 'assayplatereaderfile-index' object.id %}" class="btn btn-primary" role="button">Jump to Assay Plate Reader File List</a>#}
-                        </div>
-                    </div>
-                </div>
+            <div class="text-center">
+                <a href="{% url 'assayplatereadermap-index' object.id %}" class="btn btn-primary" role="button">Assay Plate Map List</a>
             </div>
         </div>
-        <br>
 
+        {# Hide setup add buttons if the study is marked reviewed #}
+        {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
+            {% if not review %}
+                <a href="{% url 'assayplatereaderfile-add' object.id %}" class="btn btn-success" role="button">Add Assay Plate Reader File</a>
+            {% endif %}
+        {% endif %}
+        <br>
         {% if assayplatereadermapdatafiles %}
         <div>
             <div><p id="plate_file_index_tooltip"></p>
@@ -99,4 +85,3 @@
     </div>
 
 {% endblock %}
-
