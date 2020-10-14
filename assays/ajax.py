@@ -3042,7 +3042,7 @@ def acquire_post_filter(studies, assays, groups, matrix_items, data_points):
 def apply_post_filter(post_filter, studies, assays, groups, matrix_items, data_points):
     # SLOPPY: APPLY CENTER FILTER
     studies = studies.filter(
-        group__microphysiologycenter__in=post_filter.get('center', {}).get('id__in', [])
+        group__center_groups__in=post_filter.get('center', {}).get('id__in', [])
     )
 
     # Not very elegant...
