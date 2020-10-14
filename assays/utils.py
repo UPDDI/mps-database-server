@@ -508,7 +508,7 @@ def get_user_accessible_studies(user):
         'modified_by',
         'signed_off_by',
         # CRUDE AND BAD
-        # 'group__microphysiologycenter_set'
+        # 'group__center_groups'
     )
 
     return combined

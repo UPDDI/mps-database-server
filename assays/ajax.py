@@ -851,7 +851,7 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
         'assaygroupcompound_set__concentration_unit',
         'assaygroupcompound_set__addition_location',
         # SOMEWHAT FOOLISH
-        'study__group__microphysiologycenter_set'
+        'study__group__center_groups'
     )
 
     if not criteria:
@@ -922,7 +922,7 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
 
         # BAD
         if use_center:
-            treatment_group_tuple += (setup.study.group.microphysiologycenter_set.first().id,)
+            treatment_group_tuple += (setup.study.group.center_groups.first().id,)
 
         treatment_group_tuple = tuple(treatment_group_tuple)
 
@@ -3718,7 +3718,7 @@ def get_inter_study_reproducibility(
 
         if inter_level == 'center':
             if not point.study.group.name in group_to_center:
-                group_to_center[point.study.group.name] = point.study.group.microphysiologycenter_set.first().name
+                group_to_center[point.study.group.name] = point.study.group.center_groups.first().name
             center_or_group = group_to_center[point.study.group.name]
 
         point.standard_value = point.value

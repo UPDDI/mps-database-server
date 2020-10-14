@@ -2886,7 +2886,7 @@ class AssayGroup(models.Model):
             # 'Device': self.device.name,
             # ???
             # OBJECTIVELY BAD
-            'Center': self.study.group.microphysiologycenter_set.first().name,
+            'Center': self.study.group.center_groups.first().name,
             # TODO May need to prefetch device (potential n+1)
             # 'Device': self.organ_model.device.name,
             'MPS User Group': self.study.group.name,
