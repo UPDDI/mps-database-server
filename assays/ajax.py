@@ -2473,6 +2473,7 @@ def fetch_pre_submission_filters(request):
 
 # TODO RATHER VERBOSE
 # TODO: MAKE SURE GROUP STUFF WORKS CORRECTLY
+# Would have been a good idea to have methods for each model defining this
 def acquire_post_filter(studies, assays, groups, matrix_items, data_points):
     # Table -> Filter -> value -> [name, in_use]
     post_filter = {}
@@ -2480,6 +2481,9 @@ def acquire_post_filter(studies, assays, groups, matrix_items, data_points):
     studies = studies.prefetch_related(
         'group__center_groups'
     )
+
+    # Used downstream for variable displays
+    studies_count = studies.count()
 
     for study in studies:
         current = post_filter.setdefault(
@@ -2801,21 +2805,9 @@ def acquire_post_filter(studies, assays, groups, matrix_items, data_points):
             })
 
     matrix_items = matrix_items.prefetch_related(
-        # Nah!
-        # 'assaysetupcompound_set__compound_instance__compound',
-        # 'assaysetupcompound_set__compound_instance__supplier',
-        # 'assaysetupcompound_set__concentration_unit',
-        # 'assaysetupcompound_set__addition_location',
-        # 'assaysetupcell_set__cell_sample__cell_type',
-        # 'assaysetupcell_set__cell_sample__cell_subtype',
-        # 'assaysetupcell_set__addition_location',
-        # 'assaysetupcell_set__biosensor',
-        # 'assaysetupcell_set__density_unit',
-        # 'assaysetupsetting_set__setting',
-        # 'assaysetupsetting_set__addition_location',
-        # 'assaysetupsetting_set__unit',
-        # 'organ_model',
-        # 'study',
+        # Interesting and unfortunate prefetch
+        # Don't want to cause an N+1
+        'study',
         'matrix',
         'device',
     )
@@ -2823,17 +2815,42 @@ def acquire_post_filter(studies, assays, groups, matrix_items, data_points):
     for matrix_item in matrix_items:
         current = post_filter.setdefault('matrix_item', {})
 
-        current.setdefault(
-            'id__in', {}
-        ).update({
-            matrix_item.id: '{} ({})'.format(matrix_item.name, matrix_item.study.name)
-        })
+        # Only show the study name if necessary
+        if studies_count > 1:
+            current.setdefault(
+                'id__in', {}
+            ).update({
+                matrix_item.id: '{} ({})'.format(matrix_item.name, matrix_item.study.name)
+            })
+        else:
+            current.setdefault(
+                'id__in', {}
+            ).update({
+                matrix_item.id: '{}'.format(matrix_item.name)
+            })
 
-        current.setdefault(
-            'matrix_id__in', {}
-        ).update({
-            matrix_item.matrix_id: '{} ({})'.format(matrix_item.matrix.name, matrix_item.study.name)
-        })
+        # Surely a more elegant way to do this
+        # If is a plate and there are more than one study, specify the study it is from
+        if matrix_item.matrix.representation == 'plate' and studies_count > 1:
+            current.setdefault(
+                'matrix_id__in', {}
+            ).update({
+                matrix_item.matrix_id: '{} ({})'.format(matrix_item.matrix.name, matrix_item.study.name)
+            })
+        # If it is a plate and there is just one study
+        elif matrix_item.matrix.representation == 'plate':
+            current.setdefault(
+                'matrix_id__in', {}
+            ).update({
+                matrix_item.matrix_id: '{}'.format(matrix_item.matrix.name)
+            })
+        # If it is a chip set
+        else:
+            current.setdefault(
+                'matrix_id__in', {}
+            ).update({
+                matrix_item.matrix_id: 'Chips for {}'.format(matrix_item.study.name)
+            })
 
         current.setdefault(
             'device_id__in', {}
