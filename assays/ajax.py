@@ -1624,6 +1624,7 @@ def fetch_data_points(request):
     pre_filter = {}
 
     post_filter = json.loads(request.POST.get('post_filter', '{}'))
+    full_post_filter = json.loads(request.POST.get('full_post_filter', '{}'))
 
     if request.POST.get('matrix_item', ''):
         matrix_items = AssayMatrixItem.objects.filter(pk=int(request.POST.get('matrix_item')))
@@ -1723,7 +1724,7 @@ def fetch_data_points(request):
         post_filter = acquire_post_filter(studies, assays, groups, matrix_items, data_points)
     else:
         studies, assays, groups, matrix_items, data_points = apply_post_filter(
-            post_filter, studies, assays, groups, matrix_items, data_points
+            full_post_filter, post_filter, studies, assays, groups, matrix_items, data_points
         )
 
     data = get_data_points_for_charting(
@@ -1854,6 +1855,7 @@ def fetch_assay_study_reproducibility(request):
     data = {}
 
     post_filter = json.loads(request.POST.get('post_filter', '{}'))
+    full_post_filter = json.loads(request.POST.get('full_post_filter', '{}'))
     criteria = json.loads(request.POST.get('criteria', '{}'))
 
     item_id_filter = json.loads(request.POST.get('item_ids', '[]'))
@@ -1929,7 +1931,7 @@ def fetch_assay_study_reproducibility(request):
 
         if item_id_filter or target_id_filter:
             studies, assays, groups, matrix_items, data_points = apply_post_filter(
-                post_filter, studies, assays, groups, matrix_items, data_points
+                full_post_filter, post_filter, studies, assays, groups, matrix_items, data_points
             )
             # DUMB BUT EXPEDIENT
             # TODO REVISE
@@ -1937,7 +1939,7 @@ def fetch_assay_study_reproducibility(request):
             post_filter = acquire_post_filter(studies, assays, groups, matrix_items, data_points)
     else:
         studies, assays, groups, matrix_items, data_points = apply_post_filter(
-            post_filter, studies, assays, groups, matrix_items, data_points
+            full_post_filter, post_filter, studies, assays, groups, matrix_items, data_points
         )
 
     # Boolean
@@ -3075,8 +3077,27 @@ def acquire_post_filter(studies, assays, groups, matrix_items, data_points):
     return post_filter
 
 
-def apply_post_filter(post_filter, studies, assays, groups, matrix_items, data_points):
+def check_if_filters_diverge(full_post_filter, post_filter, parent_key, keys_to_check=None):
+    # Superfluous variable, just for clarity
+    divergence = False
+
+    if keys_to_check:
+        for key in keys_to_check:
+            if len(post_filter.get(parent_key, {}).get(key, [])) != len(full_post_filter.get(parent_key, {}).get(key, [])):
+                divergence = True
+                return divergence
+    else:
+        for key in full_post_filter.get(parent_key, []):
+            if len(post_filter.get(parent_key, {}).get(key, [])) != len(full_post_filter.get(parent_key, {}).get(key, [])):
+                divergence = True
+                return divergence
+
+    return divergence
+
+
+def apply_post_filter(full_post_filter, post_filter, studies, assays, groups, matrix_items, data_points):
     # SLOPPY: APPLY CENTER FILTER
+    # WILL NOT WORK CORRECTLY WITH OTHER COMPONENTS
     studies = studies.filter(
         group__center_groups__in=post_filter.get('center', {}).get('id__in', [])
     )
@@ -3088,9 +3109,15 @@ def apply_post_filter(post_filter, studies, assays, groups, matrix_items, data_p
         ] for current_filter in post_filter.get('study', {})
     }
 
-    studies = studies.filter(
-        **study_post_filters
-    )
+    study_divergence = check_if_filters_diverge(full_post_filter, post_filter, 'study')
+
+    if study_divergence:
+        studies = studies.filter(
+            **study_post_filters
+        )
+        groups = groups.filter(
+            study_id__in=studies
+        )
 
     assay_post_filters = {
         current_filter: [
@@ -3098,17 +3125,27 @@ def apply_post_filter(post_filter, studies, assays, groups, matrix_items, data_p
         ] for current_filter in post_filter.get('assay', {})
     }
 
-    assays = assays.filter(
-        study_id__in=studies
-    ).filter(
-        **assay_post_filters
-    )
+    assay_divergence = check_if_filters_diverge(full_post_filter, post_filter, 'assay')
 
-    # REVISED
+    # We might as well chain the filters
+    # This way we don't need really awful conditionals
+    if assay_divergence:
+        assays = assays.filter(
+            **assay_post_filters
+        )
+    if study_divergence:
+        assays = assays.filter(
+            study_id__in=studies
+        )
 
-    groups = groups.filter(
-        study_id__in=studies
-    )
+    # TEST FOR GROUP DIVERGENCES *BEFORE* CHANGING THEM
+    compound_divergence = check_if_filters_diverge(full_post_filter, post_filter, 'group', [key for key in post_filter.get('group', {}).keys() if key.startswith('assaygroupcompound__')])
+
+    cell_divergence = check_if_filters_diverge(full_post_filter, post_filter, 'group', [key for key in post_filter.get('group', {}).keys() if key.startswith('assaygroupcell__')])
+
+    setting_divergence = check_if_filters_diverge(full_post_filter, post_filter, 'group', [key for key in post_filter.get('group', {}).keys() if key.startswith('assaygroupsetting__')])
+
+    group_divergence = check_if_filters_diverge(full_post_filter, post_filter, 'group', [key for key in post_filter.get('group', {}).keys() if not key.startswith('assaygroup')])
 
     # Special exceptions for combined filters
     combined_compounds_data = post_filter.setdefault('group', {}).setdefault(
@@ -3235,111 +3272,119 @@ def apply_post_filter(post_filter, studies, assays, groups, matrix_items, data_p
         ] for current_filter in post_filter.get('group', {}) if current_filter.startswith('assaygroupsetting__')
     }
 
-    groups = groups.filter(study__in=studies)
+    if group_divergence:
+        # We remove the organ_model_protocol_id first because it can have nulls
+        # IT IS POSSIBLE: To instead have a contrive "-No MPS Model Version-" entry, but this could cause further complications
+        # This was made under the assumption that all fields would be non-NULL, which unfortunately was not the case
+        organ_model_protocol_id_filter = post_filter.get('group', {}).get('organ_model_protocol_id__in', {})
+        # Contrived, somewhat inappropriate
+        del group_post_filters['organ_model_protocol_id__in']
 
-    # We remove the organ_model_protocol_id first because it can have nulls
-    # IT IS POSSIBLE: To instead have a contrive "-No MPS Model Version-" entry, but this could cause further complications
-    # This was made under the assumption that all fields would be non-NULL, which unfortunately was not the case
-    organ_model_protocol_id_filter = post_filter.get('group', {}).get('organ_model_protocol_id__in', {})
-    # Contrived, somewhat inappropriate
-    del group_post_filters['organ_model_protocol_id__in']
+        groups = groups.filter(
+            **group_post_filters
+        )
 
-    groups = groups.filter(
-        **group_post_filters
-    )
-
-    # SPECIAL EXCEPTION FOR MPS MODEL VERSION
-    # SHOULD BE HANDLED MORE ELEGANTLY
-    if organ_model_protocol_id_filter.get('0'):
-        groups = groups.filter(organ_model_protocol_id__in=organ_model_protocol_id_filter) | groups.filter(organ_model_protocol__isnull=True)
-    else:
-        groups = groups.filter(organ_model_protocol_id__in=organ_model_protocol_id_filter)
+        # SPECIAL EXCEPTION FOR MPS MODEL VERSION
+        # SHOULD BE HANDLED MORE ELEGANTLY
+        if organ_model_protocol_id_filter.get('0'):
+            groups = groups.filter(organ_model_protocol_id__in=organ_model_protocol_id_filter) | groups.filter(organ_model_protocol__isnull=True)
+        else:
+            groups = groups.filter(organ_model_protocol_id__in=organ_model_protocol_id_filter)
 
     # COMBINED FIELDS IF NECESSARY
     # TODO TODO TODO
     # INEFFICIENT REVISE
     # ODD AND CONTRIVED: VIOLATES RO3
     # Compounds
-    compound_total = None
-    if compound_concentration_filters:
-        compound_total = AssayGroup.objects.none()
-        for index in range(len(compound_concentration_filters)):
-            compound_total = compound_total | groups.filter(
-                assaygroupcompound__concentration=compound_concentration_filters[index],
-                assaygroupcompound__concentration_unit_id=compound_unit_filters[index]
-            )
+    if compound_divergence:
+        group_divergence = True
 
-    if post_filter.get('group', {}).get('assaygroupcompound__compound_instance__compound_id__in', {}).get(
-            '0', None
-    ):
-        if compound_total is not None:
-            groups = compound_total.filter(
-                **group_compound_post_filters
-            ) | groups.filter(assaygroupcompound__isnull=True)
+        compound_total = None
+        if compound_concentration_filters:
+            compound_total = AssayGroup.objects.none()
+            for index in range(len(compound_concentration_filters)):
+                compound_total = compound_total | groups.filter(
+                    assaygroupcompound__concentration=compound_concentration_filters[index],
+                    assaygroupcompound__concentration_unit_id=compound_unit_filters[index]
+                )
+
+        if post_filter.get('group', {}).get('assaygroupcompound__compound_instance__compound_id__in', {}).get(
+                '0', None
+        ):
+            if compound_total is not None:
+                groups = compound_total.filter(
+                    **group_compound_post_filters
+                ) | groups.filter(assaygroupcompound__isnull=True)
+            else:
+                groups = groups.filter(
+                    **group_compound_post_filters
+                ) | groups.filter(assaygroupcompound__isnull=True)
         else:
+            if compound_total is not None:
+                groups = compound_total
+
             groups = groups.filter(
                 **group_compound_post_filters
-            ) | groups.filter(assaygroupcompound__isnull=True)
-    else:
-        if compound_total is not None:
-            groups = compound_total
-
-        groups = groups.filter(
-            **group_compound_post_filters
-        )
-
-    cell_total = None
-    if cell_density_filters:
-        cell_total = AssayGroup.objects.none()
-        for index in range(len(cell_density_filters)):
-            cell_total = cell_total | groups.filter(
-                assaygroupcell__density=cell_density_filters[index],
-                assaygroupcell__density_unit_id=cell_unit_filters[index]
             )
 
-    if post_filter.get('group', {}).get('assaygroupcell__cell_sample_id__in', {}).get('0', None):
-        if cell_total is not None:
-            groups = cell_total.filter(
-                **group_cell_post_filters
-            ) | groups.filter(assaygroupcell__isnull=True)
+    if cell_divergence:
+        group_divergence = True
 
+        cell_total = None
+        if cell_density_filters:
+            cell_total = AssayGroup.objects.none()
+            for index in range(len(cell_density_filters)):
+                cell_total = cell_total | groups.filter(
+                    assaygroupcell__density=cell_density_filters[index],
+                    assaygroupcell__density_unit_id=cell_unit_filters[index]
+                )
+
+        if post_filter.get('group', {}).get('assaygroupcell__cell_sample_id__in', {}).get('0', None):
+            if cell_total is not None:
+                groups = cell_total.filter(
+                    **group_cell_post_filters
+                ) | groups.filter(assaygroupcell__isnull=True)
+
+            else:
+                groups = groups.filter(
+                    **group_cell_post_filters
+                ) | groups.filter(assaygroupcell__isnull=True)
         else:
+            if cell_total is not None:
+                groups = cell_total
+
             groups = groups.filter(
                 **group_cell_post_filters
-            ) | groups.filter(assaygroupcell__isnull=True)
-    else:
-        if cell_total is not None:
-            groups = cell_total
-
-        groups = groups.filter(
-            **group_cell_post_filters
-        )
-
-    setting_total = None
-    if setting_value_filters:
-        setting_total = AssayGroup.objects.none()
-        for index in range(len(setting_value_filters)):
-            setting_total = setting_total | groups.filter(
-                assaygroupsetting__value=setting_value_filters[index],
-                assaygroupsetting__unit_id=setting_unit_filters[index]
             )
 
-    if post_filter.get('group', {}).get('assaygroupsetting__setting_id__in', {}).get('0', None):
-        if setting_total is not None:
-            groups = setting_total.filter(
-                **group_setting_post_filters
-            ) | groups.filter(assaygroupsetting__isnull=True)
+    if setting_divergence:
+        group_divergence = True
+
+        setting_total = None
+        if setting_value_filters:
+            setting_total = AssayGroup.objects.none()
+            for index in range(len(setting_value_filters)):
+                setting_total = setting_total | groups.filter(
+                    assaygroupsetting__value=setting_value_filters[index],
+                    assaygroupsetting__unit_id=setting_unit_filters[index]
+                )
+
+        if post_filter.get('group', {}).get('assaygroupsetting__setting_id__in', {}).get('0', None):
+            if setting_total is not None:
+                groups = setting_total.filter(
+                    **group_setting_post_filters
+                ) | groups.filter(assaygroupsetting__isnull=True)
+            else:
+                groups = groups.filter(
+                    **group_setting_post_filters
+                ) | groups.filter(assaygroupsetting__isnull=True)
         else:
+            if setting_total is not None:
+                groups = setting_total
+
             groups = groups.filter(
                 **group_setting_post_filters
-            ) | groups.filter(assaygroupsetting__isnull=True)
-    else:
-        if setting_total is not None:
-            groups = setting_total
-
-        groups = groups.filter(
-            **group_setting_post_filters
-        )
+            )
 
     groups = groups.distinct()
 
@@ -3350,11 +3395,15 @@ def apply_post_filter(post_filter, studies, assays, groups, matrix_items, data_p
         ] for current_filter in post_filter.get('matrix_item', {}) if not current_filter.startswith('assaysetup')
     }
 
-    matrix_items = matrix_items.filter(group_id__in=groups)
+    matrix_item_divergence = check_if_filters_diverge(full_post_filter, post_filter, 'matrix_item')
 
-    matrix_items = matrix_items.filter(
-        **matrix_item_post_filters
-    )
+    if study_divergence or group_divergence:
+        matrix_items = matrix_items.filter(group_id__in=groups)
+
+    if matrix_item_divergence:
+        matrix_items = matrix_items.filter(
+            **matrix_item_post_filters
+        )
 
     data_point_post_filters = {
         current_filter: [
@@ -3362,13 +3411,32 @@ def apply_post_filter(post_filter, studies, assays, groups, matrix_items, data_p
         ] for current_filter in post_filter.get('data_point', {})
     }
 
-    data_points = data_points.filter(
-        study_id__in=studies,
-        study_assay_id__in=assays,
-        matrix_item_id__in=matrix_items,
-    ).filter(
-        **data_point_post_filters
-    )
+    data_point_divergence = check_if_filters_diverge(full_post_filter, post_filter, 'data_point')
+
+    # data_points = data_points.filter(
+    #     study_id__in=studies,
+    #     study_assay_id__in=assays,
+    #     matrix_item_id__in=matrix_items,
+    # ).filter(
+    #     **data_point_post_filters
+    # )
+
+    if data_point_divergence:
+        data_points = data_points.filter(
+            **data_point_post_filters
+        )
+    if study_divergence:
+        data_points = data_points.filter(
+            study_id__in=studies,
+        )
+    if assay_divergence:
+        data_points = data_points.filter(
+            study_assay_id__in=assays,
+        )
+    if matrix_item_divergence:
+        data_points = data_points.filter(
+            matrix_item_id__in=matrix_items,
+        )
 
     return studies, assays, groups, matrix_items, data_points
 
@@ -3377,6 +3445,7 @@ def fetch_data_points_from_filters(request):
     intention = request.POST.get('intention', 'charting')
 
     post_filter = json.loads(request.POST.get('post_filter', '{}'))
+    full_post_filter = json.loads(request.POST.get('full_post_filter', '{}'))
 
     pre_filter = {}
     if request.POST.get('filters', ''):
@@ -3498,7 +3567,7 @@ def fetch_data_points_from_filters(request):
             post_filter = acquire_post_filter(studies, assays, groups, matrix_items, data_points)
         else:
             studies, assays, groups, matrix_items, data_points = apply_post_filter(
-                post_filter, studies, assays, groups, matrix_items, data_points
+                full_post_filter, post_filter, studies, assays, groups, matrix_items, data_points
             )
 
         if intention == 'charting':
@@ -3557,6 +3626,7 @@ def fetch_data_points_from_study_set(request):
     intention = request.POST.get('intention', 'charting')
 
     post_filter = json.loads(request.POST.get('post_filter', '{}'))
+    full_post_filter = json.loads(request.POST.get('full_post_filter', '{}'))
 
     study_set_id = int(request.POST.get('study_set_id', 0))
 
@@ -3608,7 +3678,7 @@ def fetch_data_points_from_study_set(request):
             post_filter = acquire_post_filter(studies, assays, groups, matrix_items, data_points)
         else:
             studies, assays, groups, matrix_items, data_points = apply_post_filter(
-                post_filter, studies, assays, groups, matrix_items, data_points
+                full_post_filter, post_filter, studies, assays, groups, matrix_items, data_points
             )
 
         if intention == 'charting':
@@ -4430,6 +4500,7 @@ def fetch_power_analysis_group_table(request):
     data = {}
 
     post_filter = json.loads(request.POST.get('post_filter', '{}'))
+    full_post_filter = json.loads(request.POST.get('full_post_filter', '{}'))
     criteria = json.loads(request.POST.get('criteria', '{}'))
     # GET RID OF COMPOUND FOR SAKE OF POWER ANALYSIS' INITIAL TABLE
     compound_criteria = criteria.pop('compound')
@@ -4474,7 +4545,7 @@ def fetch_power_analysis_group_table(request):
         post_filter = acquire_post_filter(studies, assays, groups, matrix_items, data_points)
     else:
         studies, assays, groups, matrix_items, data_points = apply_post_filter(
-            post_filter, studies, assays, groups, matrix_items, data_points
+            full_post_filter, post_filter, studies, assays, groups, matrix_items, data_points
         )
 
     # OLD
@@ -5713,6 +5784,7 @@ def fetch_information_for_study_platemap_standard_file_blocks(request):
 def fetch_pbpk_group_table(request):
     data = {}
     post_filter = json.loads(request.POST.get('post_filter', '{}'))
+    full_post_filter = json.loads(request.POST.get('full_post_filter', '{}'))
     pre_filter = {}
 
     if request.POST.get('filters', ''):
@@ -5840,7 +5912,7 @@ def fetch_pbpk_group_table(request):
             post_filter = acquire_post_filter(studies, assays, groups, matrix_items, data_points)
         else:
             studies, assays, groups, matrix_items, data_points = apply_post_filter(
-                post_filter, studies, assays, groups, matrix_items, data_points
+                full_post_filter, post_filter, studies, assays, groups, matrix_items, data_points
             )
 
         data = get_pbpk_info(

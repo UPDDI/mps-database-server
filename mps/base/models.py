@@ -18,12 +18,15 @@ class FrontEndModel(models.Model):
     # OVERKILL: allows us to immediately get add url for stuff that can be added on the front end
     @classmethod
     def get_add_url_manager(self):
-        return reverse(
-            '{}-{}-add'.format(
-                self._meta.app_label,
-                self._meta.model_name
+        try:
+            return reverse(
+                '{}-{}-add'.format(
+                    self._meta.app_label,
+                    self._meta.model_name
+                )
             )
-        )
+        except NoReverseMatch:
+            return None
 
     def get_absolute_url(self):
         try:

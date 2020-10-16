@@ -307,8 +307,9 @@ class SetupFormsMixin(BootstrapForm):
                     self.fields[current_field].widget.attrs['data_verbose_name'] = self.fields[current_field]._queryset.model._meta.verbose_name
 
                     # Possibly dumber
-                    if hasattr(self.fields[current_field]._queryset.model, 'get_add_url_manager'):
-                        self.fields[current_field].widget.attrs['data_add_url'] = self.fields[current_field]._queryset.model.get_add_url_manager()
+                    # In Bootstrap Form
+                    # if hasattr(self.fields[current_field]._queryset.model, 'get_add_url_manager'):
+                    #     self.fields[current_field].widget.attrs['data_add_url'] = self.fields[current_field]._queryset.model.get_add_url_manager()
 
         # Avoid duplicate queries for the sample locations
         # sample_locations = AssaySampleLocation.objects.all().order_by('name')
@@ -2736,6 +2737,7 @@ class AssaySetupCompoundFormSet(BaseModelFormSetForcedUniqueness):
 
 
 # UGLY SOLUTION
+# DEPRECATED
 class AssaySetupCompoundInlineFormSet(BaseInlineFormSet):
     """Frontend Inline FormSet for Compound Instances"""
     class Meta(object):

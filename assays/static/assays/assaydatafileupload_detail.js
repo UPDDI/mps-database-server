@@ -26,6 +26,7 @@ $(document).ready(function() {
             file: file_id,
             criteria: JSON.stringify(window.GROUPING.group_criteria),
             post_filter: JSON.stringify(window.GROUPING.current_post_filter),
+            full_post_filter: JSON.stringify(window.GROUPING.full_post_filter),
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
         };
 
