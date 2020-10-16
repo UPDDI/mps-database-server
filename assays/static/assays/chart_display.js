@@ -247,6 +247,7 @@ $(document).ready(function () {
         'Study': 'Study',
         'Matrix': 'Matrix',
         'MPS Model': 'MPS Model',
+        'MPS Model Version': 'MPS Model Version',
         'Cells': 'Cells Added',
         'Compounds': 'Compound Treatment',
         'Settings': 'Settings (Non-Compound Treatments)',

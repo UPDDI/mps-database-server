@@ -83,19 +83,18 @@
                 <td>
                     <a href="{{ object.organ_model.get_absolute_url }}">
                         {{ object.organ_model }}
-                        {% if object.organ_model_protocol %}
-                            {{ object.organ_model_protocol }}
-                        {% endif %}
                     </a>
                 </td>
             </tr>
-            {% if object.variance_from_organ_model_protocol %}
+            {% if object.organ_model_protocol %}
             <tr>
                 <th>
                     MPS Model Version
                 </th>
                 <td>
-                    {{ object.variance_from_organ_model_protocol }}
+                    <a href="{{ object.organ_model_protocol.get_absolute_url }}">
+                        {{ object.organ_model_protocol }}
+                    </a>
                 </td>
             <tr>
             {% endif %}

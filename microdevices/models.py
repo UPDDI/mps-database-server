@@ -396,7 +396,7 @@ class ValidatedAssay(models.Model):
 
 
 # TODO PLEASE NOTE THIS WILL BE REFERRED TO AS SIMPLY A "VERSION"
-class OrganModelProtocol(FlaggableModel):
+class OrganModelProtocol(FrontEndModel, FlaggableModel):
     """Organ Model Protocols point to a file detailing the preparation of a model
 
     This model is intended to be an inline

@@ -2895,7 +2895,8 @@ class AssayGroup(models.Model):
             'Study': self.get_hyperlinked_study(),
             # We don't get the matrix here, we cram it in from the matrix item
             # 'Matrix': 'TO BE REVISED TODO',
-            'MPS Model': self.get_hyperlinked_model_or_device(),
+            'MPS Model': self.get_hyperlinked_model(),
+            'MPS Model Version': self.get_hyperlinked_protocol(),
             'Compounds': self.stringify_compounds(criteria.get('compound', None)),
             'Cells': self.stringify_cells(criteria.get('cell', None)),
             'Settings': self.stringify_settings(criteria.get('setting', None)),
@@ -2915,11 +2916,15 @@ class AssayGroup(models.Model):
         return dic
 
     # TODO THESE ARE NOT DRY
-    def get_hyperlinked_model_or_device(self):
-        if not self.organ_model:
-            return '<a target="_blank" href="{0}">{1} (No MPS Model)</a>'.format(self.device.get_absolute_url(), self.device.name)
+    # We can be sure that there will always be a Model
+    def get_hyperlinked_model(self):
+        return '<a target="_blank" href="{0}">{1}</a>'.format(self.organ_model.get_absolute_url(), self.organ_model.name)
+
+    def get_hyperlinked_protocol(self):
+        if self.organ_model_protocol:
+            return '<a target="_blank" href="{0}">{1}</a>'.format(self.organ_model_protocol.get_absolute_url(), self.organ_model_protocol.name)
         else:
-            return '<a target="_blank" href="{0}">{1}</a>'.format(self.organ_model.get_absolute_url(), self.organ_model.name)
+            return '-No MPS Model Version-'
 
     def get_hyperlinked_study(self):
         return '<a target="_blank" href="{0}">{1}</a>'.format(self.study.get_absolute_url(), self.study.name)

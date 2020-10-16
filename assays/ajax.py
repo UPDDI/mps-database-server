@@ -839,6 +839,9 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
     setups = groups.prefetch_related(
         # Needed if we are going to get device from group in lieu of item
         # 'organ_model__device',
+        # Prefetch to acquire names quickly
+        'organ_model',
+        'organ_model_protocol',
         'assaygroupsetting_set__setting',
         'assaygroupsetting_set__addition_location',
         'assaygroupsetting_set__unit',
@@ -879,7 +882,9 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
         # KLUDGE, BAD
         if use_center:
             header_keys.append('Center')
-        if 'study.group_id' in criteria.get('setup', []):
+        if 'organ_model_protocol_id' in criteria.get('setup'):
+            header_keys.append('MPS Model Version')
+        if 'study.group_id' in criteria.get('setup'):
             header_keys.append('MPS User Group')
         if 'study_id' in criteria.get('setup', []):
             header_keys.append('Study')
@@ -1010,6 +1015,7 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
         list(treatment_groups.values()), key=lambda x: (
             x.get('Compounds'),
             x.get('MPS Model'),
+            x.get('MPS Model Version'),
             x.get('Cells'),
             x.get('Settings'),
             x.get('Matrix'),
@@ -2571,16 +2577,6 @@ def acquire_post_filter(studies, assays, groups, matrix_items, data_points):
         0: '-No Settings-'
     })
 
-    # Contrived: Add no organ_model_protocol
-    # Again, ought to be done automatically
-    # post_filter.setdefault('group', {}).setdefault(
-    #     'organ_model_protocol_id__in', {}
-    # ).update({
-    #     # DANGEROUS MAGIC STRINGS
-    #     # PLEASE AVOID
-    #     0: '-No MPS Model Version-'
-    # })
-
     # Groups here
     groups = groups.prefetch_related(
         'assaygroupcompound_set__compound_instance__compound',
@@ -2617,13 +2613,21 @@ def acquire_post_filter(studies, assays, groups, matrix_items, data_points):
 
         # THE TRICKY PART OF THIS IS THAT NOT ALL GROUPS HAVE PROTOCOLS
         # Worse still, the definition of a protocol is likely in flux
-        # if group.organ_model_protocol:
-        #     current.setdefault(
-        #         'organ_model_protocol_id__in', {}
-        #     ).update({
-        #         group.organ_model_protocol_id: group.organ_model_protocol.name
-        #     })
+        if group.organ_model_protocol:
+            current.setdefault(
+                'organ_model_protocol_id__in', {}
+            ).update({
+                group.organ_model_protocol_id: group.organ_model_protocol.name
+            })
+        else:
+            current.setdefault(
+                'organ_model_protocol_id__in', {}
+            ).update({
+                # AVOID MAGIC STRINGS, PLEASE
+                0: '-No MPS Model Version-'
+            })
 
+        # Begin iteration of components
         for compound in group.assaygroupcompound_set.all():
             current.setdefault(
                 'assaygroupcompound__compound_instance__compound_id__in', {}
@@ -3233,9 +3237,23 @@ def apply_post_filter(post_filter, studies, assays, groups, matrix_items, data_p
 
     groups = groups.filter(study__in=studies)
 
+    # We remove the organ_model_protocol_id first because it can have nulls
+    # IT IS POSSIBLE: To instead have a contrive "-No MPS Model Version-" entry, but this could cause further complications
+    # This was made under the assumption that all fields would be non-NULL, which unfortunately was not the case
+    organ_model_protocol_id_filter = post_filter.get('group', {}).get('organ_model_protocol_id__in', {})
+    # Contrived, somewhat inappropriate
+    del group_post_filters['organ_model_protocol_id__in']
+
     groups = groups.filter(
         **group_post_filters
     )
+
+    # SPECIAL EXCEPTION FOR MPS MODEL VERSION
+    # SHOULD BE HANDLED MORE ELEGANTLY
+    if organ_model_protocol_id_filter.get('0'):
+        groups = groups.filter(organ_model_protocol_id__in=organ_model_protocol_id_filter) | groups.filter(organ_model_protocol__isnull=True)
+    else:
+        groups = groups.filter(organ_model_protocol_id__in=organ_model_protocol_id_filter)
 
     # COMBINED FIELDS IF NECESSARY
     # TODO TODO TODO

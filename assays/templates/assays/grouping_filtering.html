@@ -196,21 +196,20 @@
                         </td>
                     </tr>
                     {# Subject to removal? #}
-                    {% comment %}
                     <tr>
                         <td>
-                            <a role='button' class="btn btn-sm post-filter-spawn">
+                            <button data-parent-model='group' data-filter-relation='organ_model_protocol_id__in' role='button' class="btn btn-sm post-filter-spawn">
                                 <span class="glyphicon glyphicon-filter"></span>
-                            </a>
+                            </button>
                         </td>
                         <td>
-                            <input checked type="checkbox" class="grouping-checkbox">
+                            <input data-group='organ_model_protocol_id' data-group-relation='setup' type="checkbox" class="grouping-checkbox">
+                            <span data-group-type="treatment"></span>
                         </td>
                         <td>
-                            MPS Model Protocol
+                            MPS Model Version
                         </td>
                     </tr>
-                    {% endcomment %}
                     {# Subject to removal? #}
 {#                    <tr>#}
 {#                        <td>#}
