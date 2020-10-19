@@ -1900,6 +1900,10 @@ def fetch_assay_study_reproducibility(request):
         study_id=study.id
     )
 
+    # If there are item filters, they must have a upstream effect on groups
+    if item_id_filter and any(item_id_filter):
+        groups = groups.filter(assaymatrixitem__id__in=matrix_items).distinct()
+
     data_points = AssayDataPoint.objects.filter(
         study_id=study.id
     ).prefetch_related(
@@ -1918,6 +1922,13 @@ def fetch_assay_study_reproducibility(request):
         value__isnull=False
     )
 
+    # CRUDE
+    # In theory, these things could be accomplished by modifying the post_filter?
+    # Must apply matrix item filter
+    if item_id_filter and any(item_id_filter):
+        data_points = data_points.filter(matrix_item_id__in=matrix_items)
+    if target_id_filter or method_id_filter:
+        data_points = data_points.filter(study_assay_id__in=assays)
     if sample_location_id_filter:
         data_points = data_points.filter(sample_location_id=sample_location_id_filter)
 
@@ -1929,14 +1940,23 @@ def fetch_assay_study_reproducibility(request):
 
         post_filter = acquire_post_filter(studies, assays, groups, matrix_items, data_points)
 
-        if item_id_filter or target_id_filter:
-            studies, assays, groups, matrix_items, data_points = apply_post_filter(
-                full_post_filter, post_filter, studies, assays, groups, matrix_items, data_points
-            )
-            # DUMB BUT EXPEDIENT
-            # TODO REVISE
-            # WHY DO I DO THIS? BECAUSE APPLYING FILTER DESTROYS PARTS OF THE POST FILTER
-            post_filter = acquire_post_filter(studies, assays, groups, matrix_items, data_points)
+        # SEE KLUDGE ABOVE
+        # THIS IS FOR JUMPING TO A STUDY FROM INTERSTUDY REPRO
+        # THE IDEA IS THAT IT IS SUPPOSED TO TRIM TO THE "RELEVENT" DATA
+        # Obviously, one needs to make sure it is not superfluously run
+        # if item_id_filter or target_id_filter:
+        #     # CONTRIVANCE
+        #     full_post_filter = copy.deepcopy(post_filter)
+
+        #     studies, assays, groups, matrix_items, data_points = apply_post_filter(
+        #         full_post_filter, post_filter, studies, assays, groups, matrix_items, data_points
+        #     )
+        #     # DUMB BUT EXPEDIENT
+        #     # TODO REVISE
+        #     # WHY DO I DO THIS? BECAUSE APPLYING FILTER DESTROYS PARTS OF THE POST FILTER
+        #     # post_filter = acquire_post_filter(studies, assays, groups, matrix_items, data_points)
+        #     # Deep copy the deep copy
+        #     post_filter = copy.deepcopy(full_post_filter)
     else:
         studies, assays, groups, matrix_items, data_points = apply_post_filter(
             full_post_filter, post_filter, studies, assays, groups, matrix_items, data_points

@@ -293,6 +293,13 @@ $(document).ready(function () {
             {title: "NA Explanation", data: '11', visible: false, 'name': 'naText' }
         ];
 
+        // CRUDE: MAKE SURE NOT TO SEND item_ids SUPERFLUOUSLY
+        let item_ids = $.urlParam('i').split('+');
+
+        if (item_ids.length === 1 && !item_ids[0]) {
+            item_ids = [];
+        }
+
         gas_table = $('#gas-table').DataTable({
             ajax: {
                 url: '/assays_ajax/',
@@ -303,7 +310,7 @@ $(document).ready(function () {
                     full_post_filter: JSON.stringify(window.GROUPING.full_post_filter),
                     csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
                     study: study_id,
-                    item_ids: JSON.stringify($.urlParam('i').split('+')),
+                    item_ids: JSON.stringify(item_ids),
                     target_id: $.urlParam('t'),
                     unit_id: $.urlParam('u'),
                     sample_location_id: $.urlParam('s'),

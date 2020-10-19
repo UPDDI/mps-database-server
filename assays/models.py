@@ -34,7 +34,7 @@ from django.contrib.postgres.fields import JSONField
 
 import ujson as json
 # Copying dictionaries and the like
-from copy import deepcopy
+import copy
 
 
 from django.urls import reverse
@@ -3332,7 +3332,7 @@ class AssayMatrixItem(FlaggableModel):
         self,
         group_dic
     ):
-        dic = deepcopy(group_dic)
+        dic = copy.deepcopy(group_dic)
         dic.update({
             # Ought this be here? Should it likewise be a hyperlink?
             'Device': self.device.name,
