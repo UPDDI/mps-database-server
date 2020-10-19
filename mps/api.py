@@ -88,8 +88,8 @@ class AssayGroupCompoundSerializer(serializers.ModelSerializer):
 
     addition_location = serializers.StringRelatedField()
 
-    addition_time = serializers.StringRelatedField(source='get_addition_time')
-    duration = serializers.StringRelatedField(source='get_duration')
+    addition_time = serializers.StringRelatedField(source='get_addition_time_string')
+    duration = serializers.StringRelatedField(source='get_duration_string')
 
     class Meta:
         model = AssayGroupCompound
@@ -111,7 +111,7 @@ class AssayGroupCellSerializer(serializers.ModelSerializer):
 
     addition_location = serializers.StringRelatedField()
 
-    addition_time = serializers.StringRelatedField(source='get_addition_time')
+    addition_time = serializers.StringRelatedField(source='get_addition_time_string')
 
     class Meta:
         model = AssayGroupCell
@@ -132,8 +132,8 @@ class AssayGroupSettingSerializer(serializers.ModelSerializer):
 
     addition_location = serializers.StringRelatedField()
 
-    addition_time = serializers.StringRelatedField(source='get_addition_time')
-    duration = serializers.StringRelatedField(source='get_duration')
+    addition_time = serializers.StringRelatedField(source='get_addition_time_string')
+    duration = serializers.StringRelatedField(source='get_duration_string')
 
     class Meta:
         model = AssayGroupSetting
