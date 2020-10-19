@@ -882,9 +882,9 @@ def get_item_groups(study, criteria, groups=None, matrix_items=None, compound_pr
         # KLUDGE, BAD
         if use_center:
             header_keys.append('Center')
-        if 'organ_model_protocol_id' in criteria.get('setup'):
+        if 'organ_model_protocol_id' in criteria.get('setup', []):
             header_keys.append('MPS Model Version')
-        if 'study.group_id' in criteria.get('setup'):
+        if 'study.group_id' in criteria.get('setup', []):
             header_keys.append('MPS User Group')
         if 'study_id' in criteria.get('setup', []):
             header_keys.append('Study')
