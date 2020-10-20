@@ -9,10 +9,10 @@
 {% endblock %}
 
 {% block breadcrumbs %}
-    <li><a href="/assays/editable_studies/">Editable Studies</a></li>
+    <li><a href="{% url 'assays-editable-study-list' %}">Editable Studies</a></li>
     {% if object %}
         <li>
-			<a href="/assays/{{ object.id }}">{{ object }}</a>
+			<a href="{% url 'assays-assaystudy-index' object.id %}">{{ object }}</a>
         </li>
     {% endif %}
     <li class="active">
