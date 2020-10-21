@@ -132,7 +132,6 @@
     </table>
     {% endcomment %}
 
-    <legend>All Groups</legend>
     {% include 'assays/group_difference_table.html' %}
 
     {# For difference table etc. #}
@@ -740,6 +739,12 @@
     {# {% include 'assays/grouping_filtering.html' %} #}
 
     {# {% include 'assays/chart_options.html' with chart_title="Data" chart_prefix="charts"%} #}
+
+    {% if form.instance.matrix.representation == 'plate' %}
+        <legend>Well Data</legend>
+    {% else %}
+        <legend>Chip Data</legend>
+    {% endif %}
 
     {% include 'assays/sidebar_extras.html' with show_hide="true" %}
 

@@ -99,6 +99,28 @@
             <tr>
             {% endif %}
             {% endif %}
+            <tr>
+                <th>
+                    Group
+                </th>
+                <td>
+                    <a href="{% url 'assays-assaygroup-detail' object.group.id %}">
+                        {{ object.group }}
+                    </a>
+                </td>
+            </tr>
+            {% if object.matrix.representation == 'plate' %}
+            <tr>
+                <th>
+                    Plate
+                </th>
+                <td>
+                    <a href="{% url 'assays-assaymatrix-plate-detail' object.matrix.id %}">
+                        {{ object.matrix }}
+                    </a>
+                </td>
+            </tr>
+            {% endif %}
         </tbody>
     </table>
 
@@ -197,6 +219,12 @@
         {% endfor %}
         </tbody>
     </table>
+    {% endif %}
+
+    {% if object.matrix.representation == 'plate' %}
+        <legend>Well Data</legend>
+    {% else %}
+        <legend>Chip Data</legend>
     {% endif %}
 
     {% include 'assays/sidebar_extras.html' with show_hide="true" %}

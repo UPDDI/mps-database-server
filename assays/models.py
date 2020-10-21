@@ -3005,7 +3005,7 @@ class AssayGroupSetting(AbstractSetupSetting):
 # SUBJECT TO REMOVAL (MAY JUST USE ASSAY SETUP)
 class AssayMatrixItem(FlaggableModel):
     class Meta(object):
-        verbose_name = 'Matrix Item'
+        verbose_name = 'Study Item'
         # TODO Should this be by study or by matrix?
         unique_together = [
             ('study', 'name'),
