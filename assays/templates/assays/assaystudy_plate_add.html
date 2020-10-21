@@ -12,7 +12,7 @@
 {% block load_js %}
     <script src="{% static "js/enter_override.js" %}"></script>
     {# Should any page be flaggable? #}
-    {# <script src="{% static "js/flag.js" %}"></script> #}
+    <script src="{% static "js/flag.js" %}"></script>
     <script src="{% static "assays/assaystudy_tabs.js" %}"></script>
     {# Respective page's script here #}
     <script src="{% static "assays/cell_sample_selection.js" %}"></script>
@@ -80,6 +80,8 @@
     {% endif %}
 
     {% include 'tracking.html' %}
+
+    {% include "sign_off_form.html" with group=form.instance.study.group.name %}
 
     <legend>Plate Details</legend>
 

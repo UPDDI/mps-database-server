@@ -284,6 +284,7 @@
                         <th>Name</th>
                         <th>Organ Model</th>
                         <th>Wells in Use</th>
+                        <th>Review</th>
                     </tr>
                 </thead>
 
@@ -308,7 +309,6 @@
                         <td>
                             {{ plate.assaymatrixitem_set.count }}
                         </td>
-                        {% comment %}
                         <td>
                             {% if plate.signed_off_by %}
                                 <span hidden>1</span>
@@ -319,7 +319,6 @@
                                 <span title="This entry is flagged for review: '{{ plate.reason_for_flag }}'" class="glyphicon glyphicon-flag text-danger" aria-hidden="true"></span>
                             {% endif %}
                         </td>
-                        {% endcomment %}
                     </tr>
                 {% endfor %}
                 </tbody>

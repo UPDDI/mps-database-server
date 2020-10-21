@@ -7,7 +7,7 @@ $(document).ready(function () {
 
     flag.click( function() {
         var current_check = check.prop('checked');
-        check.prop('checked',!current_check);
+        check.prop('checked', !current_check);
         notes.toggle('slow');
         if (check.prop('checked')) {
             flag.addClass('btn-danger');
