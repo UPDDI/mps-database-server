@@ -108,20 +108,24 @@ $(document).ready(function () {
                     width: "10%"
                 },
                 {
+                    "width": "10%",
+                    "targets": [0]
+                },
+                {
                     "type": "numeric-comma",
-                    "targets": [5, 6, 7, 8, 9]
+                    "targets": [6, 7, 8, 9, 10, 11, 12]
                 },
                 {
                     'visible': false,
-                    'targets': [8, 9, 13, 15, 16]
+                    'targets': [5, 9, 10, 11, 12, 16, 18, 19]
                 },
                 {
                     'className': 'none',
-                    'targets': [10]
+                    'targets': [13]
                 },
                 {
                     'sortable': false,
-                    'targets': [11]
+                    'targets': [14]
                 }
             ],
             drawCallback: function () {

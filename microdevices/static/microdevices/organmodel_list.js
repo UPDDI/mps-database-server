@@ -12,7 +12,7 @@ $(document).ready(function() {
             },
             {
                 'className': 'none',
-                'targets': [8]
+                'targets': [9]
 
             },
             // {

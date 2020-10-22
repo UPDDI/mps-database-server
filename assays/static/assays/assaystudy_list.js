@@ -106,11 +106,11 @@ $(document).ready(function() {
                 },
                 {
                     "type": "numeric-comma",
-                    "targets": [5, 6, 7, 8, 9, 10, 11]
+                    "targets": [6, 7, 8, 9, 10, 11, 12]
                 },
                 {
                     'visible': false,
-                    'targets': [8, 9, 10, 11, 15, 17, 18]
+                    'targets': [5, 9, 10, 11, 12, 16, 18, 19]
                 },
                 {
                     'className': 'none',
@@ -128,15 +128,6 @@ $(document).ready(function() {
                     studies_table.DataTable().column(10).visible(false);
                 }
             },
-            drawCallback: function () {
-                // Show when done
-                studies_table.show('slow');
-                // Swap positions of filter and length selection; clarify filter
-                $('.dataTables_filter').css('float', 'left').prop('title', 'Separate terms with a space to search multiple fields');
-                $('.dataTables_length').css('float', 'right');
-                // Reposition download/print/copy
-                $('.DTTT_container').css('float', 'none');
-            }
         });
     }
 });

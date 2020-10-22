@@ -409,6 +409,8 @@ class AssayStudyConfigurationList(LoginRequiredMixin, ListView):
 
 
 # BEGIN NEW
+# REALLY OUGHT TO USE AGGREGATION AND SUCH INSTEAD
+# ITERATING OVER STUDIES CREATES A NEW QUERY EVERY TIME!
 def get_queryset_with_organ_model_map(queryset):
     """Takes a queryset and returns it with a organ model map"""
     # Not DRY
@@ -429,6 +431,7 @@ def get_queryset_with_organ_model_map(queryset):
     )
 
     organ_model_map = {}
+    model_type_map = {}
 
     for setup in setups:
         organ_model_map.setdefault(
@@ -438,12 +441,23 @@ def get_queryset_with_organ_model_map(queryset):
                 setup.organ_model.name: True
             }
         )
+        # Crude
+        model_type_map.setdefault(
+            setup.study_id, {}
+        ).update(
+            {
+                setup.organ_model.get_model_type_display(): True
+            }
+        )
 
     for study in queryset:
         study.organ_models = ',\n'.join(
             sorted(organ_model_map.get(study.id, {}).keys())
         )
-
+        # Crude
+        study.model_types = ',\n'.join(
+            sorted(model_type_map.get(study.id, {}).keys())
+        )
 
 def get_queryset_with_number_of_data_points(queryset):
     """Add number of data points to each object in an Assay Study querysey"""
