@@ -79,7 +79,11 @@
                     <button type="button" class="reference-selector btn btn-xs btn-primary" data-reference-id="{{ reference.id }}">Select</button>
                 </td>
                 <td data-reference-field="id" hidden>{{ reference.id }}</td>
-                <td data-reference-field="pubmed_id">{{ reference.pubmed_id }}</td>
+                <td data-reference-field="pubmed_id">
+                    <a href="https://www.ncbi.nlm.nih.gov/pubmed/{{ reference.pubmed_id }}" target="_blank">
+                        {{ reference.pubmed_id }}
+                    </a>
+                </td>
                 <td data-reference-field="title">{{ reference.title }}</td>
                 <td data-reference-field="authors">{{ reference.authors }}</td>
             </tr>

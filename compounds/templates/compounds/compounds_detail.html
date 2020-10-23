@@ -66,7 +66,7 @@
                             <b>ChEMBL ID</b>
                         </td>
                         <td>
-                            <a href="https://www.ebi.ac.uk/chembl/compound/inspect/{{ object.chemblid }}">{{ object.chemblid }}</a>
+                            <a target="_blank" href="https://www.ebi.ac.uk/chembl/compound/inspect/{{ object.chemblid }}">{{ object.chemblid }}</a>
                         </td>
                     </tr>
                     <tr>
@@ -74,7 +74,7 @@
                             <b>PubChem ID</b>
                         </td>
                         <td>
-                            <a href="https://pubchem.ncbi.nlm.nih.gov/compound/{{ object.pubchemid }}">{{ object.pubchemid }}</a>
+                            <a target="_blank" href="https://pubchem.ncbi.nlm.nih.gov/compound/{{ object.pubchemid }}">{{ object.pubchemid }}</a>
                         </td>
                     </tr>
                     <tr>
@@ -82,15 +82,18 @@
                             <b>DrugBank ID</b>
                         </td>
                         <td>
-                            <a href="http://www.drugbank.ca/drugs/{{ object.drugbank_id }}">{{ object.drugbank_id }}</a>
+                            <a target="_blank" href="http://www.drugbank.ca/drugs/{{ object.drugbank_id }}">{{ object.drugbank_id }}</a>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <b>ClinicalTrials</b>
+                            <b>
+                                ClinicalTrials
+                                <span class="glyphicon glyphicon-info-sign" title="Data in ClinicalTrials.gov with results: Change filters with the toolbar on the left."></span>
+                            </b>
                         </td>
                         <td>
-                            <a href="https://clinicaltrials.gov/ct2/results?term={{ object.name }}&amp;rslt=With">{{ object.name }}</a>
+                            <a target="_blank" href="https://clinicaltrials.gov/ct2/results?term={{ object.name }}&amp;rslt=With">{{ object.name }}</a>
                         </td>
                     </tr>
                     <tr>
@@ -440,7 +443,7 @@
             {% for target in object.targets %}
                 <tr>
                     <td>{{ target.name }}</td>
-                    <td><a href="http://www.uniprot.org/uniprot/{{ target.uniprot_id }}">{{ target.uniprot_id }}</a></td>
+                    <td><a target="_blank" href="http://www.uniprot.org/uniprot/{{ target.uniprot_id }}">{{ target.uniprot_id }}</a></td>
                     <td>
                       {% if target.type|lower == 'target' %}
                           <span class="label label-danger">{{ target.type }}</span>

@@ -835,6 +835,26 @@ class AssayStudyChips(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
         return context
 
 
+# WE NEED A VIEW PAGE FOR ALL OF A STUDY'S CHIPS
+class AssayStudyChipsDetail(StudyGroupMixin, DetailView):
+    # Why not have the mixin look for DetailView?
+    model = AssayMatrix
+    detail = True
+    no_update = True
+
+    template_name = 'assays/assaystudy_chips_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyChipsDetail, self).get_context_data(**kwargs)
+
+        context.update({
+            'detail': True,
+            'items': AssayMatrixItem.objects.filter(matrix=self.object).order_by('name')
+        })
+
+        return context
+
+
 # This is now really just a list page
 class AssayStudyPlates(ObjectGroupRequiredMixin, AssayStudyMixin, DetailView):
     template_name = 'assays/assaystudy_plates.html'

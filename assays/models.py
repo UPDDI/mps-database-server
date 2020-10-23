@@ -2290,8 +2290,15 @@ class AssayMatrix(FlaggableModel):
     # REMOVE ASAP
     # plate_data = JSONField(default=dict, blank=True)
 
+    # def __str__(self):
+    #     return '{0}'.format(self.name)
+
+    # ALTERNATIVE TO BEING DONE EXPLICITLY
     def __str__(self):
-        return '{0}'.format(self.name)
+        if self.representation == 'plate':
+            return '{0}'.format(self.name)
+        else:
+            return 'Chips for {}'.format(self.study.name)
 
     # def get_organ_models(self):
     #     organ_models = []
@@ -2309,7 +2316,12 @@ class AssayMatrix(FlaggableModel):
         # return '/assays/assaymatrix/{}/'.format(self.id)
         # Not update! Detail will redirect anyway
         # return reverse('assays-assaymatrix-plate-update', args=[self.pk])
-        return reverse('assays-assaymatrix-plate-detail', args=[self.pk])
+        # If this is a plate
+        if self.representation == 'plate':
+            return reverse('assays-assaymatrix-plate-detail', args=[self.pk])
+        # Otherwise
+        else:
+            return reverse('assays-assaymatrix-chips-detail', args=[self.pk])
 
     def get_post_submission_url(self):
         # return self.study.get_post_submission_url()
@@ -3355,7 +3367,9 @@ class AssayMatrixItem(FlaggableModel):
         return '<a target="_blank" href="{0}">{1}</a>'.format(self.study.get_absolute_url(), self.study.name)
 
     def get_hyperlinked_matrix(self):
-        return '<a target="_blank" href="{0}">{1}</a>'.format(self.matrix.get_absolute_url(), self.matrix.name)
+        # Go to either the plate details or chip details
+        # This is built-in to the absolute url
+        return '<a target="_blank" href="{0}">{1}</a>'.format(self.matrix.get_absolute_url(), str(self.matrix))
 
     # TODO TODO TODO CHANGE
     def get_absolute_url(self):

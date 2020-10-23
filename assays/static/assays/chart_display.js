@@ -245,7 +245,7 @@ $(document).ready(function () {
         'Device': 'Device',
         'MPS User Group': 'MPS User Group',
         'Study': 'Study',
-        'Matrix': 'Matrix',
+        'Matrix': 'All Study Chips OR Plate',
         'MPS Model': 'MPS Model',
         'MPS Model Version': 'MPS Model Version',
         'Cells': 'Cells Added',
