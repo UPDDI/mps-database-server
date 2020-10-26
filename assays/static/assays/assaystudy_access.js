@@ -29,7 +29,7 @@ $(document).ready(function() {
     });
 
     remove_all_buttons.click(function() {
-        $('#id_' + $(this).attr('data-field')).prop('selected', false);
+        $('#id_' + $(this).attr('data-field')).find('option').prop('selected', false);
         populate_selection_boxes($(this).attr('data-field'));
     });
 
@@ -44,7 +44,7 @@ $(document).ready(function() {
 
     remove_buttons.click(function() {
         let parent_field = $('#id_' + $(this).attr('data-field'));
-        $('#id_left_' + $(this).attr('data-field')).find('option:selected').each(function() {
+        $('#id_right_' + $(this).attr('data-field')).find('option:selected').each(function() {
             parent_field.find('option[value="' + this.value + '"]').prop('selected', false);
         });
 
