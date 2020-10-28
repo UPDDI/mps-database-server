@@ -117,7 +117,7 @@ $(document).ready(function () {
                 },
                 {
                     'visible': false,
-                    'targets': [5, 9, 10, 11, 12, 16, 18, 19]
+                    'targets': [5, 7, 8, 9, 10, 11, 12, 16, 18, 19]
                 },
                 {
                     'className': 'none',

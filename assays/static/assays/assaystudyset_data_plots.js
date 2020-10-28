@@ -131,11 +131,11 @@ $(document).ready(function() {
                 },
                 {
                     'visible': false,
-                    'targets': [5, 9, 10, 11, 12, 16, 18, 19]
+                    'targets': [5, 7, 8, 9, 10, 11, 12, 16, 18, 19]
                 },
                 {
                     'className': 'none',
-                    'targets': [12]
+                    'targets': [13]
                 },
                 {
                     'sortable': false,
@@ -146,7 +146,7 @@ $(document).ready(function() {
                 // CRUDE WAY TO DISCERN IF IS EDITABLE STUDIES / NO PIE CHARTS
                 if (!at_least_one_pie_chart) {
                     // Hide the column for pie charts
-                    studies_table.DataTable().column(10).visible(false);
+                    studies_table.DataTable().column(14).visible(false);
                 }
             },
             drawCallback: function () {
