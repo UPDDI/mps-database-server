@@ -33,9 +33,11 @@
 {% endblock %}
 
 {% block sidebar %}
+    {% if update or add %}
     <div class="toggle-display-none" id="omic_preview_the_graphs_section2">
         {% include 'assays/grouping_filtering.html' with omics="true"%}
     </div>
+    {% endif %}
 {% endblock %}
 
 {% block fluid-content %}
@@ -197,9 +199,11 @@
                         </div>
                     </div>
                 </div>
+                {% comment %}
                 {% if form.omic_data_file.errors %}
                 </div>
                 {% endif %}
+                {% endcomment %}
 
             {% else %}
                 <label class="col-sm-2 control-label" for="omic_data_file">Omic Data File*</label>

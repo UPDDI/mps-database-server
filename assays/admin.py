@@ -1379,6 +1379,8 @@ class AssayOmicAnalysisTargetAdmin(ImportExportModelAdmin):
     list_display = ('name', 'target', 'data_type', 'method', 'unit')
     search_fields = ('name', 'target', 'data_type', 'method', 'unit')
 
+    list_editable = ('target', 'data_type', 'method', 'unit')
+
 admin.site.register(AssayOmicAnalysisTarget, AssayOmicAnalysisTargetAdmin)
 
 # class AssayOmicSampleMetadataAdmin(ImportExportModelAdmin):

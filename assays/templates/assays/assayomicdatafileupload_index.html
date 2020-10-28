@@ -22,10 +22,12 @@
             <h1 class="text-center">
                 <em><b>Omic Data File Upload List</b></em><br><br>
                 Study: {{ object }}
+                {% if datafiles.count %}
+                    <div>
+                        <a href="{% url 'assays-assaystudy-omics' object.id %}" class="btn btn-primary" role="button">Visualization</a>
+                    </div>
+                {% endif %}
             </h1>
-            <div class="text-center">
-                <a href="{% url 'assays-assaystudy-omics' object.id %}" class="btn btn-primary" role="button">Visualization</a>
-            </div>
         </div>
 
         {# Hide setup add buttons if the study is marked reviewed #}

@@ -158,7 +158,7 @@ $(document).ready(function () {
 
             // Create Omics info table on first pass
             if (firstTime && called_from === "analysis") {
-                $("#omics_table_body").html($("#omics_table_body").html()+"<tr><td class='dt-center'><input type='checkbox' class='big-checkbox' data-checkbox-id='" + omics_data['table'][x][1] + "' checked></td><td>" + x + "</td><td>" + omics_data['table'][x][0] + "</td></tr>")
+                $("#omics_table_body").html($("#omics_table_body").html()+"<tr><td class='dt-center'><input type='checkbox' class='big-checkbox' data-checkbox-id='" + omics_data['table'][x][1] + "' checked></td><td class='omics-groups-hover'>" + x + "</td><td>" + omics_data['table'][x][0] + "</td></tr>")
             }
 
             // For each gene probe ID

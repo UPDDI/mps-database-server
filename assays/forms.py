@@ -5182,6 +5182,7 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         )
 
         initial_omic_computational_method = None
+        initial_computational_method = None
         # just get the first one for the default, if there is one
         if len(omic_computational_methods) > 0:
             for each in omic_computational_methods:
@@ -5218,6 +5219,9 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
             self.fields['time_2_day'].initial = times_2.get('day')
             self.fields['time_2_hour'].initial = times_2.get('hour')
             self.fields['time_2_minute'].initial = times_2.get('minute')
+
+        filename_only = os.path.basename(str(self.instance.omic_data_file))
+        self.fields['filename_only'].initial = filename_only
 
     time_1_day = forms.DecimalField(
         required=False,

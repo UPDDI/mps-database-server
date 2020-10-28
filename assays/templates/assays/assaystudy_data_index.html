@@ -50,7 +50,6 @@
         <a href="{% url 'assayplatereaderfile-index' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add or Remove Assay Plate Reader Data Files</a>
     </div>
 
-    {# NOTE: STAGE ONLY #}
     <div class="well">
         <h3>
             {% include 'plural_include.html' with label="Omic Data File" count=log2fold_files.count %}

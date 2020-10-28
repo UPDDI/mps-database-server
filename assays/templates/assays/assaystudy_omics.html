@@ -8,6 +8,9 @@
 
 {% block load_js %}
     <script src="{% static "assays/grouping_filtering.js" %}"></script>
+    <script src="{% static "assays/cell_sample_selection.js" %}"></script>
+    <script src="{% static "js/split_time.js" %}"></script>
+    <script src="{% static "assays/group_display.js" %}"></script>
     <script src="{% static "assays/assay_shared_omics.js" %}"></script>
     <script src="{% static "assays/assaystudy_omics.js" %}"></script>
 {% endblock %}
@@ -55,12 +58,29 @@
         </tbody>
     </table>
 
+    {# Maybe ought not make this at all #}
+    <div hidden>
+        {% include 'assays/group_difference_table.html' %}
+    </div>
+
     <div id="plots">
         <div id="volcano-plots">
         </div>
         <div id="ma-plots">
         </div>
     </div>
+
+    <div hidden id="omics_contents_hover">
+        <table class="table table-bordered table-condensed bg-warning">
+            <tbody id="omics_contents_hover_body">
+            </tbody>
+        </table>
+    </div>
+
+    <div hidden>
+        {{ form.series_data }}
+    </div>
+    {% include 'assays/component_displays.html' %}
 
     {# Just a spacer (and yes, inline styles are ugly)#}
     <div style="padding-bottom: 250px;"></div>

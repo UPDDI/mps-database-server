@@ -5877,10 +5877,24 @@ class AssayOmicDataFileUploadView(StudyGroupMixin, DetailView):
 
 # END omic data file list, add, update, view and delete section
 
+
 class AssayStudyOmics(StudyViewerMixin, DetailView):
     """Displays the omics interface for the current study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_omics.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyOmics, self).get_context_data(**kwargs)
+        context.update({
+            'form': AssayStudyGroupForm(instance=self.object),
+            'cellsamples' : CellSample.objects.all().prefetch_related(
+                'cell_type__organ',
+                'supplier',
+                'cell_subtype__cell_type'
+            ),
+        })
+
+        return context
 
 
 class AssayStudyOmicsDownload(StudyViewerMixin, DetailView):
@@ -5922,3 +5936,9 @@ class AssayStudyOmicsDownload(StudyViewerMixin, DetailView):
         # Return nothing otherwise
         else:
             return HttpResponse('', content_type='text/plain')
+
+
+class AssayStudyOmicsHeatmap(StudyViewerMixin, DetailView):
+    """Displays the omics interface for the current study"""
+    model = AssayStudy
+    template_name = 'assays/assaystudy_omics_heatmap.html'

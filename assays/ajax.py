@@ -3428,6 +3428,7 @@ def apply_post_filter(full_post_filter, post_filter, studies, assays, groups, ma
     matrix_item_divergence = check_if_filters_diverge(full_post_filter, post_filter, 'matrix_item')
 
     if study_divergence or group_divergence:
+        matrix_item_divergence = True
         matrix_items = matrix_items.filter(group_id__in=groups)
 
     if matrix_item_divergence:
@@ -3463,7 +3464,7 @@ def apply_post_filter(full_post_filter, post_filter, studies, assays, groups, ma
         data_points = data_points.filter(
             study_assay_id__in=assays,
         )
-    if matrix_item_divergence:
+    if matrix_item_divergence or group_divergence:
         data_points = data_points.filter(
             matrix_item_id__in=matrix_items,
         )
@@ -7458,7 +7459,9 @@ def get_filtered_omics_data_as_csv(get_params):
             continue
         if name not in consolidated_targets:
             datafile = data_point.omic_data_file
-            assay = str(datafile.study_assay)
+            # assay = str(datafile.study_assay)
+            assay_target = datafile.study_assay.target.name
+            assay_method = datafile.study_assay.method.name
             group_1 = datafile.group_1.name
             group_2 = datafile.group_2.name
             time_1 = datafile.time_1
@@ -7468,7 +7471,9 @@ def get_filtered_omics_data_as_csv(get_params):
             location_1 = datafile.location_1
             location_2 = datafile.location_2
             consolidated_targets[name] = {
-                "assay": assay,
+                # "assay": assay,
+                "target": assay_target,
+                "method": assay_method,
                 "group_1": group_1,
                 "group_2": group_2,
                 "time_1_days": time_1_dict['day'],
@@ -7490,7 +7495,8 @@ def get_filtered_omics_data_as_csv(get_params):
             "Probe ID",
             "Gene Name",
             "Expression",
-            "Assay",
+            "Assay Target",
+            "Assay Method",
             "Group 1",
             "Location 1",
             "Time 1 (Days)",
@@ -7554,7 +7560,9 @@ def get_filtered_omics_data_as_csv(get_params):
             name,
             name.split("_")[0],
             expression,
-            consolidated_targets[name]['assay'],
+            # consolidated_targets[name]['assay'],
+            consolidated_targets[name]['target'],
+            consolidated_targets[name]['method'],
             consolidated_targets[name]['group_1'],
             consolidated_targets[name]['location_1'],
             consolidated_targets[name]['time_1_days'],

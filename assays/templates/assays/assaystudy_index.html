@@ -92,13 +92,17 @@
                         <li class="disabled" title="This study has no data."><a href="reproducibility">Reproducibility</a></li>
                         <li class="disabled" title="This study has no data."><a href="power_analysis">Power Analysis</a></li>
                         {% endif %}
-                        {# Stupid conditional because images are not tied directly to studies? #}
-                        <li><a href="omics">Gene Expression Analysis</a></li>
                         {% if object.assayimagesetting_set.count %}
                         <li><a href="images">Images and Videos</a></li>
                         {% else %}
                         <li class="disabled" title="This study has no images or videos."><a href="images">Images and Videos</a></li>
                         {% endif %}
+                        {% if object.assayomicdatafileupload_set.count %}
+                        <li><a href="omics">Gene Expression Analysis</a></li>
+                        {% else %}
+                        <li class="disabled" title="This study has no omic data."><a href="omics">Gene Expression Analysis</a></li>
+                        {% endif %}
+
                         {% if user_is_group_editor %}
                             <li role="separator" class="divider"></li>
                             {% if not object.signed_off_by %}
