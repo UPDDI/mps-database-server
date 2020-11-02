@@ -44,10 +44,10 @@
                 with {% include 'plural_include.html' with label="Assay Plate Reader File" count=object.assayplatereaderfile_set.count %}
             {% endif %}
             <br>
-            <small>Assay plate reader data that will be processed using the assay plate reader tools and subsequently submitted to the Study Summary for visualization and analysis using the biological assay visualization and analysis tools. Data to be uploaded should come directly from the assay plate reader.</small>
+            <small>Assay plate reader data that will be processed using the assay plate reader tools and subsequently submitted to the Study Summary for visualization and analysis using the biological assay visualization and analysis tools. Raw data to be uploaded should come directly from the assay plate reader.</small>
         </h3>
-        <a href="{% url 'assayplatereadermap-index' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add, Remove, or Edit an Assay Plate Map or Calibrate Uploaded Data</a>
-        <a href="{% url 'assayplatereaderfile-index' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add or Remove Assay Plate Reader Data Files</a>
+        <a href="{% url 'assayplatereadermap-index' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add, Remove, or Edit an Assay Plate Map or Calibrate Uploaded Raw Data</a>
+        <a href="{% url 'assayplatereaderfile-index' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add or Remove Assay Plate Reader Raw Data Files</a>
     </div>
 
     <div class="well">

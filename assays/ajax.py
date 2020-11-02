@@ -7355,6 +7355,10 @@ def fetch_omics_data_for_visualization(request):
     data['file_id_to_name'] = {}
     data['table'] = {}
 
+    # It shall be much easier to match data if we match *exactly* rather than looking at substrings
+    # Ideally, we will use update to modify multiple dictionary entries at once
+    data['header_to_groups'] = {}
+
     # Account for multiple files with the same groups
     # First, this is abysmally inefficient, there has to be a better way.
     # Second, how do you perform underscore access of FK fields whose parent's name already has underscores? (ex. group_1_name)
@@ -7366,9 +7370,11 @@ def fetch_omics_data_for_visualization(request):
     for datafile in datafiles:
         if datafile.group_1 is not None and datafile.group_2 is not None and datafile.data_type == "log2fc":
             omics_token = "{}+{}".format(datafile.group_1.id, datafile.group_2.id)
+
+            split_times_1 = get_split_times(datafile.time_1)
+            split_times_2 = get_split_times(datafile.time_2)
+
             if group_combos.count(omics_token) > 1:
-                split_times_1 = get_split_times(datafile.time_1)
-                split_times_2 = get_split_times(datafile.time_2)
                 if datafile.location_1 is not None and datafile.location_2 is not None:
                     joint_name = " vs ".join([
                         datafile.group_1.name + "(" + datafile.location_1.name + ") @ D:" + str(split_times_1['day']) + " H:" + str(split_times_1['hour']) + " M:" + str(split_times_1['minute']),
@@ -7376,14 +7382,38 @@ def fetch_omics_data_for_visualization(request):
                     ])
                 else:
                     joint_name = " vs ".join([
+                        # .format is more legible than + concatenation
+                        # Also, ideally we would have a method for displaying times
                         datafile.group_1.name + " @ D:" + str(split_times_1['day']) + " H:" + str(split_times_1['hour']) + " M:" + str(split_times_1['minute']),
                         datafile.group_2.name + " @ D:" + str(split_times_2['day']) + " H:" + str(split_times_2['hour']) + " M:" + str(split_times_2['minute'])
                     ])
             else:
                 joint_name = " vs ".join([datafile.group_1.name, datafile.group_2.name])
+
             data['data'][joint_name] = {}
             data['file_id_to_name'][datafile.id] = joint_name
             data['table'][joint_name] = [datafile.description, datafile.id]
+
+            # Crude
+            data['header_to_groups'][joint_name] = [
+                {
+                    'name': datafile.group_1.name,
+                    'time': 'D{} H{} M{}'.format(
+                        split_times_1['day'],
+                        split_times_1['hour'],
+                        split_times_1['minute'],
+                    ),
+                    'sample_location': datafile.location_1.name,
+                }, {
+                    'name': datafile.group_2.name,
+                    'time': 'D{} H{} M{}'.format(
+                        split_times_2['day'],
+                        split_times_2['hour'],
+                        split_times_2['minute'],
+                    ),
+                    'sample_location': datafile.location_2.name,
+                }
+            ]
 
     datapoints = AssayOmicDataPoint.objects.filter(study=study).exclude(value__isnull=True)
 

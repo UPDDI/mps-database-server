@@ -842,13 +842,31 @@ $(document).ready(function () {
     // Maybe never?
     function generate_row_clone_html(current_well_name, current_series, current_group) {
         // (these divs are contrivances)
-        var name_row = $('<div>').append(
-            $('<tr>').append(
-                $('<td>').text(current_well_name)
-            )
-        );
+        let name_row = null;
 
-        var full_row = $('<div>');
+        if (series_data[current_group]) {
+            name_row = $('<tr>')
+            .addClass(
+                'bg-primary'
+            ).append(
+                $('<td>').text(current_well_name + ': ' + series_data[current_group].name)
+            );
+        }
+        else {
+            name_row = $('<tr>')
+            .addClass(
+                'bg-danger'
+            ).append(
+                $('<td>').text(current_well_name + ': NO GROUP')
+            );
+        }
+
+
+        let column_headers = $('<tr>')
+        .addClass(
+            'bg-info'
+        );
+        let full_row = $('<tr>');
 
         // SUBJECT TO CHANGE
         // Just draws from the difference table
@@ -868,9 +886,15 @@ $(document).ready(function () {
 
             $.each(columns_to_check, function(index, key) {
                 if (!window.GROUPS.hidden_columns[key]) {
+                    column_headers.append(
+                        $('<td>').text(
+                            $.trim($('[data-header-for="' + key + '"]').text())
+                        )
+                    );
+
                     full_row.append(
                         current_stored_tds[key].clone(),
-                    )
+                    );
                 }
             });
         }
@@ -896,7 +920,7 @@ $(document).ready(function () {
         // Kill buttons (this isn't for editing, just showing the data)
         // full_row.find('.btn').remove();
 
-        return name_row.html() + full_row.html();
+        return name_row[0].outerHTML + column_headers[0].outerHTML + full_row[0].outerHTML;
     }
 
     // Hover event for matrix contents

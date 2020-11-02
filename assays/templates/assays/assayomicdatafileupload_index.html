@@ -33,10 +33,12 @@
         {# Hide setup add buttons if the study is marked reviewed #}
         {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
             {% if not review %}
-                <a href="{% url "assayomicdatafileupload-add" object.id %}" class="btn btn-success" role="button">Add Omic Data File</a>
+                <div class="padded-bottom">
+                    <a href="{% url "assayomicdatafileupload-add" object.id %}" class="btn btn-success" role="button">Add Omic Data File</a>
+                </div>
             {% endif %}
         {% endif %}
-        <br>
+
         {% if datafiles %}
         <div>
             <div><p id="omic_file_index_tooltip"></p>
@@ -95,7 +97,6 @@
                     <td>{{ file.group_2 }}</td>
                     <td>{{ file.time_2 }}</td>
                     <td>{{ file.location_2 }}</td>
-
                 </tr>
             {% endfor %}
             </tbody>

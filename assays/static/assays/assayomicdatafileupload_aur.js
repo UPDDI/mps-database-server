@@ -12,10 +12,10 @@ $(document).ready(function () {
     google.charts.load('visualization', '1', {'packages': ['imagechart']});
 
     // $('.has-popover').popover({'trigger':'hover'});
-    
+
     let global_omic_upload_group_id_change = 0;
     let global_omic_upload_group_pk_change = 0;
-    
+
     let global_omic_upload_group_id_load_1 = 0;
     let global_omic_upload_group_pk_load_1 = 0;
     let global_omic_upload_group_id_load_2 = 0;
@@ -33,22 +33,22 @@ $(document).ready(function () {
     let global_omic_upload_check_load = $('#check_load').html().trim();
 
     if (global_omic_upload_check_load === 'review') {
-        global_omic_upload_called_from = 'load-review' 
+        global_omic_upload_called_from = 'load-review';
         // HANDY - to make everything on a page read only (for review page)
         $('.selectized').each(function() { this.selectize.disable() });
         $(':input').attr('disabled', 'disabled');
     } else {
-        global_omic_upload_group_id_load_1 = 1
-        global_omic_upload_group_pk_load_1 = $('#id_group_1')[0].selectize.items[0]
-        global_omic_upload_group_id_load_2 = 2
-        global_omic_upload_group_pk_load_2 = $('#id_group_2')[0].selectize.items[0]      
-        
+        global_omic_upload_group_id_load_1 = 1;
+        global_omic_upload_group_pk_load_1 = $('#id_group_1')[0].selectize.items[0];
+        global_omic_upload_group_id_load_2 = 2;
+        global_omic_upload_group_pk_load_2 = $('#id_group_2')[0].selectize.items[0];
+
         if (global_omic_upload_check_load === 'add') {
-            global_omic_upload_called_from = 'load-add'
-            get_group_sample_info('load-add')
+            global_omic_upload_called_from = 'load-add';
+            get_group_sample_info('load-add');
         } else {
-            global_omic_upload_called_from = 'load-update'
-            get_group_sample_info('load-update')
+            global_omic_upload_called_from = 'load-update';
+            get_group_sample_info('load-update');
         }
     }
 
@@ -567,4 +567,3 @@ $(document).ready(function () {
     }
 
 });
-

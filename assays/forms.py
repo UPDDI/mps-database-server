@@ -5220,8 +5220,8 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
             self.fields['time_2_hour'].initial = times_2.get('hour')
             self.fields['time_2_minute'].initial = times_2.get('minute')
 
-        filename_only = os.path.basename(str(self.instance.omic_data_file))
-        self.fields['filename_only'].initial = filename_only
+        # filename_only = os.path.basename(str(self.instance.omic_data_file))
+        # self.fields['filename_only'].initial = filename_only
 
     time_1_day = forms.DecimalField(
         required=False,
@@ -5248,9 +5248,9 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         required=False,
         label='Minute'
     )
-    filename_only = forms.CharField(
-        required=False,
-    )
+    # filename_only = forms.CharField(
+    #     required=False,
+    # )
 
     def clean(self):
         data = super(AssayOmicDataFileUploadForm, self).clean()

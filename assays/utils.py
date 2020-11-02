@@ -7181,8 +7181,9 @@ def this_file_name_is_similar_to_another_in_this_study(omic_data_file, study_id,
 
     file_name_as_list_2 = file_name.split('.')
     # file_name_as_list_2 = file_name_as_list_2[:len(file_name_as_list_2)-1]
-    file_name_as_list_2 = file_name_as_list_2[:1]
-    file_name_no_extension = ''.join(file_name_as_list_2)
+    file_name_as_list_2 = file_name_as_list_2[:-1]
+    # NOTE: Attempt to deal with spaces by converting to underscores
+    file_name_no_extension = '.'.join(file_name_as_list_2).replace(' ', '_')
     files_in_study = AssayOmicDataFileUpload.objects.filter(
         study_id=study_id
     )
@@ -7190,7 +7191,7 @@ def this_file_name_is_similar_to_another_in_this_study(omic_data_file, study_id,
 
     for each in files_in_study:
         fame = each.omic_data_file.name
-        if fame.find(file_name_no_extension) >= 0:
+        if file_name_no_extension in fame:
             if each.id != data_file_pk:
                 file_name2 = ''
                 file_name2_as_list = []

@@ -208,7 +208,10 @@
             {% else %}
                 <label class="col-sm-2 control-label" for="omic_data_file">Omic Data File*</label>
                 <div class="col-sm-10">
-                    <em><b> {{ form.filename_only.value }} </b></em>
+                    <a target="_blank" href="/media/{{ form.instance.omic_data_file }}">
+                        {{ form.instance.omic_data_file }}
+                    </a>
+                    {# <em><b> {{ form.filename_only.value }} </b></em> #}
                     {# Show form field as text .name vrs .value HANDY  #}
                     {# name {{ form.form_filename_only.name }} #}
                     {# value {{ form.form_filename_only.value }} #}
@@ -223,7 +226,7 @@
             {% include "generic_field.html" with field=form.study_assay %}
 
 {#                {% include "generic_field.html" with field=form.analysis_method %}#}
-            <div class="row">
+            <div class="form-group">
                 <div class="col-md-2">
                     <div class="plate-map-page-field-labels-small">
                         <div>
