@@ -136,6 +136,9 @@ class DefinitionAdmin(LockableAdmin):
     """Admin for Definitions"""
     form = DefinitionForm
     save_on_top = True
+    ordering = (
+        'term',
+    )
     list_per_page = 300
     list_display = (
         'term',

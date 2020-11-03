@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+{#span formatting for glossary terms not included in this table - could add if desired#}
+    <button name="help_button" type="button" class="btn btn-success help-collapsible">Questions from the Attendees - with Answers </button>
+    <div class="help-content-2">
+        <ul class="list-group">
+            <li class="list-group-item">
+                <h1 class="h1-level-2"> Questions and Answers </h1>
+                <table class="table table-bordered table-condensed small table-components">
+                    <thead>
+                        <tr class="active">
+                        <th> Question </th>
+                        <th> Answer </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                        <td> Is the cell source provided for the model?
+                        </td>
+                        <td> Yes. Cell samples used in the model include the source of the cells.
+                        </td>
+                        </tr>
+                        <tr>
+                        <td> Is there any high content data in the db?
+                        </td>
+                        <td> Yes. The 3 most common types of data in the MPS-Db are high content imaging, biochemical (such as for secreted factors), and mass spectroscopy (for compound metabolism), but other data types can also be entered.
+                        </td>
+                        </tr>
+                        <tr>
+                        <td> Regarding the compounds, where are your data coming from? how do you select which data to be included? there are so many scientific papers and clinical trials, I'm not sure this is all inside the database...could you please comment on that?
+                        </td>
+                        <td> The compound information comes from a variety of external sources as Mark mentioned in the presentation, including ChEMBL, PubChem, DrugBank, and others. Compounds are added as needed for a study, so we don't have all compounds, but just those that have been used so far, and it is relatively easy to add a compound. Entering the ChEMBL ID for a new compound will trigger the database to download the compound information.
+                        </td>
+                        </tr>
+                        <tr>
+                        <td> As all data can be added freely by researchers, does MPS-Db curate or screen those input data? It would be important that the shared data is verifiable and trustable.
+                        </td>
+                        <td> The data are uploaded by the laboratory generating the data. When initially uploaded, the data are only visible to the group generating the data and any collaborator groups they have designated. We require that the data providers review and sign-off that the data were correctly entered and represented in the database, and after sign-off the data can be made available to the larger scientific community, as determined by the data provider.
+                        </td>
+                        </tr>
+                        <tr>
+                        <td> How is reproducibility calculated?
+                        </td>
+                        <td> We use two metrics, the intra-class correlation coefficient (ICC) and the coefficient of variation (CV). The ICC is useful for series data, time series or dose series, as it evaluates both the values and the trends in the data. The CV is used for single sample points, as it is familiar to most researchers. We are planning to add additional statistics in the future.
+                        </td>
+                        </tr>
+                        <tr>
+                        <td> Are there any eligibility criteria for researchers/groups to be able to contribute their models to the database? e.g. geographical location, company vs. aademic group, etc?
+                        </td>
+                        <td> No, there are no restrictions for contributing a model to the database, and we would be happy to assist new users in that effort. We would expect the model developer to provide sufficient information for the users to be able to replicate the model.
+                        </td>
+                        </tr>
+                        <tr>
+                        <td> Similar question, how the data quality will be controled in db when more and more scientists enter the data into the db?
+                        </td>
+                        <td> We will continue to require that users review and sign-off on the data that are entered before they are released to the community.
+                        </td>
+                        </tr>
+                        <tr>
+                        <td> Can models be compared across different platforms?
+                        </td>
+                        <td> Yes, one of the examples just presented is a comparison of the SQL-SAL model which is a 3D microfluidic platform vs the SQL_SAL 96 well model which are the same cell types but in a 96-well plate, so it is a static model. .  We are able to compare these two platforms in plots of the study data.
+                            <br><br>
+One of the important requirements for this is having the same assays as points of comparison between the two models.
+                        </td>
+                        </tr>
+                        <tr>
+                        <td> Is there any function in the database to compare the MPS functionality to the expected in vivo organ functionality, e.g. protein marker, morphology?
+                        </td>
+                        <td> Currently there is not a function to compare directly MPS functionality with the expected in vivo organ functionality.  We are working towards developing functionality for concordance analysis of MPS data with clinical data.
+                        </td>
+                        </tr>
+                        <tr>
+                        <td> Is there a limit to the file size that can or should be uploaded to the database? For example, uploading multiple images for each device as data points could add up quickly.
+                        </td>
+                        <td> Currently we don’t have any restrictions on that, and so far that hasn’t been an issue.  We have quite a lot of storage available and can manage pretty large image sets.  There is at least one study with more than 1,000 images.  We can accommodate relatively large number of images.  We will address establishing a limit when it becomes an issue. </td>
+                        </tr>
+                        <tr>
+                        <td> Do we have cost- benefit ratio comparison on different models MPS Models to in vivo or animal models?
+                        </td>
+                        <td> We do not have a cost-benefit ratio comparison in the MPS-Db.  That information is difficult to come by.  We may be able to do an estimate at some point in time, but currently we don’t have that information in the database.
+                        </td>
+                        </tr>
+                        </tr>
+                        <tr>
+                        <td> How will the database be funded/supported over the long term? </td>
+                        <td> We are developing a commercial version of the MPS-Db for licensing by industry users that will support both the academic and commercial versions of the MPS-Db. </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </li>
+        </ul>
+    </div>
+
+</body>
+</html>

@@ -1,9 +1,9 @@
 from django import forms
 from .models import Compound, CompoundTarget
-from django.views.generic import ListView, DetailView, CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView
 # from django.utils.decorators import method_decorator
 # from django.contrib.auth.decorators import login_required
-from mps.mixins import SpecificGroupRequiredMixin, FormHandlerMixin, OneGroupRequiredMixin, CreatorAndNotInUseMixin
+from mps.mixins import SpecificGroupRequiredMixin, FormHandlerMixin, OneGroupRequiredMixin, CreatorAndNotInUseMixin, ListHandlerView, DetailHandlerView
 # from django.shortcuts import render_to_response
 # from django.template import RequestContext
 from .forms import (
@@ -14,7 +14,7 @@ from django.shortcuts import redirect
 from mps.base.models import save_forms_with_tracking
 
 
-class CompoundsList(ListView):
+class CompoundsList(ListHandlerView):
     """Display a list of compounds (not to be confused with CompoundReport"""
     model = Compound
     template_name = 'compounds/compounds_list.html'
@@ -34,7 +34,7 @@ class CompoundsList(ListView):
     #     return object_list
 
 
-class CompoundsDetail(DetailView):
+class CompoundsDetail(DetailHandlerView):
     """Show a Compounds details (no editing)"""
     model = Compound
     template_name = 'compounds/compounds_detail.html'
@@ -93,7 +93,7 @@ class CompoundsUpdate(CreatorAndNotInUseMixin, CompoundsMixin, UpdateView):
 
 
 # Currently, compounds report basically begins as just a compounds list
-class CompoundsReport(ListView):
+class CompoundsReport(ListHandlerView):
     """Displays page for a Compound Report"""
     model = Compound
     template_name = 'compounds/compounds_report.html'

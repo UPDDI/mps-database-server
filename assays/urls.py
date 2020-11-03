@@ -32,8 +32,8 @@ from assays.views import (
     AssayMatrixAdd,
     AssayMatrixDetail,
     AssayMatrixUpdate,
-    AssayMatrixAddPrototype,
-    AssayMatrixUpdatePrototype,
+    # AssayMatrixAddPrototype,
+    # AssayMatrixUpdatePrototype,
     AssayMatrixDelete,
     AssayStudySignOff,
     AssayStudyReproducibility,
@@ -195,8 +195,8 @@ urlpatterns = [
 
     # url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/new/$', AssayMatrixNew.as_view(), name='assays-assaymatrix-new'),
 
-    url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assaymatrix/add/prototype/$', AssayMatrixAddPrototype.as_view(), name='assays-assaymatrix-add-prototype'),
-    url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/prototype/$', AssayMatrixUpdatePrototype.as_view(), name='assays-assaymatrix-prototype'),
+    # url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assaymatrix/add/prototype/$', AssayMatrixAddPrototype.as_view(), name='assays-assaymatrix-add-prototype'),
+    # url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/prototype/$', AssayMatrixUpdatePrototype.as_view(), name='assays-assaymatrix-prototype'),
 
     # Location for assay filter
     url(r'^assays/graphing_reproducibility/$', GraphingReproducibilityFilterView.as_view(), name='assays-graphing-reproducibility'),

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+{% for term in component_assay %}
+    {% if term.term == "Assay Target" %}
+        <button name="help_button" type="button" class="btn btn-success help-collapsible">{{ term.term }}</button>
+        <div class="help-content-2">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <h1 class="h1-level-1">
+                        <span class="gse1">{{ term.term }}</span>
+                    </h1>
+                    <span class="gse0">{{ glossary_dict.assaytarget_def|linebreaks }}</span>
+                    <ul class="list-unstyled">
+                        <li>To review the
+                            <span class="gse1">{{ term.term }}</span>
+                            list:
+                            <ul class="help-filled-circle">
+                                <li>Click the link {{ term.show_url }}</li>
+                                <li>Use the search bar or scroll through the list to find the
+                                    <span class="gse1">{{ term.term }}</span>
+                                    of interest or confirm the
+                                    <span class="gse1">{{ term.term }}</span>
+                                    is not present
+                                </li>
+                                <li>If in the list, click on the
+                                    <b>View</b> button to review the details or the
+                                    <b>Edit</b> button to update
+                                </li>
+                                <li>If not in the list, click on the
+                                    <b>Add Target</b> button
+                                </li>
+                            </ul>
+                        </li>
+                        <br>
+                        <li>Help Notes:
+                            <ul class="help-filled-circle">
+                                <li>To add or edit:
+                                    <ul class="help-open-circle">
+                                        <li>Fill in all the required information </li>
+                                        <li>Add all
+                                            <span class="gse0">{{ glossary_dict.assaymethod_term }}s</span>
+                                            that apply to the
+                                            <span class="gse1">{{ term.term }}</span>
+                                        </li>
+                                        <li>Add an
+                                            <span class="gse0">{{ glossary_dict.assaycategory_term }}</span>
+                                            that applies to the
+                                            <span class="gse1">{{ term.term }}</span>
+                                            (repeat to include all applicable categories)
+                                        </li>
+                                        <li>Confirm an
+                                            <span class="gse1">{{ term.term }}</span>
+                                            is not in the list before adding a new one
+                                        </li>
+                                        <li>Click the <b>Submit</b> button to save </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <br><li>Help Tips:
+                            <ul class="help-filled-circle">
+                                <li>Collect up all the metadata needed before adding or updating </li>
+                                <li>Make sure to add all the
+                                    <span class="gse0">{{ glossary_dict.assaymethod_term }}s</span>
+                                    and categories needed
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    {% else %}
+        {% if term.term == "Assay Method" %}
+            <button name="help_button" type="button" class="btn btn-success help-collapsible">{{ term.term }}</button>
+            <div class="help-content-2">
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <h1 class="h1-level-1">
+                            <span class="gse1">{{ term.term }}</span>
+                        </h1>
+                        <span class="gse0">{{ glossary_dict.assaymethod_def|linebreaks }}</span>
+                        <ul class="list-unstyled">
+                            <li>To review the
+                                <span class="gse1">{{ term.term }}</span>
+                                list:
+                                <ul class="help-filled-circle">
+                                    <li>Click the link {{ term.show_url }} </li>
+                                    <li>Use the search bar or scroll through the list to find the
+                                        <span class="gse1">{{ term.term }}</span>
+                                        of interest or confirm the
+                                        <span class="gse1">{{ term.term }}</span>
+                                        is not present
+                                    </li>
+                                    <li>If in the list, click on the
+                                        <b>View</b> button to review the details or the
+                                        <b>Edit</b> button to update
+                                    </li>
+                                    <li>If not in the list, click on the
+                                        <b>Add Method</b> button
+                                    </li>
+                                </ul>
+                            </li>
+                            <br>
+                            <li>Help Notes:
+                                <ul class="help-filled-circle">
+                                    <li>To add or edit:
+                                        <ul class="help-open-circle">
+                                            <li>Fill in all the required information </li>
+                                            <li>Add all
+                                                <span class="gse0">{{ glossary_dict.assaytarget_term }}s</span>
+                                                that apply to the
+                                                <span class="gse1">{{ term.term }}</span>
+                                            </li>
+                                            <li>Confirm an
+                                                <span class="gse1">{{ term.term }}</span>
+                                                is not in the list before adding a new one
+                                            </li>
+                                            <li>Click the <b>Submit</b> button to save </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <br><li>Help Tips:
+                                <ul class="help-filled-circle">
+                                    <li>Collect up all the metadata needed before adding or updating </li>
+                                    <li>Make sure to add all the
+                                        <span class="gse0">{{ glossary_dict.assaytarget_term }}s</span>
+                                        needed
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+</body>
+</html>

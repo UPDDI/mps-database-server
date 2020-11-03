@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+{#span formatting for glossary terms not included in this table - could add if desired#}
+<ul class="list-group">
+    <li class="list-group-item">
+        <h1 class="h1-level-2"> Details on the MIF-C File Format </h1>
+        The following table provided details on the MIF-C (-a and -i) file formats.
+        <br>
+        <br>
+        <table class="table table-bordered table-condensed small table-components">
+            <thead>
+                <tr class="active">
+                    <th> Column Header </th>
+                    <th> Applies to File </th>
+                    <th> Column Heading Required </th>
+                    <th> Content Required </th>
+                    <th> Description </th>
+                    <th> Example (Assays) </th>
+                    <th> Example (Images) </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td> Chip ID or Well ID </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> yes </td>
+                    <td> required </td>
+                    <td> Primarily identifier used to refer to a specific instance of an MPS model. In cases where wells are being used as a static comparison to a chip, for purposes of entry into the MPS-Db, each of those wells will need to be assigned a Chip ID, which could be “PlateID-WellID” (e.g. P1234-B05). </td>
+                    <td> c00001 </td>
+                    <td> c00001 </td>
+                </tr>
+                <tr>
+                    <td> Assay Plate ID </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> yes </td>
+                    <td> no </td>
+                    <td>  A unique ID assigned to a well plate (the enter plate). Recommended naming convention is as follows: “P” & “yyyy” & “-“ & “dddd” & ”a string of the user’s choice” (e.g., P2017-0223A). </td>
+                    <td> PT_HIM31_02022017 </td>
+                    <td> PT_HIM31_02022017 </td>
+                </tr>
+                <tr>
+                    <td> Assay Well ID </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> yes </td>
+                    <td> no </td>
+                    <td> When used in the context of an Assay (Assay Well ID), specifies the location in a well plate where media and/or standard was placed and observed via a plate reader (e.g., A01, A15, B13).  </td>
+                    <td> A04 </td>
+                    <td> none </td>
+                </tr>
+                <tr>
+                    <td> Assay Method </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> yes </td>
+                    <td> yes </td>
+                    <td> Indicates the method (e.g., SW-846 for a group of metals) or kit (e.g., Ammoniagenesis (Abcam: ab83360) used to measure a Target/Analyte. Must be in MPS-Db list. In the case of a kit, the kit, and, if the kit can be used with different options, the option used should be specified. </td>
+                    <td> Ammonia Assay Kit (abcam: ab83360) </td>
+                    <td> LIVE/DEAD Viability/Cytotoxicity Kit for mammalian cells (Molecular Probes: 03224 - Calcein AM/EthD-1), Hoechst, Phase Contrast </td>
+                </tr>
+                <tr>
+                    <td> Assay Target </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> yes </td>
+                    <td> yes </td>
+                    <td> The focus of an assay, as in, what is being measured. Examples include: Albumin, Lactate Dehydrogenase, TNF-Alpha. Must be in MPS-Db list. </td>
+                    <td> Ammonium </td>
+                    <td> Nucleus | Live Cells | Dead Cells | Tissue Structure </td>
+                </tr>
+                <tr>
+                    <td> Subtarget </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> no </td>
+                    <td> no </td>
+                    <td> When needed (if data are more appropriately displayed on a heatmap), else will be populated with "none" in the MPS. </td>
+                    <td> none (in TempO-Seq, would be the gene) </td>
+                    <td> none </td>
+                </tr>
+                <tr>
+                    <td> Sample Location </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> yes </td>
+                    <td> yes </td>
+                    <td> Specifies a compartment in the MPS model such as: brain, vascular, neural, apical, basal. Must be in MPS-Db llist. When  a sample is collected from the MPS model, the compartment should be combined with a prefix indicating where the sample was collected, such as “effluent-brain” or “stock-brain”. Note that, when a chamber is image, no prefix would be used. </td>
+                    <td> effluent-apical </td>
+                    <td> Apical </td>
+                </tr>
+                <tr>
+                    <td> Day </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> yes </td>
+                    <td> no </td>
+                    <td> The time, from the start of the experiment, when a Sample was collected and/or when a Measurement was made (e.g, an image taken). The sample time is imported into the MPS-Db in Day, Hour, and Minute. Nulls (blanks) will default to 0 on upload. You may use decimal places..for example, D 0 H 48.5 M 0 = D 2 H 0.5 M 0 = D 2 H 0 M 30 </td>
+                    <td> 24 </td>
+                    <td> 24 </td>
+                </tr>
+                <tr>
+                    <td> Hour </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> yes </td>
+                    <td> no </td>
+                    <td> See Description for Day (above). </td>
+                    <td> 2 </td>
+                    <td> 2 </td>
+                </tr>
+                <tr>
+                    <td> Minute </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> yes </td>
+                    <td> yes </td>
+                    <td> See Description for Day (above). </td>
+                    <td> 0 </td>
+                    <td> 0 </td>
+                </tr>
+                <tr>
+                    <td> Value </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> yes </td>
+                    <td> no </td>
+                    <td> In the context of Processed Data, indicates the amount observed. </td>
+                    <td> 0.13036162084885994 </td>
+                    <td> na </td>
+                </tr>
+                <tr>
+                    <td> Assay Unit </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> yes </td>
+                    <td> yes </td>
+                    <td> In the context of the Processed Data, indicates the unit of the amount observed. </td>
+                    <td> mmol/L </td>
+                    <td> image' for images, 'video' for videos </td>
+                </tr>
+                <tr>
+                    <td> Caution Flag </td>
+                    <td> MIF-C-a </td>
+                    <td> no </td>
+                    <td> no </td>
+                    <td>  A flag indicating the status of a reported result. See the online glossary for list of valid caution flags. </td>
+                    <td> W </td>
+                    <td> na </td>
+                </tr>
+                <tr>
+                    <td> Exclude </td>
+                    <td> MIF-C-a </td>
+                    <td> no </td>
+                    <td> no </td>
+                    <td> When the Exclude field of the MPS-Db is populated (X), that data point will not shown, by default, in graphs or be provided in exports from the MPS-Db.  </td>
+                    <td> X </td>
+                    <td> na </td>
+                </tr>
+                <tr>
+                    <td> Duration Sample Collection (days) </td>
+                    <td> MIF-C-a </td>
+                    <td> no </td>
+                    <td> no </td>
+                    <td> The amount of time sample effluent was collected (days). </td>
+                    <td> 1 </td>
+                    <td> na </td>
+                </tr>
+                <tr>
+                    <td> Duration Sample Collection (hours) </td>
+                    <td> MIF-C-a </td>
+                    <td> no </td>
+                    <td> no </td>
+                    <td> The amount of time sample effluent was collected (hours). </td>
+                    <td> 0 </td>
+                    <td> na </td>
+                </tr>
+                <tr>
+                    <td> Duration Sample Collection (minutes) </td>
+                    <td> MIF-C-a </td>
+                    <td> no </td>
+                    <td> no </td>
+                    <td> The amount of time sample effluent was collected (minutes). </td>
+                    <td> 0 </td>
+                    <td> na </td>
+                </tr>
+                <tr>
+                    <td> Sample Volume </td>
+                    <td> MIF-C-a </td>
+                    <td> no </td>
+                    <td> no </td>
+                    <td> The volume of sample collected. </td>
+                    <td> 240 </td>
+                    <td> na </td>
+                </tr>
+                <tr>
+                    <td> Sample Volume Unit </td>
+                    <td> MIF-C-a </td>
+                    <td> no </td>
+                    <td> no </td>
+                    <td> The unit of the volume of the sample collected. </td>
+                    <td> µL </td>
+                    <td> na </td>
+                </tr>
+                <tr>
+                    <td> Help Notes: </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> no </td>
+                    <td> no, but highly recommended, especially for images </td>
+                    <td> In the context of Processed Data, indicates something of interest with regard to the value being reported. For images, indicates what the colors in the images indicate. </td>
+                    <td> Well was empty.  </td>
+                    <td> The image shows cell nucleus. ChipA is on the left and ChipB is on the right. </td>
+                </tr>
+                <tr>
+                    <td> Replicate </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> no </td>
+                    <td> no </td>
+                    <td> At the assay level, multiple measurements of the same endpoint (i.e., LDH) observed on the same media sampled and observed at the same time. </td>
+                    <td> 1 </td>
+                    <td> 1 </td>
+                </tr>
+                <tr>
+                    <td> Cross Reference </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> no </td>
+                    <td> no </td>
+                    <td> In the context of the processed data (the MIF-C file), the cross reference is a string of text that is used to cross reference data points in the MPS-Db to other database systems (i.e. LabKey). </td>
+                    <td> 12345678-03 </td>
+                    <td> nan </td>
+                </tr>
+                <tr>
+                    <td> Results Group </td>
+                    <td> MIF-C-a and MIF-C-i </td>
+                    <td> no </td>
+                    <td> no </td>
+                    <td> This is an optional link to results information.  </td>
+                    <td> 105 </td>
+                    <td> nan </td>
+                </tr>
+                <tr>
+                    <td> Image File Name </td>
+                    <td> MIF-C-i </td>
+                    <td> yes </td>
+                    <td> yes </td>
+                    <td> The file name of the image that will be provided to the MPS-Db Center via a drop box or exteral storage device. The naming of the file is up to the data provider, but a descriptive naming protocol is highly recommended. </td>
+                    <td> na </td>
+                    <td> Tamu_PT_UW_d24h0m0_C00039_S01_W5.tif </td>
+                </tr>
+                <tr>
+                    <td> Image Field </td>
+                    <td> MIF-C-i </td>
+                    <td> yes </td>
+                    <td> yes </td>
+                    <td> An indication of where in the chamber of the device the image was taken. Use integers and increment for each additional location. </td>
+                    <td> na </td>
+                    <td> 1 </td>
+                </tr>
+                <tr>
+                    <td> Image Field Description </td>
+                    <td> MIF-C-i </td>
+                    <td> no </td>
+                    <td> no </td>
+                    <td> Provide a description of what is captured in the image field. If multiple images were taken at various locations, indicate something about where/how the location was selected (e.g., top left corner, center of channel, etc…) </td>
+                    <td> na </td>
+                    <td> Image field manually selected. </td>
+                </tr>
+                <tr>
+                    <td> Image Magnification </td>
+                    <td> MIF-C-i </td>
+                    <td> yes </td>
+                    <td> yes </td>
+                    <td> The image magnification as an integer. </td>
+                    <td> na </td>
+                    <td> 20 </td>
+                </tr>
+                <tr>
+                    <td> Image Resolution </td>
+                    <td> MIF-C-i </td>
+                    <td> yes </td>
+                    <td> yes </td>
+                    <td> The resolution of one pixel of the image. </td>
+                    <td> na </td>
+                    <td> 0.077 </td>
+                </tr>
+                <tr>
+                    <td> Image Resolution Unit </td>
+                    <td> MIF-C-i </td>
+                    <td> yes </td>
+                    <td> yes </td>
+                    <td> The unit of the resolution. </td>
+                    <td> na </td>
+                    <td> µm </td>
+                </tr>
+                <tr>
+                    <td> Image Sample Label </td>
+                    <td> MIF-C-i </td>
+                    <td> yes </td>
+                    <td> yes </td>
+                    <td> The dye/stain that will cause the fluorescence observed in the image. Must exist in MPS-Db Sample Label list. </td>
+                    <td> na </td>
+                    <td> Hoechst | Calcein AM | EthD-1 | Unlabeled </td>
+                </tr>
+                <tr>
+                    <td> Image Sample Label Description </td>
+                    <td> MIF-C-i </td>
+                    <td> no </td>
+                    <td> no </td>
+                    <td> Provide a description of the image source used. </td>
+                    <td> na </td>
+                    <td> 0 </td>
+                </tr>
+                <tr>
+                    <td> Image Wavelength (ex/em nm) </td>
+                    <td> MIF-C-i </td>
+                    <td> no </td>
+                    <td> no </td>
+                    <td> Wavelength of the illuminating light.  </td>
+                    <td> na </td>
+                    <td> 405/- | 488/- | 633/- | White Light </td>
+                </tr>
+                <tr>
+                    <td> Image Color Mapping </td>
+                    <td> MIF-C-i </td>
+                    <td> yes </td>
+                    <td> yes </td>
+                    <td> The color displayed in the image.  </td>
+                    <td> na </td>
+                    <td> blue | green | red | phase contrast </td>
+                </tr>
+                <tr>
+                    <td> Image Setting Note </td>
+                    <td> MIF-C-i </td>
+                    <td> no </td>
+                    <td> no </td>
+                    <td> An optional note regarding the image settings.  </td>
+                    <td> na </td>
+                    <td> W5-FITC, DAPI, TRITC, White Light </td>
+                </tr>
+            </tbody>
+        </table>
+    </li>
+</ul>
+
+</body>
+</html>

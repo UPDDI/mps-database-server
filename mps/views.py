@@ -22,44 +22,62 @@ import os
 
 from mps.settings import MEDIA_ROOT
 
-from resources.models import Definition, ComingSoonEntry, WhatIsNewEntry
 from django.views.generic.base import TemplateView
+from resources.models import Definition, ComingSoonEntry, WhatIsNewEntry
 
 from microdevices.models import MicrophysiologyCenter
 from mps.templatetags.custom_filters import ADMIN_SUFFIX, VIEWER_SUFFIX
 import html
 
+from mps.mixins import TemplateHandlerView, FormHandlerView
+
 # Spaghetti code
 from assays.views import get_queryset_with_organ_model_map
 
 
-def main(request):
-    if request.method == 'POST':
-        form = SearchForm(request.POST)
+class MPSMain(FormHandlerView):
+    template_name = 'index.html'
+    form_class = SearchForm
+
+    def form_valid(self, form):
         if form.is_valid():
-            return search(request)
-
-    else:
-        form = SearchForm(initial={'app': 'Global'})
-
-    # DO NOT BOTHER WITH WHAT IS NEW ON THE INDEX PAGE FOR NOW
-    # about_six_months_ago = datetime.now().replace(tzinfo=pytz.UTC) - timedelta(days=180)
-
-    context = {
-        'form': form,
-        # REMOVED FOR NOW
-        # 'what_is_new': WhatIsNewEntry.objects.filter(
-        #     modified_on__gt=about_six_months_ago
-        # ).order_by(
-        #     'modified_on'
-        # )
-    }
-
-    return render(request, 'index.html', context)
+            return search(self.request)
 
 
-def loggedin(request):
-    return render(request, 'loggedin.html')
+# FUNCTION VIEWS ARE DEPRECATED IN FAVOR OF CBVs
+# def main(request):
+#     if request.method == 'POST':
+#         form = SearchForm(request.POST)
+#         if form.is_valid():
+#             return search(request)
+
+#     else:
+#         form = SearchForm(initial={'app': 'Global'})
+
+#     # DO NOT BOTHER WITH WHAT IS NEW ON THE INDEX PAGE FOR NOW
+#     # about_six_months_ago = datetime.now().replace(tzinfo=pytz.UTC) - timedelta(days=180)
+
+#     context = {
+#         'form': form,
+#         # REMOVED FOR NOW
+#         # 'what_is_new': WhatIsNewEntry.objects.filter(
+#         #     modified_on__gt=about_six_months_ago
+#         # ).order_by(
+#         #     'modified_on'
+#         # )
+#     }
+
+#     return render(request, 'index.html', context)
+
+
+class MPSLoggedIn(TemplateHandlerView):
+    template_name = 'loggedin.html'
+
+    title = 'Log In Successful'
+
+
+# def loggedin(request):
+#     return render(request, 'loggedin.html')
 
 
 def search(request):
@@ -134,32 +152,87 @@ def custom_search(request):
 
 
 def mps_help(request):
-    glossary = Definition.objects.exclude(definition='')
 
-    # get a subset of the features for the feature table
-    feature = glossary.filter(help_category='feature').order_by('help_order')
+    # HANDY get server path website address
+    # print("request.build_absolute_uri() ",request.build_absolute_uri())
+    # print("request.get_full_path() ", request.get_full_path())
+    # request.build_absolute_uri()  http://127.0.0.1:8000/help/
+    # request.get_full_path()  /help/
+    help_url = request.build_absolute_uri()
 
-    # get other subsets for other tables on the help page
-    source = glossary.filter(help_category='source').order_by('help_order')
-    component_assay = glossary.filter(help_category='component-assay').order_by('help_order')
-    component_model = glossary.filter(help_category='component-model').order_by('help_order')
-    component_compound = glossary.filter(help_category='component-compound').order_by('help_order')
-    component_cell = glossary.filter(help_category='component-cell').order_by('help_order')
+    # HANDY - super important - if use an order_by you make a new queryset!
+    # https://stackoverflow.com/questions/51709984/sort-queryset-by-added-field
 
-    all_glossary = {}
-    for each in glossary:
-        term = each.term
-        stripped_term = ''.join(e for e in term if e.isalnum())
-        stripped_term = stripped_term.lower()
-        # print("stripped_term: ", stripped_term)
-        all_glossary[stripped_term+'_def'] = each.definition
-        all_glossary[stripped_term+'_ref'] = each.show_url
+    # get the whole glossary
+    glossary_master = Definition.objects.all()
 
-    # print("all_glossary ", all_glossary)
+    # take the glossary master and make a new glossary with terms that are needed for the html
+    glossary_dict = {}
+    for each in glossary_master:
+        glossary_dict[each.stripped_term() + '_term'] = each.term
+        glossary_dict[each.stripped_term() + '_def'] = each.definition
+
+        # START USE THIS SECTION IN DEVELOPMENT ONLY - comment out before going to production
+        if '127.0.0.1:8000' in help_url:
+            each.reference = each.reference.replace('mps.csb.pitt.edu', '127.0.0.1:8000')
+            each.help_reference = each.help_reference.replace('mps.csb.pitt.edu', '127.0.0.1:8000')
+        elif 'bohr-prody-vm.upddi.pitt.edu' in help_url:
+            each.reference = each.reference.replace('mps.csb.pitt.edu', 'bohr-prody-vm.upddi.pitt.edu')
+            each.help_reference = each.help_reference.replace('mps.csb.pitt.edu', 'bohr-prody-vm.upddi.pitt.edu')
+        # END USE THIS SECTION IN DEVELOPMENT ONLY
+
+        glossary_dict[each.stripped_term() + '_ref'] = each.reference
+        glossary_dict[each.stripped_term() + '_help_ref'] = each.help_reference
+
+    # get a subset of the features for the feature table (in order as specified in the glossary)
+    feature = glossary_master.filter(help_category='feature').filter(help_display=True).order_by('help_order')
+
+    # get the data sources for each feature and add them to the feature
+    for each in feature:
+        this_list = []
+        this_list_string = ''
+        for s in each.data_sources.all():
+            s_help_order = s.help_order
+            this_list.append(s_help_order)
+        this_list.sort()
+        this_list_string = ', '.join(map(str, this_list))
+
+        # HANDY - add field to queryset add a field to a queryset
+        # Adding a field must be the LAST THING you do or the field will get removed
+        each.source_list = this_list_string
 
     # limit the glossary to only those selected for display
-    glossary = glossary.filter(glossary_display=True)
+    glossary = glossary_master.filter(glossary_display=True)
+    # get other subsets for other tables on the help page
+    # note: these pull terms and associated metadata in loops in the html, so do not need the stripped reference term in these
+    source = glossary_master.filter(help_category='source').filter(help_display=True).order_by('help_order')
+    component_assay = glossary_master.filter(help_category='component-assay').filter(help_display=True).order_by('help_order')
+    component_model = glossary_master.filter(help_category='component-model').filter(help_display=True).order_by('help_order')
+    component_compound = glossary_master.filter(help_category='component-compound').filter(help_display=True).order_by('help_order')
+    component_cell = glossary_master.filter(help_category='component-cell').filter(help_display=True).order_by('help_order')
+    permission = glossary_master.filter(help_category='permission').filter(help_display=True).order_by('help_order')
+    organization_study = glossary_master.filter(help_category='organization-study').filter(help_display=True).order_by('help_order')
 
+    # HANDY get server path website address
+    # print("request.build_absolute_uri() ",request.build_absolute_uri())
+    # print("request.get_full_path() ", request.get_full_path())
+    # request.build_absolute_uri()  http://127.0.0.1:8000/help/
+    # request.get_full_path()  /help/
+
+    # START USE THIS SECTION IN DEVELOPMENT ONLY - comment out before going to production
+    # have to do this LAST or won't work
+    for each in glossary:
+        if '127.0.0.1:8000' in help_url:
+            each.reference = each.reference.replace('mps.csb.pitt.edu', '127.0.0.1:8000')
+            each.help_reference = each.help_reference.replace('mps.csb.pitt.edu', '127.0.0.1:8000')
+        elif 'bohr-prody-vm.upddi.pitt.edu' in help_url:
+            each.reference = each.reference.replace('mps.csb.pitt.edu', 'bohr-prody-vm.upddi.pitt.edu')
+            each.help_reference = each.help_reference.replace('mps.csb.pitt.edu', 'bohr-prody-vm.upddi.pitt.edu')
+    # END USE THIS SECTION IN DEVELOPMENT ONLY
+
+    # the main glossary
+    # specialty subsets
+    # dict for specific terms plus
     data = {
         # 'version': len(os.listdir(MEDIA_ROOT + '/excel_templates/')),
         'glossary': glossary,
@@ -169,134 +242,265 @@ def mps_help(request):
         'component_model': component_model,
         'component_compound': component_compound,
         'component_cell': component_cell,
-        'all_glossary': all_glossary,
-        # 'study_component_def': all_glossary.get('studycomponent_def', ''),
-        # 'study_component_ref': all_glossary.get('studycomponent_ref', ''),
+        'permission': permission,
+        'organization_study': organization_study,
+        'glossary_dict': glossary_dict,
+        # 'study_component_def': glossary_dict.get('studycomponent_def', ''),
+        # 'study_component_ref': glossary_dict.get('studycomponent_ref', ''),
     }
+
+    # for each in glossary_dict:
+    #     print(each)
 
     return render(request, 'help.html', data)
 
 
-#added sck
-# TODO NOT DRY
-def mps_about(request):
-    number_of_days = 120
+class MPSAbout(TemplateHandlerView):
+    template_name = 'about.html'
 
-    # Needed to make minimum timezone aware
-    minimum_datetime = datetime.min.replace(tzinfo=pytz.UTC)
-    datetime_now = datetime.now().replace(tzinfo=pytz.UTC)
+    title = 'About'
 
-    signed_off_restricted_studies = AssayStudy.objects.filter(
-        restricted=True,
-        # PLEASE NOTE: Locking a study will prevent this script from interacting with it
-        locked=False
-    ).exclude(
-        signed_off_date__isnull=True
-    ).exclude(
-        signed_off_by_id=None
-    )
+    def get_context_data(self, **kwargs):
+        context = super(MPSAbout, self).get_context_data(**kwargs)
 
-    # Indicates whether there are required stakeholders that have not approved
-    required_stakeholder_map = {}
+        number_of_days = 120
 
-    relevant_required_stakeholders_without_approval = AssayStudyStakeholder.objects.filter(
-        sign_off_required=True,
-        signed_off_by_id=None,
-        study__id__in=signed_off_restricted_studies
-    )
+        # Needed to make minimum timezone aware
+        minimum_datetime = datetime.min.replace(tzinfo=pytz.UTC)
+        datetime_now = datetime.now().replace(tzinfo=pytz.UTC)
 
-    for stakeholder in relevant_required_stakeholders_without_approval:
-        required_stakeholder_map.update({
-            stakeholder.study_id: True
+        signed_off_restricted_studies = AssayStudy.objects.filter(
+            restricted=True,
+            # PLEASE NOTE: Locking a study will prevent this script from interacting with it
+            locked=False
+        ).exclude(
+            signed_off_date__isnull=True
+        ).exclude(
+            signed_off_by_id=None
+        )
+
+        # Indicates whether there are required stakeholders that have not approved
+        required_stakeholder_map = {}
+
+        relevant_required_stakeholders_without_approval = AssayStudyStakeholder.objects.filter(
+            sign_off_required=True,
+            signed_off_by_id=None,
+            study__id__in=signed_off_restricted_studies
+        )
+
+        for stakeholder in relevant_required_stakeholders_without_approval:
+            required_stakeholder_map.update({
+                stakeholder.study_id: True
+            })
+
+        # Contains as a datetime the lastest approval for a study
+        latest_approval = {}
+
+        approved_stakeholders = AssayStudyStakeholder.objects.filter(
+            sign_off_required=True,
+            study__id__in=signed_off_restricted_studies
+        ).exclude(
+            signed_off_date__isnull=True
+        ).exclude(
+            signed_off_by_id=None
+        )
+
+        for stakeholder in approved_stakeholders:
+            # Compare to minimum if no date at the moment
+            if stakeholder.signed_off_date > latest_approval.get(stakeholder.study_id, minimum_datetime):
+                latest_approval.update({
+                    stakeholder.study_id: stakeholder.signed_off_date
+                })
+
+        soon_released = {}
+
+        for study in signed_off_restricted_studies:
+            # If there are no stakeholders, just use the sign off date
+            if study.id not in latest_approval:
+                # Days are approximated for a year
+                scheduled_release_date = study.signed_off_date + timedelta(days=365.2425)
+            else:
+                # Days are approximated for a year
+                scheduled_release_date = latest_approval.get(study.id) + timedelta(days=365.2425)
+
+            stakeholders_without_approval = required_stakeholder_map.get(study.id, False)
+
+            if not stakeholders_without_approval and scheduled_release_date <= datetime_now + timedelta(days=number_of_days):
+                soon_released.update({
+                    study.id: scheduled_release_date
+                })
+
+        signed_off_restricted_studies = signed_off_restricted_studies.filter(id__in=soon_released.keys())
+
+        get_queryset_with_organ_model_map(signed_off_restricted_studies)
+
+        for study in signed_off_restricted_studies:
+            study.scheduled_release_date = soon_released.get(study.id)
+
+        all_organ_models = OrganModel.objects.exclude(
+            name__in=['Demo-Organ']
+        ).prefetch_related('organ', 'center')
+
+        distinct_by_name_and_center = {}
+
+        for organ_model in all_organ_models:
+            distinct_by_name_and_center[
+                (organ_model.organ.organ_name, organ_model.center.name)
+            ] = distinct_by_name_and_center.setdefault(
+                (organ_model.organ.organ_name, organ_model.center.name), 0
+            ) + 1
+
+        reduce_distinct_to_list = []
+
+        for current_tuple, count in distinct_by_name_and_center.items():
+            reduce_distinct_to_list.append([current_tuple[0], current_tuple[1], count])
+
+        # Get 25 studies that are public with the latest sign off
+        recently_released_studies = AssayStudy.objects.filter(
+            restricted=False
+        ).exclude(
+            signed_off_date__isnull=True
+        ).order_by(
+            '-modified_by',
+            '-signed_off_date'
+        )[:25]
+
+        for study in recently_released_studies:
+            study.released_on = study.signed_off_date + timedelta(days=365.2425)
+
+        context.update({
+            'number_of_days': number_of_days,
+            'about_studies': signed_off_restricted_studies,
+            'about_models_distinct': reduce_distinct_to_list,
+            'recently_released_studies': recently_released_studies,
+            'coming_soon_entries': ComingSoonEntry.objects.all().order_by('-modified_on'),
+            'what_is_new_entries': WhatIsNewEntry.objects.all().order_by('-modified_on')
         })
 
-    # Contains as a datetime the lastest approval for a study
-    latest_approval = {}
+        return context
 
-    approved_stakeholders = AssayStudyStakeholder.objects.filter(
-        sign_off_required=True,
-        study__id__in=signed_off_restricted_studies
-    ).exclude(
-        signed_off_date__isnull=True
-    ).exclude(
-        signed_off_by_id=None
-    )
+#added sck
+# TODO NOT DRY
+# def mps_about(request):
+#     number_of_days = 120
 
-    for stakeholder in approved_stakeholders:
-        # Compare to minimum if no date at the moment
-        if stakeholder.signed_off_date > latest_approval.get(stakeholder.study_id, minimum_datetime):
-            latest_approval.update({
-                stakeholder.study_id: stakeholder.signed_off_date
-            })
+#     # Needed to make minimum timezone aware
+#     minimum_datetime = datetime.min.replace(tzinfo=pytz.UTC)
+#     datetime_now = datetime.now().replace(tzinfo=pytz.UTC)
 
-    soon_released = {}
+#     signed_off_restricted_studies = AssayStudy.objects.filter(
+#         restricted=True,
+#         # PLEASE NOTE: Locking a study will prevent this script from interacting with it
+#         locked=False
+#     ).exclude(
+#         signed_off_date__isnull=True
+#     ).exclude(
+#         signed_off_by_id=None
+#     )
 
-    for study in signed_off_restricted_studies:
-        # If there are no stakeholders, just use the sign off date
-        if study.id not in latest_approval:
-            # Days are approximated for a year
-            scheduled_release_date = study.signed_off_date + timedelta(days=365.2425)
-        else:
-            # Days are approximated for a year
-            scheduled_release_date = latest_approval.get(study.id) + timedelta(days=365.2425)
+#     # Indicates whether there are required stakeholders that have not approved
+#     required_stakeholder_map = {}
 
-        stakeholders_without_approval = required_stakeholder_map.get(study.id, False)
+#     relevant_required_stakeholders_without_approval = AssayStudyStakeholder.objects.filter(
+#         sign_off_required=True,
+#         signed_off_by_id=None,
+#         study__id__in=signed_off_restricted_studies
+#     )
 
-        if not stakeholders_without_approval and scheduled_release_date <= datetime_now + timedelta(days=number_of_days):
-            soon_released.update({
-                study.id: scheduled_release_date
-            })
+#     for stakeholder in relevant_required_stakeholders_without_approval:
+#         required_stakeholder_map.update({
+#             stakeholder.study_id: True
+#         })
 
-    signed_off_restricted_studies = signed_off_restricted_studies.filter(id__in=soon_released.keys())
+#     # Contains as a datetime the lastest approval for a study
+#     latest_approval = {}
 
-    get_queryset_with_organ_model_map(signed_off_restricted_studies)
+#     approved_stakeholders = AssayStudyStakeholder.objects.filter(
+#         sign_off_required=True,
+#         study__id__in=signed_off_restricted_studies
+#     ).exclude(
+#         signed_off_date__isnull=True
+#     ).exclude(
+#         signed_off_by_id=None
+#     )
 
-    for study in signed_off_restricted_studies:
-        study.scheduled_release_date = soon_released.get(study.id)
+#     for stakeholder in approved_stakeholders:
+#         # Compare to minimum if no date at the moment
+#         if stakeholder.signed_off_date > latest_approval.get(stakeholder.study_id, minimum_datetime):
+#             latest_approval.update({
+#                 stakeholder.study_id: stakeholder.signed_off_date
+#             })
 
-    all_organ_models = OrganModel.objects.exclude(
-        name__in=['Demo-Organ']
-    ).prefetch_related('organ', 'center')
+#     soon_released = {}
 
-    distinct_by_name_and_center = {}
+#     for study in signed_off_restricted_studies:
+#         # If there are no stakeholders, just use the sign off date
+#         if study.id not in latest_approval:
+#             # Days are approximated for a year
+#             scheduled_release_date = study.signed_off_date + timedelta(days=365.2425)
+#         else:
+#             # Days are approximated for a year
+#             scheduled_release_date = latest_approval.get(study.id) + timedelta(days=365.2425)
 
-    for organ_model in all_organ_models:
-        distinct_by_name_and_center[
-            (organ_model.organ.organ_name, organ_model.center.name)
-        ] = distinct_by_name_and_center.setdefault(
-            (organ_model.organ.organ_name, organ_model.center.name), 0
-        ) + 1
+#         stakeholders_without_approval = required_stakeholder_map.get(study.id, False)
 
-    reduce_distinct_to_list = []
+#         if not stakeholders_without_approval and scheduled_release_date <= datetime_now + timedelta(days=number_of_days):
+#             soon_released.update({
+#                 study.id: scheduled_release_date
+#             })
 
-    for current_tuple, count in distinct_by_name_and_center.items():
-        reduce_distinct_to_list.append([current_tuple[0], current_tuple[1], count])
+#     signed_off_restricted_studies = signed_off_restricted_studies.filter(id__in=soon_released.keys())
 
-    # Get 25 studies that are public with the latest sign off
-    recently_released_studies = AssayStudy.objects.filter(
-        restricted=False
-    ).exclude(
-        signed_off_date__isnull=True
-    ).order_by(
-        '-modified_by',
-        '-signed_off_date'
-    )[:25]
+#     get_queryset_with_organ_model_map(signed_off_restricted_studies)
 
-    for study in recently_released_studies:
-        study.released_on = study.signed_off_date + timedelta(days=365.2425)
+#     for study in signed_off_restricted_studies:
+#         study.scheduled_release_date = soon_released.get(study.id)
 
-    full_context = {
-        'number_of_days': number_of_days,
-        'about_studies': signed_off_restricted_studies,
-        'about_models_distinct': reduce_distinct_to_list,
-        'recently_released_studies': recently_released_studies,
-        'coming_soon_entries': ComingSoonEntry.objects.all().order_by('-modified_on'),
-        'what_is_new_entries': WhatIsNewEntry.objects.all().order_by('-modified_on')
-    }
+#     all_organ_models = OrganModel.objects.exclude(
+#         name__in=['Demo-Organ']
+#     ).prefetch_related('organ', 'center')
 
-    return render(request, 'about.html', full_context)
+#     distinct_by_name_and_center = {}
+
+#     for organ_model in all_organ_models:
+#         distinct_by_name_and_center[
+#             (organ_model.organ.organ_name, organ_model.center.name)
+#         ] = distinct_by_name_and_center.setdefault(
+#             (organ_model.organ.organ_name, organ_model.center.name), 0
+#         ) + 1
+
+#     reduce_distinct_to_list = []
+
+#     for current_tuple, count in distinct_by_name_and_center.items():
+#         reduce_distinct_to_list.append([current_tuple[0], current_tuple[1], count])
+
+#     # Get 25 studies that are public with the latest sign off
+#     recently_released_studies = AssayStudy.objects.filter(
+#         restricted=False
+#     ).exclude(
+#         signed_off_date__isnull=True
+#     ).order_by(
+#         '-modified_by',
+#         '-signed_off_date'
+#     )[:25]
+
+#     for study in recently_released_studies:
+#         study.released_on = study.signed_off_date + timedelta(days=365.2425)
+
+#     full_context = {
+#         'number_of_days': number_of_days,
+#         'about_studies': signed_off_restricted_studies,
+#         'about_models_distinct': reduce_distinct_to_list,
+#         'recently_released_studies': recently_released_studies,
+#         'coming_soon_entries': ComingSoonEntry.objects.all().order_by('-modified_on'),
+#         'what_is_new_entries': WhatIsNewEntry.objects.all().order_by('-modified_on')
+#     }
+
+#     return render(request, 'about.html', full_context)
 
 
 # TODO Consider defining this in URLS or either bringing the rest here
-class UnderConstruction(TemplateView):
+class UnderConstruction(TemplateHandlerView):
     template_name = 'under_construction.html'
+
+    title = 'Under Construction'

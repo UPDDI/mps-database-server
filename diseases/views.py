@@ -1,5 +1,5 @@
-from django.views.generic import ListView, DetailView  # , CreateView
-# from mps.mixins import SpecificGroupRequiredMixin
+# from django.views.generic import ListView, DetailView  # , CreateView
+from mps.mixins import ListHandlerView, DetailHandlerView
 from .models import Disease
 from assays.models import AssayDataPoint, AssayStudy
 from microdevices.models import OrganModel
@@ -16,7 +16,7 @@ from mps.templatetags.custom_filters import (
 )
 
 
-class DiseaseList(ListView):
+class DiseaseList(ListHandlerView):
     model = Disease
     template_name = 'diseases/disease_list.html'
 
@@ -52,17 +52,17 @@ class DiseaseList(ListView):
         return queryset
 
 
-class DiseaseOverview(DetailView):
+class DiseaseOverview(DetailHandlerView):
     model = Disease
     template_name = 'diseases/disease_overview.html'
 
 
-class DiseaseBiology(DetailView):
+class DiseaseBiology(DetailHandlerView):
     model = Disease
     template_name = 'diseases/disease_biology.html'
 
 
-class DiseaseClinicalData(DetailView):
+class DiseaseClinicalData(DetailHandlerView):
     model = Disease
     template_name = 'diseases/disease_clinicaldata.html'
 
@@ -74,7 +74,7 @@ class DiseaseClinicalData(DetailView):
         return context
 
 
-class DiseaseModel(DetailView):
+class DiseaseModel(DetailHandlerView):
     model = Disease
     template_name = 'diseases/disease_model.html'
 

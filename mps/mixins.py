@@ -21,7 +21,14 @@ from mps.templatetags.custom_filters import (
 
 from mps.base.models import save_forms_with_tracking
 
-from django.views.generic import UpdateView
+from django.views.generic import (
+    UpdateView,
+    ListView,
+    DetailView,
+    DeleteView,
+    TemplateView,
+    FormView,
+)
 
 import urllib
 
@@ -32,6 +39,8 @@ from django.contrib.admin.utils import (
 )
 
 from django.contrib.contenttypes.models import ContentType
+
+from django.urls import resolve
 
 # Unsemantic! Breaks PEP! BAD!
 def PermissionDenied(request, message, log_in_link=True):
@@ -472,7 +481,40 @@ class SuperuserRequiredMixin(object):
         return super(SuperuserRequiredMixin, self).dispatch(*args, **kwargs)
 
 
-class HistoryMixin(object):
+class HelpAnchorMixin(object):
+    # Default title
+    title = 'MPS Database'
+
+    def get_context_data(self, **kwargs):
+        context = super(HelpAnchorMixin, self).get_context_data(**kwargs)
+
+        context.update({
+            # Help anchor is always just based on the URL name
+            'help_anchor': '#{}'.format(resolve(self.request.path_info).url_name),
+            # Initial title, either from the attribute or overwritten later (classes that extend this are likely to overwrite)
+            'title': self.title
+        })
+
+        return context
+
+
+# This is to get default titles and help anchors
+class DefaultModelContextMixin(HelpAnchorMixin):
+    def get_context_data(self, **kwargs):
+        context = super(DefaultModelContextMixin, self).get_context_data(**kwargs)
+
+        # Add model name
+        context.update({
+            'model_verbose_name': self.model._meta.verbose_name,
+            'model_verbose_name_plural': self.model._meta.verbose_name_plural,
+            'title': '{} Detail'.format(self.model._meta.verbose_name),
+            # 'help_anchor': '#{}'.format(self.model._meta.verbose_name.lower().replace(' ', ''))
+        })
+
+        return context
+
+
+class HistoryMixin(DefaultModelContextMixin):
     def get_context_data(self, **kwargs):
         context = super(HistoryMixin, self).get_context_data(**kwargs)
 
@@ -605,6 +647,15 @@ class FormHandlerMixin(HistoryMixin):
             'model_verbose_name': self.model._meta.verbose_name,
             'model_verbose_name_plural': self.model._meta.verbose_name_plural
         })
+
+        if self.is_update:
+            context.update({
+                'title': 'Edit {}'.format(self.model._meta.verbose_name)
+            })
+        else:
+            context.update({
+                'title': 'Add {}'.format(self.model._meta.verbose_name)
+            })
 
         for formset_name, formset_factory in self.formsets:
             data_for_factory = []
@@ -745,21 +796,42 @@ class FormHandlerMixin(HistoryMixin):
             )
 
 
+# "Handler" term chosen solely to distinguish from base Django CBVs
 # Possible
-class ListHandlerMixin(object):
+class ListHandlerView(DefaultModelContextMixin, ListView):
     template_name = 'generic_list.html'
 
     def get_context_data(self, **kwargs):
-        context = super(ListHandlerMixin, self).get_context_data(**kwargs)
+        context = super(ListHandlerView, self).get_context_data(**kwargs)
 
         # Add model name
         context.update({
-            'model_verbose_name': self.model._meta.verbose_name,
-            'model_verbose_name_plural': self.model._meta.verbose_name_plural
+            'title': '{} List'.format(self.model._meta.verbose_name),
         })
 
         return context
 
 
-class DetailHandlerMixin(object):
+class DetailHandlerView(DefaultModelContextMixin, DetailView):
     template_name = 'generic_detail.html'
+
+
+class DeleteHandlerView(DefaultModelContextMixin, DeleteView):
+    def get_context_data(self, **kwargs):
+        context = super(DeleteHandlerView, self).get_context_data(**kwargs)
+
+        # Add model name
+        context.update({
+            'title': '{} Delete'.format(self.model._meta.verbose_name),
+        })
+
+        return context
+
+
+# Maybe a bit excessive, but clear at least
+class TemplateHandlerView(HelpAnchorMixin, TemplateView):
+    pass
+
+
+class FormHandlerView(HelpAnchorMixin, FormView):
+    pass

@@ -15,7 +15,7 @@ from .forms import (
     SupplierForm,
     BiosensorForm
 )
-from mps.mixins import LoginRequiredMixin, OneGroupRequiredMixin, SpecificGroupRequiredMixin, PermissionDenied, user_is_active, FormHandlerMixin, DetailHandlerMixin, ListHandlerMixin, CreatorAndNotInUseMixin
+from mps.mixins import LoginRequiredMixin, OneGroupRequiredMixin, SpecificGroupRequiredMixin, PermissionDenied, user_is_active, FormHandlerMixin, DetailHandlerView, ListHandlerView, CreatorAndNotInUseMixin
 from mps.templatetags.custom_filters import filter_groups
 from django.shortcuts import redirect
 
@@ -42,7 +42,7 @@ class CellSampleUpdate(CreatorAndNotInUseMixin, CellSampleMixin, UpdateView):
     pass
 
 # Logged in users can look at cell samples
-class CellSampleDetail(LoginRequiredMixin, DetailView):
+class CellSampleDetail(LoginRequiredMixin, DetailHandlerView):
     model = CellSample
     template_name = 'cellsamples/cellsample_detail.html'
 
@@ -95,8 +95,9 @@ class CellSampleDetail(LoginRequiredMixin, DetailView):
 
 
 # Logged in users can see list
-class CellSampleList(LoginRequiredMixin, ListView):
+class CellSampleList(LoginRequiredMixin, ListHandlerView):
     """Displays a list of Cell Samples"""
+    model = CellSample
     template_name = 'cellsamples/cellsample_list.html'
 
     def get_queryset(self):
@@ -126,8 +127,9 @@ class CellTypeUpdate(CreatorAndNotInUseMixin, CellTypeMixin, UpdateView):
     pass
 
 
-class CellTypeList(ListView):
+class CellTypeList(ListHandlerView):
     """Display all Cell Types"""
+    model = CellType
     template_name = 'cellsamples/celltype_list.html'
 
     def get_queryset(self):
@@ -152,8 +154,9 @@ class CellSubtypeUpdate(CreatorAndNotInUseMixin, CellSubtypeMixin, UpdateView):
     pass
 
 
-class CellSubtypeList(ListView):
+class CellSubtypeList(ListHandlerView):
     """Display a list of Cell Subtypes"""
+    model = CellSubtype
     template_name = 'cellsamples/cellsubtype_list.html'
 
     def get_queryset(self):
@@ -177,11 +180,11 @@ class SupplierUpdate(CreatorAndNotInUseMixin, SupplierMixin, UpdateView):
     pass
 
 
-class SupplierDetail(DetailHandlerMixin, DetailView):
+class SupplierDetail(DetailHandlerView):
     pass
 
 
-class SupplierList(ListHandlerMixin, ListView):
+class SupplierList(ListHandlerView):
     model = Supplier
 
 
@@ -198,11 +201,11 @@ class BiosensorUpdate(CreatorAndNotInUseMixin, BiosensorMixin, UpdateView):
     pass
 
 
-class BiosensorDetail(DetailHandlerMixin, DetailView):
+class BiosensorDetail(DetailHandlerView):
     pass
 
 
-class BiosensorList(ListHandlerMixin, ListView):
+class BiosensorList(ListHandlerView):
     model = Biosensor
 
 

@@ -112,7 +112,10 @@ class SignOffMixin(BootstrapForm):
 
 class SearchForm(forms.Form):
     """Form for Global/Bioactivity searches"""
-    app = forms.CharField(max_length=50)
+    app = forms.CharField(
+        max_length=50,
+        initial='Global'
+    )
     compound = forms.CharField(max_length=100, required=False)
     target = forms.CharField(max_length=100, required=False)
     name = forms.CharField(max_length=100, required=False)

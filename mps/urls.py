@@ -13,6 +13,9 @@ import mps.ajax
 import mps.forms
 import django.views
 import mps.management
+# Maybe a bit odd!
+# Especially because isn't really just for mixins any longer!
+import mps.mixins
 
 # For registration
 from django_registration.backends.activation.views import ActivationView, RegistrationView
@@ -26,7 +29,8 @@ from .api import api_router
 admin.autodiscover()
 
 urlpatterns = [
-    url(r'^$', mps.views.main),
+    # url(r'^$', mps.views.main),
+    url(r'^$', mps.views.MPSMain.as_view()),
 
     # user auth urls
     url(
@@ -50,7 +54,8 @@ urlpatterns = [
         ),
         name='auth_logout'
     ),
-    url(r'^accounts/loggedin/$', mps.views.loggedin, name='auth_loggedin'),
+    # url(r'^accounts/loggedin/$', mps.views.loggedin, name='auth_loggedin'),
+    url(r'^accounts/loggedin/$', mps.views.MPSLoggedIn.as_view(), name='auth_loggedin'),
     url(
         r'^password_change/$',
         auth_views.PasswordChangeView.as_view(
@@ -69,8 +74,9 @@ urlpatterns = [
     # Registration
     url(
         r'^activate/complete/$',
-        mps.views.TemplateView.as_view(
-            template_name='django_registration/activation_complete.html'
+        mps.mixins.TemplateHandlerView.as_view(
+            template_name='django_registration/activation_complete.html',
+            title = 'Activation Complete'
         ),
         name='django_registration_activation_complete'
     ),
@@ -90,15 +96,17 @@ urlpatterns = [
     ),
     url(
         r'^register/complete/$',
-        mps.views.TemplateView.as_view(
-            template_name='django_registration/registration_complete.html'
+        mps.mixins.TemplateHandlerView.as_view(
+            template_name='django_registration/registration_complete.html',
+            title = 'Registration Complete'
         ),
         name='django_registration_complete'
     ),
     url(
         r'^register/closed/$',
-        mps.views.TemplateView.as_view(
-            template_name='django_registration/registration_closed.html'
+        mps.mixins.TemplateHandlerView.as_view(
+            template_name='django_registration/registration_closed.html',
+            title='Registration is Closed'
         ),
         name='django_registration_disallowed'
     ),
@@ -146,7 +154,8 @@ urlpatterns = [
     url(r'^help/', mps.views.mps_help),
 
     # About
-    url(r'^about/', mps.views.mps_about),
+    # url(r'^about/', mps.views.mps_about),
+    url(r'^about/', mps.views.MPSAbout.as_view()),
 
     # Djangovoice for feedback
     url(r'^comments/', include('django_comments.urls')),
