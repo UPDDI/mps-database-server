@@ -242,6 +242,11 @@ class MicrophysiologyCenterDetail(DetailView):
         return context
 
 
+class MicrophysiologyCenterList(ListHandlerMixin, ListView):
+    model = MicrophysiologyCenter
+    template_name = 'microdevices/microphysiologycenter_list.html'
+
+
 class OrganModelProtocolUpdate(FormHandlerMixin, UpdateView):
     """Allows Organ Model Protocols to be updated"""
     model = OrganModelProtocol

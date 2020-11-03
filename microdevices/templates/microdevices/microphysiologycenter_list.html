@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block load_js %}
+    <script src="{% static "microdevices/microphysiologycenter_list.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="{% url 'assays-studycomponents' %}">Study Components</a></li>
+    <li class="active">Microphysiology Centers</li>
+{% endblock %}
+
+{% block content %}
+    <div class="padded-bottom">
+        <legend>
+            <h2 class="text-center">
+                Microphysiology Centers
+            </h2>
+        </legend>
+
+        <table hidden id="centers" class="display table table-striped" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th>View</th>
+                    <th>Name</th>
+                    <th>Center ID</th>
+                    <th>Institution</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for center in object_list %}
+                <tr>
+                    <td><a class="btn btn-primary" href="{{ center.id }}">View</a></td>
+                    <td>{{ center.name }}</td>
+                    <td>{{ center.center_id }}</td>
+                    <td>{{ center.institution }}</td>
+                    <td>{{ center.description }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
