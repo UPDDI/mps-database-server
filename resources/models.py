@@ -62,6 +62,8 @@ help_category_choices = [
     ('component-model', 'Model Component'),
     ('permission', 'Permission Structure'),
     ('organization-study', 'Study Organization'),
+    ('menu', 'Tab/Icon Menu'),
+    ('page', 'Page of MPS-GUI'),
     ('term', 'Term')
 ]
 # convert the list (that is in the models.py) of tuples to a dictionary for faster access
