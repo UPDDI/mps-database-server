@@ -5,6 +5,7 @@
 {% block breadcrumbs %}
     <li><a href="/assays/assaystudy/">Studies</a></li>
     <li><a href="{{ object.get_absolute_url }}">{{ object }}</a></li>
+    <li><a href="{% url 'assays-assaystudy-data-index' object.id %}">Data</a></li>
     <li class="active">Assay Plate Reader Files</li>
 {% endblock %}
 

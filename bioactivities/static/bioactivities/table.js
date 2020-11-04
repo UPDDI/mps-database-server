@@ -60,7 +60,13 @@ $(document).ready(function () {
                 [0, 'asc'],
                 [6, 'asc'],
                 [5, 'asc']
-            ]
+            ],
+            columnDefs: [
+                {
+                    targets: [9],
+                    className: 'none'
+                }
+            ],
         });
     }
 

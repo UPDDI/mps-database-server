@@ -15,9 +15,12 @@
 
 
 {# this template is add, update, and reveiw (aur) #}
+{# breadcrumbs should be generated automatically for obvious reasons #}
 {% block breadcrumbs %}
     <li><a href="/assays/assaystudy/">Studies</a>
     <li><a href="{{ form.instance.study.get_absolute_url }}">{{ form.instance.study }}</a></li>
+    <li><a href="{% url 'assays-assaystudy-data-index' form.instance.study.id %}">Data</a></li>
+    {# form.instance should work either way? #}
     {% if object %}
         <li><a href="{% url "assayomicdatafileupload-index" object.study.id %}">Assay Omic Data Files</a>
     {% else %}

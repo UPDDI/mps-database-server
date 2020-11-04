@@ -4484,13 +4484,16 @@ class AssayPlateReaderMapForm(BootstrapForm):
                 borrowed_platemap_pk = data.get(
                     'form_block_standard_borrow_pk_platemap_single_for_storage')
 
+            # 20201104 when no_calibration is selected, the _used field does not get populated..deal with it here
+            use_curve = 'no_calibration'
             use_curve_long = data.get('form_calibration_curve_method_used')
-            use_curve = find_a_key_by_value_in_dictionary(CALIBRATION_CURVE_MASTER_DICT, use_curve_long)
-            if use_curve == 'select_one':
-                use_curve = 'no_calibration'
+            if data.get('se_form_calibration_curve') == 'no_calibration' or data.get('se_form_calibration_curve') == 'select_one':
+                use_curve_long = 'no_calibration'
+            else:
+                use_curve = find_a_key_by_value_in_dictionary(CALIBRATION_CURVE_MASTER_DICT, use_curve_long)
 
             if len(use_curve.strip()) == 0:
-                err_msg = "The calibration method " + use_curve_long + " was not found in the cross reference. This is a very bad error. It must be fixed"
+                err_msg = "The calibration method " + use_curve_long + " was not found in the cross reference list."
                 # print(err_msg)
                 raise forms.ValidationError(err_msg)
 

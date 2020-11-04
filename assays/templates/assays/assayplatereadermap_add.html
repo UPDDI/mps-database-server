@@ -21,6 +21,7 @@
 {% block breadcrumbs %}
     <li><a href="/assays/assaystudy/">Studies</a>
     <li><a href="{{ form.instance.study.get_absolute_url }}">{{ form.instance.study }}</a></li>
+    <li><a href="{% url 'assays-assaystudy-data-index' form.instance.study.id %}">Data</a></li>
     {% if object %}
         <li><a href="{% url 'assayplatereadermap-index' object.study.id %}">Assay Plate Maps</a>
     {% else %}
@@ -107,32 +108,33 @@
             </div>
 
             {#        This is the section to show the user prettier errors#}
-            <div>
+{#            <div>#}
                 {% include 'errors.html' %}
 
-                {% if form.errors %}
-                    {% for field in form %}
-                        {% if field.errors %}
-                            {% for error in field.errors %}
-                                <div class="alert alert-danger" role="alert">
-                                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                                    <span class="sr-only">Error:</span>
-                                    {{field.label}}: {{error}}
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
+{#        20201104 do not need the errors twice#}
+{#                {% if form.errors %}#}
+{#                    {% for field in form %}#}
+{#                        {% if field.errors %}#}
+{#                            {% for error in field.errors %}#}
+{#                                <div class="alert alert-danger" role="alert">#}
+{#                                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>#}
+{#                                    <span class="sr-only">Error:</span>#}
+{#                                    {{field.label}}: {{error}}#}
+{#                                </div>#}
+{#                            {% endfor %}#}
+{#                        {% endif %}#}
+{#                    {% endfor %}#}
+{#                {% endif %}#}
 
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger" role="alert">
-                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                        <span class="sr-only">Error:</span>
-                        {{ form.non_field_errors }}
-                        form.errors<br>
-                        {{ form.errors }}<br>
-                    </div>
-                {% endif %}
+{#                {% if form.non_field_errors %}#}
+{#                    <div class="alert alert-danger" role="alert">#}
+{#                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>#}
+{#                        <span class="sr-only">Error:</span>#}
+{#                        {{ form.non_field_errors }}#}
+{#                        form.errors<br>#}
+{#                        {{ form.errors }}<br>#}
+{#                    </div>#}
+{#                {% endif %}#}
                 {# Formset errors #}
                 {% if formset.errors.0 %}
                     formset.errors<br>
@@ -149,7 +151,7 @@
                         {% endfor %}
                     {% endfor %}
                 {% endif %}
-            </div>
+{#            </div>#}
 
             {# global plate map edits #}
             <div>

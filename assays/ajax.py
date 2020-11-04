@@ -6862,10 +6862,23 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
         # 4
 
         # deal with the reporting unit containing /cells
-        locationCellsStart = re.search(r'cells', reportin_unit).start()
-        locationCellsEnd = re.search(r'cells', reportin_unit).end()
-        location10hatStart = re.search(r'10\^', reportin_unit).start()
-        location10hatEnd = re.search(r'10\^', reportin_unit).end()
+        # 20201104 added the try/except for non cell units and/or non 10 units (else got error on server)
+        try:
+            locationCellsStart = re.search(r'cells', reportin_unit).start()
+        except:
+            locationCellsStart = -1
+        try:
+            locationCellsEnd = re.search(r'cells', reportin_unit).end()
+        except:
+            locationCellsEnd = -1
+        try:
+            location10hatStart = re.search(r'10\^', reportin_unit).start()
+        except:
+            location10hatStart = -1
+        try:
+            location10hatEnd = re.search(r'10\^', reportin_unit).end()
+        except:
+            location10hatEnd = -1
 
         # print("locationCellsStart ",locationCellsStart)
         # print("locationCellsEnd ",locationCellsEnd)

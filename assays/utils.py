@@ -5410,7 +5410,8 @@ def plate_reader_data_file_process_data(set_dict):
                 elif use_calibration_curve == 'poly2':
                     myFit = plateMapPoly2(CONC, A_poly2, B_poly2, C_poly2, D_poly2)
                 else:
-                    err_msg = "There is a very bad error - missing a calibration method???"
+                    # 20201104 - changed the error message so it does not scare the user
+                    err_msg = "Error - missing a calibration method."
                     print(err_msg)
 
                 # print(p, "   ", myFit)
