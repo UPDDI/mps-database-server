@@ -27,6 +27,9 @@ class MicrophysiologyCenterAdmin(LockableAdmin):
     list_display = (
         'name', 'center_id', 'institution', 'description', 'pi', 'contact_person', 'center_site'
     )
+    search_fields = (
+        'name', 'center_id', 'institution', 'description', 'pi', 'contact_person'
+    )
     list_per_page = 300
     filter_horizontal = (
         'groups',
@@ -77,6 +80,7 @@ class ManufacturerAdmin(LockableAdmin):
     save_on_top = True
     list_per_page = 300
     list_display = ['name', 'contact_person', 'manufacturer_site']
+    search_fields = ['name', 'contact_person']
     fieldsets = (
         (
             None, {
@@ -341,6 +345,7 @@ class GroupDeferralAdmin(TrackableAdmin):
     save_on_top = True
     list_per_page = 300
     list_display = ['group', 'approval_file', 'notes']
+    search_fields = ['notes']
     fieldsets = (
         (
             None, {
