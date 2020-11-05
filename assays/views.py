@@ -1886,7 +1886,6 @@ class AssayDataFileUploadDetail(StudyGroupMixin, DetailHandlerView):
 
         context.update({
             'detail': True,
-            'title': '{} Data'.format(study.object)
         })
 
         return context
