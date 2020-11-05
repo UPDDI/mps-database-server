@@ -35,7 +35,7 @@
                     MPS Model
                 </th>
                 <td>
-                    <a href="{% url 'microdevices-organmodel-detail' object.id %}">{{ object.organ_model }}</a>
+                    <a href="{% url 'microdevices-organmodel-detail' object.organ_model.id %}">{{ object.organ_model }}</a>
                 </td>
             </tr>
             {% if object.organ_model_version %}
