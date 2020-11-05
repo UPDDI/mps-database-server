@@ -4410,59 +4410,6 @@ class AssayPlateReaderMapForm(BootstrapForm):
         # study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
 
         if data.get('form_make_mifc_on_submit'):
-            # search term MIFC - if MIFC changes, this will need changed
-            # make a list of column headers for the mifc file
-            # could use COLUMN_HEADERS, but need to append one (What?! If you need to append a value, then use the existing variable and then append! Please adhere to DRY principles!)
-            # column_table_headers_average = [
-            #     'Chip ID',
-            #     'Cross Reference',
-            #     'Assay Plate ID',
-            #     'Assay Well ID',
-            #     'Day',
-
-            #     'Hour',
-            #     'Minute',
-            #     'Target/Analyte',
-            #     'Subtarget',
-            #     'Method/Kit',
-
-            #     'Sample Location',
-            #     'Value',
-            #     'Value Unit',
-            #     'Replicate',
-            #     'Caution Flag',
-
-            #     'Exclude',
-            #     'Notes',
-            #     'Processing Details',
-            # ]
-
-            column_table_headers_average = list(COLUMN_HEADERS)
-            column_table_headers_average.append('Processing Details')
-
-            # Ought to be revised
-            # search term MIFC - if MIFC changes, this will need changed
-            # Make a dictionary of headers in utils and header needed in the mifc file
-            utils_key_column_header = {
-                'matrix_item_name': 'Chip ID or Well ID',
-                'cross_reference': 'Cross Reference',
-                'plate_name': 'Assay Plate ID',
-                'well_name': 'Assay Well ID',
-                'day': 'Day',
-                'hour': 'Hour',
-                'minute': 'Minute',
-                'target': 'Target/Analyte',
-                'subtarget': 'Subtarget',
-                'method': 'Method/Kit',
-                'location_name': 'Sample Location',
-                'processed_value': 'Value',
-                'unit': 'Value Unit',
-                'replicate': 'Replicate',
-                'caution_flag': 'Caution Flag',
-                'exclude': 'Exclude',
-                'notes': 'Notes',
-                'sendmessage': 'Processing Details'
-            }
 
             # print(".unit ",data.get('standard_unit').unit)
             # print(".id ", data.get('standard_unit').id)
@@ -4531,28 +4478,65 @@ class AssayPlateReaderMapForm(BootstrapForm):
 
             # this function is in utils.py that returns data
             data_mover = plate_reader_data_file_process_data(set_dict)
-            # what comes back is a dictionary of
+            # 20201105 one row of data mover
+            # {'matrix_item_name': '13', 'cross_reference': 'Plate Reader Tool', 'plate_name': 'map-20201105-07:47:13',
+            #  'well_name': 'D7 C7 E7', 'day': '1.0', 'hour': '0', 'minute': '0', 'target': 'Decay Time',
+            #  'subtarget': 'none', 'method': 'EarlyTox Cardiotoxicity Kit (Molecular Devices: R8211)',
+            #  'location_name': 'Basolateral', 'processed_value': '25195871.42980029', 'unit': 'ng/mL', 'replicate': 1,
+            #  'caution_flag': '', 'exclude': ' ', 'notes': '',
+            #  'sendmessage': 'Fitting method: linear;  Standard minimum: 0.0;  Standard maximum: 100.0;  '}, {
+            #     'matrix_item_name': '13', 'cross_reference': 'Plate Reader Tool', 'plate_name': 'map-20201105-07:47:13',
+            #     'well_name': 'C8 E8 D8', 'day': '2.0', 'hour': '0', 'minute': '0', 'target': 'Decay Time',
+            #     'subtarget': 'none', 'method': 'EarlyTox Cardiotoxicity Kit (Molecular Devices: R8211)',
+            #     'location_name': 'Basolateral', 'processed_value': '24630641.60638611', 'unit': 'ng/mL', 'replicate': 1,
+            #     'caution_flag': '', 'exclude': ' ', 'notes': '',
+            #     'sendmessage': 'Fitting method: linear;  Standard minimum: 0.0;  Standard maximum: 100.0;  '}, {
+            #     'matrix_item_name': '13', 'cross_reference': 'Plate Reader Tool', 'plate_name': 'map-20201105-07:47:13',
+            #     'well_name': 'C9 E9 D9', 'day': '3.0', 'hour': '0', 'minute': '0', 'target': 'Decay Time',
+            #     'subtarget': 'none', 'method': 'EarlyTox Cardiotoxicity Kit (Molecular Devices: R8211)',
+            #     'location_name': 'Basolateral', 'processed_value': '34903839.32472848', 'unit': 'ng/mL', 'replicate': 1,
+            #     'caution_flag': '', 'exclude': ' ', 'notes': '',
+            #     'sendmessage': 'Fitting method: linear;  Standard minimum: 0.0;  Standard maximum: 100.0;  '}
+
+            utils_key_column_header = {
+                'matrix_item_name': COLUMN_HEADERS[0],
+                'cross_reference': COLUMN_HEADERS[1],
+                'plate_name': COLUMN_HEADERS[2],
+                'well_name': COLUMN_HEADERS[3],
+                'day': COLUMN_HEADERS[4],
+                'hour': COLUMN_HEADERS[5],
+                'minute': COLUMN_HEADERS[6],
+                'target': COLUMN_HEADERS[7],
+                'subtarget': COLUMN_HEADERS[8],
+                'method': COLUMN_HEADERS[9],
+                'location_name': COLUMN_HEADERS[10],
+                'processed_value': COLUMN_HEADERS[11],
+                'unit': COLUMN_HEADERS[12],
+                'replicate': COLUMN_HEADERS[13],
+                'caution_flag': COLUMN_HEADERS[14],
+                'exclude': COLUMN_HEADERS[15],
+                'notes': COLUMN_HEADERS[16],
+                'sendmessage': 'Processing Details'
+            }
+            column_table_headers_average = list(COLUMN_HEADERS)
+            column_table_headers_average.append('Processing Details')
+
+            # what comes back in 9 is a dictionary of data rows with dict keys as shown in utils_key_column_header
             list_of_dicts = data_mover[9]
             list_of_lists_mifc_headers_row_0 = [None] * (len(list_of_dicts) + 1)
             list_of_lists_mifc_headers_row_0[0] = column_table_headers_average
             i = 1
-            # print(" ")
             for each_dict_in_list in list_of_dicts:
                 list_each_row = []
                 for this_mifc_header in column_table_headers_average:
-                    # print("this_mifc_header ", this_mifc_header)
                     # find the key in the dictionary that we need
                     utils_dict_header = find_a_key_by_value_in_dictionary(utils_key_column_header,
                                                                           this_mifc_header)
-                    # print("utils_dict_header ", utils_dict_header)
-                    # print("this_mifc_header ", this_mifc_header)
                     # get the value that is associated with this header in the dict
                     this_value = each_dict_in_list.get(utils_dict_header)
-                    # print("this_value ", this_value)
                     # add the value to the list for this dict in the list of dicts
                     list_each_row.append(this_value)
-                # when down with the dictionary, add the completely list for this row to the list of lists
-                # print("list_each_row ", list_each_row)
+                # when down with the dictionary, add the complete list for this row to the list of lists
                 list_of_lists_mifc_headers_row_0[i] = list_each_row
                 i = i + 1
 
