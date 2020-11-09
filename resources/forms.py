@@ -41,7 +41,7 @@ class DefinitionForm(forms.ModelForm):
         exclude = ('',)
         widgets = {
             'term': forms.Textarea(attrs={'rows': 1, 'cols': 50}),
-            'definition': forms.Textarea(attrs={'rows': 5, 'cols': 50}),
+            'definition': forms.Textarea(attrs={'rows': 8, 'cols': 110}),
         }
 
     def __init__(self, *args, **kwargs):

@@ -158,7 +158,7 @@
                             <li><a href="#help_study_component">Study Components</a></li>
                             <li><a href="#help_assay_data_viz">Assay Data Visualization</a></li>
                             <li><a href="#help_omic_data_viz">Assay Omic Data Visualization</a></li>
-                            <li><a href="#help_image_and_video">Assay Images and Video</a></li>
+                            <li><a href="#help_image_and_video">Assay Images and Videos</a></li>
                             <li><a href="#help_power_analysis">Assay Data Power Analysis</a></li>
                             <li><a href="#help_reproducibility_analysis">Assay Data Reproducibility Analysis</a></li>
                             <li><a href="#help_study_set">Assay Data Study Sets</a></li>
@@ -348,7 +348,7 @@
                                         </tr>
                                         <tr>
                                             <td>
-                                                3) update the glossary,
+                                                3) update the glossary (links, data sources, anchors),
                                             </td>
                                         </tr>
                                         <tr>
@@ -413,7 +413,7 @@
                                 <h1 class="h1-level-1">Study Components</h1>
                                 {# HANDY accessing a dictionary in html dictionary python to java   #}
                                 <span class="gse0">{{ glossary_dict.studycomponent_def|linebreaks }}</span>
-                                They are the terms that are selected in dropdowns when setting up a study in the MPS-Db.
+                                These are the terms that are selected in dropdowns when setting up a Study in the MPS-Db.
                                 All registered users can review
                                 <span class="gse0">{{ glossary_dict.studycomponent_term }}s</span> by
                                 <span class="gse0"><a href={{ glossary_dict.studycomponent_ref }}>clicking here</a></span>.
@@ -584,7 +584,7 @@
                                             <td><span class="gse1"> {{ term.term }} </span></td>
                                             <td><span class="gse1"> {{ term.definition|linebreaks }} </span></td>
                                             <td><span class="gse1"> {{ term.help_order }} </span></td>
-                                            {# these will be final links, not change with development - only do that in glossary #}
+                                            {# should be the same in all environments #}
                                             <td><span class="gse1"> {{ term.show_url }} </span></td>
                                         </tr>
                                         {% endfor %}
@@ -611,8 +611,8 @@
                                             <th>Feature</th>
                                             <th>Description</th>
                                             <th>Reference Data Source(s)</th>
-                                            <th>More Help</th>
                                             <th>Go to Feature</th>
+                                            <th>More Help</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -620,10 +620,10 @@
                                         <tr>
                                             <td><span class="gse1"> {{ term.term }} </span></td>
                                             <td><span class="gse1"> {{ term.definition|linebreaks }} </span></td>
-                                            {# these will be final links, not change with development - only do that in glossary #}
                                             <td><span class="gse1"> {{ term.source_list }} </span></td>
-                                            <td><span class="gse1"> {{ term.show_anchor }} </span></td>
+                                            {# these will be final links, not change with development - only do that in glossary #}
                                             <td><span class="gse1"> {{ term.show_url }} </span></td>
+                                            <td><span class="gse1"> {{ term.show_anchor }} </span></td>
 
                         {#                    <th>{% for source in term.data_sources.all %}{{ source }}<br/>{% endfor %}</th>#}
                                         </tr>
@@ -1020,6 +1020,7 @@
                             <li class="list-group-item">
                                 <h1 class="h1-level-1">Assay Data Visualization</h1>
                                 <span class="gse0">{{ glossary_dict.assaydatavisualization_def|linebreaks }}</span>
+                                <br>
                                 <h1 class="h1-level-2">Assay Data Visualization (Intra-Study) </h1>
                                 The <b>Assay Data Visualization (Intra-Study)</b> feature is accessed from  within an individual
                                 <span class="gse0">{{ glossary_dict.study_term }}</span>,
@@ -1107,7 +1108,13 @@
                                             </li>
                                         </ul>
                                     </li>
-                                    {% include 'help_customization_group_filter_links.html' %}
+                                    <li>There are many options available for customizing graphs, to learn more, click on a link below:
+                                        <ul class="help-filled-circle">
+                                            <li><a href="#help_custom_filtering_sidebar">Custom Filtering for Data Visualization (sidebar)</a></li>
+                                            <li><a href="#help_custom_graphing_sidebar">Custom Graphing for Data Visualization (sidebar)</a></li>
+                                            <li><a href="#help_custom_graphing_individual">Customizing Individual Graphs</a></li>
+                                        </ul>
+                                    </li>
                                 </ul>
 
                                 <h1 class="h1-level-2">Assay Data Visualization (Inter-Study) </h1>
@@ -1130,7 +1137,13 @@
                                             </li>
                                         </ul>
                                     </li>
-                                    {% include 'help_customization_group_filter_links.html' %}
+                                    <li>There are many options available for customizing graphs, to learn more, click on a link below:
+                                        <ul class="help-filled-circle">
+                                            <li><a href="#help_custom_filtering_sidebar">Custom Filtering for Data Visualization (sidebar)</a></li>
+                                            <li><a href="#help_custom_graphing_sidebar">Custom Graphing for Data Visualization (sidebar)</a></li>
+                                            <li><a href="#help_custom_graphing_individual">Customizing Individual Graphs</a></li>
+                                        </ul>
+                                    </li>
                                 </ul>
                             </li>
                         </ul>
@@ -1164,20 +1177,16 @@
                 </div>
 
                 <div id="help_image_and_video">
-                    <button name="help_button" type="button" class="btn btn-primary help-collapsible">Assay Images and Video</button>
+                    <button name="help_button" type="button" class="btn btn-primary help-collapsible">Assay Images and Videos</button>
                     <div class="help-content-1">
                         <ul class="list-group">
                             <li class="list-group-item">
-                                <h1 class="h1-level-1">Assay Images and Video</h1>
-                                <span class="gse0">{{ glossary_dict.assayimage_term }}</span>
-                                -
-                                <span class="gse0">{{ glossary_dict.assayimage_def|linebreaks }}</span>
-                                <br>
-                                <span class="gse0">{{ glossary_dict.assayvideo_term }}</span>
-                                -
-                                <span class="gse0">{{ glossary_dict.assayvideos_def|linebreaks }}</span>
-                                <br>
-
+                                <h1 class="h1-level-1">Assay Images and Videos</h1>
+                                Includes:
+                                <span class="gse0">{{ glossary_dict.assayimage_def }}</span>
+                                and
+                                <span class="gse0">{{ glossary_dict.assayvideo_def }}</span>
+                                <br><br>
                                 <ul class="list-unstyled">
                                     <li>To view images and video uploaded to a
                                         <span class="gse0">{{ glossary_dict.study_term }}</span>:
@@ -1213,7 +1222,8 @@
                                 <h1 class="h1-level-1">Assay Data Power Analysis</h1>
                                 <span class="gse0">{{ glossary_dict.poweranalysis_def|linebreaks }}</span>
                                 <ul class="list-unstyled">
-                                    <li>To perform power analysis:
+                                    <li>To perform
+                                        <span class="gse0">{{ glossary_dict.poweranalysis_term }}</span>:
                                         <ul class="help-filled-circle">
                                             <li>Go to the <b>Studies</b> tab/icon</li>
                                             <li>Click on the <b>View/Edit</b> button next to the
@@ -1268,6 +1278,7 @@
                             <li class="list-group-item">
                                 <h1 class="h1-level-1">Assay Data Reproducibility Analysis </h1>
                                 <span class="gse0">{{ glossary_dict.reproducibilityanalysis_def|linebreaks }}</span>
+                                <br>
                                 <h1 class="h1-level-2">Assay Data Reproducibility Analysis (Intra-Study) </h1>
                                 <ul class="list-unstyled">
                                     <li>To perform intra-study reproducibility analysis:
@@ -1668,13 +1679,14 @@
             <div id="study_data_customization_section" class="stop-point">
 
                 <h1 class="h1-level-0">Assay Data Customization Options</h1>
-                <p class="h1-level-3">Graph customization is not saved, it lasts only until the user navigates away from the page.</p>
                 <div id="help_custom_filtering_sidebar">
                     <button name="help_button" type="button" class="btn btn-primary help-collapsible">Custom Grouping and Filtering (sidebar) </button>
                     <div class="help-content-1">
                         <ul class="list-group">
                             <li class="list-group-item">
                                 <ul class="list-unstyled">
+                                    <p class="h1-level-3">Graph customization is not saved, it lasts only until the user navigates away from the page.</p>
+
                                     <li>Customized grouping and filtering is available in the MPS-Db
                                         via a sidebar where data are available for review. To customize:
                                         <ul class="help-filled-circle">
@@ -1734,6 +1746,8 @@
                         <ul class="list-group">
                             <li class="list-group-item">
                                 <ul class="list-unstyled">
+                                    <p class="h1-level-3">Graph customization is not saved, it lasts only until the user navigates away from the page.</p>
+
                                     <li>General graph customization is available via a sidebar where graphs are displayed. To customize:
                                         <ul class="help-filled-circle">
                                             <li>If hidden, click the <b>Toggle Sidebar</b> button to show the sidebar</li>
@@ -1767,6 +1781,8 @@
                         <ul class="list-group">
                             <li class="list-group-item">
                                 <ul class="list-unstyled">
+                                    <p class="h1-level-3">Graph customization is not saved, it lasts only until the user navigates away from the page.</p>
+
                                     <li>Individualized graphing options are available via a graph popup where graphs are displayed. To customize:
                                         <ul class="help-filled-circle">
                                             <li>Right-click on an individual graph (on touch screen - press and hold one finger while tapping with another)
@@ -1960,7 +1976,7 @@
                                                     <li>Changing between ChEMBL and PubChem; Changing whether questionable results are excluded or not; Changing the min feature count; Changing the Target Types or Organisms</li>
                                                 </ul>
                                             </li>
-                                            <li>The <b>Minimum Feature Count Per Record</b>field specifies the number of bioactivities that need to be linked to a given option for it to appear
+                                            <li>The <b>Minimum Feature Count Per Record</b> field specifies the number of bioactivities that need to be linked to a given option for it to appear
                                                 <ul class="help-open-circle">
                                                     <li>e.g. if the min feature count is 10, then the compound "ALDRIN" will not be an option because only 5 bioactivities link to "ALDRIN" </li>
                                                     <li>Click the <b>Apply</b> button to confirm the change to the min feature count</li>
@@ -1985,7 +2001,7 @@
                             <li class="list-group-item">
                                 <h1 class="h1-level-1">Drug Trials</h1>
                                 <span class="gse0">{{ glossary_dict.drugtrials_def|linebreaks }}</span>
-                                <br>
+
                                 <ul class="list-unstyled">
                                     <li>To view drug trials data:
                                         <ul class="help-filled-circle">
@@ -2146,7 +2162,7 @@
                                             <li>Click on the <b>Exclude ... </b> button or the <b>Use PubChem...</b> button to change data selection as indicated on the button (optional)</li>
                                             <li>Enter a search string in one or more of the filters (Bioactivities, Targets, Compounds, Drug Trials) (optional)</li>
                                             <li>Check all the boxes needed to indicate desired selections</li>
-                                            <li>The <b>Minimum Feature Count Per Record</b>field specifies the number of bioactivities that need to be linked to a given option for it to appear
+                                            <li>The <b>Minimum Feature Count Per Record</b> field specifies the number of bioactivities that need to be linked to a given option for it to appear
                                                 <ul class="help-open-circle">
                                                     <li>e.g. if the min feature count is 10, then the compound "ALDRIN" will not be an option because only 5 bioactivities link to "ALDRIN" </li>
                                                     <li>Click the <b>Apply</b> button to confirm the change to the min feature count</li>
@@ -2227,7 +2243,7 @@
                                             <li>Click on the <b>Exclude ... </b> button or the <b>Use PubChem...</b> button to change data selection as indicated on the button (optional)</li>
                                             <li>Enter a search string in one or more of the filters (Bioactivities, Targets, Compounds, Drug Trials) (optional)</li>
                                             <li>Check all the boxes needed to indicate desired selections</li>
-                                            <li>The <b>Minimum Feature Count Per Record</b>field specifies the number of bioactivities that need to be linked to a given option for it to appear
+                                            <li>The <b>Minimum Feature Count Per Record</b> field specifies the number of bioactivities that need to be linked to a given option for it to appear
                                                 <ul class="help-open-circle">
                                                     <li>e.g. if the min feature count is 10, then the compound "ALDRIN" will not be an option because only 5 bioactivities link to "ALDRIN" </li>
                                                     <li>Click the <b>Apply</b> button to confirm the change to the min feature count</li>
@@ -2308,7 +2324,9 @@
                                 <span class="gse0">{{ glossary_dict.datagroup_term }}</span>
                                 and your
                                 <span class="gse0">{{ glossary_dict.datagroup_term }}</span>
-                                must be linked to your center.
+                                must be linked to your
+                                <span class="gse0">{{ glossary_dict.microphysiologycenter_term }}</span>.
+                                <br>
                                 <br>
                                 <ul class="list-unstyled">
                                     <li>To join an existing
@@ -2407,7 +2425,6 @@
                         <ul class="list-group">
                             <li class="list-group-item">
                                 <h1 class="h1-level-1">Add a Study</h1>
-                                A Study -
                                 <span class="gse0">{{ glossary_dict.study_def|linebreaks }}</span>
                                 <ul class="list-unstyled">
                                     <li>To add a
@@ -2463,8 +2480,6 @@
                         <ul class="list-group">
                             <li class="list-group-item">
                                 <h1 class="h1-level-1">Enter Study Details - Details Tab</h1>
-                                <span class="gse0">{{ glossary_dict.studydetails_term }}</span>
-                                -
                                 <span class="gse0">{{ glossary_dict.studydetails_def|linebreaks }}</span>
 
                                 <ul class="list-unstyled">
@@ -2512,8 +2527,6 @@
                         <ul class="list-group">
                             <li class="list-group-item">
                                 <h1 class="h1-level-1">Make Study Treatment Groups - Groups Tab</h1>
-                                <span class="gse0">{{ glossary_dict.studytreatmentgroup_term }}</span>
-                                -
                                 <span class="gse0">{{ glossary_dict.studytreatmentgroup_def|linebreaks }}</span>
 
                                 <ul class="list-unstyled">
@@ -2611,10 +2624,8 @@
                         <ul class="list-group">
                             <li class="list-group-item">
                                 <h1 class="h1-level-2">Define Chips and Plates (Study Items)</h1>
-                                <span class="gse0">{{ glossary_dict.studyitem_term }}</span>
-                                    -
                                 <span class="gse0">{{ glossary_dict.studyitem_def|linebreaks }}</span>
-
+                                <br>
                                 <h1 class="h1-level-2">Define Chips and Plates - Chips Tab</h1>
                                 <ul class="list-unstyled">
                                     <li>To edit chip names (optional):
@@ -2704,14 +2715,13 @@
                                 <h1 class="h1-level-1">Add Assay Targets and Assay Methods to a Study - Assays Tab</h1>
 
                                     <span class="gse0">{{ glossary_dict.assaytarget_term }}</span>
-                                    -
-                                    <span class="gse0">{{ glossary_dict.assaytarget_def|linebreaks }}</span>
-                                    <br>
+                                    - <span class="gse0">{{ glossary_dict.assaytarget_def }}</span>
+                                    <br><br>
                                     <span class="gse0">{{ glossary_dict.assaymethod_term }}</span>
                                     -
-                                    <span class="gse0">{{ glossary_dict.assaymethod_def|linebreaks }}</span>
+                                    <span class="gse0">{{ glossary_dict.assaymethod_def }}</span>
 
-                                <br>
+                                <br><br>
                                 <ul class="list-unstyled">
                                     <li>Add Assays to a study as follows:
                                         <ul class="help-filled-circle">
@@ -2773,14 +2783,9 @@
                                 file of processed assay data (non-omic),
                                 <br>2) uploading raw data exported from a plate reader, and
                                 <br>3) uploading omic formatted data in specific omic data format(s).
-                                <br>
+                                <br><br>
                                 <h1 class="h1-level-2">Processed MIF-C-a Format</h1>
-
-                                    <span class="gse0">{{ glossary_dict.mifc_term }}</span>
-                                    -
-                                    <span class="gse0">{{ glossary_dict.mifc_def|linebreaks }}</span>
-
-                                <br>
+                                    <span class="gse0">{{ glossary_dict.mpsdbimportfriendlycolumnar_def|linebreaks }}</span>
 
                                 <ul class="list-unstyled">
                                     <li>To add processed data in
@@ -2808,9 +2813,9 @@
                                         <ul class="help-filled-circle">
                                             <li>The ONLY assay data that are editable in the
                                                 <span class="gse0">{{ glossary_dict.mpsgui_term }}</span>
-                                                is the <b>Exclude</b>field (editable on the study item edit page)
+                                                is the <b>Exclude</b> field (editable on the study item edit page)
                                             </li>
-                                            <li>Changes made to the <b>Exclude</b>field using the
+                                            <li>Changes made to the <b>Exclude</b> field using the
                                                 <span class="gse0">{{ glossary_dict.mpsgui_term }}</span>
                                                 will be lost when data are re-uploaded
                                             </li>
@@ -2842,12 +2847,7 @@
 
                                 <br>
                                 <h1 class="h1-level-2">Raw Plate Reader Data</h1>
-
-                                    <span class="gse0">{{ glossary_dict.platereaderdata_term }}</span>
-                                    -
                                     <span class="gse0">{{ glossary_dict.platereaderdata_def|linebreaks }}</span>
-
-                                <br>
 
                                 <ul class="list-unstyled">
                                     <li>To add raw
@@ -2874,12 +2874,8 @@
 
                                 <br>
                                 <h1 class="h1-level-2">Omic Data</h1>
-
-                                    <span class="gse0">{{ glossary_dict.omicdata_term }}</span>
-                                    -
                                     <span class="gse0">{{ glossary_dict.omicdata_def|linebreaks }}</span>
 
-                                <br>
                                 <ul class="list-unstyled">
                                     <li>To add
                                         <span class="gse0">{{ glossary_dict.omicdata_term }}</span>
@@ -2917,13 +2913,13 @@
 
                                     <span class="gse0">{{ glossary_dict.assayimages_term }}</span>
                                     -
-                                    <span class="gse0">{{ glossary_dict.assayimages_def|linebreaks }}</span>
-                                    <br>
+                                    <span class="gse0">{{ glossary_dict.assayimages_def }}</span>
+                                    <br><br>
                                     <span class="gse0">{{ glossary_dict.assayvideos_term }}</span>
                                     -
-                                    <span class="gse0">{{ glossary_dict.assayvideos_def|linebreaks }}</span>
+                                    <span class="gse0">{{ glossary_dict.assayvideos_def }}</span>
 
-                                <br>
+                                <br><br>
 
                                 We are working on adding the ability for users to directly upload images and videos, but, currently, images and videos must be added to the MPS-Db by
                                 <span class="gse0">{{ glossary_dict.mpsdbadministrator_term }}s</span>.
@@ -3005,7 +3001,7 @@
                                     list).
 
 
-                                <br>
+                                <br><br>
                                 <h1 class="h1-level-2">Study Flags and Notes</h1>
 
                                 <ul class="list-unstyled">
@@ -3114,18 +3110,14 @@
                         <ul class="list-group">
                             <li class="list-group-item">
                                 <h1 class="h1-level-1">Data Sharing - Sign-Off a Study (optional)</h1>
-
-                                    <span class="gse0">{{ glossary_dict.studysignoff_term }}</span>
-                                    -
                                     <span class="gse0">{{ glossary_dict.studysignoff_def|linebreaks }}</span>
-
-                                <br>
 
                                     <span class="gse0">{{ glossary_dict.datagroupadministrator_term }}s</span>
                                     can sign-off a
                                     <span class="gse0">{{ glossary_dict.study_term }}</span>
                                     in their
                                     <span class="gse0">{{ glossary_dict.datagroup_term }}</span>.
+                                <br>
 
                                 <ul class="list-unstyled">
                                     <li>To sign-off a
@@ -3175,9 +3167,6 @@
                                         <ul class="list-group">
                                             <li class="list-group-item">
                                                 <h1 class="h1-level-1">Stakeholder Review</h1>
-
-                                                    <span class="gse0">{{ glossary_dict.stakeholder_term }}</span>
-                                                    -
                                                     <span class="gse0">{{ glossary_dict.stakeholder_def|linebreaks }}</span>
 
                                                 Stakehold groups are managed by
@@ -3189,7 +3178,7 @@
                                                     and
                                                     <span class="gse0">{{ glossary_dict.accessgroup_term }}s</span>.
 
-                                                <br>
+                                                <br><br>
                                                 <ul class="list-unstyled">
                                                     <li>Follow these steps:
                                                         <ul class="help-filled-circle">
@@ -3264,9 +3253,10 @@
                     <tr>
                         <th>Term</th>
                         <th>Definition</th>
-                        <th>Ref</th>
-                        <th>Help</th>
-                        <th>Group</th>
+                        <th>Reference</th>
+                        <th>Get Help</th>
+{#                        letting the user see the help category is going to open up a can of worms (these are for HELP page function, not user display) #}
+{#                        <th>Group</th>#}
                     </tr>
                 </thead>
                 <tbody>
@@ -3274,20 +3264,14 @@
                     <tr>
                         <td><span class="gse1"> {{ term.term }} </span></td>
                         <td><span class="gse1"> {{ term.definition|linebreaks }} </span></td>
-                        {# do this way for the link to work as want in development - only doing here to check all links #}
+                        {# do this way for the link to work in all environments #}
                         <td><span class="gse1">
                             <a target='_blank' href={{ term.reference }}>
                                 <span class="glyphicon glyphicon-link"></span>
                             </a>
                         </span></td>
-                        <td><span class="gse1">
-                            <a target='_blank' href={{ term.help_reference }}>
-                                <span class="glyphicon glyphicon-link"></span>
-                            </a>
-                        </span></td>
-{#                        <td><span class="gse1"> {{ term.show_url }} </span></td>#}
-{#                        <td><span class="gse1"> {{ term.show_anchor }} </span></td>#}
-                        <td><span class="gse1"> {{ term.help_category_display }} </span></td>
+                        <td><span class="gse1"> {{ term.show_anchor }} </span></td>
+{#                        <td><span class="gse1"> {{ term.help_category_display }} </span></td>#}
                     </tr>
                     {% endfor %}
                 </tbody>

@@ -171,18 +171,8 @@ def mps_help(request):
     for each in glossary_master:
         glossary_dict[each.stripped_term() + '_term'] = each.term
         glossary_dict[each.stripped_term() + '_def'] = each.definition
-
-        # START USE THIS SECTION IN DEVELOPMENT ONLY - comment out before going to production
-        if '127.0.0.1:8000' in help_url:
-            each.reference = each.reference.replace('mps.csb.pitt.edu', '127.0.0.1:8000')
-            each.help_reference = each.help_reference.replace('mps.csb.pitt.edu', '127.0.0.1:8000')
-        elif 'bohr-prody-vm.upddi.pitt.edu' in help_url:
-            each.reference = each.reference.replace('mps.csb.pitt.edu', 'bohr-prody-vm.upddi.pitt.edu')
-            each.help_reference = each.help_reference.replace('mps.csb.pitt.edu', 'bohr-prody-vm.upddi.pitt.edu')
-        # END USE THIS SECTION IN DEVELOPMENT ONLY
-
-        glossary_dict[each.stripped_term() + '_ref'] = each.reference
         glossary_dict[each.stripped_term() + '_help_ref'] = each.help_reference
+        glossary_dict[each.stripped_term() + '_ref'] = each.reference
 
     # get a subset of the features for the feature table (in order as specified in the glossary)
     feature = glossary_master.filter(help_category='feature').filter(help_display=True).order_by('help_order')
@@ -220,14 +210,12 @@ def mps_help(request):
     # request.get_full_path()  /help/
 
     # START USE THIS SECTION IN DEVELOPMENT ONLY - comment out before going to production
-    # have to do this LAST or won't work
+    # have to do this LAST for ALL of them, or won't work
     for each in glossary:
         if '127.0.0.1:8000' in help_url:
             each.reference = each.reference.replace('mps.csb.pitt.edu', '127.0.0.1:8000')
-            each.help_reference = each.help_reference.replace('mps.csb.pitt.edu', '127.0.0.1:8000')
         elif 'bohr-prody-vm.upddi.pitt.edu' in help_url:
             each.reference = each.reference.replace('mps.csb.pitt.edu', 'bohr-prody-vm.upddi.pitt.edu')
-            each.help_reference = each.help_reference.replace('mps.csb.pitt.edu', 'bohr-prody-vm.upddi.pitt.edu')
     # END USE THIS SECTION IN DEVELOPMENT ONLY
 
     # the main glossary

@@ -36,6 +36,7 @@ class ResourceType(LockableModel):
                                  self.resource_type_name)
 
 
+# HANDY - if it has a list page, it should be a LockableModel - to get the user metadata saved)
 class Resource(LockableModel):
     """A Resource is a specific website or location to learn more of something"""
     class Meta(object):
@@ -136,9 +137,17 @@ class Definition(LockableModel):
 
     def show_anchor(self):
         if self.help_reference:
+            url = self.help_reference
+            try:
+                loc = url.index('#')
+            except:
+                loc = -1
+            anchor = '#help_overview_background'
+            if loc >= 0:
+                anchor = url[loc:]
             return format_html(
-                "<a target='_blank' href='{url}'><span title='{url}' class='glyphicon glyphicon-link'></span></a>",
-                url=self.help_reference
+                "<a href='{anchor}'><span title='{anchor}' class='glyphicon glyphicon-link'></span></a>",
+                anchor=anchor
             )
         else:
             return ""
