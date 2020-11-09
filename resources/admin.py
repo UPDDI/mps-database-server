@@ -146,16 +146,16 @@ class DefinitionAdmin(LockableAdmin):
         'term',
         'glossary_display',
         'help_display',
-        'short_definition',
-        'is_url',
-        'is_anchor',
+        # 'short_definition',
+        'reference',
+        'help_reference',
         'help_category',
-        'count_data_sources',
+        # 'count_data_sources',
         'help_order',
-        'modified_on',
-        'created_on',
+        # 'modified_on',
+        # 'created_on',
     )
-    list_editable = ('glossary_display', 'help_display', 'help_category', 'help_order')
+    list_editable = ('glossary_display', 'help_display', 'help_category', 'help_order', 'reference', 'help_reference')
     search_fields = ['term', 'definition', 'reference', 'help_category']
 
     # HANDY m2m right side many to many admin boxes m2m right
