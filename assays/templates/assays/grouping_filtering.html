@@ -84,7 +84,7 @@
     }
 </style>
 
-{% if not omics %}
+{% if not omics and not omics_heatmap%}
 <nav id="sidebar">
     <div class="row text-center well">
         {# Crude inline js #}
@@ -951,106 +951,116 @@
 </div>
 {% endif %}
 {% else %}
-<nav id="sidebar">
-    <div class="text-center">
-        <br>
-        <button id="toggle-plot-type" class="btn btn-lg btn-primary">Switch to MA Plots</button>
-        <br>
-        <h3 class="text-center">
-            <u>Expression Thresholds</u>
-        </h3>
-        <div class="row">
-            <div class="col-xs-6">
-                <label for="pvalue-threshold" style="margin-left: 40px">P-Value</label>
-            </div>
-            <div class="col-xs-5">
-                <input type="number" id="pvalue-threshold" size="10" value="0.05" style="width: 100%">
-            </div>
-        </div>
-        <div class="row small-padding-top">
-            <div class="col-xs-6">
-                <label for="log2foldchange-threshold" style="margin-left: 15px">Log2(FoldChange)</label>
-            </div>
-            <div class="col-xs-5">
-                <input type="number" id="log2foldchange-threshold" size="10" value="0.5849625" style="width: 100%">
-            </div>
-        </div>
-        <h3 class="text-center">
-            <u>Qualitative Filters</u>
-        </h3>
-        <div class="row small-padding-top">
-            <div class="col-xs-1">
-                <input type="checkbox" id="check-under" style="margin-left: 20px" checked>
-            </div>
-            <div class="col-xs-6" style="margin-left: 20px">
-                Under Expressed
-            </div>
-            <div class="col-xs-2 text-center">
-                <input type="color" id="color-under-expressed" name="color-under-expressed" value="#1c91c0">
-            </div>
-        </div>
-        <div class="row small-padding-top">
-            <div class="col-xs-1">
-                <input type="checkbox" id="check-neither" style="margin-left: 20px" checked>
-            </div>
-            <div class="col-xs-6" style="margin-left: 20px">
-                Not Significant
-            </div>
-            <div class="col-xs-2 text-center">
-                <input type="color" id="color-not-significant" name="color-not-significant" value="#333333">
-            </div>
-        </div>
-        <div class="row small-padding-top">
-            <div class="col-xs-1">
-                <input type="checkbox" id="check-over" style="margin-left: 20px" checked>
-            </div>
-            <div class="col-xs-6" style="margin-left: 20px">
-                Over Expressed
-            </div>
-            <div class="col-xs-2 text-center">
-                <input type="color" id="color-over-expressed" name="color-over-expressed" value="#e2431e">
-            </div>
-        </div>
-        <div id="quantitative-filters" style="display: none">
+    {% if omics %}
+    <nav id="sidebar">
+        <div class="text-center">
+            <br>
+            <button id="toggle-plot-type" class="btn btn-lg btn-primary">Switch to MA Plots</button>
+            <br>
             <h3 class="text-center">
-                <u>Quantitative Filters</u>
+                <u>Expression Thresholds</u>
             </h3>
             <div class="row">
-                <div id="pvalue-filter1" class="col-12">
-                    <label for="pvalue">P-Value</label>&nbsp;<a class="swap-pvalue" title="Click to swap to -Log10(P-Value) filter type."><span class="glyphicon glyphicon-random"></span></a>
-                    <br>
-                    <input type="number" id="pvalue-low" class="filter-input" style="width: 80px">&nbsp;to&nbsp;<input type="number" id="pvalue-high" class="filter-input" style="width: 80px">
-                    <br><br>
-                    <div class="text-center" style="width: 77.5%; margin-left: 32px"><div id="slider-range-pvalue"></div></div>
+                <div class="col-xs-6">
+                    <label for="pvalue-threshold" style="margin-left: 40px">P-Value</label>
                 </div>
-                <div id="pvalue-filter2" class="col-12" style="display: none">
-                    <label for="pvalue">-Log10(P-Value)</label>&nbsp;<a class="swap-pvalue" title="Click to swap to P-Value filter."><span class="glyphicon glyphicon-random"></span></a>
-                    <br>
-                    <input type="number" id="pvalue-low-neg" class="filter-input" style="width: 80px">&nbsp;to&nbsp;<input type="number" id="pvalue-high-neg" style="width: 80px">
-                    <br><br>
-                    <div class="text-center" style="width: 77.5%; margin-left: 32px"><div id="slider-range-pvalue-neg"></div></div>
+                <div class="col-xs-5">
+                    <input type="number" id="pvalue-threshold" size="10" value="0.05" style="width: 100%">
+                </div>
+            </div>
+            <div class="row small-padding-top">
+                <div class="col-xs-6">
+                    <label for="log2foldchange-threshold" style="margin-left: 15px">Log2(FoldChange)</label>
+                </div>
+                <div class="col-xs-5">
+                    <input type="number" id="log2foldchange-threshold" size="10" value="0.5849625" style="width: 100%">
+                </div>
+            </div>
+            <h3 class="text-center">
+                <u>Qualitative Filters</u>
+            </h3>
+            <div class="row small-padding-top">
+                <div class="col-xs-1">
+                    <input type="checkbox" id="check-under" style="margin-left: 20px" checked>
+                </div>
+                <div class="col-xs-6" style="margin-left: 20px">
+                    Under Expressed
+                </div>
+                <div class="col-xs-2 text-center">
+                    <input type="color" id="color-under-expressed" name="color-under-expressed" value="#1c91c0">
+                </div>
+            </div>
+            <div class="row small-padding-top">
+                <div class="col-xs-1">
+                    <input type="checkbox" id="check-neither" style="margin-left: 20px" checked>
+                </div>
+                <div class="col-xs-6" style="margin-left: 20px">
+                    Not Significant
+                </div>
+                <div class="col-xs-2 text-center">
+                    <input type="color" id="color-not-significant" name="color-not-significant" value="#333333">
+                </div>
+            </div>
+            <div class="row small-padding-top">
+                <div class="col-xs-1">
+                    <input type="checkbox" id="check-over" style="margin-left: 20px" checked>
+                </div>
+                <div class="col-xs-6" style="margin-left: 20px">
+                    Over Expressed
+                </div>
+                <div class="col-xs-2 text-center">
+                    <input type="color" id="color-over-expressed" name="color-over-expressed" value="#e2431e">
+                </div>
+            </div>
+            <div id="quantitative-filters" style="display: none">
+                <h3 class="text-center">
+                    <u>Quantitative Filters</u>
+                </h3>
+                <div class="row">
+                    <div id="pvalue-filter1" class="col-12">
+                        <label for="pvalue">P-Value</label>&nbsp;<a class="swap-pvalue" title="Click to swap to -Log10(P-Value) filter type."><span class="glyphicon glyphicon-random"></span></a>
+                        <br>
+                        <input type="number" id="pvalue-low" class="filter-input" style="width: 80px">&nbsp;to&nbsp;<input type="number" id="pvalue-high" class="filter-input" style="width: 80px">
+                        <br><br>
+                        <div class="text-center" style="width: 77.5%; margin-left: 32px"><div id="slider-range-pvalue"></div></div>
+                    </div>
+                    <div id="pvalue-filter2" class="col-12" style="display: none">
+                        <label for="pvalue">-Log10(P-Value)</label>&nbsp;<a class="swap-pvalue" title="Click to swap to P-Value filter."><span class="glyphicon glyphicon-random"></span></a>
+                        <br>
+                        <input type="number" id="pvalue-low-neg" class="filter-input" style="width: 80px">&nbsp;to&nbsp;<input type="number" id="pvalue-high-neg" style="width: 80px">
+                        <br><br>
+                        <div class="text-center" style="width: 77.5%; margin-left: 32px"><div id="slider-range-pvalue-neg"></div></div>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div id="l2fc-filter1" class="col-12">
+                        <label for="log2foldchange">Log2(FoldChange)</label>&nbsp;<a class="swap-l2fc" title="Click to swap to +/- Log2(FoldChange) filter."><span class="glyphicon glyphicon-random"></span></a>
+                        <br>
+                        <input type="number" id="log2foldchange-low" class="filter-input" style="width: 80px">&nbsp;to&nbsp;<input type="number" id="log2foldchange-high" class="filter-input" style="width: 80px">
+                        <br><br>
+                        <div class="text-center" style="width: 77.5%; margin-left: 32px"><div id="slider-range-log2foldchange"></div></div>
+                    </div>
+                    <div id="l2fc-filter2" class="col-12" style="display: none">
+                        <label for="log2foldchange">+/- Log2(FoldChange)</label>&nbsp;<a class="swap-l2fc" title="Click to swap to Log2(FoldChange) filter."><span class="glyphicon glyphicon-random"></span></a>
+                        <br>
+                        <input type="number" id="log2foldchange-abs" class="filter-input" style="width: 80px">
+                        <br><br>
+                        <div class="text-center" style="width: 77.5%; margin-left: 32px"><div id="slider-log2foldchange-abs"></div></div>
+                    </div>
                 </div>
             </div>
             <br>
-            <div class="row">
-                <div id="l2fc-filter1" class="col-12">
-                    <label for="log2foldchange">Log2(FoldChange)</label>&nbsp;<a class="swap-l2fc" title="Click to swap to +/- Log2(FoldChange) filter."><span class="glyphicon glyphicon-random"></span></a>
-                    <br>
-                    <input type="number" id="log2foldchange-low" class="filter-input" style="width: 80px">&nbsp;to&nbsp;<input type="number" id="log2foldchange-high" class="filter-input" style="width: 80px">
-                    <br><br>
-                    <div class="text-center" style="width: 77.5%; margin-left: 32px"><div id="slider-range-log2foldchange"></div></div>
-                </div>
-                <div id="l2fc-filter2" class="col-12" style="display: none">
-                    <label for="log2foldchange">+/- Log2(FoldChange)</label>&nbsp;<a class="swap-l2fc" title="Click to swap to Log2(FoldChange) filter."><span class="glyphicon glyphicon-random"></span></a>
-                    <br>
-                    <input type="number" id="log2foldchange-abs" class="filter-input" style="width: 80px">
-                    <br><br>
-                    <div class="text-center" style="width: 77.5%; margin-left: 32px"><div id="slider-log2foldchange-abs"></div></div>
-                </div>
-            </div>
+            <button id="apply-filters" class="btn btn-primary">Apply Filters</button>
         </div>
-        <br>
-        <button id="apply-filters" class="btn btn-primary">Apply Filters</button>
-    </div>
-</nav>
+    </nav>
+    {% elif omics_heatmap %}
+    <nav id="sidebar">
+        <div class="text-center">
+            <br><br><br><br>
+            <div id="clustergrammer-sidebar-container"></div>
+            <button id="apply-filters" class="btn btn-primary">Apply Filters</button>
+        </div>
+    </nav>
+    {% endif %}
 {% endif %}
