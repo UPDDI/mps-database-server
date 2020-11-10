@@ -405,7 +405,6 @@ $(document).ready(function () {
         // Make data table if necessary
         if (!difference_data_table) {
             difference_data_table = $('#difference_table').DataTable({
-                dom: '<Bl<"row">frptip>',
                 fixedHeader: {headerOffset: 50},
                 order: [[1, 'asc']],
                 columnDefs: [

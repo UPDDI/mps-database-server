@@ -1,7 +1,6 @@
 $(document).ready(function() {
     $('#plates').DataTable({
         "iDisplayLength": 10,
-        dom: '<Bl<"row">frptip>',
         fixedHeader: {headerOffset: 50},
         responsive: false,
         // Initially sort on start date (descending), not ID

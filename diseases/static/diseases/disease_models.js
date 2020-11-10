@@ -17,7 +17,6 @@ $(document).ready(function() {
 
     $('#models').DataTable({
         "iDisplayLength": 100,
-        "sDom": '<Bl<"row">frptip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
         "order": [[3, "asc"], [2, "asc"]],

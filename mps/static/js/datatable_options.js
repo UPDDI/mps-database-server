@@ -59,6 +59,8 @@ $(document).ready(function () {
 
     // Defines the options for the print, copy, and save as buttons
     $.extend(true, $.fn.dataTable.defaults, {
+        // Default DOM
+        dom: '<Bl<"row">frpitip>',
         buttons: [
             'copy', 'csv', 'print', 'colvis'
         ],

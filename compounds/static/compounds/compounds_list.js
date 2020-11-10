@@ -12,7 +12,6 @@ $(document).ready(function() {
     }
 
     window.TABLE = $('#compounds').DataTable({
-        dom: '<Bl<"row">frptip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
         "order": [[ 2, "asc" ]],

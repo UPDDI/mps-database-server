@@ -406,7 +406,6 @@ $(document).ready(function () {
             },
             columns: group_table_columns,
             "order": [1, 'asc'],
-            dom: '<Bl<"row">frptip>',
             paging: false,
             fixedHeader: {headerOffset: 50},
             deferRender: true,

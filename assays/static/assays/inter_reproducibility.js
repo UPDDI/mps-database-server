@@ -456,7 +456,6 @@ $(document).ready(function() {
             //     }
             // },
             "responsive": true,
-            dom: '<Bl<"row">frptip>',
             fixedHeader: {headerOffset: 50},
             deferRender: true,
             destroy: true,
