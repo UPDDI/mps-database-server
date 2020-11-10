@@ -62,7 +62,6 @@ $(document).ready(function () {
 
     // Call datatables
     var about_studies_for_release_table = $('#about_studies_for_release_table').DataTable({
-        dom: '<Bl<"row">frptip>',
         "iDisplayLength": 10,
         responsive: true,
         order: [3, 'asc'],
@@ -70,7 +69,6 @@ $(document).ready(function () {
 
     // Prefix of "about" more or less superfluous
     $('#about_recently_released_studies_table').DataTable({
-        dom: '<Bl<"row">frptip>',
         displayLength: 10,
         responsive: true,
         order: [3, 'desc'],
@@ -84,13 +82,11 @@ $(document).ready(function () {
     });
 
 /*    var about_models_and_centers_table = $('#about_models_and_centers_table').DataTable({
-        dom: '<Bl<"row">frptip>',
         "iDisplayLength": 10,
         responsive: true
     });*/
 
     var about_models_and_centers_distinct_table = $('#about_models_and_centers_distinct_table').DataTable({
-        dom: '<Bl<"row">frptip>',
         "iDisplayLength": 10,
         responsive: true,
         // initComplete: function() {

@@ -393,7 +393,6 @@ $(document).ready(function () {
 
     // Make the initial data table
     window.TABLE = $('#compounds').DataTable({
-        dom: '<Bl<"row">frptip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
         "order": [[ 1, "asc" ]],

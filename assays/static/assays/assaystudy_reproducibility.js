@@ -431,7 +431,6 @@ $(document).ready(function () {
             ],
             "order": [[11, 'desc'], [ 10, 'desc' ]],
             "responsive": true,
-            dom: '<Bl<"row">frptip>',
             fixedHeader: {headerOffset: 50},
             deferRender: true,
             initComplete: function () {

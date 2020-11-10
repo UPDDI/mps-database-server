@@ -1,7 +1,6 @@
 $(document).ready(function() {
     $('#centers').DataTable({
         "iDisplayLength": 100,
-        "sDom": '<Bl<"row">frptip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
         "order": [[ 1, "asc" ]],

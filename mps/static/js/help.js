@@ -358,7 +358,6 @@ $(document).ready(function () {
 
     // Call datatables for glossary
     var glossary_table = $('#glossary_table').DataTable({
-        dom: '<Bl<"row">frptip>',
         "iDisplayLength": 10,
         responsive: true
     });
