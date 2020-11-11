@@ -1,10 +1,10 @@
 $(document).ready(function () {
 
     var if_all_are_open_true = false;
-    expand_or_close_all('#close_all', 'c');
-    var blurred = false;
-    window.onblur = function() { blurred = true; };
-    window.onfocus = function() { blurred && (location.reload()); };
+    var glossary_spans_on = true;
+
+    //after done editing, do this
+    //strip_the_glossary_spans()
 
     var initial_hash = window.location.hash;
     //navigate_to_anchor(initial_hash) is at the bottom so all loading happens first
@@ -151,15 +151,10 @@ $(document).ready(function () {
     });
 
     function gooo() {
-        //remove the class on the glossary extracts so the search will work better
-        $span = $('#realTimeContents .gse0');
-        $span.each(function() {
-            $(this).replaceWith($(this).html());
-        });
-        $span = $('#realTimeContents .gse1');
-        $span.each(function() {
-            $(this).replaceWith($(this).html());
-        });
+        if (glossary_spans_on) {
+            strip_the_glossary_spans();
+        }
+
         change_search_ables_to_search(false);
 
         var caseSensitive = false;
@@ -413,7 +408,24 @@ $(document).ready(function () {
         }
     }
 
+    $(window).on('hashchange', function(e) {
+        initial_hash = window.location.hash;
+        navigate_to_anchor(initial_hash);
+    })
+
     // END section to find anchor location
+
+    function strip_the_glossary_spans() {
+        //remove the class on the glossary extracts so the search will work better
+        $span = $('#realTimeContents .gse0');
+        $span.each(function() {
+            $(this).replaceWith($(this).html());
+        });
+        $span = $('#realTimeContents .gse1');
+        $span.each(function() {
+            $(this).replaceWith($(this).html());
+        });
+    }
 
 });
 

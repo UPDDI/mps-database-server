@@ -41,7 +41,7 @@ $(document).ready(function () {
         'onclick',
         "window.open('/help/" +
         anchor +
-        "','help','toolbars=0,width=1000,height=760,left=200,top=200,scrollbars=1,resizable=1')"
+        "','help','toolbars=0,width=1300,height=850,left=200,top=200,scrollbars=1,resizable=1')"
     );
 
     // Navbar select
@@ -119,7 +119,7 @@ $(document).ready(function () {
             $(this).attr('data-href'),
             $(this).attr('data-window-name'),
             // Defaults for now
-            'toolbars=0,width=1000,height=760,left=200,top=200,scrollbars=1,resizable=1'
+            'toolbars=0,width=1300,height=850,left=200,top=200,scrollbars=1,resizable=1'
         )
     });
 });
