@@ -15193,5 +15193,4 @@ class AssayStudyOmicsHeatmapJSON(StudyViewerMixin, TemplateView):
           "enrichrgram": False
         }
 
-        print("TEST")
         return JsonResponse(data)

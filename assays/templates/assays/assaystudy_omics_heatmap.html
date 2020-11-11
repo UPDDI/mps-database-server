@@ -7,21 +7,19 @@
 {% endblock %}
 
 {% block load_js %}
-    <script src="{% static "assays/grouping_filtering.js" %}"></script>
+    {% comment %} <script src="{% static "assays/grouping_filtering.js" %}"></script> {% endcomment %}
 
     <!-- Required JS Libraries -->
     <script src="{% static "js/clustergrammer/lib/js/d3.js" %}"></script>
-    {# <script src="{% static "js/clustergrammer/lib/js/jquery-1.11.2.min.js" %}"></script> #}
     <script src="{% static "js/clustergrammer/lib/js/underscore-min.js" %}"></script>
-    <script src="{% static "js/clustergrammer/lib/js/bootstrap.min.js" %}"></script>
 
     <!-- Clustergrammer JS -->
-    <script src="{% static "js/clustergrammer/clustergrammer.js" %}"></script>
+    <script src="{% static "js/clustergrammer/clustergrammer.min.js" %}"></script>
 
-    {# <!-- optional modules -->
+    <!-- optional modules -->
     <script src="{% static "js/clustergrammer/js/Enrichrgram.js" %}"></script>
     <script src="{% static "js/clustergrammer/js/hzome_functions.js" %}"></script>
-    <script src="{% static "js/clustergrammer/js/send_to_Enrichr.js" %}"></script> #}
+    <script src="{% static "js/clustergrammer/js/send_to_Enrichr.js" %}"></script>
 
     <!-- make clustergram -->
     <script src="{% static "js/clustergrammer/js/load_clustergram.js" %}"></script>
@@ -35,15 +33,15 @@
     <li class="active">Gene Expression Analysis</li>
 {% endblock %}
 
-{% block sidebar %}
+{% comment %} {% block sidebar %}
     {% include 'assays/grouping_filtering.html' with omics_heatmap="true"%}
-{% endblock %}
+{% endblock %} {% endcomment %}
 
 {% block content %}
     <div class="well">
         <div class="row text-center">
             <h1>
-                Gene Expression Analysis for:<br>
+                Normalized Counts Analysis for:<br>
                 <em>{{ object }}</em>
             </h1>
         </div>
@@ -53,26 +51,8 @@
         </div>
     </div>
 
-    <table id="omics_table" class="table table-bordered" hidden>
-        <thead>
-            <tr>
-                <td>
-                    <label>Show/Hide</label>
-                </td>
-                <td>
-                    <label>Treatment Group</label>
-                </td>
-                <td>
-                    <label>Data Description</label>
-                </td>
-            </tr>
-        </thead>
-        <tbody id="omics_table_body">
-        </tbody>
-    </table>
-
     <!-- Create a div where the graph will take place -->
-    <div id='container-id-1'>
+    <div id='container-id-1' class='clustergrammer_container' style="max-width: 100%">
         <h1 class='wait_message'>Please wait ...</h1>
     </div>
 
