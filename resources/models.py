@@ -65,6 +65,7 @@ help_category_choices = [
     ('organization-study', 'Study Organization'),
     ('menu', 'Tab/Icon Menu'),
     ('page', 'Page of MPS-GUI'),
+    ('value', 'Assay Value Metadata'),
     ('term', 'Term')
 ]
 # convert the list (that is in the models.py) of tuples to a dictionary for faster access

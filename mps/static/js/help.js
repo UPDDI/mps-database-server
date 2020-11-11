@@ -1,95 +1,14 @@
 $(document).ready(function () {
 
-    //get the right hash - may need to add some more to thie anchor_xref
-
-    var anchor_xref = {
-        // "": "#global_database_tools_section",
-
-        "#assays-studycomponents": "#help_study_component",
-        "#assays-assaystudy-summary": "#help_assay_data_viz",
-        "#assays-assaystudyset-data-plots": "#help_assay_data_viz",
-
-        // "": "#help_omic_data_viz",
-
-        "#assays-assaystudy-images": "#help_image_and_video",
-        "#assays-power-analysis-study": "#help_power_analysis",
-        "#assays-interstudy-reproducibility": "#help_reproducibility_analysis",
-        "#assays-assaystudy-reproducibility": "#help_reproducibility_analysis",
-        "#assays-assaystudyset-reproducibility": "#help_reproducibility_analysis",
-        "#assays-assaystudyset-add": "#help_study_set",
-        "#assays-assaystudyset-list": "#help_study_set",
-
-        // "": "#help_collaborator_group",
-        // "": "#help_access_group",
-
-        "#assays-pbpk-filter": "#help_pbpk_analysis",
-
-        // "": "#help_disease_portal",
-
-        "compounds-compound-report": "#help_compound_report",
-        "#assays-assayreference-list": "#help_reference",
-
-        // "": "#help_chemical_data",
-        // "": "#help_bioactivities",
-
-        "#drugtrial_list": "#help_drug_trials",
-        "#adverse_events_list": "#help_adverse_events",
-        "#compare_adverse_events": "#help_compare_adverse_events",
-
-        // "": "#help_heatmap_bioactivities",
-        // "": "#help_cluster_chemicals",
-
-        "#assays-assaystudy-update-details": "#help_study_detail",
-        "#assays-assaystudy-update-groups": "#help_study_treatment_group",
-        "#assays-assaystudy-update-chips": "#help_chip_and_plate",
-        "#assays-assaystudy-update-plates": "#help_chip_and_plate",
-        "#assays-assaystudy-update-assays": "#help_target_and_method",
-        "#assays-assaystudy-data-index": "#help_data_upload",
-        "#assays-assaystudy-sign-off": "#help_study_signoff",
-
-        // {# if all null, grabs last one #}
-        // "": "#help_overview_background",
-    };
+    var if_all_are_open_true = false;
+    expand_or_close_all('#close_all', 'c');
+    var blurred = false;
+    window.onblur = function() { blurred = true; };
+    window.onfocus = function() { blurred && (location.reload()); };
 
     var initial_hash = window.location.hash;
-    var initial_hash_help = '#help_overview_background';
-    if (!initial_hash) {
-        initial_hash_help = '#help_overview_background';
-    }
-    else if (initial_hash == '#None') {
-        initial_hash_help = '#help_overview_background';
-    }
-    else if (
-            initial_hash.indexOf('microdevices-organmodel') >= 0
-            || initial_hash.indexOf('microdevices-microdevice') >= 0
-            || initial_hash.indexOf('microdevices-organmodelprotocol') >= 0
-            || initial_hash.indexOf('microdevices-manufacturer') >= 0
+    //navigate_to_anchor(initial_hash) is at the bottom so all loading happens first
 
-            || initial_hash.indexOf('assays-assaytarget') >= 0
-            || initial_hash.indexOf('assays-assaymethod') >= 0
-            || initial_hash.indexOf('assays-assaymeasurementtype') >= 0
-            || initial_hash.indexOf('assays-physicalunits') >= 0
-            || initial_hash.indexOf('assays-assaysamplelocation') >= 0
-            || initial_hash.indexOf('assays-assaysetting') >= 0
-            || initial_hash.indexOf('assays-assaysamplelocation') >= 0
-            || initial_hash.indexOf('assays-assaysamplelocation') >= 0
-
-            || initial_hash.indexOf('cellsamples-') >= 0
-            || initial_hash.indexOf('compounds-compound') >= 0
-        )
-    {
-        initial_hash_help = "#help_study_component";
-    }
-    else
-    {
-        initial_hash_help = anchor_xref[initial_hash];
-        if (!initial_hash_help) {
-            initial_hash_help = '#help_overview_background';
-        }
-    }
-    animate_scroll_hash(initial_hash_help);
-
-    var if_all_are_open_true = false;
     // need a listener click for after the search....
     //https://api.jquery.com/click/
     $(document).on('click', '#expand_all', function() {
@@ -147,7 +66,6 @@ $(document).ready(function () {
     }
 
     // START SEARCH SECTION
-
     var selector = "#realTimeContents";
     var searchTerm = null;
 
@@ -393,19 +311,110 @@ $(document).ready(function () {
     });
     // END GLOSSARY SECTION
 
+    // START section to find anchor location
+    navigate_to_anchor(initial_hash);
+
+    function navigate_to_anchor(initial_hash) {
+        var anchor_xref = {
+            // "": "#global_database_tools_section",
+
+            "#assays-studycomponents": "#help_overview_components",
+            "#assays-assaystudy-summary": "#help_assay_data_viz",
+            "#assays-assaystudyset-data-plots": "#help_assay_data_viz",
+
+            // "": "#help_omic_data_viz",
+
+            "#assays-assaystudy-images": "#help_image_and_video",
+            "#assays-power-analysis-study": "#help_power_analysis",
+            "#assays-interstudy-reproducibility": "#help_reproducibility_analysis",
+            "#assays-assaystudy-reproducibility": "#help_reproducibility_analysis",
+            "#assays-assaystudyset-reproducibility": "#help_reproducibility_analysis",
+            "#assays-graphing-reproducibility": "#help_reproducibility_analysis",
+            "#assays-assaystudyset-add": "#help_study_set",
+            "#assays-assaystudyset-list": "#help_study_set",
+
+            // "": "#help_collaborator_group",
+            // "": "#help_access_group",
+
+            "#assays-pbpk-filter": "#help_pbpk_analysis",
+
+            // "": "#help_disease_portal",
+
+            "compounds-compound-report": "#help_compound_report",
+            "#assays-assayreference-list": "#help_reference",
+
+            // "": "#help_chemical_data",
+            // "": "#help_bioactivities",
+
+            "#drugtrial_list": "#help_drug_trials",
+            "#adverse_events_list": "#help_adverse_events",
+            "#compare_adverse_events": "#help_compare_adverse_events",
+
+            // "": "#help_heatmap_bioactivities",
+            // "": "#help_cluster_chemicals",
+
+            "#assays-assaystudy-update-details": "#help_study_detail",
+            "#assays-assaystudy-update-groups": "#help_study_treatment_group",
+            "#assays-assaystudy-update-chips": "#help_chip_and_plate",
+            "#assays-assaystudy-update-plates": "#help_chip_and_plate",
+            "#assays-assaystudy-update-assays": "#help_target_and_method",
+            "#assays-assaystudy-data-index": "#help_data_upload",
+            "#assays-assaystudy-sign-off": "#help_study_signoff",
+            "#assays-assaystudy-list": "#help_overview_organization",
+            "#assays-assaystudy-index": "#help_overview_organization",
+        };
+
+        var initial_hash_help = '#help_overview_background';
+        if (!initial_hash) {
+            initial_hash_help = '#help_overview_background';
+        } else if (initial_hash == '#None') {
+            initial_hash_help = '#help_overview_background';
+        } else if (
+            initial_hash.indexOf('microdevices-organmodel') >= 0
+            || initial_hash.indexOf('microdevices-microdevice') >= 0
+            || initial_hash.indexOf('microdevices-organmodelprotocol') >= 0
+            || initial_hash.indexOf('microdevices-manufacturer') >= 0
+
+            || initial_hash.indexOf('assays-assaytarget') >= 0
+            || initial_hash.indexOf('assays-assaymethod') >= 0
+            || initial_hash.indexOf('assays-assaymeasurementtype') >= 0
+            || initial_hash.indexOf('assays-physicalunits') >= 0
+            || initial_hash.indexOf('assays-assaysamplelocation') >= 0
+            || initial_hash.indexOf('assays-assaysetting') >= 0
+            || initial_hash.indexOf('assays-assaysamplelocation') >= 0
+            || initial_hash.indexOf('assays-assaysamplelocation') >= 0
+
+            || initial_hash.indexOf('cellsamples-') >= 0
+            || initial_hash.indexOf('compounds-compound') >= 0
+        ) {
+            initial_hash_help = "#help_overview_components";
+        } else {
+            initial_hash_help = anchor_xref[initial_hash];
+            if (!initial_hash_help) {
+                initial_hash_help = '#help_overview_background';
+            }
+        }
+        animate_scroll_hash(initial_hash_help);
+        console.log("I am done moving. I should not move again")
+    }
     // after the page is loaded, change location on page
     function animate_scroll_hash(anchor) {
+        var offset_anchor = 110;
         // if the anchor is NOT on the page, do not cause and error in the console
         // this error causes the glossary NOT to display!!!
-        console.log("h ",anchor)
+        console.log("animate anchor ",anchor)
+        console.log("offset_anchor ",offset_anchor)
         if ($(anchor).length)
         {
             $('html, body').animate({
-                scrollTop: $(anchor).offset().top - offset
+                scrollTop: $(anchor).offset().top - offset_anchor
             }, 500);
             $(anchor).find('button').next().first().css("display", "block");
         }
     }
+
+    // END section to find anchor location
+
 });
 
 
