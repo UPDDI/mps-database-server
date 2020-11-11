@@ -46,7 +46,7 @@ $(document).ready(function() {
         fixedHeader: {headerOffset: 50},
         responsive: false,
         // Initially sort on start date (descending), not ID
-        "order": [[1, "asc"], [2, "desc"]],
+        "order": [[1, "asc"]],
         "aoColumnDefs": [
             {
                 "bSortable": false,
@@ -58,11 +58,11 @@ $(document).ready(function() {
             },
             {
                 type: 'natural',
-                targets: [1],
+                targets: [1, 2],
             },
             {
                 visible: false,
-                targets: [7]
+                targets: [3, 8]
             }
         ]
     });

@@ -1961,7 +1961,11 @@ class AssayStudy(FlaggableModel):
             # Mode defines which get populated
             # May need modify for a 'both' option
             'chips': [],
-            'plates': {}
+            'plates': {},
+            # For matching groups to items
+            # This really isn't the place for this:
+            # We ought not put information here when it is better suited elsewhere
+            'group_name_to_items': {},
         }
 
         # If we so desired, we could order these
@@ -2132,6 +2136,19 @@ class AssayStudy(FlaggableModel):
             data.update({
                 'plates': current_plate_data
             })
+
+        # STUPID
+        # Repetitive
+        for item in AssayMatrixItem.objects.filter(study_id=self.id).prefetch_related('group'):
+            data.get('group_name_to_items').setdefault(
+                item.group.name, []
+            ).append(
+                # PREVENTS MAGIC STRINGS FOR URL
+                '<a href="{}">{}</a>'.format(
+                    item.get_absolute_url(),
+                    item.name
+                )
+            )
 
         return json.dumps(data)
 

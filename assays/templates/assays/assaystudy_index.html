@@ -240,8 +240,6 @@
         {% endif %}
         {% endcomment %}
 
-        {# Do we want to list groups? #}
-        {# Or should we list something else? #}
         {# At the very least, link to the respective sections? #}
         {% if chip_groups %}
             <div class="well">
@@ -344,6 +342,9 @@
                 <tr>
                     <th>View/Edit</th>
                     <th>Name</th>
+                    {# May cause controversy... #}
+                    <th>Group</th>
+                    {# Date is almost always useless in the new workflow #}
                     <th>Date</th>
                     <th>MPS Model</th>
                     <th>Compound</th>
@@ -364,6 +365,11 @@
                         </a>
                     </td>
                     <td>{{ item.name }}</td>
+                    <td>
+                        <a href="{% url 'assays-assaygroup-detail' item.group.id %}">
+                            {{ item.group }}
+                        </a>
+                    </td>
                     <td>{{ item.setup_date }}</td>
                     <td>{{ item.organ_model }}</td>
                     {# Uh... a little excessive... #}
