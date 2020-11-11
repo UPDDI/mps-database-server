@@ -646,6 +646,16 @@ $(document).ready(function () {
             // CONTRIVED FOR NOW: REPLACE WITH CACHED SELECTOR
             // $('#difference_table').find('tbody').append(current_row);
 
+            // Get the items, I guess
+            let items_for_display = [];
+            $.each(full_series_data.group_name_to_items[relevant_group_data[index]['name']], function(item_index, item_link) {
+                items_for_display.push(
+                    item_link
+                )
+            });
+
+            current_row_array.push(items_for_display.join(', '));
+
             difference_data_table.row.add(current_row_array).draw(false);
 
             // ASSUMES UNIQUE NAMES
@@ -657,7 +667,11 @@ $(document).ready(function () {
         window.GROUPS.hidden_columns = {};
 
         // SHOW ALL COLUMNS INITIALLY
+        // (Well, except items?)
         difference_data_table.columns([0, 2, 3, 4, 5, 6]).visible(true);
+
+        // Hide items?
+        difference_data_table.columns([7]).visible(false);
 
         // Determine what to hide
         // TODO: Subject to revision
