@@ -69,8 +69,9 @@ help_category_choices = [
 class Definition(LockableModel):
     """A Definition is a definition for the glossary found in Help"""
     class Meta(object):
-        verbose_name = 'Help - Glossary'
-        verbose_name_plural = 'Help - Glossary'
+        verbose_name = 'Glossary Entry'
+        verbose_name_plural = 'Glossary Entries'
+
     term = models.CharField(max_length=60, unique=True)
     definition = models.CharField(max_length=2500, default='')
     reference = models.URLField(default='', blank=True)
