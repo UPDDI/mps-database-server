@@ -1,0 +1,11 @@
+<tr>
+    <td>
+        {# WE OUGHT NOT REPEAT THIS! #}
+        <a href="javascript:;" onclick="window.open('/help/#glossary','help','toolbars=0,width=1300,height=850,left=200,top=200,scrollbars=1,resizable=1')">
+            {{ object }}
+        </a>
+    </td>
+    <td>
+        {{ object.definition }}
+    </td>
+</tr>
