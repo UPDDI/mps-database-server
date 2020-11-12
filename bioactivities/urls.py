@@ -10,7 +10,9 @@ import bioactivities.views
 urlpatterns = [
     url(
         r'^bioactivities/$',
-        bioactivities.views.bioactivities_list
+        # bioactivities.views.bioactivities_list
+        bioactivities.views.BioactivitiesList.as_view(),
+        name='bioactivities-list',
     ),
     # Old API
     # url(r'^bioactivities/(?P<pk>[0-9]+)/$',
@@ -37,7 +39,9 @@ urlpatterns = [
     ),
     url(
         r'^bioactivities/heatmap/$',
-        bioactivities.views.view_heatmap
+        # bioactivities.views.view_heatmap
+        bioactivities.views.ViewHeatmap.as_view(),
+        name='bioactivities-heatmap',
     ),
     url(
         r'^bioactivities/gen_cluster/$',
@@ -45,7 +49,9 @@ urlpatterns = [
     ),
     url(
         r'^bioactivities/cluster/$',
-        bioactivities.views.view_cluster
+        # bioactivities.views.view_cluster,
+        bioactivities.views.ViewCluster.as_view(),
+        name='bioactivities-cluster',
     ),
     url(
         r'^bioactivities/gen_table/$',
@@ -53,10 +59,14 @@ urlpatterns = [
     ),
     url(
         r'^bioactivities/table/$',
-        bioactivities.views.view_table
+        # bioactivities.views.view_table
+        bioactivities.views.ViewTable.as_view(),
+        name='bioactivities-table',
     ),
     url(
         r'^bioactivities/model/$',
-        bioactivities.views.view_model
+        # bioactivities.views.view_model
+        bioactivities.views.ViewModel.as_view(),
+        name='bioactivities-model',
     )
 ]

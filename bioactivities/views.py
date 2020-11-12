@@ -26,6 +26,7 @@ from bioactivities.parsers import (
 # from bioactivities.serializers import BioactivitiesSerializer
 
 from mps.views import SearchForm, search
+from mps.mixins import TemplateHandlerView, FormHandlerView
 
 import logging
 logger = logging.getLogger(__name__)
@@ -39,92 +40,181 @@ class JSONResponse(HttpResponse):
         super(JSONResponse, self).__init__(content, **kwargs)
 
 
-def bioactivities_list(request):
-    """Retrieve a list of Bioactivities for Quick Search"""
-    if request.method == 'GET':
-        compound = request.GET.get('compound', '')
-        target = request.GET.get('target', '')
-        name = request.GET.get('name', '')
-        pubchem = request.GET.get('pubchem', '')
-        exclude_targetless = request.GET.get('exclude_targetless', '')
-        exclude_organismless = request.GET.get('exclude_organismless', '')
-        exclude_questionable = request.GET.get('exclude_questionable', '')
+class BioactivitiesList(TemplateHandlerView):
+    template_name = 'bioactivities/bioactivities_list.html'
 
-        # I might want to sort by multiple fields later
-        if any([compound, target, name]):
-            if pubchem:
-                data = PubChemBioactivity.objects.all().prefetch_related(
-                    'compound',
-                    'assay__target'
-                )
-            else:
-                data = Bioactivity.objects.exclude(
-                    standard_name='',
-                    standardized_units='',
-                    standardized_value__isnull=True
-                ).prefetch_related(
-                    'compound',
-                    'target',
-                    'assay'
-                )
+    title = 'Bioactivity List'
 
-            if compound:
-                data = data.filter(compound__name__icontains=compound)
+    def get_context_data(self, **kwargs):
+        context = super(BioactivitiesList, self).get_context_data(**kwargs)
+        request = self.request
 
-            if target:
+        if request.method == 'GET':
+            compound = request.GET.get('compound', '')
+            target = request.GET.get('target', '')
+            name = request.GET.get('name', '')
+            pubchem = request.GET.get('pubchem', '')
+            exclude_targetless = request.GET.get('exclude_targetless', '')
+            exclude_organismless = request.GET.get('exclude_organismless', '')
+            exclude_questionable = request.GET.get('exclude_questionable', '')
+
+            # I might want to sort by multiple fields later
+            if any([compound, target, name]):
                 if pubchem:
-                    data = data.filter(assay__target__name__icontains=target)
+                    data = PubChemBioactivity.objects.all().prefetch_related(
+                        'compound',
+                        'assay__target'
+                    )
                 else:
-                    data = data.filter(target__name__icontains=target)
+                    data = Bioactivity.objects.exclude(
+                        standard_name='',
+                        standardized_units='',
+                        standardized_value__isnull=True
+                    ).prefetch_related(
+                        'compound',
+                        'target',
+                        'assay'
+                    )
 
-            if name:
-                if pubchem:
-                    data = data.filter(activity_name__icontains=name)
-                else:
-                    data = data.filter(standard_name__icontains=name)
+                if compound:
+                    data = data.filter(compound__name__icontains=compound)
 
-            if exclude_targetless:
-                # Exclude where target is "Unchecked"
-                if pubchem:
-                    data = data.filter(
-                        assay__target__isnull=False
-                    ).exclude(assay__target__name="Unchecked").exclude(assay__target__name='')
-                else:
-                    data = data.filter(
-                        target__isnull=False
-                    ).exclude(target__name="Unchecked").exclude(target__name='')
+                if target:
+                    if pubchem:
+                        data = data.filter(assay__target__name__icontains=target)
+                    else:
+                        data = data.filter(target__name__icontains=target)
 
-            if exclude_organismless:
-                # Exclude where assay and target organism are null
-                # TODO JUST SAVE THE TARGET ORGANISM AS THE ASSAY ORGANISM?
-                data = data.exclude(assay__organism='').exclude(assay__target__organism='')
-                # Exclude where organism is "Unspecified"
-                data = data.exclude(assay__organism="Unspecified").exclude(assay__target__organism="Unspecified")
+                if name:
+                    if pubchem:
+                        data = data.filter(activity_name__icontains=name)
+                    else:
+                        data = data.filter(standard_name__icontains=name)
 
-            if exclude_questionable:
-                data = data.filter(data_validity='')
+                if exclude_targetless:
+                    # Exclude where target is "Unchecked"
+                    if pubchem:
+                        data = data.filter(
+                            assay__target__isnull=False
+                        ).exclude(assay__target__name="Unchecked").exclude(assay__target__name='')
+                    else:
+                        data = data.filter(
+                            target__isnull=False
+                        ).exclude(target__name="Unchecked").exclude(target__name='')
 
-            length = data.count()
+                if exclude_organismless:
+                    # Exclude where assay and target organism are null
+                    # TODO JUST SAVE THE TARGET ORGANISM AS THE ASSAY ORGANISM?
+                    data = data.exclude(assay__organism='').exclude(assay__target__organism='')
+                    # Exclude where organism is "Unspecified"
+                    data = data.exclude(assay__organism="Unspecified").exclude(assay__target__organism="Unspecified")
 
-            # Limit at 5000
-            bioactivities = data[:5000]
+                if exclude_questionable:
+                    data = data.filter(data_validity='')
 
-            c = {
-                'bioactivities': bioactivities,
-                'compound': compound,
-                'target': target,
-                'name': name,
-                'length': length,
-                'pubchem': pubchem
-            }
+                length = data.count()
 
-            return render(request, 'bioactivities/bioactivities_list.html', c)
+                # Limit at 5000
+                bioactivities = data[:5000]
 
-        else:
-            raise Http404
+                context.update({
+                    'bioactivities': bioactivities,
+                    'compound': compound,
+                    'target': target,
+                    'name': name,
+                    'length': length,
+                    'pubchem': pubchem
+                })
 
-    else:
-        raise Http404
+        return context
+
+
+# def bioactivities_list(request):
+#     """Retrieve a list of Bioactivities for Quick Search"""
+#     if request.method == 'GET':
+#         compound = request.GET.get('compound', '')
+#         target = request.GET.get('target', '')
+#         name = request.GET.get('name', '')
+#         pubchem = request.GET.get('pubchem', '')
+#         exclude_targetless = request.GET.get('exclude_targetless', '')
+#         exclude_organismless = request.GET.get('exclude_organismless', '')
+#         exclude_questionable = request.GET.get('exclude_questionable', '')
+
+#         # I might want to sort by multiple fields later
+#         if any([compound, target, name]):
+#             if pubchem:
+#                 data = PubChemBioactivity.objects.all().prefetch_related(
+#                     'compound',
+#                     'assay__target'
+#                 )
+#             else:
+#                 data = Bioactivity.objects.exclude(
+#                     standard_name='',
+#                     standardized_units='',
+#                     standardized_value__isnull=True
+#                 ).prefetch_related(
+#                     'compound',
+#                     'target',
+#                     'assay'
+#                 )
+
+#             if compound:
+#                 data = data.filter(compound__name__icontains=compound)
+
+#             if target:
+#                 if pubchem:
+#                     data = data.filter(assay__target__name__icontains=target)
+#                 else:
+#                     data = data.filter(target__name__icontains=target)
+
+#             if name:
+#                 if pubchem:
+#                     data = data.filter(activity_name__icontains=name)
+#                 else:
+#                     data = data.filter(standard_name__icontains=name)
+
+#             if exclude_targetless:
+#                 # Exclude where target is "Unchecked"
+#                 if pubchem:
+#                     data = data.filter(
+#                         assay__target__isnull=False
+#                     ).exclude(assay__target__name="Unchecked").exclude(assay__target__name='')
+#                 else:
+#                     data = data.filter(
+#                         target__isnull=False
+#                     ).exclude(target__name="Unchecked").exclude(target__name='')
+
+#             if exclude_organismless:
+#                 # Exclude where assay and target organism are null
+#                 # TODO JUST SAVE THE TARGET ORGANISM AS THE ASSAY ORGANISM?
+#                 data = data.exclude(assay__organism='').exclude(assay__target__organism='')
+#                 # Exclude where organism is "Unspecified"
+#                 data = data.exclude(assay__organism="Unspecified").exclude(assay__target__organism="Unspecified")
+
+#             if exclude_questionable:
+#                 data = data.filter(data_validity='')
+
+#             length = data.count()
+
+#             # Limit at 5000
+#             bioactivities = data[:5000]
+
+#             c = {
+#                 'bioactivities': bioactivities,
+#                 'compound': compound,
+#                 'target': target,
+#                 'name': name,
+#                 'length': length,
+#                 'pubchem': pubchem
+#             }
+
+#             return render(request, 'bioactivities/bioactivities_list.html', c)
+
+#         else:
+#             raise Http404
+
+#     else:
+#         raise Http404
 
 # Old API
 # @csrf_exempt
@@ -302,33 +392,72 @@ def gen_table(request):
         return HttpResponse()
 
 
-def view_cluster(request):
-    """View the page for a cluster of compounds (can cluster on Bioactivities)"""
-    return render(request, 'bioactivities/cluster.html')
+class ViewCluster(TemplateHandlerView):
+    template_name = 'bioactivities/cluster.html'
+
+    title = 'Bioactivity Cluster'
 
 
-def view_heatmap(request):
-    """View the page for a heatmap of Bioactivities"""
-    return render(request, 'bioactivities/heatmap.html')
+# def view_cluster(request):
+#     """View the page for a cluster of compounds (can cluster on Bioactivities)"""
+#     return render(request, 'bioactivities/cluster.html')
 
 
-def view_table(request):
-    """View the page for a table of Bioactivities"""
-    if request.method == 'POST':
-        form = SearchForm(request.POST)
+class ViewHeatmap(TemplateHandlerView):
+    template_name = 'bioactivities/heatmap.html'
+
+    title = 'Bioactivity Heatmap'
+
+
+# def view_heatmap(request):
+#     """View the page for a heatmap of Bioactivities"""
+#     return render(request, 'bioactivities/heatmap.html')
+
+
+class ViewTable(FormHandlerView):
+    template_name = 'bioactivities/table.html'
+    form_class = SearchForm
+
+    title = 'Bioactivity Table'
+
+    def get_form(self, form_class=None):
+        form_class = self.get_form_class()
+
+        # If POST
+        if self.request.method == 'POST':
+            return form_class(self.request.POST)
+        # If GET
+        else:
+            return form_class(initial={'app': 'Bioactivities'})
+
+    def form_valid(self, form):
         if form.is_valid():
-            return search(request)
-
-    else:
-        form = SearchForm(initial={'app': 'Bioactivities'})
-
-    c = {
-        'form': form,
-    }
-
-    return render(request, 'bioactivities/table.html', c)
+            return search(self.request)
 
 
-def view_model(request):
-    """WIP: View preview page for predictive modelling"""
-    return render(request, 'bioactivities/model.html')
+# def view_table(request):
+#     """View the page for a table of Bioactivities"""
+#     if request.method == 'POST':
+#         form = SearchForm(request.POST)
+#         if form.is_valid():
+#             return search(request)
+
+#     else:
+#         form = SearchForm(initial={'app': 'Bioactivities'})
+
+#     c = {
+#         'form': form,
+#     }
+
+#     return render(request, 'bioactivities/table.html', c)
+
+
+class ViewModel(TemplateHandlerView):
+    template_name = 'bioactivities/model.html'
+
+    title = 'Bioactivity Model'
+
+
+# def view_model(request):
+#     """WIP: View preview page for predictive modelling"""
+#     return render(request, 'bioactivities/model.html')
