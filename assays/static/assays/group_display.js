@@ -647,7 +647,11 @@ $(document).ready(function () {
 
             // Get the items, I guess
             let items_for_display = [];
-            $.each(full_series_data.group_name_to_items[relevant_group_data[index]['name']], function(item_index, item_link) {
+            let relevant_items = [];
+            if (full_series_data.group_name_to_items && full_series_data.group_name_to_items[relevant_group_data[index]['name']]) {
+                relevant_items = full_series_data.group_name_to_items[relevant_group_data[index]['name']];
+            }
+            $.each(relevant_items, function(item_index, item_link) {
                 items_for_display.push(
                     item_link
                 )
