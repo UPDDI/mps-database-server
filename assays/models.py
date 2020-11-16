@@ -1890,9 +1890,14 @@ class AssayStudy(FlaggableModel):
     #     )
     #     return study_types
 
-    # !!!!
-    # THIS IS ONLY FOR THE PROTOTYPE
-    # series_data = JSONField(default=dict, blank=True)
+    # Specify when to release the Study
+    release_date = models.DateField(
+        help_text='YYYY-MM-DD',
+        verbose_name='Release Date',
+        # NEEDS TO BE ABLE TO BE NULL AND BLANK
+        null=True,
+        blank=True,
+    )
 
     # TODO INEFFICIENT BUT SHOULD WORK
     def stakeholder_approval_needed(self):

@@ -1249,6 +1249,11 @@ class AssayStudySignOff(HistoryMixin, HelpAnchorMixin, UpdateView):
                 send_initial_sign_off_alert = not form.instance.signed_off_by and form.cleaned_data.get('signed_off', '')
                 # TODO DO NOT USE FUNCTIONS LIKE THIS
                 save_forms_with_tracking(self, form, update=True)
+            elif is_group_admin(self.request.user, self.object.group.name):
+                # CRUDE: FORCE SIGN OFF
+                form.cleaned_data['signed_off'] = True
+                # TODO DO NOT USE FUNCTIONS LIKE THIS
+                save_forms_with_tracking(self, form, update=True)
 
             # save_forms_with_tracking(self, form, formset=[stakeholder_formset], update=True)
 
@@ -1770,8 +1775,8 @@ class AssayStudyAccess(UpdateView):
     model = AssayStudy
     template_name = 'assays/assaystudy_access.html'
     form_class = AssayStudyAccessForm
-    # form_class = AssayStudyForm
 
+    # We manually make the dispatch to circumvent sign off
     @method_decorator(login_required)
     @method_decorator(user_passes_test(user_is_active))
     def dispatch(self, *args, **kwargs):

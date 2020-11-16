@@ -31,6 +31,7 @@ def run():
     tz = pytz.timezone('US/Eastern')
     datetime_now_local = datetime.now(tz)
 
+    # NOTE: We are also excluding studies without a release date now
     signed_off_restricted_studies = AssayStudy.objects.filter(
         restricted=True,
         # PLEASE NOTE: Locking a study will prevent this script from interacting with it
@@ -39,11 +40,14 @@ def run():
         archived=False
     ).exclude(
         signed_off_by_id=None
+    ).exclude(
+        release_date__isnull=True
     )
 
     # Just make me the auto-approver for now
     auto_approval_user = User.objects.get(pk=20)
 
+    # Stakeholders are slated to be deprecated, probably maybe
     # Now check to see if any stakeholders need to be auto-approved!
     for study in signed_off_restricted_studies:
         # NOTE: This uses the study's last update data, NOT the time it was signed off
@@ -158,18 +162,22 @@ def run():
             })
 
     for study in signed_off_restricted_studies:
+        # NOTE: These other methods are basically deprecated
         # If there are no stakeholders, just use the sign off date
         if study.id not in latest_approval:
             # Days are approximated for a year
-            greater_than_a_year_ago = study.signed_off_date < datetime_now - timedelta(days=365.2425)
-        else:
+            study_is_ready_to_be_released = study.signed_off_date < datetime_now - timedelta(days=365.2425)
+        # CRUDE CRUDE CRUDE
+        elif study.group_id in [41, 46, 148] and study.release_date > datetime_now:
             # Days are approximated for a year
-            greater_than_a_year_ago = latest_approval.get(study.id) < datetime_now - timedelta(days=365.2425)
+            study_is_ready_to_be_released = latest_approval.get(study.id) < datetime_now - timedelta(days=365.2425)
+        else:
+            study_is_ready_to_be_released = study.release_date < datetime_now
 
         stakeholders_without_approval = required_stakeholder_map.get(study.id, False)
 
         # Publish the study if no stakeholders without approval AND it was sent to Level to greater than a year ago
-        if not stakeholders_without_approval and greater_than_a_year_ago:
+        if not stakeholders_without_approval and study_is_ready_to_be_released:
             # print study, 'has been published'
             study.restricted = False
             study.save()

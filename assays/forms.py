@@ -3322,7 +3322,11 @@ class AssayStudyDeleteForm(forms.ModelForm):
 class AssayStudySignOffForm(SignOffMixin, BootstrapForm):
     class Meta(object):
         model = AssayStudy
-        fields = ['signed_off', 'signed_off_notes']
+        fields = [
+            'signed_off',
+            'signed_off_notes',
+            'release_date',
+        ]
         widgets = {
             'signed_off_notes': forms.Textarea(attrs={'cols': 50, 'rows': 2}),
         }
