@@ -7,6 +7,7 @@
 
 {% for term in component_compound %}
     {% if term.term == "Compound" %}
+    <div id="help2_compound">
         <button name="help_button" type="button" class="btn btn-success help-collapsible">{{ term.term }}</button>
         <div class="help-content-2">
             <ul class="list-group">
@@ -14,26 +15,23 @@
                     <h1 class="h1-level-1">
                         <span class="gse1">{{ term.term }}</span>
                     </h1>
-                    <span class="gse0">{{ glossary_dict.compound_def|linebreaks }}</span>
+                    <span class="gse1"> {{ term.definition|linebreaks }} </span>
                     <ul class="list-unstyled">
                         <li>To review the
                             <span class="gse1">{{ term.term }}</span>
                             list:
                             <ul class="help-filled-circle">
-                                <li>Click the link {{ term.show_url }}</li>
+                                <li>Go to the list
+                                    <span class="gse1"> ({{ term.url_term }})</span>
+                                </li>
                                 <li>Use the search bar or scroll through the list to find the
                                     <span class="gse1">{{ term.term }}</span>
                                     of interest or confirm the
                                     <span class="gse1">{{ term.term }}</span>
                                     is not present
                                 </li>
-                                <li>If in the list, click on the
-                                    <b>View</b> button to review the details or the
-                                    <b>Edit</b> button to update
-                                </li>
-                                <li>If not in the list, click on the
-                                    <b>Add Compound</b> button
-                                </li>
+                                <li>If in the list, click on the <b>View</b> button to review the details or the <b>Edit</b> button to update</li>
+                                <li>If not in the list, click on the <b>Add Compound</b> button</li>
                             </ul>
                         </li>
                         <br>
@@ -54,6 +52,7 @@
                 </li>
             </ul>
         </div>
+    </div>
     {% endif %}
 {% endfor %}
 

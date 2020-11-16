@@ -136,6 +136,18 @@ class Definition(LockableModel):
     show_url.short_description = "Ref URL"
     show_url.allow_tags = True
 
+    def url_term(self):
+        if self.reference:
+            return format_html(
+                "<a target='_blank' href='{url}'><span title='{url}'>{term}</span></a>",
+                url=self.reference, term=self.term
+            )
+        else:
+            return self.term
+
+    show_url.short_description = "Ref URL"
+    show_url.allow_tags = True
+
     def show_anchor(self):
         if self.help_reference:
             url = self.help_reference

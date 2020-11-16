@@ -152,8 +152,8 @@ class DefinitionAdmin(LockableAdmin):
         'help_category',
         # 'count_data_sources',
         'help_order',
-        # 'modified_on',
-        # 'created_on',
+        'modified_on',
+        'created_on',
     )
     list_editable = ('glossary_display', 'help_display', 'help_category', 'help_order')
     search_fields = ['term', 'definition', 'reference', 'help_category']

@@ -1,31 +1,31 @@
 $(document).ready(function () {
 
-    var if_all_are_open_true = false;
     var glossary_spans_on = true;
-
     //after done editing, do this
     //strip_the_glossary_spans()
 
     var initial_hash = window.location.hash;
     //navigate_to_anchor(initial_hash) is at the bottom so all loading happens first
 
+
+    var if_all_are_open_true = false;
     // need a listener click for after the search....
     //https://api.jquery.com/click/
     $(document).on('click', '#expand_all', function() {
-    // $("#expand_all").click(function(){
+    // $('#expand_all').click(function(){
         expand_or_close_all(selector, 'e');
         if_all_are_open_true = true;
     })
     $(document).on('click', '#close_all', function() {
-    // $("#close_all").click(function(){
+    // $('#close_all').click(function(){
         expand_or_close_all(selector, 'c');
     })
 
     function expand_or_close_all(selector, what_doing) {
         //https://stackoverflow.com/questions/24844566/click-all-buttons-on-page
         // Get all buttons with the name and store in a NodeList called 'buttons'
-        // console.log("selector "+selector)
-        // console.log("what_doing "+what_doing)
+        // console.log('selector '+selector)
+        // console.log('what_doing '+what_doing)
         var buttons = document.getElementsByName('help_button');
         // Loop through and change display of the content
         for (var i = 0; i <= buttons.length; i++) {
@@ -38,35 +38,35 @@ $(document).ready(function () {
     }
 
     $(document).on('click', '.help-collapsible', function() {
-    // $(".help-collapsible").click(function() {
+    // $('.help-collapsible').click(function() {
         change_display(this.nextElementSibling, 't');
     });
 
     $(document).on('click', '.video-collapsible', function() {
-    // $(".help-collapsible").click(function() {
+    // $('.help-collapsible').click(function() {
         change_display(this.nextElementSibling, 't');
     });
 
     function change_display(content, what_doing) {
-        // console.log("content "+content)
-        // console.log("what_doing "+what_doing)
+        // console.log('content '+content)
+        // console.log('what_doing '+what_doing)
         if (what_doing === 't') {
-            if ($(content).css("display") != "none") {
-                $(content).css("display", "none");
+            if ($(content).css('display') != 'none') {
+                $(content).css('display', 'none');
                 if_all_are_open_true = false;
             } else {
-                $(content).css("display", "block");
+                $(content).css('display', 'block');
             }
         } else if (what_doing === 'e') {
-            $(content).css("display", "block");
+            $(content).css('display', 'block');
         } else {
-            $(content).css("display", "none");
+            $(content).css('display', 'none');
             if_all_are_open_true = false;
         }
     }
 
     // START SEARCH SECTION
-    var selector = "#realTimeContents";
+    var selector = '#realTimeContents';
     var searchTerm = null;
 
     // mark.js and https://jsfiddle.net/julmot/973gdh8g/
@@ -87,7 +87,7 @@ $(document).ready(function () {
     }
 
     $(document).on('click', '#caseSensitive', function() {
-    // $("#caseSensitive").click(function() {
+    // $('#caseSensitive').click(function() {
         if (searchTerm) {
             // not null
             gooo();
@@ -96,7 +96,7 @@ $(document).ready(function () {
     });
 
     // consider on input
-    document.getElementById("search_term").onfocus = function() {
+    document.getElementById('search_term').onfocus = function() {
         myFunction()
     };
 
@@ -114,12 +114,12 @@ $(document).ready(function () {
     // next button
     var $nextBtn = $("button[data-search='next']");
     // the context where to search
-    var $content = $(".content");
+    var $content = $('.content');
     // jQuery object to save <mark> elements
     var $results;
     // the class that will be appended to the current
     // focused element
-    var currentClass = "current";
+    var currentClass = 'current';
     // top offset for the jump (the search bar)
     var offsetTop = 200;
     // the current index of the focused element
@@ -145,7 +145,7 @@ $(document).ready(function () {
     * Searches for the entered keyword in the
     * specified context on input
     */
-    // $input.on("input", function() {
+    // $input.on('input", function() {
     $(document).on('click', '#search_gooo', function() {
         gooo();
     });
@@ -164,16 +164,16 @@ $(document).ready(function () {
 
         searchTerm = $("input[name='keyword']").val();
 
-        // console.log("searchTerm ", searchTerm)
+        // console.log('searchTerm ', searchTerm)
 
         if (searchTerm.length === 0) {
             change_search_ables_to_search(true);
             removeOldHighlights();
-            alert("Search box is empty");
+            alert('Search box is empty');
         }
         else {
             // open all the collapsibles if they are not already open
-            // console.log("if_all_are_open_true ", if_all_are_open_true)
+            // console.log('if_all_are_open_true ', if_all_are_open_true)
             if (!if_all_are_open_true) {
                 expand_or_close_all(selector, 'e');
             }
@@ -189,15 +189,34 @@ $(document).ready(function () {
                         caseSensitive: caseSensitive,
                         acrossElements: true,
                         done: function () {
-                            $results = $content.find("mark");
+                            $results = $content.find('mark');
                             currentIndex = 0;
                             jumpTo();
                         }
                     });
                 }
             });
+
+            // $('#glossary_table_filter')[0].childNodes[0].childNodes[1];
+            //same as $('#glossary_table_filter').children().children()[0];
+            //same as $('#glossary_table_filter :input');
+
+            $('#glossary_table_filter :input').val(searchTerm);
+            $('#glossary_table_filter :input').trigger('input');
+
+            // another option, but have to to through all the inputs and is much longer....
+            // var glossary_search_box = null;
+            // $('input:input').each(function() {
+            //     if ($(this)[0].getAttribute('type') === 'search' && $(this).attr("id") != 'search_term') {
+            //         glossary_search_box = $(this);
+            //         glossary_search_box.val(searchTerm);
+            //         glossary_search_box.trigger('input');
+            //     }
+            // });
+            
             if ($results.length == 0) {
-                alert("Could not find a match");
+                // alert('Could not find a match in the main body of the help. Try searching the Glossary.');
+                animate_scroll_hash('#glossary');
                 change_search_ables_to_search(true);
             }
         }
@@ -206,22 +225,22 @@ $(document).ready(function () {
     function removeOldHighlights() {
         change_search_ables_to_search(true);
         $content.unmark();
-        $input.val("").focus();
+        $input.val('').focus();
     }
 
     /**
     * Clears the search
     */
-    $clearBtn.on("click", function() {
+    $clearBtn.on('click', function() {
         change_search_ables_to_search(true);
         $content.unmark();
-        $input.val("").focus();
+        $input.val('').focus();
     });
 
     /**
     * Next and previous search jump to
     */
-    $nextBtn.add($prevBtn).on("click", function() {
+    $nextBtn.add($prevBtn).on('click', function() {
         change_search_ables_to_search(false);
         if ($results.length) {
             currentIndex += $(this).is($prevBtn) ? -1 : 1;
@@ -246,7 +265,7 @@ $(document).ready(function () {
             $('html, body').animate({
                 scrollTop: $($(this).attr('href')).offset().top - offset
             }, 500);
-            $($(this).attr('href')).find('button').next().first().css("display", "block");
+            $($(this).attr('href')).find('button').next().first().css('display', 'block');
         }
     });
 
@@ -311,100 +330,117 @@ $(document).ready(function () {
 
     function navigate_to_anchor(initial_hash) {
         var anchor_xref = {
-            // "": "#global_database_tools_section",
+            // '': '#global_database_tools_section',
 
-            "#assays-studycomponents": "#help_overview_components",
-            "#assays-assaystudy-summary": "#help_assay_data_viz",
-            "#assays-assaystudyset-data-plots": "#help_assay_data_viz",
+            '#assays-studycomponents': '#help_overview_components',
+            '#assays-assaystudy-summary': '#help_assay_data_viz',
+            '#assays-assaystudyset-data-plots': '#help_assay_data_viz',
 
-            // "": "#help_omic_data_viz",
+            // '': '#help_omic_data_viz',
 
-            "#assays-assaystudy-images": "#help_image_and_video",
-            "#assays-power-analysis-study": "#help_power_analysis",
-            "#assays-interstudy-reproducibility": "#help_reproducibility_analysis",
-            "#assays-assaystudy-reproducibility": "#help_reproducibility_analysis",
-            "#assays-assaystudyset-reproducibility": "#help_reproducibility_analysis",
-            "#assays-graphing-reproducibility": "#help_reproducibility_analysis",
-            "#assays-assaystudyset-add": "#help_study_set",
-            "#assays-assaystudyset-list": "#help_study_set",
+            '#assays-assaystudy-images': '#help_image_and_video',
+            '#assays-power-analysis-study': '#help_power_analysis',
+            '#assays-interstudy-reproducibility': '#help_reproducibility_analysis',
+            '#assays-assaystudy-reproducibility': '#help_reproducibility_analysis',
+            '#assays-assaystudyset-reproducibility': '#help_reproducibility_analysis',
+            '#assays-graphing-reproducibility': '#help_reproducibility_analysis',
+            '#assays-assaystudyset-add': '#help_study_set',
+            '#assays-assaystudyset-list': '#help_study_set',
 
-            // "": "#help_collaborator_group",
-            // "": "#help_access_group",
+            // '': '#help_collaborator_group',
+            // '': '#help_access_group',
 
-            "#assays-pbpk-filter": "#help_pbpk_analysis",
+            '#assays-pbpk-filter': '#help_pbpk_analysis',
 
-            // "": "#help_disease_portal",
+            // '': '#help_disease_portal',
 
-            "compounds-compound-report": "#help_compound_report",
-            "#assays-assayreference-list": "#help_reference",
+            '#compounds-compound-report': '#help_compound_report',
+            '#assays-assayreference-list': '#help_reference',
 
-            // "": "#help_chemical_data",
-            // "": "#help_bioactivities",
+            '#compounds-compound-list': '#help_chemical_data',
+            'bioactivities/table/#filter': '#help_bioactivities',
+            '#drugtrial_list': '#help_drug_trials',
+            '#adverse_events_list': '#help_adverse_events',
+            '#compare_adverse_events': '#help_compare_adverse_events',
 
-            "#drugtrial_list": "#help_drug_trials",
-            "#adverse_events_list": "#help_adverse_events",
-            "#compare_adverse_events": "#help_compare_adverse_events",
+            // '': '#help_heatmap_bioactivities',
+            // '': '#help_cluster_chemicals',
 
-            // "": "#help_heatmap_bioactivities",
-            // "": "#help_cluster_chemicals",
-
-            "#assays-assaystudy-update-details": "#help_study_detail",
-            "#assays-assaystudy-update-groups": "#help_study_treatment_group",
-            "#assays-assaystudy-update-chips": "#help_chip_and_plate",
-            "#assays-assaystudy-update-plates": "#help_chip_and_plate",
-            "#assays-assaystudy-update-assays": "#help_target_and_method",
-            "#assays-assaystudy-data-index": "#help_data_upload",
-            "#assays-assaystudy-sign-off": "#help_study_signoff",
-            "#assays-assaystudy-list": "#help_overview_organization",
-            "#assays-assaystudy-index": "#help_overview_organization",
+            '#assays-assaystudy-add': '#help_study_detail',
+            '#assays-assaystudy-update-details': '#help_study_detail',
+            '#assays-assaystudy-update-groups': '#help_study_treatment_group',
+            '#assays-assaystudy-update-chips': '#help_chip_and_plate',
+            '#assays-assaystudy-update-plates': '#help_chip_and_plate',
+            '#assays-assaystudy-update-assays': '#help_target_and_method',
+            '#assays-assaystudy-data-index': '#help_data_upload',
+            '#assays-assaystudy-sign-off': '#help_study_signoff',
+            '#assays-assaystudy-list': '#help_overview_organization',
+            '#assays-assaystudy-index': '#help_overview_organization',
         };
 
-        var initial_hash_help = '#help_overview_background';
-        if (!initial_hash) {
-            initial_hash_help = '#help_overview_background';
-        } else if (initial_hash == '#None') {
-            initial_hash_help = '#help_overview_background';
-        } else if (
-            initial_hash.indexOf('microdevices-organmodel') >= 0
-            || initial_hash.indexOf('microdevices-microdevice') >= 0
-            || initial_hash.indexOf('microdevices-organmodelprotocol') >= 0
-            || initial_hash.indexOf('microdevices-manufacturer') >= 0
-
-            || initial_hash.indexOf('assays-assaytarget') >= 0
-            || initial_hash.indexOf('assays-assaymethod') >= 0
-            || initial_hash.indexOf('assays-assaymeasurementtype') >= 0
-            || initial_hash.indexOf('assays-physicalunits') >= 0
-            || initial_hash.indexOf('assays-assaysamplelocation') >= 0
-            || initial_hash.indexOf('assays-assaysetting') >= 0
-            || initial_hash.indexOf('assays-assaysamplelocation') >= 0
-            || initial_hash.indexOf('assays-assaysamplelocation') >= 0
-
-            || initial_hash.indexOf('cellsamples-') >= 0
-            || initial_hash.indexOf('compounds-compound') >= 0
-        ) {
-            initial_hash_help = "#help_overview_components";
+        var set_hash_default = '#search_term';
+        var initial_hash_help = set_hash_default;
+        if (!initial_hash || initial_hash == '#None') {
+            initial_hash_help = set_hash_default;
         } else {
             initial_hash_help = anchor_xref[initial_hash];
+            // console.log('after anchor ',initial_hash_help)
             if (!initial_hash_help) {
-                initial_hash_help = '#help_overview_background';
+                if (initial_hash.indexOf('assays-assaytarget') >= 0) {
+                    change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
+                    initial_hash_help = '#help2_target'
+                } else if (initial_hash.indexOf('assays-assaymethod') >= 0) {
+                    change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
+                    initial_hash_help = '#help2_method'
+                } else if (initial_hash.indexOf('microdevices-organmodelprotocol') >= 0) {
+                    change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
+                    initial_hash_help = '#help2_modelversion'
+                } else if (initial_hash.indexOf('microdevices-organmodel') >= 0) {
+                    change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
+                    initial_hash_help = '#help2_model'
+                } else if (initial_hash.indexOf('compounds-compound') >= 0) {
+                    change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
+                    initial_hash_help = '#help2_compound'
+                } else if (initial_hash.indexOf('cellsamples-') >= 0) {
+                    change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
+                    initial_hash_help = '#help2_cell'
+                } else if (
+                    initial_hash.indexOf('assays-assaymeasurementtype') >= 0
+                    || initial_hash.indexOf('assays-physicalunits') >= 0
+                    || initial_hash.indexOf('assays-assaysamplelocation') >= 0
+                    || initial_hash.indexOf('assays-assaysetting') >= 0
+                    || initial_hash.indexOf('assays-assaysupplier') >= 0
+                    || initial_hash.indexOf('assays-assayreference') >= 0
+                    || initial_hash.indexOf('microdevices-microdevice') >= 0
+                    || initial_hash.indexOf('microdevices-manufacturer') >= 0
+                ) {
+                    initial_hash_help = 'help_study_component';
+                } else {
+                    initial_hash_help = set_hash_default;
+                }
+            }
+
+            //if still null
+            if (!initial_hash_help) {
+                initial_hash_help = set_hash_default;
             }
         }
         animate_scroll_hash(initial_hash_help);
-        console.log("I am done moving. I should not move again")
+        // console.log('I am done moving. I should not move again')
     }
     // after the page is loaded, change location on page
     function animate_scroll_hash(anchor) {
         var offset_anchor = 110;
         // if the anchor is NOT on the page, do not cause and error in the console
         // this error causes the glossary NOT to display!!!
-        console.log("animate anchor ",anchor)
-        console.log("offset_anchor ",offset_anchor)
+        // console.log('animate anchor ',anchor)
+
         if ($(anchor).length)
         {
             $('html, body').animate({
                 scrollTop: $(anchor).offset().top - offset_anchor
             }, 500);
-            $(anchor).find('button').next().first().css("display", "block");
+            $(anchor).find('button').next().first().css('display', 'block');
         }
     }
 
@@ -442,7 +478,7 @@ $(document).ready(function () {
     //var help_offset = 200;
     // var buttons = null;
     // var searchTermRegEx = null;
-    // var caseSensitive_flag = "ig";
+    // var caseSensitive_flag = 'ig';
     // var help_buttons = null;
     // var matches = null;
     // var match_index = 0;
@@ -458,11 +494,11 @@ $(document).ready(function () {
 // https://codeburst.io/javascript-what-the-heck-is-a-callback-aba4da2deced
 
     // function findMatches_search0(callback1) {
-    //     // console.log("searchTermRegEx "+searchTermRegEx)
+    //     // console.log('searchTermRegEx '+searchTermRegEx)
     //
     //     // matches = $(selector).text().match(searchTermRegEx);
     //     $('.mark-content').mark(searchTerm, options);
-    //     matches = $(".mark").map(function() {
+    //     matches = $('.mark').map(function() {
     //         return this.innerHTML;
     //     }).get();
     //
@@ -474,18 +510,18 @@ $(document).ready(function () {
     //         matches = [];
     //     }
     //     matches_length = matches.length;
-    //     // console.log("step 1 matches "+matches)
-    //     // console.log("step 1 number matches = "+matches_length)
+    //     // console.log('step 1 matches '+matches)
+    //     // console.log('step 1 number matches = '+matches_length)
     //
     //     if (matches != null && matches_length > 0) {
     //         // unique_matches = matches.filter(function(itm, i, a) {
     //         //     return i == matches.indexOf(itm);
     //         // });
-    //         // if (searchTerm === "&") {
-    //         //     searchTerm = "&amp;";
+    //         // if (searchTerm === '&') {
+    //         //     searchTerm = '&amp;';
     //         //     searchTermRegEx = new RegExp(searchTerm, caseSensitive_flag);
     //         // }
-    //         // console.log("searchTerm ",searchTerm)
+    //         // console.log('searchTerm ',searchTerm)
     //         labelMatchSpan_search2(continueFunction_search3);
     //     }
     // }
@@ -494,10 +530,10 @@ $(document).ready(function () {
     // function continueFunction_search3() {
     //     // the previous function replaced with the search term, fix to match the original case
     //     // if ($('.match').length != matches_length) {
-    //     //     alert("there is a mismatch in the counting....")
+    //     //     alert('there is a mismatch in the counting....')
     //     // }
     //     if ($('.mark').length != matches_length) {
-    //         alert("there is a mismatch in the counting....")
+    //         alert('there is a mismatch in the counting....')
     //     }
     //     $('.match').each(function (index, currentElement) {
     //         currentElement.innerHTML = matches[index];
@@ -506,7 +542,7 @@ $(document).ready(function () {
     //     // $('.match:first').addClass('highlighted');
     //     $('.match:first').addClass('mark');
     //     match_index = 0;
-    //     // console.log("in search 3 - getting ready to highlight")
+    //     // console.log('in search 3 - getting ready to highlight')
     //     // when the search is clicked - finds the first occurrence
     //     // if ($('.highlighted:first').length) {
     //     if ($('.mark:first').length) {
@@ -524,7 +560,7 @@ $(document).ready(function () {
     // }
     //
     // $(document).on('click', '#search_next', function () {
-    // // $("#search_next").click(function() {
+    // // $('#search_next').click(function() {
     //     // $('.next_h').off('click').on('click', function () {
     //     match_index =  match_index + 1;
     //     if (match_index >= $('.match').length) {
@@ -539,7 +575,7 @@ $(document).ready(function () {
     // });
     //
     // $(document).on('click', '#search_prev', function () {
-    // // $("#search_prev").click(function() {
+    // // $('#search_prev').click(function() {
     //     // $('.previous_h').off('click').on('click', function () {
     //     match_index = match_index - 1;
     //     if (match_index < 0) {
