@@ -1803,7 +1803,11 @@ class AssayStudyAccess(UpdateView):
     # WAY TOO VERBOSE: NOT IN THE LEAST BIT DRY
     def form_valid(self, form):
         if form.is_valid():
-            if self.request.user.is_superuser:
+            user_group_names = {group.name for group in self.request.user.groups.all()}
+
+            valid_user = self.object.group.name + ADMIN_SUFFIX in user_group_names
+
+            if valid_user:
                 previous_access_groups = {group.name:group.id for group in form.instance.access_groups.all()}
 
                 save_forms_with_tracking(self, form, update=True)
