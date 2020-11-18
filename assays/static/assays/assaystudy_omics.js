@@ -83,7 +83,7 @@ $(document).ready(function () {
         e.preventDefault();
 
         get_params = {
-            "negative_log10_pvalue": $("#pvalue-filter1").css("display") !== "none",
+            "negative_log10_pvalue": $("#pvalue-filter2").css("display") !== "none",
             "absolute_log2_foldchange": $("#l2fc-filter2").css("display") !== "none",
             "over_expressed": $("#check-over").is(":checked"),
             "under_expressed": $("#check-under").is(":checked"),

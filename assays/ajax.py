@@ -7500,8 +7500,11 @@ def get_filtered_omics_data_as_csv(get_params):
         value = data_point.value
         if value is None:
             continue
-        if name not in consolidated_targets:
-            datafile = data_point.omic_data_file
+        datafile = data_point.omic_data_file
+        datafile_id = datafile.id
+        if datafile_id not in consolidated_targets:
+            consolidated_targets[datafile_id] = {}
+        if name not in consolidated_targets[datafile_id]:
             # assay = str(datafile.study_assay)
             assay_target = datafile.study_assay.target.name
             assay_method = datafile.study_assay.method.name
@@ -7513,7 +7516,7 @@ def get_filtered_omics_data_as_csv(get_params):
             time_2_dict = get_split_times(time_2)
             location_1 = datafile.location_1
             location_2 = datafile.location_2
-            consolidated_targets[name] = {
+            consolidated_targets[datafile_id][name] = {
                 # "assay": assay,
                 "target": assay_target,
                 "method": assay_method,
@@ -7528,7 +7531,7 @@ def get_filtered_omics_data_as_csv(get_params):
                 "location_1": location_1,
                 "location_2": location_2
             }
-        consolidated_targets[name][target] = value
+        consolidated_targets[datafile_id][name][target] = value
         if target not in unique_targets:
             unique_targets.append(target)
 
@@ -7563,67 +7566,68 @@ def get_filtered_omics_data_as_csv(get_params):
     }
 
     # Add filtered data
-    for name in consolidated_targets:
-        if "pvalue" not in consolidated_targets[name] or "log2FoldChange" not in consolidated_targets[name]:
-            continue
-        expression = ''
-
-        # PValue Filters
-        if get_params["negative_log10_pvalue"]:
-            if not ((-math.log10(consolidated_targets[name]["pvalue"]) >= get_params["min_negative_log10_pvalue"]) and (-math.log10(consolidated_targets[name]["pvalue"]) <= get_params["max_negative_log10_pvalue"])):
+    for omicfile in consolidated_targets:
+        for name in consolidated_targets[omicfile]:
+            if "pvalue" not in consolidated_targets[omicfile][name] or "log2FoldChange" not in consolidated_targets[omicfile][name]:
                 continue
-        else:
-            if not ((consolidated_targets[name]["pvalue"] >= get_params["min_pvalue"]) and (consolidated_targets[name]["pvalue"] <= get_params["max_pvalue"])):
-                continue
+            expression = ''
 
-        # Log2FoldChange Filters
-        if get_params["absolute_log2_foldchange"]:
-            if not ((consolidated_targets[name]["log2FoldChange"] >= -get_params["abs_log2_foldchange"]) and (consolidated_targets[name]["log2FoldChange"] <= get_params["abs_log2_foldchange"])):
-                continue
-        else:
-            if not ((consolidated_targets[name]["log2FoldChange"] >= get_params["min_log2_foldchange"]) and (consolidated_targets[name]["log2FoldChange"] <= get_params["max_log2_foldchange"])):
-                continue
-
-        # Determine Expression
-        if (consolidated_targets[name]["log2FoldChange"] >= get_params["threshold_log2_foldchange"]) and (consolidated_targets[name]["pvalue"] <= get_params["threshold_pvalue"]):
-            expression = 'over_expressed'
-        elif (consolidated_targets[name]["log2FoldChange"] <= -get_params["threshold_log2_foldchange"]) and (consolidated_targets[name]["pvalue"] <= get_params["threshold_pvalue"]):
-            expression = 'under_expressed'
-        else:
-            expression = 'neither_expressed'
-
-        # Expression Filter
-        if not get_params[expression]:
-            continue
-        else:
-            expression = expression_text[expression]
-
-        # Append any data that has made it this far
-        to_append = [
-            name,
-            name.split("_")[0],
-            expression,
-            # consolidated_targets[name]['assay'],
-            consolidated_targets[name]['target'],
-            consolidated_targets[name]['method'],
-            consolidated_targets[name]['group_1'],
-            consolidated_targets[name]['location_1'],
-            consolidated_targets[name]['time_1_days'],
-            consolidated_targets[name]['time_1_hours'],
-            consolidated_targets[name]['time_1_minutes'],
-            consolidated_targets[name]['group_2'],
-            consolidated_targets[name]['location_2'],
-            consolidated_targets[name]['time_2_days'],
-            consolidated_targets[name]['time_2_hours'],
-            consolidated_targets[name]['time_2_minutes']
-        ]
-        for target in unique_targets:
-            if target in consolidated_targets[name]:
-                to_append.append(consolidated_targets[name][target])
+            # PValue Filters
+            if get_params["negative_log10_pvalue"]:
+                if not ((-math.log10(consolidated_targets[omicfile][name]["pvalue"]) >= get_params["min_negative_log10_pvalue"]) and (-math.log10(consolidated_targets[omicfile][name]["pvalue"]) <= get_params["max_negative_log10_pvalue"])):
+                    continue
             else:
-                to_append.append('')
+                if not ((consolidated_targets[omicfile][name]["pvalue"] >= get_params["min_pvalue"]) and (consolidated_targets[omicfile][name]["pvalue"] <= get_params["max_pvalue"])):
+                    continue
 
-        data.append(to_append)
+            # Log2FoldChange Filters
+            if get_params["absolute_log2_foldchange"]:
+                if not ((consolidated_targets[omicfile][name]["log2FoldChange"] >= -get_params["abs_log2_foldchange"]) and (consolidated_targets[omicfile][name]["log2FoldChange"] <= get_params["abs_log2_foldchange"])):
+                    continue
+            else:
+                if not ((consolidated_targets[omicfile][name]["log2FoldChange"] >= get_params["min_log2_foldchange"]) and (consolidated_targets[omicfile][name]["log2FoldChange"] <= get_params["max_log2_foldchange"])):
+                    continue
+
+            # Determine Expression
+            if (consolidated_targets[omicfile][name]["log2FoldChange"] >= get_params["threshold_log2_foldchange"]) and (consolidated_targets[omicfile][name]["pvalue"] <= get_params["threshold_pvalue"]):
+                expression = 'over_expressed'
+            elif (consolidated_targets[omicfile][name]["log2FoldChange"] <= -get_params["threshold_log2_foldchange"]) and (consolidated_targets[omicfile][name]["pvalue"] <= get_params["threshold_pvalue"]):
+                expression = 'under_expressed'
+            else:
+                expression = 'neither_expressed'
+
+            # Expression Filter
+            if not get_params[expression]:
+                continue
+            else:
+                expression = expression_text[expression]
+
+            # Append any data that has made it this far
+            to_append = [
+                name,
+                name.split("_")[0],
+                expression,
+                # consolidated_targets[omicfile][name]['assay'],
+                consolidated_targets[omicfile][name]['target'],
+                consolidated_targets[omicfile][name]['method'],
+                consolidated_targets[omicfile][name]['group_1'],
+                consolidated_targets[omicfile][name]['location_1'],
+                consolidated_targets[omicfile][name]['time_1_days'],
+                consolidated_targets[omicfile][name]['time_1_hours'],
+                consolidated_targets[omicfile][name]['time_1_minutes'],
+                consolidated_targets[omicfile][name]['group_2'],
+                consolidated_targets[omicfile][name]['location_2'],
+                consolidated_targets[omicfile][name]['time_2_days'],
+                consolidated_targets[omicfile][name]['time_2_hours'],
+                consolidated_targets[omicfile][name]['time_2_minutes']
+            ]
+            for target in unique_targets:
+                if target in consolidated_targets[omicfile][name]:
+                    to_append.append(consolidated_targets[omicfile][name][target])
+                else:
+                    to_append.append('')
+
+            data.append(to_append)
 
     for index in range(len(data)):
         current_list = list(data[index])
