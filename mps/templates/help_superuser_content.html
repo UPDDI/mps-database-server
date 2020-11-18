@@ -301,7 +301,6 @@
         </div>
     </div>
 
-
     <div id="add_new_center">
         <button name="help_button" type="button" class="btn btn-primary help-collapsible">Add New Center </button>
         <div class="help-content-1">
@@ -377,6 +376,36 @@
                                 <li>The table AssayOmicAnalysisTarget field method content must match exactly method selected in the GUI as the Data Analysis Method</li>
                             </ul>
                         </li>
+                    </ul>
+                </li>
+
+            </ul>
+
+        </div>
+    </div>
+
+    <div id="help_page_and_glossary">
+        <button name="help_button" type="button" class="btn btn-primary help-collapsible">The Intersection Between the Help Page and the Glossary </button>
+        <div class="help-content-1">
+
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <h1 class="h1-level-1"> The Intersection Between the Help Page and the Glossary </h1>
+                    <ul class="list-unstyled">
+                        <li>Things to know:</li>
+                            <ul class="help-filled-circle">
+                                <li>As of 20201201, terms should not be changed or removed from the glossary (or the Help page might break), instead, add a new term and uncheck the box to display the old term in the glossary</li>
+                                <li>In the case where a new term was added to replace an old term, the glossary will be correct, but the code for the Help page may need to be updated to get the terms to change in the Help page content (after which, it will be okay to remove the old terms) </li>
+                                <li>The terms from the glossary are added to the Help page like this: < span class="gse0">{{ glossary_dict.pbpkanalysis_term }}< /span> when individual terms are wanted</li>
+                                <li>The definition of terms from the glossary are added to the Help page like this: < span class="gse0">{ glossary_dict.mpsdatabasempsdb_def|linebreaks }}< /span> when individual term definitions are wanted</li>
+                                <li>The classes noted above are used so that the text can stand out during editing</li>
+                                <li>The purpose of the glossary categories are first and foremost to control the functioning of the help page, do not change them or tables on the help page that are subsets of the glossary (e.g., the Database Features table) may not work correctly</li>
+                                <li>Do not change the term metadata, other than the definition, without consulting the developers for the potential impact on the Help page</li>
+                                <li>Changing the definition will automatically change the places in the help page where the definition of a term is displayed</li>
+                                <li>There are some parts of the code that should be changed before moving to production, search for **change to find these</li>
+                            </ul>
+                        </li>
+
                     </ul>
                 </li>
 
