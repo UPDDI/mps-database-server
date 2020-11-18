@@ -665,6 +665,9 @@ $(document).ready(function () {
         else if (Math.abs(global_max_y - global_min_y) < 0.1 && Math.abs(global_max_y - global_min_y) !== 0) {
             options.vAxis.format = '0.0E0';
         }
+        else {
+            options.vAxis.format = '0';
+        }
 
         var current_min_x = assay_data[1][0];
         var current_max_x = assay_data[assay_data.length - 1][0];
