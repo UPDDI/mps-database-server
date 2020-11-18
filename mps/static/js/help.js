@@ -1,7 +1,7 @@
 $(document).ready(function () {
 
     var glossary_spans_on = true;
-    //after done editing, do this
+    //after done editing, do this **change
     //strip_the_glossary_spans()
 
     var initial_hash = window.location.hash;
@@ -201,8 +201,7 @@ $(document).ready(function () {
             //same as $('#glossary_table_filter').children().children()[0];
             //same as $('#glossary_table_filter :input');
 
-            $('#glossary_table_filter :input').val(searchTerm);
-            $('#glossary_table_filter :input').trigger('input');
+            $('#glossary_table_filter :input').val(searchTerm).trigger('input');
 
             // another option, but have to to through all the inputs and is much longer....
             // var glossary_search_box = null;
@@ -213,7 +212,7 @@ $(document).ready(function () {
             //         glossary_search_box.trigger('input');
             //     }
             // });
-            
+
             if ($results.length == 0) {
                 // alert('Could not find a match in the main body of the help. Try searching the Glossary.');
                 animate_scroll_hash('#glossary');
@@ -378,7 +377,7 @@ $(document).ready(function () {
             '#assays-assaystudy-index': '#help_overview_organization',
         };
 
-        var set_hash_default = '#search_term';
+        var set_hash_default = '#search_help_page_section';
         var initial_hash_help = set_hash_default;
         if (!initial_hash || initial_hash == '#None') {
             initial_hash_help = set_hash_default;
@@ -434,6 +433,11 @@ $(document).ready(function () {
         // if the anchor is NOT on the page, do not cause and error in the console
         // this error causes the glossary NOT to display!!!
         // console.log('animate anchor ',anchor)
+        if (anchor === '#search_help_page_section') {
+            $('#search_help_page_section').removeClass('hidden');
+        } else {
+            $('#search_help_page_section').addClass('hidden');
+        }
 
         if ($(anchor).length)
         {

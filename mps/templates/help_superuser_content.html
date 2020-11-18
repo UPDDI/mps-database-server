@@ -13,6 +13,19 @@
                 <li class="list-group-item">
                     <h1 class="h1-level-1"> Sharing Study Data Overview for MPS Administrators </h1>
                     <ul class="list-unstyled">
+                        <li> UPDATE - UPDATE - UPDATE - UPDATE 20201118
+                            <ul class="help-filled-circle">
+                                <li>Collaborator Groups and Access Groups can now be added by Data Group Admins and Editors, but, the list of groups that will show in the front-end MUST be added by MPS Database Admins</li>
+                                <li>MPS Admins need to make the groups available to users in the front-end by:
+                                    <ul class="help-open-circle">
+                                        <li> In the admin, go to the center that is associated to the Data Group</li>
+                                        <li> In the Accessible groups section, add Data Group(s) to be made available to front-end Data Group admins and editors as Collaborator/Access Groups</li>
+                                    </ul>
+
+                                </li>
+                            </ul>
+                        </li>
+                        <br>
                         <li> About sharing study data:
                             <ul class="help-filled-circle">
                                 <li> Currently, all sharing options are setup by MPS administrators (there are discussions occurring to change this)</li>
@@ -42,7 +55,7 @@
                                         <li> Keep Private Indefinitely (Locked) - Locking a study stops the study from being released to the next level (blocks automatic migration to public access - public if acknowledged, access if stakeholders, stakeholders if signed off). </li>
                                         <li> Access Groups - Any Groups in the 'Choosen Access Groups' box can see the study after stakeholder acknowledgement, or after sign-off if there are no stakeholders </li>
                                         <li> Collaborator Groups - Any Groups in the 'Chosen Collaborator Groups' box can see this study, at any time</li>
-                                        <li>Collaborator Groups are a SPECIAL feature that allows sharing a study regardless of where the study is in the sign-off and embargo process (it is the ONLY feature, currently in the database, that overrides other permissions)!!!!</li>
+                                        <li> Collaborator Groups are a SPECIAL feature that allows sharing a study regardless of where the study is in the sign-off and embargo process (it is the ONLY feature, currently in the database, that overrides other permissions)!!!!</li>
                                     </ul>
                                 </li>
                             </ul>
@@ -318,6 +331,50 @@
                             <ul class="help-filled-circle">
                                 <li> It is very easy to forget to attach the group proper to a center. If you forget, you will not be able to use the group. </li>
                                 <li> Although Groups are classified into three different types, each Group is fundamentally the same in the backend. The differences are purely functional based on where a Group is used. </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+
+            </ul>
+
+        </div>
+    </div>
+
+    <div id="computational_targets">
+        <button name="help_button" type="button" class="btn btn-primary help-collapsible">Preparing for New Omic Data Types </button>
+        <div class="help-content-1">
+
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <h1 class="h1-level-1"> Preparing for New Omic Data Types </h1>
+                    <ul class="list-unstyled">
+                        <li>This was done before the omic data (log 2 fold change) could be uploaded (new column headers will require this too):
+                            <ul class="help-filled-circle">
+                                <li> Make/confirm Assay Methods, such as TempO-Seq and DESeq2, are in the MPS-Db Study Components</li>
+                                <li> Make/confirm gene expression Assay Target, such as Human 1500+, is added to the Study Components and assign to Assay Method: TempO-Seq (with category: Gene Expression)</li>
+                                <li> Make/confirm computational Assay Targets (see below) are in the Assay Targets list and assigned to Assay Method DESeq2 (with category: Computational)
+                                    <ul class="help-open-circle">
+                                        <li>{'padj': 1, 'baseMean': 2, 'lfcSE': 3, 'stat': 4, 'log2FoldChange': 5, 'pvalue': 6}</li>
+                                    </ul>
+                                </li>
+                                <li> Make/confirm categories Gene Expression and Computational are in the category list and assign the targets to them (as indicated above)</li>
+                                <li> When setting up a Study, add the Gene Expression Method, Target, and Unit (TempO-Seq, Human 1500+, Fold Change) in the Assay setup
+                                    <ul class="help-open-circle">
+                                        <li> When the user does the Assay Setup in the Study Setup - the only thing needed to work correctly is that the Assay Target selected is associated with category: Gene Expression</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <br>
+                        <li>Rules for Omic Data:
+                            <ul class="help-filled-circle">
+                                <li>All method, target, unit (for both category "Gene Expression" and "Computational") must be IN as method, target, and unit a priori</li>
+                                <li>The target selected in the assay setup must have category "Gene Expression"</li>
+                                <li>The table AssayOmicAnalysisTarget must have a row for each computational target a priori</li>
+                                <li>The table AssayOmicAnalysisTarget field data_type content must match exactly to the hard coded options in assay_omic_data_type_choices</li>
+                                <li>The table AssayOmicAnalysisTarget field name content must match exactly the column headers of the input file (INCLUDING THE CASE - at least, as of 20200902)</li>
+                                <li>The table AssayOmicAnalysisTarget field method content must match exactly method selected in the GUI as the Data Analysis Method</li>
                             </ul>
                         </li>
                     </ul>

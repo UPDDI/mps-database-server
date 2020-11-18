@@ -94,14 +94,14 @@
 
                     {# home icon #}
                     <li>
-                        <a class="navbar-brand" href={{ glossary_dict.mpsdatabase_ref }}>
+                        <a class="navbar-brand" href={{ glossary_dict.mpsdatabasempsdb_ref }}>
                             <img alt="MPS Database Logo" src="/static/img/brand.png" style="margin-top:-10px;">
                         </a>
                     </li>
 
                     {# home text #}
                     <li>
-                        <a href={{ glossary_dict.mpsdatabase_ref }}>Home</a>
+                        <a href={{ glossary_dict.mpsdatabasempsdb_ref }}>Home</a>
                     </li>
 
                     {# overview #}
@@ -223,7 +223,7 @@
                             <li><a href="#help_data_upload">8. Upload Assay Data</a></li>
                             <li><a href="#help_image_video">9. Prepare Images and Videos</a></li>
                             <li><a href="#help_flags_and_notes">10. Validation, Flags and Notes (optional) </a></li>
-                            <li><a href="#help_study_signoff">11. Data Sharing - Sign-Off a Study (optional) </a></li>
+                            <li><a href="#help_study_signoff">11. Data Sharing (optional) </a></li>
 
                         </ul>
                     </li>
@@ -244,6 +244,7 @@
                             <li><a href="#user_groups_admin">Assigning Users To Groups</a></li>
                             <li><a href="#special_permission_admin">Study Component Editing</a></li>
                             <li><a href="#add_new_center">Add New Center</a></li>
+                            <li><a href="#computational_targets">Preparing for New Omic Data Types</a></li>
 
                         </ul>
                     </li>
@@ -302,11 +303,11 @@
 
         <div id="realTimeContents" class="content">
 
-            <div id="search_help_page_section" class="hidden">
+            <div id="expand_help_page_section" class="hidden">
                 {# a search will expand them all and a reset will close them all - keep here for people who use the inspector and know the buttons are there#}
 
                 <h1 class="h1-level-0">Show and Hide Help</h1>
-                <div id="help_search_page">
+                <div id="help_expand_page">
 {#                    <button name="help_button" type="button" class="btn btn-primary help-collapsible">Show and Hide on the Help Page</button>#}
 {#                    <div class="help-content-1">#}
                         <ul class="list-group">
@@ -324,6 +325,14 @@
                 <br><br>
             </div>
 
+            <div id="search_help_page_section" class="hidden">
+                <h1 class="h1-level-1">Try using <b>Search</b> above
+{#                    <span class="glyphicon glyphicon-arrow-up"></span>#}
+                    to find the information here in the Help page.
+                </h1>
+                <br>
+            </div>
+
             <div id="overview_section" class="stop-point">
 
                 <h1 class="h1-level-0">Overview of the MPS-Db</h1>
@@ -334,10 +343,8 @@
                         <ul class="list-group">
                             <li class="list-group-item">
                                 <h1 class="h1-level-1">The Database - Background</h1>
-                                <span class="gse0">{{ glossary_dict.mpsdatabase_def|linebreaks }}</span>
-                                Many of the terms used in the
-                                <span class="gse0">{{ glossary_dict.mpsgui_term }}</span>
-                                and here in the <b>Help</b> page are defined in the glossary. It is recommended that users rely heavily on the glossary to assist in understanding how to appropriately review, edit, and/or add data to the MPS-Db.
+                                <span class="gse0">{{ glossary_dict.mpsdatabasempsdb_def|linebreaks }}</span>
+                                Many of the terms used in the MPS-GUI and here in the <b>Help</b> page are defined in the glossary. It is recommended that users rely heavily on the glossary to assist in understanding how to appropriately review, edit, and/or add data to the MPS-Db.
                             </li>
                         </ul>
                     </div>
@@ -1017,7 +1024,7 @@
                         <ul class="list-group">
                             <li class="list-group-item">
                                 <h1 class="h1-level-1">Assay Data Visualization</h1>
-                                <span class="gse0">{{ glossary_dict.assaydatavisualization_def|linebreaks }}</span>
+                                <span class="gse0">{{ glossary_dict.assaydatavisualizationexcludingomic_def|linebreaks }}</span>
                                 <br>
                                 <h1 class="h1-level-2">Assay Data Visualization (Intra-Study) </h1>
                                 The <b>Assay Data Visualization (Intra-Study)</b> feature is accessed from  within an individual Study, pre-filtered as follows:
@@ -1389,7 +1396,8 @@
                                 <h1 class="h1-level-1">Collaborators (Collaborator Groups)</h1>
                                 <span class="gse0">{{ glossary_dict.collaboratorgroup_def|linebreaks }}</span>
                                 <ul class="list-unstyled">
-                                    <li>
+                                    <li>About
+                                        <span class="gse0">{{ glossary_dict.collaboratorgroup_term }}s</span>:
                                         <ul class="help-filled-circle">
                                             <li>A
                                                 <span class="gse0">{{ glossary_dict.collaboratorgroup_term }}</span>
@@ -1399,23 +1407,12 @@
                                             </li>
                                             <li>Using a
                                                 <span class="gse0">{{ glossary_dict.collaboratorgroup_term }}</span>
-                                                is currently the only way to allow someone from another data team to see data contained in a
-                                                Study
-                                                prior to either signing off a
-                                                Study
-                                                (after sign-off, the <b>Accessors</b> feature can be used) or opening the
-                                                Study
-                                                to the public
+                                                is currently the only way to allow someone from another data team to see data contained in a Study
+                                                prior to either signing off a Study or opening the Study to the public
                                             </li>
-                                            <li>Currently, data are shared using
+                                            <li>For more information on how to share data using
                                                 <span class="gse0">{{ glossary_dict.collaboratorgroup_term }}s</span>
-                                                that are managed by
-                                                <span class="gse0">{{ glossary_dict.mpsdbadministrator_term }}s</span>
-                                            </li>
-                                            <li>Coming soon -
-                                                <span class="gse0">{{ glossary_dict.dataprovider_term }}s</span>
-                                                will be able to share data with selected colleagues without assistance from
-                                                <span class="gse0">{{ glossary_dict.mpsdbadministrator_term }}s</span>
+                                                <a href="#help_study_signoff">click here </a>
                                             </li>
                                         </ul>
                                     </li>
@@ -1443,15 +1440,9 @@
                                                 <span class="gse0">{{ glossary_dict.datagroup_term }}</span>
                                                 (e.g., someone from another lab)
                                             </li>
-                                            <li>Currently,
-                                                <span class="gse0">{{ glossary_dict.accessgroup_term }}s</span>
-                                                must be created and edited by an
-                                                <span class="gse0">{{ glossary_dict.mpsdbadministrator_term }}</span>
-                                            </li>
-                                            <li>Coming soon -
-                                                <span class="gse0">{{ glossary_dict.dataprovider_term }}s</span>
-                                                will be able to share data with selected colleagues without assistance from
-                                                <span class="gse0">{{ glossary_dict.mpsdbadministrator_term }}s</span>
+                                            <li>For more information on how to share data using
+                                                <span class="gse0">{{ glossary_dict.collaboratorgroup_term }}s</span>
+                                                <a href="#help_study_signoff">click here </a>
                                             </li>
                                         </ul>
                                     </li>
@@ -2445,8 +2436,7 @@
                                             </li>
                                             <li>Data contained in files attached as
                                                 <span class="gse0">{{ glossary_dict.supportingdata_term }}</span>
-                                                (as opposed to data uploaded into the database from files listed in the Data File Uploads or the Current Data Files) are not available for visualization, analysis, or used in calculations within the
-                                                <span class="gse0">{{ glossary_dict.mpsgui_term }}</span>
+                                                (as opposed to data uploaded into the database from files listed in the Data File Uploads or the Current Data Files) are not available for visualization, analysis, or used in calculations within the MPS-GUI                                               <span class="gse0">{{ glossary_dict.mpsgui_term }}</span>
                                             </li>
                                             <li>To edit a Study, go to the Study of interest and click on the <b>Analyze/Edit</b> button and select <b>Edit This Study</b></li>
                                         </ul>
@@ -2795,13 +2785,9 @@
                                         <br>
                                         <li>Processed Data Help Notes:
                                             <ul class="help-filled-circle">
-                                                <li>The ONLY assay data that are editable in the
-                                                    <span class="gse0">{{ glossary_dict.mpsgui_term }}</span>
-                                                    is the <b>Exclude</b> field (editable on the Study item edit page)
+                                                <li>The ONLY assay data that are editable in the MPS-GUI is the <b>Exclude</b> field (editable on the Study item edit page)
                                                 </li>
-                                                <li>Changes made to the <b>Exclude</b> field using the
-                                                    <span class="gse0">{{ glossary_dict.mpsgui_term }}</span>
-                                                    will be lost when data are re-uploaded
+                                                <li>Changes made to the <b>Exclude</b> field using the MPS-GUI will be lost when data are re-uploaded
                                                 </li>
                                                 <li>To replace assay data values with new values, remove the data file from the Current Data Files, then correct the values in the
                                                     <span class="gse0">{{ glossary_dict.mifc_term }}</span>-a
@@ -3125,51 +3111,128 @@
                 </div>
 
                 <div id="help_study_signoff">
-                    <button name="help_button" type="button" class="btn btn-primary help-collapsible">11. Data Sharing - Sign-Off a Study (optional) </button>
+                    <button name="help_button" type="button" class="btn btn-primary help-collapsible">11. Data Sharing (optional) </button>
                     <div class="help-content-1">
                         <ul class="list-group">
                             <li class="list-group-item">
-                                <h1 class="h1-level-1">Data Sharing - Sign-Off a Study (optional)</h1>
-                                    <span class="gse0">{{ glossary_dict.studysignoff_def|linebreaks }}</span>
+                                <h1 class="h1-level-1">Data Sharing (optional)</h1>
+                                The way data are shared is tied to the
+                                <span class="gse0">{{ glossary_dict.permissionstructure_term }}</span>
+                                used in the MPS-Db. For details on the
+                                <span class="gse0">{{ glossary_dict.permissionstructure_term }}</span>
+                                <a href="#help_overview_permission">click here</a>.
+                                <br><br>
 
-                                    <span class="gse0">{{ glossary_dict.datagroupadministrator_term }}s</span>
-                                    can sign-off a Study in their
-                                    <span class="gse0">{{ glossary_dict.datagroup_term }}</span>.
+                                <span class="gse0">{{ glossary_dict.datagroupadministrator_term }}s</span>
+                                change data access by going to the <b>Study Overview</b> page,
+                                then clicking the <b>Sign Off/Permission</b> button, and selecting to:
+                                <br>1) Change Study Access (to add/change
+                                <span class="gse0">{{ glossary_dict.collaboratorgroup_term }}s</span> and
+                                <span class="gse0">{{ glossary_dict.assaygroup_term }}s)</span> or
+                                <br>2) View/Edit Sign Off Status of this Study (to add/change the Release Date and
+                                <span class="gse0">{{ glossary_dict.studysignoff_term }}</span> a Study).
+
+                                <br><br>
+
+                                <div>
+                                    <h1 class="h1-level-2">Change Study Access</h1>
+                                        <span class="gse0">{{ glossary_dict.datagroupadministrator_term }}s</span>
+                                        can assign
+                                        <span class="gse0">{{ glossary_dict.collaboratorgroup_term }}s</span> and/or
+                                        <span class="gse0">{{ glossary_dict.accessgroup_term }}s</span>
+                                        to a Study.
+                                    <br><br>
+
+                                    <ul class="list-unstyled">
+                                        <li>To add
+                                            <span class="gse0">{{ glossary_dict.collaboratorgroup_term }}s</span> and/or
+                                            <span class="gse0">{{ glossary_dict.accessgroup_term }}s</span>
+                                            to a Study:
+                                            <ul class="help-filled-circle">
+                                                <li>Go to the Study of interest</li>
+                                                <li>Click on the <b>Sign Off/Permission</b> button</li>
+                                                <li>Select the <b>Change Study Access</b> option</li>
+                                                <li>Add/Remove
+                                                    <span class="gse0">{{ glossary_dict.collaboratorgroup_term }}s</span> and/or
+                                                    <span class="gse0">{{ glossary_dict.accessgroup_term }}s</span>
+                                                </li>
+                                                <li>Click the <b>Submit</b> button to save</li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </div>
+
                                 <br>
 
-                                <ul class="list-unstyled">
-                                    <li>To sign-off a Study:
-                                        <ul class="help-filled-circle">
-                                            <li>Go to the Study of interest</li>
-                                            <li>Click on the <b>Sign Off/Permission</b> button</li>
-                                            <li>Select the <b>View/Edit Sign Off Status of this Study</b> option</li>
-                                            <li>Add a note in the Notes box (optional)</li>
-                                            <li>Click the <b>Click Here to Sign Off on this Study</b> button</li>
-                                        </ul>
-                                    </li>
-                                    <br>
-                                    <li>Help Notes:
-                                        <ul class="help-filled-circle">
-                                            <li>
-                                                <span class="gse0">{{ glossary_dict.studysignoff_term }}</span>
-                                                starts a one year embargo period after which the  Study will be open to the broader scientific community (publicly accessible)
-                                            </li>
-                                            <li>
-                                                <span class="gse0">{{ glossary_dict.studysignoff_term }}</span>
-                                                is optional unless required by project funder
-                                            </li>
-                                            <li>During the
-                                                <span class="gse0">{{ glossary_dict.studysignoff_term }}</span>
-                                                process, notes can be added that will be displayed in the Study list when hovering over the check mark in the <b>Review</b> column</li>
-                                            <li>To learn more about options for sharing data with selected colleagues prior to Study sign off, see
-                                                <a href="#help_collaborator_group">Collaborators</a>
-                                            </li>
-                                            <li>To learn more about options for sharing data with selected colleagues during the embargo period, see
-                                                <a href="#help_access_group">Accessors</a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                </ul>
+                                <div>
+                                    <h1 class="h1-level-2">View/Edit Sign Off Status of this Study</h1>
+                                        <span class="gse0">{{ glossary_dict.studysignoff_def|linebreaks }}</span>
+
+                                    <ul class="list-unstyled">
+                                        <li>To sign-off a Study:
+                                            <ul class="help-filled-circle">
+                                                <li>Go to the Study of interest</li>
+                                                <li>Click on the <b>Sign Off/Permission</b> button</li>
+                                                <li>Select the <b>View/Edit Sign Off Status of this Study</b> option</li>
+                                                <li>Add a Release Date (if left null, Study will remain private unless part of the TCTC project)</li>
+                                                <li>Add a note in the Notes box (optional)</li>
+                                                <li>Click the <b>Click Here to Sign Off on this Study</b> button</li>
+                                                <li>Click the <b>Submit</b> button to save</li>
+                                            </ul>
+                                        </li>
+                                        <br>
+                                        <li>Help Notes:
+                                            <ul class="help-filled-circle">
+                                                <li>For Studies associated with the TCTC project,
+                                                    <span class="gse0">{{ glossary_dict.studysignoff_term }}</span>
+                                                    starts an optional one year embargo period after which the Study will be open to the broader scientific community (publicly accessible) regardless of the Release Date provided
+                                                </li>
+                                                <li>
+                                                    <span class="gse0">{{ glossary_dict.studysignoff_term }}</span>
+                                                    is optional unless required by project funder
+                                                </li>
+                                                <li>During the
+                                                    <span class="gse0">{{ glossary_dict.studysignoff_term }}</span>
+                                                    process, notes can be added that will be displayed in the Study List when hovering over the check mark in the <b>Review</b> column</li>
+                                                <li>To learn more about options for sharing data with selected colleagues prior to
+                                                    <span class="gse0">{{ glossary_dict.studysignoff_term }}</span>, see
+                                                    <a href="#help_collaborator_group">Collaborators</a>
+                                                </li>
+                                                <li>To learn more about options for sharing data with selected colleagues after
+                                                    <span class="gse0">{{ glossary_dict.studysignoff_term }}</span> and prior to the Release Date provided, see
+                                                    <a href="#help_access_group">Accessors</a>
+                                                </li>
+                                                <li>After
+                                                    <span class="gse0">{{ glossary_dict.studysignoff_term }}</span>
+                                                    <span class="gse0">{{ glossary_dict.collaboratorgroup_term }}s</span>
+                                                    will function like
+                                                    <span class="gse0">{{ glossary_dict.accessgroup_term }}s</span>
+                                                    (members o
+                                                    <span class="gse0">{{ glossary_dict.collaboratorgroup_term }}s</span>
+                                                    will still be able to see the Study data)
+                                                </li>
+                                                <li>
+                                                    <span class="gse0">{{ glossary_dict.datagroupadministrator_term }}s</span>
+                                                    can change the
+                                                    <span class="gse0">{{ glossary_dict.collaboratorgroup_term }}s</span> and/or
+                                                    <span class="gse0">{{ glossary_dict.accessgroup_term }}s</span> and/or
+                                                    the Release Date before AND after
+                                                    <span class="gse0">{{ glossary_dict.studysignoff_term }}</span>
+                                                </li>
+                                                <li>Change/Set the Release Date to the current date to open the Study on the following day</li>
+                                                <li>If a needed
+                                                    <span class="gse0">{{ glossary_dict.datagroup_term }}</span>
+                                                    if not available in the list of
+                                                    <span class="gse0">{{ glossary_dict.collaboratorgroup_term }}s</span> and/or
+                                                    <span class="gse0">{{ glossary_dict.accessgroup_term }}s</span>,
+                                                    contact an
+                                                    <span class="gse0">{{ glossary_dict.mpsdbadministrator_term }}</span>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </div>
+
                             </li>
 
                             <li class="list-group-item">
@@ -3273,7 +3336,7 @@
                         <td><span class="gse1"> {{ term.term }} </span></td>
                         <td><span class="gse1"> {{ term.definition|linebreaks }} </span></td>
 
-                        {# do this way for development** #}
+                        {# do this way for development**change #}
                         {% if term.reference %}
                             <td><span class="gse1">
                                 <a target="_blank" href={{ term.reference }}>
@@ -3283,7 +3346,7 @@
                         {% else %}
                             <td></td>
                         {% endif %}
-                        {# do this way for production** #}
+                        {# do this way for production**change #}
 {#                        <td><span class="gse1"> {{ term.show_url }} </span></td>#}
 
                         <td><span class="gse1"> {{ term.show_anchor }} </span></td>

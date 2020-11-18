@@ -209,7 +209,7 @@ def mps_help(request):
     # request.build_absolute_uri()  http://127.0.0.1:8000/help/
     # request.get_full_path()  /help/
 
-    # START USE THIS SECTION IN DEVELOPMENT ONLY - comment out before going to production
+    # START USE THIS SECTION IN DEVELOPMENT ONLY - comment out before going to production**change
     # have to do this LAST for ALL of them, or won't work
     for each in glossary:
         # print("~~each.reference pre ", each.reference)
