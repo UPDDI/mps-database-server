@@ -155,11 +155,12 @@ class Definition(LockableModel):
                 loc = url.index('#')
             except:
                 loc = -1
-            anchor = '#help_overview_background'
+            anchor = '#search_help_page_section'
             if loc >= 0:
                 anchor = url[loc:]
+                aid = anchor[1:]
             return format_html(
-                "<a href='{anchor}'><span title='{anchor}' class='glyphicon glyphicon-link'></span></a>",
+                "<a class='help-anchor' href='{anchor}'><span title='{anchor}' class='glyphicon glyphicon-pushpin'></span></a>",
                 anchor=anchor
             )
         else:

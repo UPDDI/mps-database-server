@@ -370,6 +370,8 @@
                             <ul class="help-filled-circle">
                                 <li>All method, target, unit (for both category "Gene Expression" and "Computational") must be IN as method, target, and unit a priori</li>
                                 <li>The target selected in the assay setup must have category "Gene Expression"</li>
+                                <li>There is NO FRONT-END way to populate the AssayOmicAnalysisTarget table, but it can be populated the admin</li>
+                                <li>If a user wants to add a new computational method of omics data, at a minimum, new rows will need added to the AssayOmicAnalysis Target table (changes may or may not be needed in the code - should test when have a new type of data)</li>
                                 <li>The table AssayOmicAnalysisTarget must have a row for each computational target a priori</li>
                                 <li>The table AssayOmicAnalysisTarget field data_type content must match exactly to the hard coded options in assay_omic_data_type_choices</li>
                                 <li>The table AssayOmicAnalysisTarget field name content must match exactly the column headers of the input file (INCLUDING THE CASE - at least, as of 20200902)</li>

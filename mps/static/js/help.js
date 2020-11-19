@@ -4,9 +4,10 @@ $(document).ready(function () {
     //after done editing, do this **change
     //strip_the_glossary_spans()
 
-    var initial_hash = window.location.hash;
-    //navigate_to_anchor(initial_hash) is at the bottom so all loading happens first
-
+    var set_hash_default = '#search_help_page_section';
+    var incoming_hash = window.location.hash;
+    var help_hash = set_hash_default;
+    //navigate_to_anchor function is called at the bottom so all loading happens first
 
     var if_all_are_open_true = false;
     // need a listener click for after the search....
@@ -325,114 +326,126 @@ $(document).ready(function () {
     // END GLOSSARY SECTION
 
     // START section to find anchor location
-    navigate_to_anchor(initial_hash);
+    navigate_to_anchor('out');
+    function navigate_to_anchor(in_or_out) {
+        if (in_or_out === 'out') {
+            //if there is a specific anchor when coming to the page from outside the page
+            // pull the anchor it matches on the page (may not be one to one)
+            var anchor_xref = {
+                // '': '#global_database_tools_section',
 
-    function navigate_to_anchor(initial_hash) {
-        var anchor_xref = {
-            // '': '#global_database_tools_section',
+                '#assays-studycomponents': '#help_overview_components',
+                '#assays-assaystudy-summary': '#help_assay_data_viz',
+                '#assays-assaystudyset-data-plots': '#help_assay_data_viz',
 
-            '#assays-studycomponents': '#help_overview_components',
-            '#assays-assaystudy-summary': '#help_assay_data_viz',
-            '#assays-assaystudyset-data-plots': '#help_assay_data_viz',
+                // '': '#help_omic_data_viz',
 
-            // '': '#help_omic_data_viz',
+                '#assays-assaystudy-images': '#help_image_and_video',
+                '#assays-power-analysis-study': '#help_power_analysis',
+                '#assays-interstudy-reproducibility': '#help_reproducibility_analysis',
+                '#assays-assaystudy-reproducibility': '#help_reproducibility_analysis',
+                '#assays-assaystudyset-reproducibility': '#help_reproducibility_analysis',
+                '#assays-graphing-reproducibility': '#help_reproducibility_analysis',
+                '#assays-assaystudyset-add': '#help_study_set',
+                '#assays-assaystudyset-list': '#help_study_set',
 
-            '#assays-assaystudy-images': '#help_image_and_video',
-            '#assays-power-analysis-study': '#help_power_analysis',
-            '#assays-interstudy-reproducibility': '#help_reproducibility_analysis',
-            '#assays-assaystudy-reproducibility': '#help_reproducibility_analysis',
-            '#assays-assaystudyset-reproducibility': '#help_reproducibility_analysis',
-            '#assays-graphing-reproducibility': '#help_reproducibility_analysis',
-            '#assays-assaystudyset-add': '#help_study_set',
-            '#assays-assaystudyset-list': '#help_study_set',
+                // '': '#help_collaborator_group',
+                // '': '#help_access_group',
 
-            // '': '#help_collaborator_group',
-            // '': '#help_access_group',
+                '#assays-pbpk-filter': '#help_pbpk_analysis',
 
-            '#assays-pbpk-filter': '#help_pbpk_analysis',
+                // '': '#help_disease_portal',
 
-            // '': '#help_disease_portal',
+                '#compounds-compound-report': '#help_compound_report',
+                '#assays-assayreference-list': '#help_reference',
 
-            '#compounds-compound-report': '#help_compound_report',
-            '#assays-assayreference-list': '#help_reference',
+                '#compounds-compound-list': '#help_chemical_data',
+                'bioactivities/table/#filter': '#help_bioactivities',
+                '#drugtrial_list': '#help_drug_trials',
+                '#adverse_events_list': '#help_adverse_events',
+                '#compare_adverse_events': '#help_compare_adverse_events',
 
-            '#compounds-compound-list': '#help_chemical_data',
-            'bioactivities/table/#filter': '#help_bioactivities',
-            '#drugtrial_list': '#help_drug_trials',
-            '#adverse_events_list': '#help_adverse_events',
-            '#compare_adverse_events': '#help_compare_adverse_events',
+                // '': '#help_heatmap_bioactivities',
+                // '': '#help_cluster_chemicals',
 
-            // '': '#help_heatmap_bioactivities',
-            // '': '#help_cluster_chemicals',
+                '#assays-assaystudy-add': '#help_study_detail',
+                '#assays-assaystudy-update-details': '#help_study_detail',
+                '#assays-assaystudy-update-groups': '#help_study_treatment_group',
+                '#assays-assaystudy-update-chips': '#help_chip_and_plate',
+                '#assays-assaystudy-update-plates': '#help_chip_and_plate',
+                '#assays-assaystudy-update-assays': '#help_target_and_method',
+                '#assays-assaystudy-data-index': '#help_data_upload',
+                '#assays-assaystudy-sign-off': '#help_study_signoff',
+                '#assays-assaystudy-list': '#help_overview_organization',
+                '#assays-assaystudy-index': '#help_overview_organization',
+            };
 
-            '#assays-assaystudy-add': '#help_study_detail',
-            '#assays-assaystudy-update-details': '#help_study_detail',
-            '#assays-assaystudy-update-groups': '#help_study_treatment_group',
-            '#assays-assaystudy-update-chips': '#help_chip_and_plate',
-            '#assays-assaystudy-update-plates': '#help_chip_and_plate',
-            '#assays-assaystudy-update-assays': '#help_target_and_method',
-            '#assays-assaystudy-data-index': '#help_data_upload',
-            '#assays-assaystudy-sign-off': '#help_study_signoff',
-            '#assays-assaystudy-list': '#help_overview_organization',
-            '#assays-assaystudy-index': '#help_overview_organization',
-        };
-
-        var set_hash_default = '#search_help_page_section';
-        var initial_hash_help = set_hash_default;
-        if (!initial_hash || initial_hash == '#None') {
-            initial_hash_help = set_hash_default;
-        } else {
-            initial_hash_help = anchor_xref[initial_hash];
-            // console.log('after anchor ',initial_hash_help)
-            if (!initial_hash_help) {
-                if (initial_hash.indexOf('assays-assaytarget') >= 0) {
-                    change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
-                    initial_hash_help = '#help2_target'
-                } else if (initial_hash.indexOf('assays-assaymethod') >= 0) {
-                    change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
-                    initial_hash_help = '#help2_method'
-                } else if (initial_hash.indexOf('microdevices-organmodelprotocol') >= 0) {
-                    change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
-                    initial_hash_help = '#help2_modelversion'
-                } else if (initial_hash.indexOf('microdevices-organmodel') >= 0) {
-                    change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
-                    initial_hash_help = '#help2_model'
-                } else if (initial_hash.indexOf('compounds-compound') >= 0) {
-                    change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
-                    initial_hash_help = '#help2_compound'
-                } else if (initial_hash.indexOf('cellsamples-') >= 0) {
-                    change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
-                    initial_hash_help = '#help2_cell'
-                } else if (
-                    initial_hash.indexOf('assays-assaymeasurementtype') >= 0
-                    || initial_hash.indexOf('assays-physicalunits') >= 0
-                    || initial_hash.indexOf('assays-assaysamplelocation') >= 0
-                    || initial_hash.indexOf('assays-assaysetting') >= 0
-                    || initial_hash.indexOf('assays-assaysupplier') >= 0
-                    || initial_hash.indexOf('assays-assayreference') >= 0
-                    || initial_hash.indexOf('microdevices-microdevice') >= 0
-                    || initial_hash.indexOf('microdevices-manufacturer') >= 0
-                ) {
-                    initial_hash_help = 'help_study_component';
-                } else {
-                    initial_hash_help = set_hash_default;
+            if (!incoming_hash || incoming_hash == '#None') {
+                help_hash = set_hash_default;
+            } else {
+                help_hash = anchor_xref[incoming_hash];
+                // there was not an anchor match, try some other possibilities
+                var expand_study_component = false;
+                if (!help_hash) {
+                    //is it a study component, and if so, is it one that requires multiple sections be opened
+                    if (incoming_hash.indexOf('assays-assaytarget') >= 0) {
+                        expand_study_component = true;
+                        help_hash = '#help2_target'
+                    } else if (incoming_hash.indexOf('assays-assaymethod') >= 0) {
+                        expand_study_component = true;
+                        help_hash = '#help2_method'
+                    } else if (incoming_hash.indexOf('microdevices-organmodelprotocol') >= 0) {
+                        expand_study_component = true;
+                        help_hash = '#help2_modelversion'
+                    } else if (incoming_hash.indexOf('microdevices-organmodel') >= 0) {
+                        expand_study_component = true;
+                        help_hash = '#help2_model'
+                    } else if (incoming_hash.indexOf('compounds-compound') >= 0) {
+                        expand_study_component = true;
+                        help_hash = '#help2_compound'
+                    } else if (incoming_hash.indexOf('cellsamples-') >= 0) {
+                        expand_study_component = true;
+                        help_hash = '#help2_cell'
+                    } else if (
+                        incoming_hash.indexOf('assays-assaymeasurementtype') >= 0
+                        || incoming_hash.indexOf('assays-physicalunits') >= 0
+                        || incoming_hash.indexOf('assays-assaysamplelocation') >= 0
+                        || incoming_hash.indexOf('assays-assaysetting') >= 0
+                        || incoming_hash.indexOf('assays-assaysupplier') >= 0
+                        || incoming_hash.indexOf('assays-assayreference') >= 0
+                        || incoming_hash.indexOf('microdevices-microdevice') >= 0
+                        || incoming_hash.indexOf('microdevices-manufacturer') >= 0
+                    ) {
+                        help_hash = '#help_study_component';
+                    } else {
+                        help_hash = set_hash_default;
+                    }
+                    // this is a special pre-open that allows for opening of specific study components
+                    if (expand_study_component) {
+                        //help2_study_component_feature is the id of the button
+                        change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
+                    }
                 }
             }
-
             //if still null
-            if (!initial_hash_help) {
-                initial_hash_help = set_hash_default;
+            if (!help_hash) {
+                help_hash = set_hash_default;
             }
+            animate_scroll_hash(help_hash);
+        } else {
+            animate_scroll_hash(help_hash);
         }
-        animate_scroll_hash(initial_hash_help);
-        // console.log('I am done moving. I should not move again')
     }
-    // after the page is loaded, change location on page
+
+    // after the page is loaded or the hash is changed or user clicks on has link, change location on page
     function animate_scroll_hash(anchor) {
-        var offset_anchor = 110;
-        // if the anchor is NOT on the page, do not cause and error in the console
+        //opens and scrolls (leave open here for glossary and help hash changes.
+
+        // if the anchor is NOT on the page, does not cause and error in the console
         // this error causes the glossary NOT to display!!!
-        // console.log('animate anchor ',anchor)
+
+        var offset_anchor = 110;
+
         if (anchor === '#search_help_page_section') {
             $('#search_help_page_section').removeClass('hidden');
         } else {
@@ -448,10 +461,22 @@ $(document).ready(function () {
         }
     }
 
+    //this will happen if the user clicks on Help from the main database and the Help is already open
     $(window).on('hashchange', function(e) {
-        initial_hash = window.location.hash;
-        navigate_to_anchor(initial_hash);
+        incoming_hash = window.location.hash;
+        help_hash = set_hash_default;
+        navigate_to_anchor('out');
     })
+
+    //this will happen if the user clicks on link to Help from Help
+    $('.help-anchor').click(function(event) {
+        event.preventDefault();
+        help_hash = $(this).attr('href');
+        if (help_hash.indexOf('help2') >= 0) {
+            change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
+        }
+        navigate_to_anchor('in');
+    });
 
     // END section to find anchor location
 
