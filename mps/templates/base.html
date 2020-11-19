@@ -16,7 +16,7 @@
 
   {# Perhaps it is better to just pass this via the context #}
   {# <title>{% block title %}MPS Database{% endblock %}</title> #}
-  <title data-help-anchor="{{ help_anchor|default:'' }}">{{ title|default:'MPS Database' }}</title>
+  <title data-help-anchor="{{ help_anchor|default:'#' }}">{{ title|default:'MPS Database' }}</title>
 
 {# <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/default.css" > #}
 

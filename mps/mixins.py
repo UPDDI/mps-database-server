@@ -488,9 +488,14 @@ class HelpAnchorMixin(object):
     def get_context_data(self, **kwargs):
         context = super(HelpAnchorMixin, self).get_context_data(**kwargs)
 
+        help_anchor = '#'
+
+        if resolve(self.request.path_info).url_name:
+            help_anchor = '#{}'.format(resolve(self.request.path_info).url_name)
+
         context.update({
             # Help anchor is always just based on the URL name
-            'help_anchor': '#{}'.format(resolve(self.request.path_info).url_name),
+            'help_anchor': help_anchor,
             # Initial title, either from the attribute or overwritten later (classes that extend this are likely to overwrite)
             'title': self.title
         })
