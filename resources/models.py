@@ -158,7 +158,7 @@ class Definition(LockableModel):
             anchor = '#search_help_page_section'
             if loc >= 0:
                 anchor = url[loc:]
-                aid = anchor[1:]
+
             return format_html(
                 "<a class='help-anchor' href='{anchor}'><span title='{anchor}' class='glyphicon glyphicon-pushpin'></span></a>",
                 anchor=anchor

@@ -259,13 +259,25 @@ $(document).ready(function () {
     // START GLOSSARY SECTION
     var offset = 110;
 
+    // this is in the glossary section but is general
     $('a').not("[href*='/']").click(function(event) {
         event.preventDefault();
-        if ($($(this).attr('href'))[0]) {
-            $('html, body').animate({
-                scrollTop: $($(this).attr('href')).offset().top - offset
-            }, 500);
-            $($(this).attr('href')).find('button').next().first().css('display', 'block');
+        // console.log("$(this).hasClass('help-anchor') ",$(this).hasClass('help-anchor'))
+        if ($(this).hasClass('help-anchor')) {
+            //this will happen if the user clicks on link to Help from Help
+            // previously did this, but do not need since put in the a's $('.help-anchor').click(function (event) {
+            help_hash = $(this).attr('href');
+            if (help_hash.indexOf('help2') >= 0) {
+                change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
+            }
+            navigate_to_anchor('in');
+        } else {
+            if ($($(this).attr('href'))[0]) {
+                $('html, body').animate({
+                    scrollTop: $($(this).attr('href')).offset().top - offset
+                }, 500);
+                $($(this).attr('href')).find('button').next().first().css('display', 'block');
+            }
         }
     });
 
@@ -380,7 +392,7 @@ $(document).ready(function () {
                 '#assays-assaystudy-index': '#help_overview_organization',
             };
 
-            if (!incoming_hash || incoming_hash == '#None') {
+            if (!incoming_hash || incoming_hash == '#None' || incoming_hash == '#') {
                 help_hash = set_hash_default;
             } else {
                 help_hash = anchor_xref[incoming_hash];
@@ -467,17 +479,6 @@ $(document).ready(function () {
         help_hash = set_hash_default;
         navigate_to_anchor('out');
     })
-
-    //this will happen if the user clicks on link to Help from Help
-    $('.help-anchor').click(function(event) {
-        event.preventDefault();
-        help_hash = $(this).attr('href');
-        if (help_hash.indexOf('help2') >= 0) {
-            change_display($('#help2_study_component_feature')[0].nextElementSibling, 'e');
-        }
-        navigate_to_anchor('in');
-    });
-
     // END section to find anchor location
 
     function strip_the_glossary_spans() {
