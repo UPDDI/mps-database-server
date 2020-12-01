@@ -73,6 +73,8 @@
     </div>
 
     {# NOT DRY #}
+    {# REMOVE FOR NOW #}
+    {% comment %}
     {{ supporting_data_formset.management_form }}
     <legend>Supporting Data</legend>
     {% if supporting_data_formset.non_form_errors %}
@@ -124,6 +126,7 @@
             {% endfor %}
         </tbody>
     </table>
+    {% endcomment %}
 
     {# Excluded for now #}
 {#    <div hidden>#}
