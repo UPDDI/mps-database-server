@@ -301,7 +301,7 @@ class DetailSerializerMixin(object):
 
 
 # Maybe we ought to have ViewSets in a different file?
-class AssayStudyViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
+class AssayStudyViewSet(DetailSerializerMixin, viewsets.ReadOnlyModelViewSet):
     # Contrived
     queryset = AssayStudy.objects.filter(
         restricted=False,

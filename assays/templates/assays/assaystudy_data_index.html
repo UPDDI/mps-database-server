@@ -27,9 +27,9 @@
 
     <div class="well">
         <h3>
-            {% include 'plural_include.html' with label="Data File" count=object.assaydatafileupload_set.count %}
-            {% if object.assaydatafileupload_set.count %}
-                with {% include 'plural_include.html' with label="Data Point" count=object.assaydatapoint_set.count %}
+            {% include 'plural_include.html' with label="Data File" count=unreplaced_data_files_count %}
+            {% if unreplaced_data_files_count %}
+                with {% include 'plural_include.html' with label="Data Point" count=unreplaced_data_count %}
             {% endif %}
             <br>
             <small>Processed assay data formatted for direct upload into the Study Summary for visualization and analysis using the biological assay visualization and analysis tools. Data to be uploaded must be in the MPS Import Friendly-Columnar (MIF-C) file format.</small>

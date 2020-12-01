@@ -185,6 +185,8 @@ urlpatterns = [
     # url(r'^cellsamples_ajax/$', 'cellsamples.ajax.ajax'),
     # END old-style API
 
+    # REST API
+    url(r'^api/$', mps.views.APIPrimer.as_view()),
     path('', include(api_router.urls)),
 
     # Under construction message

@@ -494,3 +494,7 @@ class UnderConstruction(TemplateHandlerView):
     template_name = 'under_construction.html'
 
     title = 'Under Construction'
+
+
+class APIPrimer(TemplateView):
+    template_name = 'api_primer.html'

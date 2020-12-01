@@ -655,6 +655,8 @@ class AssayStudyDetailsMixin(AssayStudyMixin):
 
     # Do we want references here?
     formsets = (
+        # Added supporting data back again
+        ('supporting_data_formset', AssayStudySupportingDataFormSetFactory),
         ('reference_formset', AssayStudyReferenceFormSetFactory),
     )
 
@@ -941,11 +943,22 @@ class AssayStudyDataIndex(StudyViewerMixin, AssayStudyMixin, DetailHandlerView):
             data_type='log2fc'
         )
 
+        # Have to account for replaced data...
+        unreplaced_data = AssayDataPoint.objects.filter(
+            replaced=False,
+            study=self.object
+        )
+
+        unreplaced_data_files_count = len(set(unreplaced_data.values_list('data_file_upload_id')))
+
         context.update({
             # CONTRIVED!!!
             'update': True,
             # NECESSARILY FALSE
             'has_next_button': False,
+            # Need to filter out replaced data (should we even continue using the replaced flag?)
+            'unreplaced_data_count': unreplaced_data.count(),
+            'unreplaced_data_files_count': unreplaced_data_files_count,
             'log2fold_files': log2fold_files,
             'log2fold_points': AssayOmicDataPoint.objects.filter(
                 omic_data_file__in=log2fold_files
@@ -1466,35 +1479,15 @@ class AssayStudyDataUpload(ObjectGroupRequiredMixin, FormHandlerMixin, UpdateVie
     def get_context_data(self, **kwargs):
         context = super(AssayStudyDataUpload, self).get_context_data(**kwargs)
 
-        # TODO TODO TODO
-        # context['version'] = len(os.listdir(MEDIA_ROOT + '/excel_templates/'))
-
-        # context['data_file_uploads'] = get_data_file_uploads(study=self.object)
-
-        if self.request.POST:
-            if 'supporting_data_formset' not in context:
-                context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(self.request.POST, self.request.FILES, instance=self.object)
-        else:
-            context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(instance=self.object)
-
-        # context['update'] = True
-
         context.update({
             'data_file_uploads': get_data_file_uploads(study=self.object),
             'update': True,
-            # 'has_next_button': False
         })
 
         return context
 
     def form_valid(self, form):
-        supporting_data_formset = AssayStudySupportingDataFormSetFactory(
-            self.request.POST,
-            self.request.FILES,
-            instance=self.object
-        )
-
-        if form.is_valid() and supporting_data_formset.is_valid():
+        if form.is_valid():
             data = form.cleaned_data
             overwrite_option = data.get('overwrite_option')
 
@@ -1520,7 +1513,7 @@ class AssayStudyDataUpload(ObjectGroupRequiredMixin, FormHandlerMixin, UpdateVie
                 save_forms_with_tracking(
                     self,
                     None,
-                    formset=[supporting_data_formset],
+                    formset=[],
                     update=True
                 )
 
