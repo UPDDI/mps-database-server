@@ -3,6 +3,10 @@ from mps.base.models import LockableModel
 
 
 class Disease(LockableModel):
+
+    class Meta(object):
+        verbose_name = 'Disease'
+
     name = models.CharField(max_length=200, unique=True)
     description = models.TextField(default='', blank=True)
 
