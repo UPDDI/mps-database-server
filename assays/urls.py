@@ -2,7 +2,6 @@ from django.conf.urls import url
 from assays.views import (
     AssayStudyEditableList,
     AssayStudyIndex,
-    AssayStudyUpdate,
     AssayStudyDelete,
     AssayStudySummary,
     AssayStudyData,
@@ -29,9 +28,6 @@ from assays.views import (
     AssayStudyConfigurationList,
     AssayStudyConfigurationAdd,
     AssayStudyConfigurationUpdate,
-    AssayMatrixAdd,
-    AssayMatrixDetail,
-    AssayMatrixUpdate,
     AssayMatrixDelete,
     AssayStudySignOff,
     AssayStudyReproducibility,
@@ -53,8 +49,6 @@ from assays.views import (
     AssayReferenceUpdate,
     AssayReferenceDetail,
     AssayReferenceDelete,
-    AssayStudyAddNew,
-    AssayMatrixNew,
     AssayTargetAdd,
     AssayTargetList,
     AssayTargetDetail,
@@ -115,11 +109,7 @@ urlpatterns = [
     # User can view all Editable Studies
     url(r'^assays/assaystudy/editable_studies/$', AssayStudyEditableList.as_view(), name='assays-editable-study-list'),
     # The main page for a study
-    # TODO TO BE DEPRECATED
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/$', AssayStudyIndex.as_view(), name='assays-assaystudy-index'),
-    # Update page for studies
-    # TO BE DEPRECATED
-    # url(r'^assays/assaystudy/(?P<pk>[0-9]+)/update/$', AssayStudyUpdate.as_view(), name='assays-assaystudy-update'),
 
     # Delete view for studies
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/delete/$', AssayStudyDelete.as_view(), name='assays-assaystudy-delete'),
@@ -180,15 +170,6 @@ urlpatterns = [
     url(r'^assays/studyconfiguration/$', AssayStudyConfigurationList.as_view(), name='assays-assays-assaystudyconfiguration-list'),
     url(r'^assays/studyconfiguration/add/$', AssayStudyConfigurationAdd.as_view(), name='assays-assaystudyconfiguration-add'),
     url(r'^assays/studyconfiguration/(?P<pk>[0-9]+)/$', AssayStudyConfigurationUpdate.as_view(), name='assays-assaystudyconfiguration-update'),
-
-    # TO BE DEPRECATED
-    # Add a matrix
-    # url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assaymatrix/add/$', AssayMatrixAdd.as_view(), name='assays-assaymatrix-add'),
-    # url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/$', AssayMatrixDetail.as_view(), name='assays-assaymatrix-detail'),
-    # url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/update/$', AssayMatrixUpdate.as_view(), name='assays-assaymatrix-update'),
-    # url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/delete/$', AssayMatrixDelete.as_view(), name='assays-assaymatrix-delete'),
-
-    # url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/new/$', AssayMatrixNew.as_view(), name='assays-assaymatrix-new'),
 
     # Location for assay filter
     url(r'^assays/graphing_reproducibility/$', GraphingReproducibilityFilterView.as_view(), name='assays-graphing-reproducibility'),
