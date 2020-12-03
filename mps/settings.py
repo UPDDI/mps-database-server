@@ -110,7 +110,6 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, '..', MEDIA_URL.strip("/"))
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-    os.path.join(PROJECT_ROOT, 'static'),
     os.path.join(PROJECT_ROOT, '../../mps-web-client/'),
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
