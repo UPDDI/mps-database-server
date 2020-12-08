@@ -1729,7 +1729,7 @@ class AssayStudyAccess(UpdateView):
 
         user_group_names = {group.name for group in self.request.user.groups.all()}
 
-        valid_user = study.group.name + ADMIN_SUFFIX in user_group_names
+        valid_user = study.group.name + ADMIN_SUFFIX in user_group_names or study.group.name in user_group_names
 
         # Deny permission
         if not valid_user:
@@ -1749,7 +1749,7 @@ class AssayStudyAccess(UpdateView):
         if form.is_valid():
             user_group_names = {group.name for group in self.request.user.groups.all()}
 
-            valid_user = self.object.group.name + ADMIN_SUFFIX in user_group_names
+            valid_user = self.object.group.name + ADMIN_SUFFIX in user_group_names or study.group.name in user_group_names
 
             if valid_user:
                 previous_access_groups = {group.name:group.id for group in form.instance.access_groups.all()}

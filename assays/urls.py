@@ -154,7 +154,7 @@ urlpatterns = [
     # Just redirect for now
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/update/$', RedirectView.as_view(pattern_name='assays-assaystudy-update-details', permanent=True), name='assays-assaystudy-update'),
 
-    url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assayplate/add/$', AssayStudyPlateAdd.as_view(), name='assays-assaymatrix-plate-add'),
+    url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/plate/add/$', AssayStudyPlateAdd.as_view(), name='assays-assaymatrix-plate-add'),
     url(r'^assays/assayplate/(?P<pk>[0-9]+)/plate/$', AssayStudyPlateDetail.as_view(), name='assays-assaymatrix-plate-detail'),
     url(r'^assays/assayplate/(?P<pk>[0-9]+)/plate/update/$', AssayStudyPlateUpdate.as_view(), name='assays-assaymatrix-plate-update'),
     url(r'^assays/assayplate/(?P<pk>[0-9]+)/plate/delete/$', AssayMatrixDelete.as_view(), name='assays-assaymatrix-plate-delete'),

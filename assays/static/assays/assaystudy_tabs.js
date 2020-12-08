@@ -2,18 +2,22 @@
 $(document).ready(function() {
     var current_interface = window.location.href.split('/')[6];
 
-    // Get the li in question and make it active
-    $('li[data-interface="' + current_interface + '"]')
-        .addClass('active')
+    function make_tab_active(tab) {
+        tab.addClass('active')
         // Find the anchor and make it reference the current page
-        .find('a').attr('href', '#');
+        .find('a')
+            // CRUDE! AVOID STYLING IN THIS MANNER
+            .css('background-color', '#337ab7')
+            .css('color', '#fff')
+            .attr('href', '#');
+    }
+
+    // Get the li in question and make it active
+    make_tab_active($('li[data-interface="' + current_interface + '"]'));
 
     if (!current_interface || current_interface === '#')
     {
-        $('li[data-interface="details"]')
-        .addClass('active')
-        // Find the anchor and make it reference the current page
-        .find('a').attr('href', '#');
+        make_tab_active($('li[data-interface="details"]'));
     }
 
     var redirect_confirm = $('#post_submission_override_confirm');
