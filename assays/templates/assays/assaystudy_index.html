@@ -74,6 +74,10 @@
                 {% endif %}
                 {% endcomment %}
             </h1>
+
+            {% include 'assays/study_buttons.html' %}
+
+            {% comment %}
             <div class="text-center">
                 <span class="dropdown btn-group">
                     <button class="btn btn-primary dropdown-toggle" type="button" id="analyze_edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
@@ -115,7 +119,6 @@
                     </ul>
                 </span>
 
-                {% comment %}
                 <span class="dropdown btn-group">
                     <button class="btn btn-warning dropdown-toggle" type="button" id="add_data" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                         Add/View Data
@@ -130,7 +133,6 @@
                         <li><a href="{% url 'assayplatereaderfile-index' object.id %}">Assay Plate Reader Files</a></li>
                     </ul>
                 </span>
-                {% endcomment %}
 
                 {% if user_is_group_admin or user_is_stakeholder_admin or user.is_superuser or show_indicate_study_sign_off or not user_is_group_admin and user_is_group_editor and not object.signed_off_by %}
                 <span class="dropdown btn-group">
@@ -159,6 +161,7 @@
                 {% endif %}
             </div>
         </div>
+        {% endcomment %}
 
         {# DEPRECATED! #}
         {% comment %}

@@ -1,0 +1,68 @@
+<div class="text-center padded-bottom small-padding-top">
+    <span class="dropdown btn-group">
+        <button class="btn btn-primary dropdown-toggle" type="button" id="analyze_edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            Analyze/Edit
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="analyze_edit">
+            <li><a href="summary">Study Summary</a></li>
+            {# TODO REVISE THIS CONDITIONAL DEPENDING ON OMICS #}
+            {% if object.assaydatafileupload_set.count or object.assaysplatereadermap.count %}
+            {# Not a great label? #}
+            <li><a href="data_index">Data Uploads</a></li>
+            {% endif %}
+            {% if object.assaydatapoint_set.count %}
+            <li><a href="reproducibility">Reproducibility</a></li>
+            <li><a href="power_analysis">Power Analysis</a></li>
+            {% else %}
+            <li class="disabled" title="This study has no data."><a href="reproducibility">Reproducibility</a></li>
+            <li class="disabled" title="This study has no data."><a href="power_analysis">Power Analysis</a></li>
+            {% endif %}
+            {# Stupid conditional because images are not tied directly to studies? #}
+            {% if object.assayimagesetting_set.count %}
+            <li><a href="images">Images and Videos</a></li>
+            {% else %}
+            <li class="disabled" title="This study has no images or videos."><a href="images">Images and Videos</a></li>
+            {% endif %}
+            {% if object.assayomicdatafileupload_set.count %}
+            <li><a href="omics">Gene Expression Analysis</a></li>
+            {% else %}
+            <li class="disabled" title="This study has no omic data."><a href="omics">Gene Expression Analysis</a></li>
+            {% endif %}
+
+            {% if user_is_group_editor %}
+                <li role="separator" class="divider"></li>
+                {% if not object.signed_off_by %}
+                    <li><a href="update">Edit This Study</a></li>
+                {% endif %}
+                <li><a id="clone_study_request" role="button">Clone this Study</a></li>
+            {% endif %}
+        </ul>
+    </span>
+
+    {% if user_is_group_admin or user_is_stakeholder_admin or user.is_superuser or show_indicate_study_sign_off or not user_is_group_admin and user_is_group_editor and not object.signed_off_by %}
+    <span class="dropdown btn-group">
+        <button class="btn btn-success dropdown-toggle" type="button" id="sign_off_permissions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            Sign Off/Permission
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="sign_off_permissions">
+            {% if user_is_group_editor %}
+                <li><a href="access">Change Study Access</a></li>
+            {% endif %}
+            {% if not user_is_group_admin and user_is_group_editor and not object.signed_off_by %}
+                <li><a id="indicate_study_is_ready_for_sign_off" role="button">Indicate Study is Ready for Sign Off</a></li>
+            {% endif %}
+            {% if user_is_group_admin %}
+                <li><a href="sign_off">View/Edit Sign Off Status of this Study</a></li>
+            {% endif %}
+            {% if user_is_stakeholder_admin %}
+                <li><a href="sign_off">View/Edit Approval Status of this Study</a></li>
+            {% endif %}
+            {% if user.is_superuser %}
+                <li><a href="/admin/assays/assaystudy/{{ object.id }}">Change Group Access for this Study</a></li>
+            {% endif %}
+        </ul>
+    </span>
+    {% endif %}
+</div>
