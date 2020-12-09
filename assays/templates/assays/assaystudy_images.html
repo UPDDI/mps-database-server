@@ -23,15 +23,14 @@
 
 {% block content %}
     <div class="well">
-        <div class="row text-center">
+        <div class="text-center">
             <h1>
                 Images and Videos for:<br>
                 <em>{{ object }}</em>
             </h1>
         </div>
-        <div class="row text-center small-padding-top">
-            <a href="{{ object.get_summary_url }}" class="btn btn-primary" role="button">Study Summary</a>
-        </div>
+
+        {% include 'assays/study_buttons.html' %}
     </div>
 
     <div class='text-center'><label>Note: The below media may have been altered to assist with viewing.<br>To perform comparitive analysis, please left-click the thumbnails and download the unaltered media.</label></div>

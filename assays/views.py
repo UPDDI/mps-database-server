@@ -2334,6 +2334,14 @@ class AssayStudyReproducibility(StudyViewerMixin, DetailHandlerView):
 
     title = 'Study Reproducibility'
 
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyReproducibility, self).get_context_data(**kwargs)
+
+        # SLOPPY: BAD
+        get_user_status_context(self, context)
+
+        return context
+
 
 class AssayStudyImages(StudyViewerMixin, DetailHandlerView):
     """Displays all of the images linked to the current study"""
@@ -2404,8 +2412,8 @@ class AssayStudyImages(StudyViewerMixin, DetailHandlerView):
         context['tableData'] = json.dumps(tableData)
         context['orderedStudyImages'] = json.dumps(ordered_study_images)
 
-        # Maybe useful later
-        # get_user_status_context(self, context)
+        # SLOPPY
+        get_user_status_context(self, context)
 
         return context
 
@@ -2921,6 +2929,14 @@ class AssayStudyPowerAnalysisStudy(StudyViewerMixin, DetailHandlerView):
     template_name = 'assays/assaystudy_power_analysis_study.html'
 
     title = 'Study Power Analysis'
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyPowerAnalysisStudy, self).get_context_data(**kwargs)
+
+        # SLOPPY: BAD
+        get_user_status_context(self, context)
+
+        return context
 
 
 # DEPRECATED
@@ -4964,6 +4980,7 @@ class AssayStudyOmics(StudyViewerMixin, DetailHandlerView):
 
     def get_context_data(self, **kwargs):
         context = super(AssayStudyOmics, self).get_context_data(**kwargs)
+
         context.update({
             'form': AssayStudyGroupForm(instance=self.object),
             'cellsamples' : CellSample.objects.all().prefetch_related(
@@ -4972,6 +4989,9 @@ class AssayStudyOmics(StudyViewerMixin, DetailHandlerView):
                 'cell_subtype__cell_type'
             ),
         })
+
+        # SLOPPY: BAD
+        get_user_status_context(self, context)
 
         return context
 
