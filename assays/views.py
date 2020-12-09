@@ -2603,6 +2603,14 @@ class AssayStudyReproducibility(StudyViewerMixin, DetailView):
     model = AssayStudy
     template_name = 'assays/assaystudy_reproducibility.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyReproducibility, self).get_context_data(**kwargs)
+
+        # SLOPPY: BAD
+        get_user_status_context(self, context)
+
+        return context
+
 
 class AssayStudyImages(StudyViewerMixin, DetailView):
     """Displays all of the images linked to the current study"""
@@ -2671,8 +2679,8 @@ class AssayStudyImages(StudyViewerMixin, DetailView):
         context['tableData'] = json.dumps(tableData)
         context['orderedStudyImages'] = json.dumps(ordered_study_images)
 
-        # Maybe useful later
-        # get_user_status_context(self, context)
+        # SLOPPY
+        get_user_status_context(self, context)
 
         return context
 
@@ -3401,6 +3409,14 @@ class AssayStudyPowerAnalysisStudy(StudyViewerMixin, DetailView):
     """Displays the power analysis interface for the current study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_power_analysis_study.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyPowerAnalysisStudy, self).get_context_data(**kwargs)
+
+        # SLOPPY: BAD
+        get_user_status_context(self, context)
+
+        return context
 
 
 class AssayMatrixNew(HistoryMixin, StudyGroupMixin, UpdateView):
@@ -5496,6 +5512,7 @@ class AssayStudyOmics(StudyViewerMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(AssayStudyOmics, self).get_context_data(**kwargs)
+
         context.update({
             'form': AssayStudyGroupForm(instance=self.object),
             'cellsamples' : CellSample.objects.all().prefetch_related(
@@ -5504,6 +5521,9 @@ class AssayStudyOmics(StudyViewerMixin, DetailView):
                 'cell_subtype__cell_type'
             ),
         })
+
+        # SLOPPY: BAD
+        get_user_status_context(self, context)
 
         return context
 
@@ -5549,6 +5569,7 @@ class AssayStudyOmicsDownload(StudyViewerMixin, DetailView):
             return HttpResponse('', content_type='text/plain')
 
 
+# NOT AVAILABLE YET
 class AssayStudyOmicsHeatmap(StudyViewerMixin, DetailView):
     """Displays the omics interface for the current study"""
     model = AssayStudy

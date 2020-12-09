@@ -28,9 +28,8 @@
                 <em>{{ object }}</em>
             </h1>
         </div>
-        <div class="row text-center small-padding-top">
-            <a href="{{ object.get_summary_url }}" class="btn btn-primary" role="button">Study Summary</a>
-        </div>
+
+        {% include 'assays/study_buttons.html' %}
     </div>
 
     {% include 'assays/sidebar_extras.html' %}
