@@ -65,6 +65,12 @@
 {% include 'generic_field.html' with field=form.description label="Description" %}
 
 {% include 'generic_field.html' with field=form.device_image label="Device Image" %}
+<div class="row">
+    <div class="col-sm-2"></div>
+    <div class="col-sm-10">
+        <b>Preferred Formats: PNG, JPEG, GIF</b>
+    </div>
+</div>
 
 <div id="device_image_display">
     <div id="device_current_display">
@@ -75,6 +81,12 @@
 </div>
 
 {% include 'generic_field.html' with field=form.device_cross_section_image label="Device Cross Section Image" %}
+<div class="row">
+    <div class="col-sm-2"></div>
+    <div class="col-sm-10">
+        <b>Preferred Formats: PNG, JPEG, GIF</b>
+    </div>
+</div>
 
 <div id="cross_section_image_display">
     <div id="cross_section_current_display">

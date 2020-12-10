@@ -138,6 +138,7 @@ $(document).ready(function() {
                 filters: JSON.stringify(window.GROUPING.filters),
                 criteria: JSON.stringify(window.GROUPING.group_criteria),
                 post_filter: JSON.stringify(window.GROUPING.current_post_filter),
+                full_post_filter: JSON.stringify(window.GROUPING.full_post_filter),
                 csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
                 // CONTRIVED
                 key: 'device'
@@ -344,6 +345,7 @@ $(document).ready(function() {
                     filters: JSON.stringify(window.GROUPING.filters),
                     criteria: JSON.stringify(window.GROUPING.group_criteria),
                     post_filter: JSON.stringify(window.GROUPING.current_post_filter),
+                    full_post_filter: JSON.stringify(window.GROUPING.full_post_filter),
                     inter_level: inter_level,
                     max_interpolation_size: max_interpolation_size,
                     initial_norm: initial_norm,
@@ -454,7 +456,6 @@ $(document).ready(function() {
             //     }
             // },
             "responsive": true,
-            dom: '<Bl<"row">frptip>',
             fixedHeader: {headerOffset: 50},
             deferRender: true,
             destroy: true,
@@ -462,11 +463,6 @@ $(document).ready(function() {
                 // TODO TODO TODO
                 // Draw necessary sections below
                 draw_subsections();
-
-                // TODO NOT DRY
-                // Swap positions of filter and length selection; clarify filter
-                $('.dataTables_filter').css('float', 'left').prop('title', 'Separate terms with a space to search multiple fields');
-                $('.dataTables_length').css('float', 'right');
 
                 // Stopgap: Remove compound column if no compound criteria selected
                 if (!window.GROUPING.group_criteria['compound'] || window.GROUPING.group_criteria['compound'].indexOf('compound_instance.compound_id') === -1) {

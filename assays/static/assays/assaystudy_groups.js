@@ -1,5 +1,6 @@
 // TODO WE ARE NOW CALLING THEM GROUPS AGAIN, I GUESS
 // TODO: WHY ARE WE GOING BACK AND FORTH BETWEEN INT AND STING FOR INDICES???????
+// A SERIOUS STYLISTIC DEFICIENCY IS THAT FILE SCOPE VARIABLES ARE NOT CLEARLY INDICATED, THE LIKELIHOOD OF COLLISIONS ARE THEREFORE QUITE HIGH
 $(document).ready(function () {
     // TEMPORARY
     var series_data_selector = $('#id_series_data');
@@ -109,6 +110,71 @@ $(document).ready(function () {
     // var selection_dialog_naming_section = $('.selection_dialog_naming_section');
     // var use_chip_naming = $('#id_use_incremental_well_naming');
     // var chip_naming = $('#id_incremental_well_naming');
+
+    // TRICKY: We need to paginate the groups, otherwise the DOM will detonate
+    let current_page = 0;
+    let number_of_pages = 1;
+
+    const group_table_display_length = $('#id_group_table_length');
+    let display_length = parseInt(group_table_display_length.val());
+
+    // PUT TRIGGER IN A BETTER SPOT
+    // NOTE THAT THIS IS NOT TRIGGERED INITIALLY (DO NOT WANT TO REDRAW SUPERFLUOUSLY)
+    group_table_display_length.change(function() {
+        display_length = parseInt(group_table_display_length.val());
+        // GO BACK TO THE FIRST PAGE
+        rebuild_table(false, 0);
+    });
+
+    // Selector clarity
+    const pagination_previous_button_selector = $('.group-table-previous');
+    const pagination_next_button_selector = $('.group-table-next');
+    const pagination_current_page_selector = $('.group-table-current');
+
+    // TODO TODO TODO: WE NEED TO GENERATE THE PAGINATOR(S) BEFORE THE TABLE
+    // TODO TODO TODO: Obviously we need to know the number of pages etc.
+    function revise_paginator_text() {
+        number_of_pages = Math.ceil(series_data.length / display_length);
+
+        if (number_of_pages === 0) {
+            number_of_pages = 1;
+        }
+
+        pagination_current_page_selector.text(
+            'Page ' + (current_page + 1) + ' of ' + number_of_pages
+        );
+
+        if (current_page === 0) {
+            pagination_previous_button_selector.addClass('disabled');
+        }
+        else {
+            pagination_previous_button_selector.removeClass('disabled');
+        }
+
+        if (current_page === (number_of_pages - 1)) {
+            pagination_next_button_selector.addClass('disabled');
+        }
+        else {
+            pagination_next_button_selector.removeClass('disabled');
+        }
+    }
+
+    // CRUDE: TRIGGERS FOR NEXT AND PREVIOUS
+    // PROBABLY A GOOD IDEA TO MOVE AND REVISE
+    // TODO TODO TODO
+    pagination_previous_button_selector.click(function() {
+        if (!$(this).hasClass('disabled') && current_page > 0) {
+            // current_page -= 1;
+            rebuild_table(false, current_page - 1);
+        }
+    });
+
+    pagination_next_button_selector.click(function() {
+        if (!$(this).hasClass('disabled') && current_page < number_of_pages) {
+            // current_page += 1;
+            rebuild_table(false, current_page + 1);
+        }
+    });
 
     // Default values
     var default_values = {};
@@ -478,7 +544,8 @@ $(document).ready(function () {
 
         // ADD TO EXISTING ROWS AS EMPTY
         study_setup_body.find('tr').each(function(row_index) {
-            $(this).find('.' + prefix + '_start').last().after('<td class="' + prefix + '_start' + '">' + create_edit_button(prefix, row_index, column_index) + '</td>', false);
+            let offset_row_index = row_index + start_index;
+            $(this).find('.' + prefix + '_start').last().after('<td class="' + prefix + '_start' + '">' + create_edit_button(prefix, offset_row_index, column_index) + '</td>', false);
         });
 
         // Increment columns for this prefix
@@ -486,7 +553,7 @@ $(document).ready(function () {
     }
 
     // JUST USES DEFAULT PROTOCOL FOR NOW
-    function spawn_row(setup_to_use, add_new_row, is_clone) {
+    function spawn_row(setup_to_use, add_new_row, is_clone, row_index) {
         // TODO: SHOULD REMOVE, WHOLE CONCEPT OF current_setup NEEDS TO BE REVISED
         if (!setup_to_use) {
             setup_to_use = {
@@ -498,7 +565,8 @@ $(document).ready(function () {
 
         var new_row = $('<tr>');
 
-        var row_index = study_setup_body.find('tr').length;
+        // NOPE! NEED TO PASS THE INDEX!
+        // var row_index = study_setup_body.find('tr').length;
 
         new_row.attr('data-series', row_index + 1);
 
@@ -721,7 +789,8 @@ $(document).ready(function () {
             new_row.addClass('strikethrough');
         }
 
-        replace_series_data();
+        // NO! CAN'T DO THIS! TOO EXPENSIVE!
+        // replace_series_data();
 
         // Add group to selectors
         // series_selector.append(new Option('Group ' + (row_index + 1), row_index + 1));
@@ -779,16 +848,25 @@ $(document).ready(function () {
 
         number_of_columns[current_prefix] -= 1;
 
-        rebuild_table();
+        rebuild_table(true, current_page);
     });
 
     // NOT ALLOWED IN EDIT?
     $(document).on('click', 'a[data-clone-row-button="true"]', function() {
         current_row_index = Math.floor($(this).attr('data-row'));
-        spawn_row(series_data[current_row_index], true, true);
+        // SLOPPY
+        spawn_row(series_data[current_row_index], true, true, series_data.length);
 
         // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
-        change_matrix_visibility();
+        // change_matrix_visibility();
+
+        // TODO TODO TODO
+        // TODO LAZY
+
+        // SKIP TO LAST PAGE
+        let new_current_page = Math.ceil(series_data.length / display_length) - 1;
+
+        rebuild_table(true, new_current_page);
     });
 
     // NOT ALLOWED IN EDIT?
@@ -848,7 +926,15 @@ $(document).ready(function () {
             }
         }
 
-        rebuild_table();
+        // If this is the last page and there is only one entry
+        // TODO TODO TODO
+        if (series_data[current_row_index] === undefined) {
+            if (current_page > (Math.ceil((series_data.length) / display_length)) - 1) {
+                pagination_previous_button_selector.first().trigger('click');
+            }
+        }
+
+        rebuild_table(true, current_page);
     });
 
     $(document).on('click', '.subform-delete', function() {
@@ -866,7 +952,7 @@ $(document).ready(function () {
             // TODO: STRIKEOUT!
         }
 
-        rebuild_table();
+        rebuild_table(true, current_page);
     });
 
     $(document).on('click', '.subform-edit', function() {
@@ -879,9 +965,16 @@ $(document).ready(function () {
     });
 
     $('#add_series_button').click(function() {
-        spawn_row(null, true);
+        // SLOPPY
+        spawn_row(null, true, false, series_data.length);
         // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
-        change_matrix_visibility();
+        // change_matrix_visibility();
+
+        // SKIP TO LAST PAGE
+        let new_current_page = Math.ceil(series_data.length / display_length) - 1;
+
+        // TODO LAZY
+        rebuild_table(true, new_current_page);
     });
 
     // SLOPPY: PLEASE REVISE
@@ -1012,7 +1105,7 @@ $(document).ready(function () {
 
                         // console.log(series_data);
 
-                        rebuild_table();
+                        rebuild_table(true, current_page);
                     }
                     // Contrived make preview
                     else {
@@ -1044,7 +1137,7 @@ $(document).ready(function () {
         else if (!protocol.val()) {
             if (is_new) {
                 reset_current_setup();
-                rebuild_table();
+                rebuild_table(true, current_page);
             }
             else {
                 series_table_preview.empty();
@@ -1056,7 +1149,10 @@ $(document).ready(function () {
         get_device_type(is_new);
     }
 
-    function rebuild_table() {
+    // Crude, make the start index file scope
+    let start_index = 0;
+
+    function rebuild_table(data_change, new_current_page) {
         // GET RID OF ANYTHING IN THE TABLE
         study_setup_head.find('.new_column').remove();
         study_setup_body.empty();
@@ -1067,24 +1163,47 @@ $(document).ready(function () {
             'setting': 0,
         };
 
-        // Empty series selector
-        // series_selector.empty();
+        let page_change = false;
+        if (new_current_page !== current_page) {
+            page_change = true;
+        }
 
-        console.log(series_data);
+        current_page = new_current_page;
+
+        // console.log(series_data);
+        // console.log('REBUILD', 'PAGE: ', current_page, 'START: ', current_page * display_length, 'DATA CHANGE: ', data_change);
 
         if (series_data.length) {
-            $.each(series_data, function(index, content) {
-                spawn_row(content, false);
-            });
+            // $.each(series_data, function(index, content) {
+            //     spawn_row(content, false);
+            // });
+            start_index = current_page * display_length;
+            for (let index=0; index < display_length; index++) {
+                let row_index = index + start_index;
+                if (series_data[start_index + index]) {
+                    spawn_row(series_data[start_index + index], false, false, row_index);
+                }
+            }
         }
         else {
-            spawn_row(null, true);
+            spawn_row(null, true, false, 0);
         }
 
-        replace_series_data();
+        if (data_change) {
+            replace_series_data();
+        }
+        // SLOPPY: If this is just a pagination, snap to the top
+        if (page_change) {
+            $('html, body').animate({
+                scrollTop: $('#study_setup_table').offset().top - 175
+            }, 500);
+        }
 
         // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
         change_matrix_visibility();
+
+        // Change the paginator text etc.
+        revise_paginator_text();
 
         // Show errors if necessary
         if (Object.keys(table_errors).length) {
@@ -1111,11 +1230,15 @@ $(document).ready(function () {
         }
 
         // Also remake the difference table
-        window.GROUPS.make_difference_table();
+        // TODO: ONLY DO THIS IF IT IS NECESSARY!
+        // IE this isn't just a page change
+        if (data_change) {
+            window.GROUPS.make_difference_table();
+        }
     }
 
     // TESTING
-    rebuild_table();
+    rebuild_table(true, current_page);
 
     var version_dialog = $('#version_dialog');
     version_dialog.dialog({

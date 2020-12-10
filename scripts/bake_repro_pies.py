@@ -24,6 +24,10 @@ def run():
             study_id=study.id
         )
 
+        groups = AssayGroup.objects.filter(
+            study_id=study.id
+        )
+
         data_points = AssayDataPoint.objects.filter(
             study_id=study.id
         ).prefetch_related(
@@ -61,7 +65,8 @@ def run():
         treatment_group_representatives, setup_to_treatment_group, treatment_header_keys = get_item_groups(
             None,
             criteria,
-            matrix_items
+            groups=groups,
+            matrix_items=matrix_items,
         )
 
         repro_data = []

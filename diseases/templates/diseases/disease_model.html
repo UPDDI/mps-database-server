@@ -2,8 +2,14 @@
 {% load staticfiles %}
 {% load humanize %}
 
+{% block extra_head %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+
 {% block load_js %}
     {# <script src="{% static "js/project_filter.js" %}"></script> #}
+    {# Just import study list rather than non-DRY! #}
+    <script src="{% static "assays/assaystudy_list.js" %}"></script>
     <script src="{% static "diseases/disease_models.js" %}"></script>
 {% endblock %}
 
@@ -70,8 +76,15 @@
             <tbody>
             {% for disease_model in disease_models %}
                 <tr>
+                    {# Why is the target blank here? #}
                     <td><a target="_blank" class="btn btn-primary" href="/microdevices/model/{{ disease_model.id }}">View</a></td>
-                    <td><a target="_blank" class="btn btn-primary" href="/microdevices/model/{{ disease_model.id }}/update/">Edit</a></td>
+                    <td>
+                    {% if disease_model.is_editable %}
+                    <a target="_blank" class="btn btn-primary" href="/microdevices/model/{{ disease_model.id }}/update/">Edit</a>
+                    {% else %}
+                    <button disabled class="btn btn-default" title="You do not have permission to edit this entry." >Edit</button>
+                    {% endif %}
+                    </td>
                     <td>{{ disease_model }}</td>
                     <td>{{ disease_model.organ|default_if_none:"" }}</td>
                     <td><a target="_blank" href="/microdevices/device/{{ disease_model.device.id }}">{{ disease_model.device|default_if_none:"" }}</a></td>
@@ -104,7 +117,7 @@
             </h2>
         </legend>
 
-        {% include 'assays/study_list.html' %}
+        {% include 'assays/study_list.html' with studies=studies %}
     </div>
 
 

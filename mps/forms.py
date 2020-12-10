@@ -87,7 +87,7 @@ class BootstrapForm(forms.ModelForm):
                     # )
 
                     # Possibly dumber
-                    if hasattr(self.fields[field]._queryset.model, 'get_add_url_manager'):
+                    if hasattr(self.fields[field]._queryset.model, 'get_add_url_manager') and self.fields[field]._queryset.model.get_add_url_manager():
                         self.fields[field].widget.attrs['data_add_url'] = self.fields[field]._queryset.model.get_add_url_manager()
 
             # Crude way to indicate default

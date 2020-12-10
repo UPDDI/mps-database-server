@@ -16,6 +16,7 @@
 {% block breadcrumbs %}
     <li><a href="/assays/assaystudy/editable_studies/">Editable Studies</a></li>
     <li><a href="{{ object.get_absolute_url }}">{{ object }}</a></li>
+    <li><a href="{% url 'assays-assaystudy-data-index' object.id %}">Data</a></li>
     <li class="active">Upload Data File</li>
 {% endblock %}
 
@@ -24,9 +25,6 @@
 {% endblock %}
 
 {% block fluid-content %}
-    {# Get the tabs #}
-    {% include 'assays/assaystudy_tabs.html' with study=object %}
-
     <form enctype="multipart/form-data" class="form-horizontal" method="post" >
 
     <h1>
@@ -75,6 +73,8 @@
     </div>
 
     {# NOT DRY #}
+    {# REMOVE FOR NOW #}
+    {% comment %}
     {{ supporting_data_formset.management_form }}
     <legend>Supporting Data</legend>
     {% if supporting_data_formset.non_form_errors %}
@@ -126,6 +126,7 @@
             {% endfor %}
         </tbody>
     </table>
+    {% endcomment %}
 
     {# Excluded for now #}
 {#    <div hidden>#}

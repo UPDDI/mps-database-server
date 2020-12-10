@@ -11,8 +11,6 @@ $(document).ready(function () {
     // TEMPORARY
     // FULL DATA
 
-    console.log(series_data_selector.val());
-
     var full_series_data = JSON.parse(series_data_selector.val());
 
     if (series_data_selector.val() === '{}') {
@@ -39,7 +37,6 @@ $(document).ready(function () {
 
     var matrix_item_data =  matrix_item_data = full_series_data.plates;
 
-    console.log(plate_id);
     // Try to get the plate
     // TODO: IF WE ARE EDITING ONLY ONE PLATE AT A TIME, THIS IS POINTLESS
     // The only possible benefit is strange front-end validation?
@@ -154,7 +151,7 @@ $(document).ready(function () {
 
     // Decided by an checkbox option?
     // TODO REVISE
-    function plate_style_name_creation(append_zero) {
+    function plate_style_name_creation(append_zero, apply_to_all) {
         // Start from the plate name
         // var current_global_name = $('#id_name').val();
 
@@ -167,7 +164,14 @@ $(document).ready(function () {
 
         var largest_row_name_length = Math.pow(current_number_of_columns, 1/10);
 
-        console.log(largest_row_name_length);
+        let selected_wells = null;
+        if (apply_to_all) {
+            selected_wells = $('.matrix_item-td');
+        }
+        else {
+            selected_wells = current_selection;
+            current_global_name = $('#id_incremental_well_naming').val();
+        }
 
         // Iterate over every well
         // Iterating over the data itself means more queries
@@ -175,7 +179,7 @@ $(document).ready(function () {
         // $.each(matrix_item_data, function(well_index, well) {
             // var row_index = well_index.split('_')[0];
             // var column_index = well_index.split('_')[1];
-        $('.matrix_item-td').each(function() {
+        selected_wells.each(function() {
             var row_index = Math.floor($(this).attr('data-row-index'));
             var column_index = Math.floor($(this).attr('data-column-index'));
 
@@ -202,34 +206,12 @@ $(document).ready(function () {
 
         // Refresh the data
         series_data_selector.val(JSON.stringify(full_series_data));
-
-        // OLD
-        // for (var row_id=0; row_id < current_number_of_rows; row_id++) {
-        //     // Please note + 1
-        //     var row_name = to_letters(row_id + 1);
-
-        //     for (var column_id=0; column_id < current_number_of_columns; column_id++) {
-        //         var current_item_id = item_prefix + '_' + row_id + '_' + column_id;
-
-        //         var column_name = column_id + 1 + '';
-        //         if (append_zero) {
-        //             while (column_name.length < largest_row_name_length) {
-        //                 column_name = '0' + column_name;
-        //             }
-        //         }
-
-        //         var value = current_global_name + row_name + column_name;
-
-        //         // TODO TODO TODO PERFORM THE ACTUAL APPLICATION TO THE FORMS
-
-        //     }
-        // }
     }
 
     // This function gets the initial dimensions of the matrix
     // Please see the corresponding AJAX call as necessary
     // TODO PLEASE ADD CHECKS TO SEE IF EXISTING DATA FALLS OUTSIDE NEW BOUNDS
-    // TODO PLEASE NOTE THAT THIS GETS RUN A MILLION TIMES DO TO HOW TRIGGERS ARE SET UP
+    // TODO PLEASE NOTE THAT THIS GETS RUN A MILLION TIMES DUE TO HOW TRIGGERS ARE SET UP
     // TODO MAKE A VARIABLE TO SEE WHETHER DATA WAS ALREADY ACQUIRED
     var get_matrix_dimensions = function() {
         var current_organ_model = organ_model_selector.val();
@@ -500,43 +482,6 @@ $(document).ready(function () {
         $(item_display_class).removeClass('ui-selected');
     }
 
-    // Matrix Listeners
-    // BE CAREFUL! THIS IS SUBJECT TO CHANGE!
-    // function check_representation() {
-    //     var current_representation = representation_selector.val();
-
-    //     // Hide all matrix sections
-    //     $('.matrix-section').hide('fast');
-
-    //     if (current_representation === 'chips') {
-    //         $('#matrix_dimensions_section').show();
-    //         if (device_selector.val()) {
-    //             // number_of_rows_selector.val(0);
-    //             // number_of_columns_selector.val(0);
-    //             // number_of_items_selector.val(0);
-    //             device_selector.val('').change();
-    //         }
-
-    //         // SPECIAL OPERATION
-    //         $('#id_matrix_item_device').parent().parent().show();
-
-    //         // SPECIAL OPERATION: SHOW NAMES
-    //         $('.matrix_item-name_section').show();
-    //     }
-    //     else if (current_representation === 'plate') {
-    //         $('#matrix_device_and_model_section').show();
-    //         // TODO FORCE SETUP DEVICE TO MATCH
-    //         // SPECIAL OPERATION
-    //         $('#id_matrix_item_device').parent().parent().hide();
-
-    //         // SPECIAL OPERATION: HIDE NAMES
-    //         $('.matrix_item-name_section').hide();
-
-    //         // UNCHECK USE CHIP NAMES
-    //         // use_incremental_well_naming.prop('checked', false);
-    //     }
-    // }
-
     // // Attach trigger and run initially
     // representation_selector.change(check_representation);
     // check_representation();
@@ -620,9 +565,6 @@ $(document).ready(function () {
 
             get_matrix_dimensions();
         }
-        // else if (!device_selector.val() || representation_selector.val() === 'plate') {
-        //     device_selector.val('');
-        // }
     }
 
     organ_model_selector.change(check_matrix_device);
@@ -742,8 +684,18 @@ $(document).ready(function () {
 
         // If the representation is a chips, use the initial
         if (use_incremental_well_naming.prop('checked')) {
-            // Sets the chip names
-            apply_incremental_well_naming();
+            if ($('#well_naming_options_incremental').prop('checked')) {
+                // Sets the chip names
+                apply_incremental_well_naming();
+            }
+            // APPEND ZERO PLATE
+            else if ($('#well_naming_options_plate_0').prop('checked')) {
+                plate_style_name_creation(true, false);
+            }
+            // DON'T APPEND ZERO PLATE
+            else if ($('#well_naming_options_plate').prop('checked')) {
+                plate_style_name_creation(false, false);
+            }
         }
 
         // TO BE REVISED:
@@ -890,21 +842,61 @@ $(document).ready(function () {
     // Maybe never?
     function generate_row_clone_html(current_well_name, current_series, current_group) {
         // (these divs are contrivances)
-        var name_row = $('<div>').append(
-            $('<tr>').append(
-                $('<td>').text(current_well_name)
-            )
-        );
+        let name_row = null;
 
-        var full_row = $('<div>');
+        if (series_data[current_group]) {
+            name_row = $('<tr>')
+            .addClass(
+                'bg-primary'
+            ).append(
+                $('<td>').text(current_well_name + ': ' + series_data[current_group].name)
+            );
+        }
+        else {
+            name_row = $('<tr>')
+            .addClass(
+                'bg-danger'
+            ).append(
+                $('<td>').text(current_well_name + ': NO GROUP')
+            );
+        }
+
+
+        let column_headers = $('<tr>')
+        .addClass(
+            'bg-info'
+        );
+        let full_row = $('<tr>');
 
         // SUBJECT TO CHANGE
         // Just draws from the difference table
         // Be careful with conditionals! Zero has the truthiness of *false*!
         if (series_data[current_group] !== undefined) {
-            full_row.append(
-                $('tr[data-group-name="' + series_data[current_group].name + '"]').clone()
-            );
+            // NOT VERY ELEGANT
+            let current_stored_tds = window.GROUPS.difference_table_displays[series_data[current_group].name];
+
+            // Determine row hiding
+            let columns_to_check = [
+                'model',
+                'test_type',
+                'cell',
+                'compound',
+                'setting'
+            ];
+
+            $.each(columns_to_check, function(index, key) {
+                if (!window.GROUPS.hidden_columns[key]) {
+                    column_headers.append(
+                        $('<td>').text(
+                            $.trim($('[data-header-for="' + key + '"]').text())
+                        )
+                    );
+
+                    full_row.append(
+                        current_stored_tds[key].clone(),
+                    );
+                }
+            });
         }
 
         // var full_row = $('<div>').append(
@@ -928,7 +920,7 @@ $(document).ready(function () {
         // Kill buttons (this isn't for editing, just showing the data)
         // full_row.find('.btn').remove();
 
-        return name_row.html() + full_row.html();
+        return name_row[0].outerHTML + column_headers[0].outerHTML + full_row[0].outerHTML;
     }
 
     // Hover event for matrix contents
@@ -973,10 +965,90 @@ $(document).ready(function () {
 
     // Events for plate naming buttons
     $('#apply_plate_names_zero').click(function() {
-        plate_style_name_creation(true);
+        plate_style_name_creation(true, true);
     });
 
     $('#apply_plate_names_no_zero').click(function() {
-        plate_style_name_creation(false);
+        plate_style_name_creation(false, true);
     });
+
+    // Charting business
+    // Load core chart package
+    // Only bother if charts exist
+    var charts = $('#charts');
+
+    if (charts[0]) {
+        google.charts.load('current', {'packages':['corechart']});
+        // Set the callback
+        google.charts.setOnLoadCallback(get_readouts);
+
+        // Name for the charts for binding events etc
+        var charts_name = 'charts';
+        var first_run = true;
+
+        window.GROUPING.refresh_function = get_readouts;
+
+        window.CHARTS.call = 'fetch_data_points';
+        window.CHARTS.matrix_id = plate_id;
+
+        // PROCESS GET PARAMS INITIALLY
+        window.GROUPING.process_get_params();
+        // window.GROUPING.generate_get_params();
+
+        function get_readouts() {
+            var data = {
+                // TODO TODO TODO CHANGE CALL
+                call: 'fetch_data_points',
+                matrix: plate_id,
+                criteria: JSON.stringify(window.GROUPING.group_criteria),
+                post_filter: JSON.stringify(window.GROUPING.current_post_filter),
+                full_post_filter: JSON.stringify(window.GROUPING.full_post_filter),
+                csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
+            };
+
+            window.CHARTS.global_options = window.CHARTS.prepare_chart_options();
+            var options = window.CHARTS.global_options.ajax_data;
+
+            data = $.extend(data, options);
+
+            // Show spinner
+            window.spinner.spin(
+                document.getElementById("spinner")
+            );
+
+            $.ajax({
+                url: "/assays_ajax/",
+                type: "POST",
+                dataType: "json",
+                data: data,
+                success: function (json) {
+                    // Stop spinner
+                    window.spinner.stop();
+
+                    window.CHARTS.prepare_side_by_side_charts(json, charts_name);
+                    window.CHARTS.make_charts(json, charts_name, first_run);
+
+                    // Recalculate responsive and fixed headers
+                    $($.fn.dataTable.tables(true)).DataTable().responsive.recalc();
+                    $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+
+                    first_run = false;
+                },
+                error: function (xhr, errmsg, err) {
+                    first_run = false;
+
+                    // Stop spinner
+                    window.spinner.stop();
+
+                    console.log(xhr.status + ": " + xhr.responseText);
+                }
+            });
+        }
+    }
+    else {
+        // GET RID OF SIDEBAR INITIALLY
+        if ($('#sidebar').hasClass('active')) {
+            $('.toggle_sidebar_button').first().trigger('click');
+        }
+    }
 });

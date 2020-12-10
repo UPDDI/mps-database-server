@@ -1,10 +1,18 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block extra_head %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    {% if detail %}
+        <script src="{% static "assays/grouping_filtering.js" %}"></script>
+        <script src="{% static "assays/chart_display.js" %}"></script>
+    {% endif %}
+{% endblock %}
+
 {% block load_js %}
     <script src="{% static "js/enter_override.js" %}"></script>
     {# Should any page be flaggable? #}
-    {# <script src="{% static "js/flag.js" %}"></script> #}
+    <script src="{% static "js/flag.js" %}"></script>
     <script src="{% static "assays/assaystudy_tabs.js" %}"></script>
     {# Respective page's script here #}
     <script src="{% static "assays/cell_sample_selection.js" %}"></script>
@@ -15,7 +23,12 @@
 
 {# TODO REVISE #}
 {% block breadcrumbs %}
+    {# REVISE URLS SOON #}
+    {% if not detail %}
     <li><a href="/assays/assaystudy/editable_studies/">Editable Studies</a></li>
+    {% else %}
+    <li><a href="/assays/assaystudy/">Studies</a></li>
+    {% endif %}
     {# TODO REVISE #}
     <li>
         <a href="{{ form.instance.study.get_absolute_url }}">{{ form.instance.study }}</a>
@@ -23,22 +36,36 @@
     <li class="active">
         {% if update %}
         Edit Plate <em>{{ object }}</em>
-        {% else %}
+        {% elif not detail %}
         Add Plate
+        {% else %}
+        <em>{{ object }}</em>
         {% endif %}
     </li>
+{% endblock %}
+
+{% block sidebar %}
+    {% if detail %}
+        {% include 'assays/grouping_filtering.html' with charts="true" %}
+    {% endif %}
 {% endblock %}
 
 {% block content %}
 
 {# Get the tabs #}
+{% if not detail %}
 {% include 'assays/assaystudy_tabs.html' with study=form.instance.study %}
+{% endif %}
 
+{% if not detail %}
 <form enctype="multipart/form-data" class="form-horizontal" method="post">
+{% endif %}
 
     <h1>
         {% if update %}
         Edit Plate <em>{{ object }}</em>
+        {% elif detail %}
+        <em>{{ object }}</em>
         {% else %}
         Add Plate
         {% endif %}
@@ -46,15 +73,22 @@
     {% csrf_token %}
     </h1>
 
+    {% if not detail %}
     {% include "submit.html" with flag="y" group=form.instance.group.name %}
 
     {% include 'errors.html' %}
+    {% endif %}
 
     {% include 'tracking.html' %}
+
+    {% include "sign_off_form.html" with group=form.instance.study.group.name %}
 
     <legend>Plate Details</legend>
 
     {# TODO #}
+    {% if detail %}
+    <div hidden>
+    {% endif %}
 
     {# This section is to select a plate #}
     {# There a number of reasons that having a dropdown for this is tricky #}
@@ -91,6 +125,35 @@
         </div>
     </div>
 
+    {% if detail %}
+    </div>
+    {% endif %}
+
+    {% if detail %}
+    <table class="table table-striped table-bordered table-nonfluid" style="background-color: #AAB3AB;">
+        <tbody>
+            <tr>
+                <th>
+                    MPS Model
+                </th>
+                <td>
+                    <a href="{{ object.organ_model.get_absolute_url }}">{{ object.organ_model }}</a>
+                </td>
+            </tr>
+            {% if object.notes %}
+            <tr>
+                <th>
+                    Notes
+                </th>
+                <td>
+                    {{ object.notes }}
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    {% endif %}
+
     {# Not currently used, excldued for now #}
     {# {% include 'assays/group_visibility_section.html' %} #}
 
@@ -104,6 +167,19 @@
     </div>
 
     {% include 'assays/group_difference_table.html' %}
+
+    {% if detail %}
+        <div>
+        {% include 'assays/sidebar_extras.html' with show_hide="true" %}
+
+        {# Note indicating no data to display initially #}
+        <div id="charts" class="padded-bottom">
+            No data to display
+        </div>
+
+        {% include 'assays/group_table.html' %}
+        </div>
+    {% endif %}
 
     {# TODO CHANGE #}
     <div hidden>
@@ -135,11 +211,32 @@
 
             <tr class="selection_dialog_naming_section">
                 <th>Incrementally Name Wells?</th>
-                <th>Initial Name</th>
+                <th>Initial Name / Prefix</th>
+                <th>Naming Method</th>
             </tr>
-            <tr class="selection_dialog_naming_section text-center">
-                <td><input id="id_use_incremental_well_naming" class="big-checkbox" type="checkbox"></td>
+            <tr class="selection_dialog_naming_section">
+                <td class="text-center"><input id="id_use_incremental_well_naming" class="big-checkbox" type="checkbox"></td>
                 <td><input id="id_incremental_well_naming" class="form-control"></td>
+                <td>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="well_naming_options" id="well_naming_options_incremental" value="incremental" checked>
+                            Increment Number
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="well_naming_options" id="well_naming_options_plate_0" value="plate_0">
+                            Default Plate Names (Append Zero)
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="well_naming_options" id="well_naming_options_plate" value="plate">
+                            Default Plate Names (Don't Append Zero)
+                        </label>
+                    </div>
+                <td>
             </tr>
 
             </table>
@@ -172,5 +269,8 @@
 
     {# For displaying cells etc. #}
     {% include 'assays/component_displays.html' %}
+
+{% if not detail %}
 </form>
+{% endif %}
 {% endblock %}

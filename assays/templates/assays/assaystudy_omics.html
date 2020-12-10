@@ -58,15 +58,10 @@
         </tbody>
     </table>
 
+    {# Maybe ought not make this at all #}
     <div hidden>
-        {{ form.series_data }}
+        {% include 'assays/group_difference_table.html' %}
     </div>
-    {% include 'assays/component_displays.html' %}
-
-    <table hidden id="difference_table" class="table table-bordered">
-        <tbody id="difference_table_body">
-        </tbody>
-    </table>
 
     <div id="plots">
         <div id="volcano-plots">
@@ -81,6 +76,11 @@
             </tbody>
         </table>
     </div>
+
+    <div hidden>
+        {{ form.series_data }}
+    </div>
+    {% include 'assays/component_displays.html' %}
 
     {# Just a spacer (and yes, inline styles are ugly)#}
     <div style="padding-bottom: 250px;"></div>

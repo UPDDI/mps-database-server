@@ -363,6 +363,7 @@ $(document).ready(function () {
                     call: 'fetch_power_analysis_group_table',
                     criteria: JSON.stringify(window.GROUPING.group_criteria),
                     post_filter: JSON.stringify(window.GROUPING.current_post_filter),
+                    full_post_filter: JSON.stringify(window.GROUPING.full_post_filter),
                     csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken,
                     study: study_id
                 },
@@ -405,7 +406,6 @@ $(document).ready(function () {
             },
             columns: group_table_columns,
             "order": [1, 'asc'],
-            dom: '<Bl<"row">frptip>',
             paging: false,
             fixedHeader: {headerOffset: 50},
             deferRender: true,
@@ -902,6 +902,9 @@ $(document).ready(function () {
         }
         else if (Math.abs(global_max_y - global_min_y) < 0.1 && Math.abs(global_max_y - global_min_y) !== 0) {
             options.vAxis.format = '0.0E0';
+        }
+        else {
+            options.vAxis.format = '0';
         }
 
         var current_min_x = assay_data[1][0];

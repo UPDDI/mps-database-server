@@ -551,6 +551,16 @@ class CompoundInstance(LockableModel):
 
     def __str__(self):
         items = [
-            str(self.compound), str(self.supplier), str(self.lot), str(self.receipt_date)
+            str(self.compound),
+            str(self.supplier),
+            str(self.lot),
+            self.receipt_date
         ]
-        return ' '.join(items)
+        string_builder = []
+
+        for field in items:
+            # Crude
+            if field and field != 'N/A':
+                string_builder.append(str(field))
+
+        return ' '.join(string_builder)

@@ -19,6 +19,9 @@
     {% if object.matrix.representation == 'plate' %}
     <li><a href="{{ object.matrix.get_absolute_url }}">{{ object.matrix }}</a></li>
     {% endif %}
+    <li>
+        <a href="{{ object.group.get_absolute_url }}">{{ object.group }}</a>
+    </li>
     <li class="active">
         <em>{{ object }}</em>
     </li>
@@ -32,7 +35,11 @@
 
     <h1><em>{{ object }}</em></h1>
 
-    <legend>Matrix Item Details</legend>
+    {% if form.instance.matrix.representation == 'plate' or object.matrix.representation == 'plate' %}
+        <legend>Well Details</legend>
+    {% else %}
+        <legend>Chip Details</legend>
+    {% endif %}
 
     <table class="table table-striped table-bordered table-nonfluid" style="background-color: #AAB3AB;">
         <tbody>
@@ -76,22 +83,43 @@
                 <td>
                     <a href="{{ object.organ_model.get_absolute_url }}">
                         {{ object.organ_model }}
-                        {% if object.organ_model_protocol %}
-                            {{ object.organ_model_protocol }}
-                        {% endif %}
                     </a>
                 </td>
             </tr>
-            {% if object.variance_from_organ_model_protocol %}
+            {% if object.organ_model_protocol %}
             <tr>
                 <th>
                     MPS Model Version
                 </th>
                 <td>
-                    {{ object.variance_from_organ_model_protocol }}
+                    <a href="{{ object.organ_model_protocol.get_absolute_url }}">
+                        {{ object.organ_model_protocol }}
+                    </a>
                 </td>
             <tr>
             {% endif %}
+            {% endif %}
+            <tr>
+                <th>
+                    Group
+                </th>
+                <td>
+                    <a href="{% url 'assays-assaygroup-detail' object.group.id %}">
+                        {{ object.group }}
+                    </a>
+                </td>
+            </tr>
+            {% if object.matrix.representation == 'plate' %}
+            <tr>
+                <th>
+                    Plate
+                </th>
+                <td>
+                    <a href="{% url 'assays-assaymatrix-plate-detail' object.matrix.id %}">
+                        {{ object.matrix }}
+                    </a>
+                </td>
+            </tr>
             {% endif %}
         </tbody>
     </table>
@@ -191,6 +219,12 @@
         {% endfor %}
         </tbody>
     </table>
+    {% endif %}
+
+    {% if object.matrix.representation == 'plate' %}
+        <legend>Well Data</legend>
+    {% else %}
+        <legend>Chip Data</legend>
     {% endif %}
 
     {% include 'assays/sidebar_extras.html' with show_hide="true" %}

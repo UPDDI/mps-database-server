@@ -40,7 +40,9 @@
                 {% for method in object_list %}
                      <tr>
                          <td><a class="btn btn-primary" title="View paired target/analytes." href="{{ method.get_absolute_url }}">View</a></td>
-                         <td><a class="btn btn-primary" title="View paired method/kits." href="{{ method.get_update_url }}">Edit</a></td>
+                         <td>
+                         {% include 'generic_edit_button.html' with object=method %}
+                         </td>
                         {# <td><a class="btn btn-primary" title="View paired target/analytes." href="{{ method.id }}">View</a></td> #}
                         <td>{{ method.name }}</td>
                         <td>{{ method.measurement_type }}</td>

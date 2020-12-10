@@ -7,25 +7,35 @@
 {% endblock %}
 
 {% block content %}
-    {% comment %}
-    {% if what_is_new %}
-    <div class="row">
-        <div class="col-xs-12">
-            <div class="alert alert-info" role="alert">
-                <span class="sr-only">Info:</span>
-                <h4>
-                    What's New:
-                </h4>
-                <ul>
-            {% for entry in what_is_new %}
-                <li>{{ entry.short_contents|safe }}</li>
-            {% endfor %}
-                </ul>
-             </div>
-        </div>
+    {# Hard coded for the moment #}
+    <div hidden class="panel panel-primary" id="webinar_banner">
+    <div class="panel-heading">
+        <h2>
+            Microphysiology Systems Database Webinar:
+            <a data-banner-id="hide_banner3" role="button" id="close_webinar_banner" class="btn btn-danger pull-right">
+                <span class="glyphicon glyphicon-remove"></span>
+            </a>
+            <br>
+            Study Workflow and Data Entry in the Microphysiology Systems Database (MPS-Db)
+        </h2>
     </div>
-    {% endif %}
-    {% endcomment %}
+    <div class="panel-body">
+        <h3>
+        Drs. Mark Schurdak and Bert Gough, principal investigators leading the development of the MPS-Db, will be hosting a series of webinars introducing the MPS-Db, its features and benefits, as well as diving into the details on using the MPS-Db to manage and analyze MPS data.
+        <br>
+        <br>
+        More than a repository for data, the MPS-Db is a single entry system guiding users along a simple, streamlined workflow to design, create, implement, analyze, share and computationally model MPS studies. This webinar will walk through the workflow demonstrating how to set up simple and complex studies directly in the MPS-Db and upload different types of study data.
+        <br>
+        <br>
+        <small>
+        When: December 15, 2020 12:00 PM in Eastern Time (US and Canada)
+        </small>
+        </h3>
+        <p>
+            <a class="btn btn-primary btn-lg" href="https://pitt.zoom.us/webinar/register/WN_M7JoMY6cQmyz3VENtgFoFA" role="button" target="_blank">Click here to Register</a>
+        </p>
+    </div>
+    </div>
 
     <div class="row">
         <div class="col-xs-12">
@@ -229,6 +239,11 @@
                                 <li title="Generate a dendrogram for selected compound/bioactivity data">
                                     <a href="/bioactivities/cluster/#filter">Cluster</a>
                                 </li>
+                                <li title="" class="divider"></li>
+                                <li title="" class="dropdown-header">API</li>
+                                <li title="Web API for the database">
+                                    <a href="/api/">Web API</a>
+                                <li>
                             </ul>
                         </div>
                     </div>

@@ -15,44 +15,8 @@ $(document).ready(function() {
     //     'Unassigned': show_unassigned.prop('checked')
     // };
 
-    var  data_table = $('#studies').DataTable( {
-        dom: '<Bl<"row">frptip>',
-        fixedHeader: {headerOffset: 50},
-        responsive: true,
-        "iDisplayLength": 50,
-        // Initially sort on start date (descending), not ID
-        "order": [ 2, "desc" ],
-        "aoColumnDefs": [
-            {
-                "bSortable": false,
-                "aTargets": [0]
-            },
-            {
-                "width": "10%",
-                "targets": [0]
-            },
-            {
-                "type": "numeric-comma",
-                "targets": [5, 6, 7, 8]
-            },
-            {
-                'visible': false,
-                'targets': [7, 8, 12, 14, 15]
-            },
-            {
-                'className': 'none',
-                'targets': [9]
-            },
-            {
-                'sortable': false,
-                'targets': [10]
-            }
-        ]
-    });
-
-    window.TABLE = $('#models').DataTable({
+    $('#models').DataTable({
         "iDisplayLength": 100,
-        "sDom": '<Bl<"row">frptip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
         "order": [[3, "asc"], [2, "asc"]],
@@ -72,6 +36,4 @@ $(document).ready(function() {
             }
         ]
     });
-
-    $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
 });

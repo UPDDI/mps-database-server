@@ -1,5 +1,6 @@
  {% extends "base.html" %}
 {% load static %}
+{% load humanize %}
 {% load custom_filters %}
 
 {% block load_js %}
@@ -9,6 +10,7 @@
 {% block breadcrumbs %}
     <li><a href="/assays/assaystudy/">Studies</a></li>
     <li><a href="{{ object.get_absolute_url }}">{{ object }}</a></li>
+    <li><a href="{% url 'assays-assaystudy-data-index' object.id %}">Data</a></li>
     <li class="active">Omic Data Files</li>
 {% endblock %}
 
@@ -21,19 +23,23 @@
             <h1 class="text-center">
                 <em><b>Omic Data File Upload List</b></em><br><br>
                 Study: {{ object }}
+                {% if datafiles.count %}
+                    <div>
+                        <a href="{% url 'assays-assaystudy-omics' object.id %}" class="btn btn-primary" role="button">Visualization</a>
+                    </div>
+                {% endif %}
             </h1>
-            <div class="text-center">
-                <a href="{% url 'assays-assaystudy-omics' object.id %}" class="btn btn-primary" role="button">Visualization</a>
-            </div>
         </div>
 
         {# Hide setup add buttons if the study is marked reviewed #}
         {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
             {% if not review %}
-                <a href="{% url "assayomicdatafileupload-add" object.id %}" class="btn btn-success" role="button">Add Omic Data File</a>
+                <div class="padded-bottom">
+                    <a href="{% url "assayomicdatafileupload-add" object.id %}" class="btn btn-success" role="button">Add Omic Data File</a>
+                </div>
             {% endif %}
         {% endif %}
-        <br>
+
         {% if datafiles %}
         <div>
             <div><p id="omic_file_index_tooltip"></p>
@@ -79,7 +85,7 @@
                         </a>
                     </td>
 
-                    <td>{{ file.point_count }}</td>
+                    <td>{{ file.point_count|intcomma }}</td>
 
                     <td>{{ file.description }}</td>
                     <td>{{ file.study_assay }}</td>
@@ -92,7 +98,6 @@
                     <td>{{ file.group_2 }}</td>
                     <td>{{ file.time_2 }}</td>
                     <td>{{ file.location_2 }}</td>
-
                 </tr>
             {% endfor %}
             </tbody>

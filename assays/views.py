@@ -63,6 +63,7 @@ from assays.forms import (
     AssayStudyAssayFormSetFactory,
     AssayStudyReferenceFormSetFactory,
     AssayStudyDeleteForm,
+    AssayStudyAccessForm,
     AssayMatrixForm,
     AssayMatrixItemFullForm,
     AssayMatrixItemFormSetFactory,
@@ -390,6 +391,8 @@ class AssayStudyConfigurationList(LoginRequiredMixin, ListView):
 
 
 # BEGIN NEW
+# REALLY OUGHT TO USE AGGREGATION AND SUCH INSTEAD
+# ITERATING OVER STUDIES CREATES A NEW QUERY EVERY TIME!
 def get_queryset_with_organ_model_map(queryset):
     """Takes a queryset and returns it with a organ model map"""
     # Not DRY
@@ -410,6 +413,7 @@ def get_queryset_with_organ_model_map(queryset):
     )
 
     organ_model_map = {}
+    model_type_map = {}
 
     for setup in setups:
         organ_model_map.setdefault(
@@ -419,12 +423,23 @@ def get_queryset_with_organ_model_map(queryset):
                 setup.organ_model.name: True
             }
         )
+        # Crude
+        model_type_map.setdefault(
+            setup.study_id, {}
+        ).update(
+            {
+                setup.organ_model.get_model_type_display(): True
+            }
+        )
 
     for study in queryset:
         study.organ_models = ',\n'.join(
             sorted(organ_model_map.get(study.id, {}).keys())
         )
-
+        # Crude
+        study.model_types = ',\n'.join(
+            sorted(model_type_map.get(study.id, {}).keys())
+        )
 
 def get_queryset_with_number_of_data_points(queryset):
     """Add number of data points to each object in an Assay Study querysey"""
@@ -470,6 +485,20 @@ def get_queryset_with_number_of_data_points(queryset):
         )
         plate_reader_files_map.update({
             plate_reader_file.study_id: current_value + 1
+        })
+
+    omic_data_points = AssayOmicDataPoint.objects.filter(
+        study_id__in=study_ids
+    ).only('id', 'study_id')
+
+    omic_data_points_map = {}
+
+    for omic_data_point in omic_data_points:
+        current_value = omic_data_points_map.setdefault(
+            omic_data_point.study_id, 0
+        )
+        omic_data_points_map.update({
+            omic_data_point.study_id: current_value + 1
         })
 
     images = AssayImage.objects.filter(
@@ -530,6 +559,7 @@ def get_queryset_with_number_of_data_points(queryset):
         study.supporting_data = supporting_data_map.get(study.id, 0)
         study.plate_maps = plate_maps_map.get(study.id, 0)
         study.plate_reader_files = plate_reader_files_map.get(study.id, 0)
+        study.omic_data_points = omic_data_points_map.get(study.id, 0)
 
 
 # TODO GET NUMBER OF DATA POINTS
@@ -651,6 +681,8 @@ class AssayStudyDetailsMixin(AssayStudyMixin):
 
     # Do we want references here?
     formsets = (
+        # Added supporting data back again
+        ('supporting_data_formset', AssayStudySupportingDataFormSetFactory),
         ('reference_formset', AssayStudyReferenceFormSetFactory),
     )
 
@@ -752,6 +784,24 @@ class AssayStudyGroups(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
         # Otherwise it will just go to assays, like usual
         return super(AssayStudyGroups, self).extra_form_processing(form)
 
+
+class AssayGroupDetail(StudyGroupMixin, DetailView):
+    # Why not have the mixin look for DetailView?
+    model = AssayGroup
+    detail = True
+    no_update = True
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayGroupDetail, self).get_context_data(**kwargs)
+
+        context.update({
+            'detail': True,
+            'items': AssayMatrixItem.objects.filter(group=self.object).order_by('name')
+        })
+
+        return context
+
+
 class AssayStudyChips(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     template_name = 'assays/assaystudy_chips.html'
     # Might end up being a formset?
@@ -773,6 +823,26 @@ class AssayStudyChips(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
         return context
 
 
+# WE NEED A VIEW PAGE FOR ALL OF A STUDY'S CHIPS
+class AssayStudyChipsDetail(StudyGroupMixin, DetailView):
+    # Why not have the mixin look for DetailView?
+    model = AssayMatrix
+    detail = True
+    no_update = True
+
+    template_name = 'assays/assaystudy_chips_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyChipsDetail, self).get_context_data(**kwargs)
+
+        context.update({
+            'detail': True,
+            'items': AssayMatrixItem.objects.filter(matrix=self.object).order_by('name')
+        })
+
+        return context
+
+
 # This is now really just a list page
 class AssayStudyPlates(ObjectGroupRequiredMixin, AssayStudyMixin, DetailView):
     template_name = 'assays/assaystudy_plates.html'
@@ -784,6 +854,7 @@ class AssayStudyPlates(ObjectGroupRequiredMixin, AssayStudyMixin, DetailView):
 
         # TODO SLATED FOR REMOVAL
         context.update({
+            # CONTRIVED!!!
             'update': True,
             # TODO REVISE
             'plates': AssayMatrix.objects.filter(
@@ -791,6 +862,9 @@ class AssayStudyPlates(ObjectGroupRequiredMixin, AssayStudyMixin, DetailView):
                 # device__isnull=False,
                 organ_model__isnull=False,
                 study_id=self.object.id
+            ).prefetch_related(
+                'organ_model',
+                'assaymatrixitem_set'
             )
         })
 
@@ -802,6 +876,11 @@ class AssayStudyPlateMixin(FormHandlerMixin):
     template_name = 'assays/assaystudy_plate_add.html'
     # Might actually be a formset or something?
     form_class = AssayStudyPlateForm
+
+    # CRUDE: BUT PREVENTS LOOKING AT NON PLATE MATRICES
+    def get_object(self, queryset=None):
+        current_object = super(AssayStudyPlateMixin, self).get_object()
+        return get_object_or_404(AssayMatrix, pk=current_object.id, representation='plate')
 
     def get_context_data(self, **kwargs):
         context = super(AssayStudyPlateMixin, self).get_context_data(**kwargs)
@@ -844,6 +923,21 @@ class AssayStudyPlateUpdate(StudyGroupMixin, AssayStudyPlateMixin, UpdateView):
     pass
 
 
+class AssayStudyPlateDetail(StudyGroupMixin, AssayStudyPlateMixin, DetailView):
+    detail = True
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyPlateDetail, self).get_context_data(**kwargs)
+
+        context.update({
+            'form': AssayStudyPlateForm(instance=self.object),
+            'detail': True
+        })
+
+        return context
+
+
+
 class AssayStudyAssays(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     template_name = 'assays/assaystudy_assays.html'
     # This will probably just be a contrived empty form
@@ -852,6 +946,52 @@ class AssayStudyAssays(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     formsets = (
         ('study_assay_formset', AssayStudyAssayFormSetFactory),
     )
+
+
+# TODO: TO BE REVISED
+class AssayStudyDataIndex(StudyViewerMixin, AssayStudyMixin, DetailView):
+    """Show all data sections for a given study"""
+    model = AssayStudy
+    template_name = 'assays/assaystudy_data_index.html'
+
+    # For permission mixin NOT AS USELESS AS IT SEEMS
+    def get_object(self, queryset=None):
+        self.study = super(AssayStudyDataIndex, self).get_object()
+        return self.study
+
+    # NOTE: bracket assignations are against PEP, one should use .update
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyDataIndex, self).get_context_data(**kwargs)
+
+        # SUBJECT TO CHANGE
+        log2fold_files = AssayOmicDataFileUpload.objects.filter(
+            study_id=self.object.id,
+            data_type='log2fc'
+        )
+
+        # Have to account for replaced data...
+        unreplaced_data = AssayDataPoint.objects.filter(
+            replaced=False,
+            study=self.object
+        )
+
+        unreplaced_data_files_count = len(set(unreplaced_data.values_list('data_file_upload_id')))
+
+        context.update({
+            # CONTRIVED!!!
+            'update': True,
+            # NECESSARILY FALSE
+            'has_next_button': False,
+            # Need to filter out replaced data (should we even continue using the replaced flag?)
+            'unreplaced_data_count': unreplaced_data.count(),
+            'unreplaced_data_files_count': unreplaced_data_files_count,
+            'log2fold_files': log2fold_files,
+            'log2fold_points': AssayOmicDataPoint.objects.filter(
+                omic_data_file__in=log2fold_files
+            ),
+        })
+
+        return context
 
 
 # class AssayStudyAdd(OneGroupRequiredMixin, CreateView):
@@ -1026,6 +1166,7 @@ class AssayStudyIndex(StudyViewerMixin, DetailView):
             # Stupid way to acquire group values, but expedient I guess
 
             'group__assaygroupcompound_set__compound_instance__compound',
+            'group__assaygroupcompound_set__compound_instance__supplier',
             'group__assaygroupcompound_set__concentration_unit',
             'group__assaygroupcompound_set__addition_location',
             'group__assaygroupcell_set__cell_sample__cell_type__organ',
@@ -1093,6 +1234,9 @@ class AssayStudyIndex(StudyViewerMixin, DetailView):
             # device__isnull=False,
             organ_model__isnull=False,
             study_id=self.object.id
+        ).prefetch_related(
+            'organ_model',
+            'assaymatrixitem_set'
         )
 
         context.update({
@@ -1100,6 +1244,12 @@ class AssayStudyIndex(StudyViewerMixin, DetailView):
             'plate_groups': plate_groups,
             'number_of_chips': number_of_chips,
             'plates': plates,
+            'form': AssayStudyGroupForm(instance=self.object),
+            'cellsamples': CellSample.objects.all().prefetch_related(
+                'cell_type__organ',
+                'supplier',
+                'cell_subtype__cell_type'
+            )
         })
 
         return context
@@ -1125,7 +1275,7 @@ class AssayStudySummary(StudyViewerMixin, TemplateView):
             'assaystudyassay_set__target',
             'assaystudyassay_set__method',
             'assaystudyassay_set__unit',
-            'group__microphysiologycenter_set'
+            'group__center_groups'
         )[0]
 
         context.update({
@@ -1265,6 +1415,11 @@ class AssayStudySignOff(HistoryMixin, UpdateView):
             # Only allow if necessary
             if is_group_admin(self.request.user, self.object.group.name) and not self.object.signed_off_by:
                 send_initial_sign_off_alert = not form.instance.signed_off_by and form.cleaned_data.get('signed_off', '')
+                # TODO DO NOT USE FUNCTIONS LIKE THIS
+                save_forms_with_tracking(self, form, update=True)
+            elif is_group_admin(self.request.user, self.object.group.name):
+                # CRUDE: FORCE SIGN OFF
+                form.cleaned_data['signed_off'] = True
                 # TODO DO NOT USE FUNCTIONS LIKE THIS
                 save_forms_with_tracking(self, form, update=True)
 
@@ -1460,8 +1615,9 @@ class AssayStudySignOff(HistoryMixin, UpdateView):
             ))
 
 
-class AssayStudyDataUpload(AssayStudyMixin, ObjectGroupRequiredMixin, UpdateView):
+class AssayStudyDataUpload(ObjectGroupRequiredMixin, FormHandlerMixin, UpdateView):
     """Upload an Excel Sheet for storing multiple sets of Readout data at one"""
+    model = AssayStudy
     template_name = 'assays/assaystudy_upload.html'
     form_class = AssayStudyDataUploadForm
 
@@ -1478,35 +1634,15 @@ class AssayStudyDataUpload(AssayStudyMixin, ObjectGroupRequiredMixin, UpdateView
     def get_context_data(self, **kwargs):
         context = super(AssayStudyDataUpload, self).get_context_data(**kwargs)
 
-        # TODO TODO TODO
-        # context['version'] = len(os.listdir(MEDIA_ROOT + '/excel_templates/'))
-
-        # context['data_file_uploads'] = get_data_file_uploads(study=self.object)
-
-        if self.request.POST:
-            if 'supporting_data_formset' not in context:
-                context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(self.request.POST, self.request.FILES, instance=self.object)
-        else:
-            context['supporting_data_formset'] = AssayStudySupportingDataFormSetFactory(instance=self.object)
-
-        # context['update'] = True
-
         context.update({
             'data_file_uploads': get_data_file_uploads(study=self.object),
             'update': True,
-            'has_next_button': False
         })
 
         return context
 
     def form_valid(self, form):
-        supporting_data_formset = AssayStudySupportingDataFormSetFactory(
-            self.request.POST,
-            self.request.FILES,
-            instance=self.object
-        )
-
-        if form.is_valid() and supporting_data_formset.is_valid():
+        if form.is_valid():
             data = form.cleaned_data
             overwrite_option = data.get('overwrite_option')
 
@@ -1532,7 +1668,7 @@ class AssayStudyDataUpload(AssayStudyMixin, ObjectGroupRequiredMixin, UpdateView
                 save_forms_with_tracking(
                     self,
                     None,
-                    formset=[supporting_data_formset],
+                    formset=[],
                     update=True
                 )
 
@@ -1780,6 +1916,133 @@ class AssayStudyTemplate(ObjectGroupRequiredMixin, DetailView):
         return response
 
 
+class AssayStudyAccess(UpdateView):
+    """Update the fields of a Study"""
+    model = AssayStudy
+    template_name = 'assays/assaystudy_access.html'
+    form_class = AssayStudyAccessForm
+
+    # We manually make the dispatch to circumvent sign off
+    @method_decorator(login_required)
+    @method_decorator(user_passes_test(user_is_active))
+    def dispatch(self, *args, **kwargs):
+        # Get the study
+        study = get_object_or_404(AssayStudy, pk=self.kwargs['pk'])
+
+        user_group_names = {group.name for group in self.request.user.groups.all()}
+
+        valid_user = study.group.name + ADMIN_SUFFIX in user_group_names or study.group.name in user_group_names
+
+        # Deny permission
+        if not valid_user:
+            return PermissionDenied(self.request, 'You are missing the necessary credentials to change Access to this Study.')
+        # Otherwise return the view
+        return super(AssayStudyAccess, self).dispatch(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudyAccess, self).get_context_data(**kwargs)
+
+        context['update'] = True
+
+        return context
+
+    # WAY TOO VERBOSE: NOT IN THE LEAST BIT DRY
+    def form_valid(self, form):
+        if form.is_valid():
+            user_group_names = {group.name for group in self.request.user.groups.all()}
+
+            valid_user = self.object.group.name + ADMIN_SUFFIX in user_group_names or study.group.name in user_group_names
+
+            if valid_user:
+                previous_access_groups = {group.name:group.id for group in form.instance.access_groups.all()}
+
+                save_forms_with_tracking(self, form, update=True)
+
+                if self.object.signed_off_by:
+                    viewer_subject = 'Study {0} Now Available for Viewing'.format(self.object)
+
+                    access_group_names = {group.name: group.id for group in self.object.access_groups.all() if group.name not in previous_access_groups}
+
+                    matching_groups = list(set([
+                        group.id for group in Group.objects.all() if
+                        group.name.replace(ADMIN_SUFFIX, '').replace(VIEWER_SUFFIX, '') in access_group_names
+                    ]))
+                    exclude_groups = list(set([
+                        group.id for group in Group.objects.all() if
+                        group.name.replace(ADMIN_SUFFIX, '').replace(VIEWER_SUFFIX, '') in previous_access_groups
+                    ]))
+                    viewers_to_be_alerted = User.objects.filter(
+                        groups__id__in=matching_groups,
+                        is_active=True
+                    ).exclude(
+                        groups__id__in=exclude_groups
+                    ).distinct()
+
+                    for user_to_be_alerted in viewers_to_be_alerted:
+                        viewer_message = render_to_string(
+                            'assays/viewer_alert.txt',
+                            {
+                                'user': user_to_be_alerted,
+                                'study': self.object
+                            }
+                        )
+
+                        user_to_be_alerted.email_user(
+                            viewer_subject,
+                            viewer_message,
+                            DEFAULT_FROM_EMAIL
+                        )
+
+            return redirect(self.object.get_absolute_url())
+        else:
+            return self.render_to_response(self.get_context_data(form=form))
+
+
+class AssayDataFileUploadList(StudyViewerMixin, DetailView):
+    # Why not have the mixin look for DetailView?
+    model = AssayStudy
+    detail = True
+
+    template_name = 'assays/assaydatafileupload_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayDataFileUploadList, self).get_context_data(**kwargs)
+
+        valid_files = []
+
+        for current_file in AssayDataFileUpload.objects.filter(
+            study=self.object
+        ):
+            if current_file.assaydatapoint_set.count() and current_file.assaydatapoint_set.count() != current_file.assaydatapoint_set.filter(replaced=True).count():
+                valid_files.append(current_file)
+
+        context.update({
+            'detail': True,
+            'valid_files': valid_files
+        })
+
+        return context
+
+
+class AssayDataFileUploadDetail(StudyGroupMixin, DetailView):
+    # Why not have the mixin look for DetailView?
+    model = AssayDataFileUpload
+    detail = True
+    no_update = True
+
+    template_name = 'assays/assaydatafileupload_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayDataFileUploadDetail, self).get_context_data(**kwargs)
+
+        context.update({
+            'detail': True,
+        })
+
+        return context
+
+
+# DEPRECATED REMOVE ASAP
 def get_cell_samples_for_selection(user, setups=None):
     """Returns the cell samples to be listed in setup views
 
@@ -2444,61 +2707,67 @@ class AssayDataFromFilters(TemplateView):
 
             accessible_studies = get_user_accessible_studies(self.request.user)
 
-            # Notice exclusion of missing organ model
-            matrix_items = AssayMatrixItem.objects.filter(
+            groups = AssayGroup.objects.filter(
                 study_id__in=accessible_studies
-            ).exclude(
-                organ_model_id=None
             ).prefetch_related(
                 'organ_model',
                 # 'assaysetupcompound_set__compound_instance',
                 # 'assaydatapoint_set__study_assay__target'
             )
 
+            # Notice exclusion of missing organ model
+            matrix_items = AssayMatrixItem.objects.filter(
+                group__in=groups
+            )
+
             if len(current_filters) and current_filters[0]:
                 organ_model_ids = [int(id) for id in current_filters[0].split(',') if id]
 
-                matrix_items = matrix_items.filter(
+                groups = groups.filter(
                     organ_model_id__in=organ_model_ids
                 )
             # Default to empty
             else:
-                matrix_items = AssayMatrixItem.objects.none()
+                groups = AssayGroup.objects.none()
 
             accessible_studies = accessible_studies.filter(
-                id__in=list(matrix_items.values_list('study_id', flat=True))
+                id__in=list(groups.values_list('study_id', flat=True))
             )
 
             matrix_items.prefetch_related(
-                'assaysetupcompound_set__compound_instance',
+                # 'assaysetupcompound_set__compound_instance',
                 'assaydatapoint_set__study_assay__target'
+            )
+
+            groups.prefetch_related(
+                'assaygroupcompound_set__compound_instance'
             )
 
             if len(current_filters) > 1 and current_filters[1]:
                 group_ids = [int(id) for id in current_filters[1].split(',') if id]
                 accessible_studies = accessible_studies.filter(group_id__in=group_ids)
 
-                matrix_items = matrix_items.filter(
+                groups = groups.filter(
                     study_id__in=accessible_studies
                 )
             else:
-                matrix_items = AssayMatrixItem.objects.none()
+                groups = AssayGroup.objects.none()
 
             if len(current_filters) > 2 and current_filters[2]:
                 compound_ids = [int(id) for id in current_filters[2].split(',') if id]
 
                 # See whether to include no compounds
                 if 0 in compound_ids:
-                    matrix_items = matrix_items.filter(
-                        assaysetupcompound__compound_instance__compound_id__in=compound_ids
-                    ) | matrix_items.filter(assaysetupcompound__isnull=True)
+                    groups = groups.filter(
+                        assaygroupcompound__compound_instance__compound_id__in=compound_ids
+                    ) | groups.filter(assaygroupcompound__isnull=True)
                 else:
-                    matrix_items = matrix_items.filter(
-                        assaysetupcompound__compound_instance__compound_id__in=compound_ids
+                    groups = groups.filter(
+                        assaygroupcompound__compound_instance__compound_id__in=compound_ids
                     )
 
             else:
-                matrix_items = AssayMatrixItem.objects.none()
+                groups = AssayGroup.objects.none()
 
             if len(current_filters) > 3 and current_filters[3]:
                 target_ids = [int(id) for id in current_filters[3].split(',') if id]
@@ -2513,6 +2782,8 @@ class AssayDataFromFilters(TemplateView):
             else:
                 matrix_items = AssayMatrixItem.objects.none()
 
+            matrix_items = matrix_items.filter(group__in=groups)
+
             pre_filter.update({
                 'matrix_item_id__in': matrix_items.filter(assaydatapoint__isnull=False).distinct()
             })
@@ -2522,15 +2793,35 @@ class AssayDataFromFilters(TemplateView):
                 **pre_filter
             ).prefetch_related(
                 # TODO
-                'study__group__microphysiologycenter_set',
-                'matrix_item__assaysetupsetting_set__setting',
-                'matrix_item__assaysetupcell_set__cell_sample',
-                'matrix_item__assaysetupcell_set__density_unit',
-                'matrix_item__assaysetupcell_set__cell_sample__cell_type__organ',
-                'matrix_item__assaysetupcompound_set__compound_instance__compound',
-                'matrix_item__assaysetupcompound_set__concentration_unit',
-                'matrix_item__device',
-                'matrix_item__organ_model',
+                'study__group__center_groups',
+
+                # Is going through the matrix item too expensive here?
+                'matrix_item__group__assaygroupcompound_set__compound_instance__compound',
+                'matrix_item__group__assaygroupcompound_set__compound_instance__supplier',
+                'matrix_item__group__assaygroupcompound_set__concentration_unit',
+                'matrix_item__group__assaygroupcompound_set__addition_location',
+                'matrix_item__group__assaygroupcell_set__cell_sample__cell_type__organ',
+                'matrix_item__group__assaygroupcell_set__cell_sample__cell_subtype',
+                'matrix_item__group__assaygroupcell_set__cell_sample__supplier',
+                'matrix_item__group__assaygroupcell_set__addition_location',
+                'matrix_item__group__assaygroupcell_set__density_unit',
+                'matrix_item__group__assaygroupsetting_set__setting',
+                'matrix_item__group__assaygroupsetting_set__unit',
+                'matrix_item__group__assaygroupsetting_set__addition_location',
+
+                # Old!
+                # 'matrix_item__assaysetupsetting_set__setting',
+                # 'matrix_item__assaysetupcell_set__cell_sample',
+                # 'matrix_item__assaysetupcell_set__density_unit',
+                # 'matrix_item__assaysetupcell_set__cell_sample__cell_type__organ',
+                # 'matrix_item__assaysetupcompound_set__compound_instance__compound',
+                # 'matrix_item__assaysetupcompound_set__concentration_unit',
+                # We ought to rely on the group's device and organ model, to be sure?
+                # 'matrix_item__device',
+                # 'matrix_item__organ_model',
+
+                'matrix_item__group__organ_model__device',
+
                 'matrix_item__matrix',
                 'study_assay__target',
                 'study_assay__method',
@@ -2897,6 +3188,27 @@ class AssayStudySetDataPlots(StudySetViewerMixin, DetailView):
     model = AssayStudySet
     template_name = 'assays/assaystudyset_data_plots.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudySetDataPlots, self).get_context_data(**kwargs)
+
+        # NOT DRY
+        # FILTER OUT STUDIES WITH NO ASSAYS
+        # PLEASE NOTE FILTER HERE
+        # WE ASSUME THE USER OUGHT TO SEE ALL THE STUDIES (via permission mixin)
+        # combined = get_user_accessible_studies(self.request.user).filter(
+        #     assaystudyassay__isnull=False
+        # )
+        combined = self.object.studies.all()
+
+        get_queryset_with_organ_model_map(combined)
+        get_queryset_with_number_of_data_points(combined)
+        get_queryset_with_stakeholder_sign_off(combined)
+        get_queryset_with_group_center_dictionary(combined)
+
+        context['studies'] = combined
+
+        return context
+
 
 class AssayStudySetReproducibility(StudySetViewerMixin, DetailView):
     model = AssayStudySet
@@ -2957,16 +3269,35 @@ class AssayStudySetData(DetailView):
                 study_assay_id__in=assays
             ).prefetch_related(
                 # TODO
-                'study__group__microphysiologycenter_set',
-                'matrix_item__assaysetupsetting_set__setting',
-                'matrix_item__assaysetupcell_set__cell_sample',
-                'matrix_item__assaysetupcell_set__density_unit',
-                'matrix_item__assaysetupcell_set__cell_sample__cell_type__organ',
-                'matrix_item__assaysetupcompound_set__compound_instance__compound',
-                'matrix_item__assaysetupcompound_set__concentration_unit',
-                'matrix_item__device',
-                'matrix_item__organ_model',
-                'matrix_item__matrix',
+                'study__group__center_groups',
+
+                # 'matrix_item__assaysetupsetting_set__setting',
+                # 'matrix_item__assaysetupcell_set__cell_sample',
+                # 'matrix_item__assaysetupcell_set__density_unit',
+                # 'matrix_item__assaysetupcell_set__cell_sample__cell_type__organ',
+                # 'matrix_item__assaysetupcompound_set__compound_instance__compound',
+                # 'matrix_item__assaysetupcompound_set__concentration_unit',
+                # 'matrix_item__device',
+                # 'matrix_item__organ_model',
+                # 'matrix_item__matrix',
+
+                # Is going through the matrix item too expensive here?
+                'matrix_item__group__assaygroupcompound_set__compound_instance__compound',
+                'matrix_item__group__assaygroupcompound_set__compound_instance__supplier',
+                'matrix_item__group__assaygroupcompound_set__concentration_unit',
+                'matrix_item__group__assaygroupcompound_set__addition_location',
+                'matrix_item__group__assaygroupcell_set__cell_sample__cell_type__organ',
+                'matrix_item__group__assaygroupcell_set__cell_sample__cell_subtype',
+                'matrix_item__group__assaygroupcell_set__cell_sample__supplier',
+                'matrix_item__group__assaygroupcell_set__addition_location',
+                'matrix_item__group__assaygroupcell_set__density_unit',
+                'matrix_item__group__assaygroupsetting_set__setting',
+                'matrix_item__group__assaygroupsetting_set__unit',
+                'matrix_item__group__assaygroupsetting_set__addition_location',
+
+                # Replace with group device and organ_model
+                'matrix_item__group__organ_model__device',
+
                 'study_assay__target',
                 'study_assay__method',
                 'study_assay__unit',
@@ -3608,7 +3939,8 @@ class AssayStudyComponents(TemplateView):
                     AssayMethod.objects.first(),
                     AssayMeasurementType.objects.first(),
                     PhysicalUnits.objects.first(),
-                    AssaySampleLocation.objects.first(),
+                    # Do not repeat for the moment
+                    # AssaySampleLocation.objects.first(),
                     AssaySetting.objects.first(),
                     AssaySupplier.objects.first(),
                     AssayReference.objects.first(),
@@ -3622,6 +3954,8 @@ class AssayStudyComponents(TemplateView):
                     # Note that sample location is more accurately placed here
                     AssaySampleLocation.objects.first(),
                     apps.get_model(app_label='microdevices', model_name='manufacturer').objects.first(),
+                    # SPECIAL EXCEPTION
+                    # apps.get_model(app_label='microdevices', model_name='manufacturer').objects.first(),
                 ]
             ],
             # NOTE WE COULD, IF WE WANTED, ADD COMPOUND SUPPLIER HERE
@@ -5164,6 +5498,11 @@ class AssayStudyOmics(StudyViewerMixin, DetailView):
         context = super(AssayStudyOmics, self).get_context_data(**kwargs)
         context.update({
             'form': AssayStudyGroupForm(instance=self.object),
+            'cellsamples' : CellSample.objects.all().prefetch_related(
+                'cell_type__organ',
+                'supplier',
+                'cell_subtype__cell_type'
+            ),
         })
 
         return context

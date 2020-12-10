@@ -1,6 +1,7 @@
 // TODO: Things like prefixes should be listed here to avoid repetition!
 // Perhaps even selectors for things we know shouldn't change
 // (Also should think of a better scheme for dependency injection)
+// TODO: VERY SLOW FOR LARGE TABLES FOR A NUMBER OF REASONS
 window.GROUPS = {
     make_difference_table: null,
     make_group_preview: null,
@@ -54,7 +55,7 @@ $(document).ready(function () {
     // For the moment, the difference table content is stored as an array
     // Each index is a group
     // Each group's data is likewise an array, each index being a column
-    var difference_table_content = [];
+    // var difference_table_content = [];
 
     // This may be a good file to make these shared?
     // Prefixes
@@ -142,7 +143,10 @@ $(document).ready(function () {
             }
             else if (window.GROUPS.convert_to_numeric_view[field_name]) {
                 var parsed_as_float = parseFloat(field_value);
-                if (field_name !== 'value' || parsed_as_float) {
+                if (parsed_as_float && parsed_as_float < 1e-3) {
+                    return parsed_as_float.toExponential();
+                }
+                else if (field_name !== 'value' || parsed_as_float) {
                     return parsed_as_float.toLocaleString();
                 }
                 else if (field_name === 'value') {
@@ -208,7 +212,6 @@ $(document).ready(function () {
     // This uses just a strict short hand
     // The consequence is that if a parameter like addition time diverges, one wouldn't know until they looked at the popup or the group table
     function get_shorthand_display(prefix, content) {
-
             // Just start with an empty div
             // var html_contents = $('<div>');
             var text_to_use = '';
@@ -383,11 +386,68 @@ $(document).ready(function () {
     // This determines whether any of the cells, compounds, or settings of the groups differ and shows a table depicting as much
     // NOTE: Depends on a particular element for table
     // NOTE: Depends on a particular input for data (contrived JSON)
+    let difference_data_table = null;
+
+    // let diverging_prefixes = {
+    //     'cell': false,
+    //     'compound': false,
+    //     'setting': false,
+    //     // These are called 'non_prefixes' above, should resolve naming convention
+    //     'organ_model_id': false,
+    //     'organ_model_protocol_id': false,
+    //     'test_type': false,
+    // };
+
+    // window.GROUPS.make_difference_table = function(restrict_to, organ_model_id, view) {
     window.GROUPS.make_difference_table = function(restrict_to, organ_model_id) {
         // console.log("DIFFERENCE TABLE START");
 
+        // Make data table if necessary
+        if (!difference_data_table) {
+            difference_data_table = $('#difference_table').DataTable({
+                fixedHeader: {headerOffset: 50},
+                order: [[1, 'asc']],
+                columnDefs: [
+                    {
+                        sortable: false,
+                        targets: [0],
+                        width: '5%',
+                    },
+                    {
+                        type: 'natural',
+                        targets: [1, 4, 5, 6],
+                    },
+                ]
+            });
+
+            $.each(prefixes, function(index, prefix) {
+                // Make all of the popups
+                var current_dialog = $('#' + prefix + '_full_contents_popup');
+                current_dialog.dialog({
+                    width: $(document).width(),
+                    height: 500,
+                    buttons: [
+                        {
+                            text: 'Close',
+                            click: function() {
+                               $(this).dialog('close');
+                            }
+                        }
+                    ]
+                });
+                current_dialog.removeProp('hidden');
+
+                // Triggers for spawning the popups
+                $('#spawn_' + prefix + '_full_contents_popup').click(function(e) {
+                    // DON'T SEND CLICK TO PARENT
+                    e.stopPropagation();
+                    $('#' + prefix + '_full_contents_popup').dialog('open');
+                });
+            });
+        }
+
         // We needs to know whether or not to show a column for a particular prefix
-        var diverging_prefixes = {
+        let diverging_prefixes = {
             'cell': false,
             'compound': false,
             'setting': false,
@@ -398,7 +458,8 @@ $(document).ready(function () {
         };
 
         // CONTRIVED FOR NOW: REPLACE WITH CACHED SELECTOR
-        $('#difference_table').find('tbody').empty();
+        // $('#difference_table').find('tbody').empty();
+        difference_data_table.clear();
 
         // FULL DATA
         // TEMPORARY
@@ -477,9 +538,12 @@ $(document).ready(function () {
         // console.log(diverging_contents);
         // console.log(diverging_prefixes);
 
+        let show_view = false;
+
         // TODO TODO TODO
         // Generate the difference table
         $.each(diverging_contents, function(index, current_content) {
+            show_view = false;
             var stored_tds = {};
 
             var name_td = $('<td>').html(relevant_group_data[index]['name']);
@@ -492,6 +556,7 @@ $(document).ready(function () {
                 )
             }
 
+            // TERRIBLE FOR LARGE TABLES!
             if (diverging_prefixes['organ_model_protocol_id'] && relevant_group_data[index]['organ_model_protocol_id']) {
                 $('<div>').text('Version: ' + organ_model_protocol_full.find('option[value="' + relevant_group_data[index]['organ_model_protocol_id'] + '"]').text()).appendTo(mps_model_td);
             }
@@ -515,6 +580,26 @@ $(document).ready(function () {
                 test_type_td,
             );
 
+            // TODO: VIEW BUTTON
+            // SLOPPY: BAD
+            let view_button = '';
+
+            if (parseInt(relevant_group_data[index]['id'])) {
+                view_button = '<a class="btn btn-primary" href="/assays/assaygroup/' + parseInt(relevant_group_data[index]['id']) + '">View</a>';
+                show_view = true;
+            }
+
+            let current_row_array = [
+                // View Button
+                view_button,
+                // Name
+                name_td.text(),
+                // MPS Model (and version)
+                mps_model_td.text().replace('Version', '<br>Version'),
+                // Test type
+                test_type_td.text(),
+            ];
+
             stored_tds = {
                 model: mps_model_td,
                 test_type: test_type_td
@@ -523,9 +608,17 @@ $(document).ready(function () {
             $.each(prefixes, function(prefix_index, prefix) {
                 var content_indices = current_content[prefix];
                 var current_column = $('<td>');
+
+                let current_string = [];
+
                 if (Object.keys(content_indices).length > 0) {
                     // Har har
                     $.each(content_indices, function(content_index) {
+                        let current_shorthand = get_shorthand_display(
+                            prefix,
+                            relevant_group_data[index][prefix][content_index]
+                        );
+
                         current_column.append(
                             // $('<div>').html(
                                 // get_difference_display(
@@ -534,76 +627,70 @@ $(document).ready(function () {
                                 // )
                             // )
                             $('<div>').text(
-                                get_shorthand_display(
-                                    prefix,
-                                    relevant_group_data[index][prefix][content_index]
-                                )
+                                current_shorthand
                             )
                         );
+
+                        current_string.push(current_shorthand);
                     });
                 }
 
                 current_row.append(current_column);
 
                 stored_tds[prefix] = current_column.clone();
+
+                current_row_array.push(current_string.join('<br>'));
             });
 
             // CONTRIVED FOR NOW: REPLACE WITH CACHED SELECTOR
-            $('#difference_table').find('tbody').append(current_row);
+            // $('#difference_table').find('tbody').append(current_row);
+
+            difference_data_table.row.add(current_row_array).draw(false);
 
             // ASSUMES UNIQUE NAMES
             window.GROUPS.difference_table_displays[relevant_group_data[index]['name']] = stored_tds;
         });
 
         // Show all initially
-        $('#difference_table td, #difference_table th').show();
+        // $('#difference_table td, #difference_table th').show();
         window.GROUPS.hidden_columns = {};
+
+        // SHOW ALL COLUMNS INITIALLY
+        difference_data_table.columns([0, 2, 3, 4, 5, 6]).visible(true);
 
         // Determine what to hide
         // TODO: Subject to revision
         // Crude and explicit for the moment
         if (!diverging_prefixes['organ_model_id'] && !diverging_prefixes['organ_model_protocol_id']) {
-            $('#difference_table td:nth-child(2), #difference_table th:nth-child(2)').hide();
+            // $('#difference_table td:nth-child(2), #difference_table th:nth-child(2)').hide();
+            difference_data_table.column(2).visible(false);
             window.GROUPS.hidden_columns['model'] = true;
         }
         if (!diverging_prefixes['test_type']) {
-            $('#difference_table td:nth-child(3), #difference_table th:nth-child(3)').hide();
+            // $('#difference_table td:nth-child(3), #difference_table th:nth-child(3)').hide();
+            difference_data_table.column(3).visible(false);
             window.GROUPS.hidden_columns['test_type'] = true;
         }
         if (!diverging_prefixes['cell']) {
-            $('#difference_table td:nth-child(4), #difference_table th:nth-child(4)').hide();
+            // $('#difference_table td:nth-child(4), #difference_table th:nth-child(4)').hide();
+            difference_data_table.column(4).visible(false);
             window.GROUPS.hidden_columns['cell'] = true;
         }
         if (!diverging_prefixes['compound']) {
-            $('#difference_table td:nth-child(5), #difference_table th:nth-child(5)').hide();
+            // $('#difference_table td:nth-child(5), #difference_table th:nth-child(5)').hide();
+            difference_data_table.column(5).visible(false);
             window.GROUPS.hidden_columns['compound'] = true;
         }
         if (!diverging_prefixes['setting']) {
-            $('#difference_table td:nth-child(6), #difference_table th:nth-child(6)').hide();
+            // $('#difference_table td:nth-child(6), #difference_table th:nth-child(6)').hide();
+            difference_data_table.column(6).visible(false);
             window.GROUPS.hidden_columns['setting'] = true;
         }
+
+        if (!show_view) {
+            difference_data_table.column(0).visible(false);
+            // NOPE!
+            // window.GROUPS.hidden_columns['view'] = true;
+        }
     };
-
-    $.each(prefixes, function(index, prefix) {
-        // Make all of the popups
-        var current_dialog = $('#' + prefix + '_full_contents_popup');
-        current_dialog.dialog({
-            width: $(document).width(),
-            height: 500,
-            buttons: [
-                {
-                    text: 'Close',
-                    click: function() {
-                       $(this).dialog('close');
-                    }
-                }
-            ]
-        });
-        current_dialog.removeProp('hidden');
-
-        // Triggers for spawning the popups
-        $('#spawn_' + prefix + '_full_contents_popup').click(function() {
-            $('#' + prefix + '_full_contents_popup').dialog('open');
-        });
-    });
 });

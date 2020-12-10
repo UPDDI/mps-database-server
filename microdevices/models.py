@@ -41,7 +41,16 @@ class MicrophysiologyCenter(LockableModel):
     groups = models.ManyToManyField(
         Group,
         blank=True,
-        help_text='***PLEASE DO NOT INCLUDE "Admin" OR "Viewer": ONLY SELECT THE BASE GROUP (ie "Taylor_MPS" NOT "Taylor_MPS Admin")***<br>'
+        help_text='***PLEASE DO NOT INCLUDE "Admin" OR "Viewer": ONLY SELECT THE BASE GROUP (ie "Taylor_MPS" NOT "Taylor_MPS Admin")***<br>',
+        related_name='center_groups'
+    )
+
+    # Groups which can be selected as collaborator or access groups on the front-end
+    accessible_groups = models.ManyToManyField(
+        Group,
+        blank=True,
+        help_text='***PLEASE DO NOT INCLUDE "Admin" OR "Viewer": ONLY SELECT THE BASE GROUP (ie "Taylor_MPS" NOT "Taylor_MPS Admin")***<br>',
+        related_name='center_accessible_groups'
     )
 
     def __str__(self):
@@ -353,6 +362,21 @@ class OrganModel(FrontEndModel, LockableModel):
     def __str__(self):
         return self.name
 
+    def user_is_in_center(self, user_group_names):
+        # Get a dic of groups
+        groups_to_check = {}
+        for current_group in self.center.groups.all():
+            groups_to_check.update({
+                current_group.name: True
+            })
+
+        if len(user_group_names) == 0 or self.center and not any(
+            current_name in groups_to_check for current_name in user_group_names.keys()
+        ):
+            return False
+        else:
+            return True
+
 
 # class OrganModelImage(models.Model):
 #     pass
@@ -370,7 +394,7 @@ class ValidatedAssay(models.Model):
 
 
 # TODO PLEASE NOTE THIS WILL BE REFERRED TO AS SIMPLY A "VERSION"
-class OrganModelProtocol(FlaggableModel):
+class OrganModelProtocol(FrontEndModel, FlaggableModel):
     """Organ Model Protocols point to a file detailing the preparation of a model
 
     This model is intended to be an inline

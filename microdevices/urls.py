@@ -9,6 +9,7 @@ from microdevices.views import (
     MicrodeviceUpdate,
     OrganModelUpdate,
     MicrophysiologyCenterDetail,
+    MicrophysiologyCenterList,
     OrganModelProtocolUpdate,
     OrganModelProtocolDetail,
     ManufacturerList,
@@ -31,6 +32,7 @@ urlpatterns = [
     url(r'^microdevices/protocol/(?P<pk>[0-9]+)/$', OrganModelProtocolDetail.as_view(), name='microdevices-organmodelprotocol-detail'),
     url(r'^microdevices/protocol/(?P<pk>[0-9]+)/update/$', OrganModelProtocolUpdate.as_view(), name='microdevices-organmodelprotocol-update'),
 
+    url(r'^microdevices/center/$', MicrophysiologyCenterList.as_view(), name='microdevices-microphysiologycenter-list'),
     url(r'^microdevices/center/(?P<pk>[0-9]+)/$', MicrophysiologyCenterDetail.as_view(), name='microdevices-microphysiologycenter-detail'),
 
     # manufacturer

@@ -31,6 +31,8 @@ from django.urls import reverse
 from django.contrib.postgres.fields import JSONField
 
 import ujson as json
+# Copying dictionaries and the like
+import copy
 
 
 # These are here to avoid potentially messy imports, may change later
@@ -1457,6 +1459,9 @@ class AssayDataFileUpload(FlaggableModel):
     def __str__(self):
         return urllib.parse.unquote(self.file_location.split('/')[-1])
 
+    def get_absolute_url(self):
+        return reverse('assays-assaydatafileupload-detail', args=[self.pk])
+
 
 # NEW MODELS, TO BE INTEGRATED FURTHER LATER
 class AssayTarget(FrontEndModel, LockableModel):
@@ -1667,6 +1672,9 @@ class AssayStudy(FlaggableModel):
             'efficacy',
             'disease',
             'cell_characterization',
+            'omics',
+            'pbpk_steady_state',
+            'pbpk_bolus',
             'start_date',
             'group'
         ))
@@ -1688,6 +1696,12 @@ class AssayStudy(FlaggableModel):
     cell_characterization = models.BooleanField(
         default=False,
         verbose_name='Cell Characterization'
+    )
+
+    # TODO: THESE REALLY SHOULDN'T BE ATTRIBUTES
+    omics = models.BooleanField(
+        default=False,
+        verbose_name='Omics'
     )
 
     # Subject to change
@@ -1862,9 +1876,14 @@ class AssayStudy(FlaggableModel):
     #     )
     #     return study_types
 
-    # !!!!
-    # THIS IS ONLY FOR THE PROTOTYPE
-    # series_data = JSONField(default=dict, blank=True)
+    # Specify when to release the Study
+    release_date = models.DateField(
+        help_text='YYYY-MM-DD',
+        verbose_name='Release Date',
+        # NEEDS TO BE ABLE TO BE NULL AND BLANK
+        null=True,
+        blank=True,
+    )
 
     # TODO INEFFICIENT BUT SHOULD WORK
     def stakeholder_approval_needed(self):
@@ -1877,50 +1896,48 @@ class AssayStudy(FlaggableModel):
     # TODO VERY INEFFICIENT, BUT SHOULD WORK
     def get_indexing_information(self):
         """Exceedingly inefficient way to add some data for indexing studies"""
-        matrix_items = AssayMatrixItem.objects.filter(matrix__study_id=self.id).prefetch_related(
-            'matrix',
-            'assaysetupsetting_set__setting',
-            'assaysetupsetting_set__addition_location',
-            'assaysetupsetting_set__unit',
-            'assaysetupcell_set__cell_sample__cell_subtype',
-            'assaysetupcell_set__cell_sample__cell_type__organ',
-            'assaysetupcell_set__cell_sample__supplier',
-            'assaysetupcell_set__density_unit',
-            'assaysetupcell_set__addition_location',
-            'assaysetupcompound_set__compound_instance__compound',
-            'assaysetupcompound_set__concentration_unit',
-            'assaysetupcompound_set__addition_location',
+        groups = AssayGroup.objects.filter(study_id=self.id).prefetch_related(
+            'organ_model',
+            'assaygroupsetting_set__setting',
+            'assaygroupsetting_set__addition_location',
+            'assaygroupsetting_set__unit',
+            'assaygroupcell_set__cell_sample__cell_subtype',
+            'assaygroupcell_set__cell_sample__cell_type__organ',
+            'assaygroupcell_set__cell_sample__supplier',
+            'assaygroupcell_set__density_unit',
+            'assaygroupcell_set__addition_location',
+            'assaygroupcell_set__biosensor',
+            'assaygroupcompound_set__compound_instance__compound',
+            'assaygroupcompound_set__concentration_unit',
+            'assaygroupcompound_set__addition_location',
         )
 
         current_study = {}
 
-        for matrix_item in matrix_items:
-            organ_model_name = ''
+        for group in groups:
+            organ_model_name = group.organ_model.name
 
-            if matrix_item.organ_model:
-                organ_model_name = matrix_item.organ_model.name
-
-            current_study.setdefault('items', {}).update({
-                matrix_item.name: True
-            })
+            # current_study.setdefault('items', {}).update({
+            #     group.name: True
+            # })
             current_study.setdefault('organ_models', {}).update({
                 organ_model_name: True
             })
-            current_study.setdefault('devices', {}).update({
-                matrix_item.device.name: True
-            })
+            # current_study.setdefault('devices', {}).update({
+            #     group.device.name: True
+            # })
 
-            for compound in matrix_item.assaysetupcompound_set.all():
+            for compound in group.assaygroupcompound_set.all():
                 current_study.setdefault('compounds', {}).update({
                     str(compound): True
                 })
 
-            for cell in matrix_item.assaysetupcell_set.all():
+            for cell in group.assaygroupcell_set.all():
                 current_study.setdefault('cells', {}).update({
                     str(cell): True
                 })
 
-            for setting in matrix_item.assaysetupsetting_set.all():
+            for setting in group.assaygroupsetting_set.all():
                 current_study.setdefault('settings', {}).update({
                     str(setting): True
                 })
@@ -1948,7 +1965,7 @@ class AssayStudy(FlaggableModel):
             'assaygroupcell_set',
             # Shame we need to do this
             # BUT COMPOUND SCHEMA IS STUPID
-            'assaygroupcompound_set__compound_instance',
+            'assaygroupcompound_set__compound_instance__supplier',
             'assaygroupsetting_set',
             # Guess I need to eat the cost...
             'organ_model__device'
@@ -2119,13 +2136,15 @@ class AssayStudy(FlaggableModel):
             current_types.append('DM')
         if self.cell_characterization:
             current_types.append('CC')
+        if self.omics:
+            current_types.append('OMICS')
         if self.pbpk_steady_state or self.pbpk_bolus:
             current_types.append('PK')
         return '-'.join(current_types)
 
     # TODO REVISE REVISE
     def __str__(self):
-        first_center = self.group.microphysiologycenter_set.first()
+        first_center = self.group.center_groups.first()
         if first_center:
             center_id = first_center.center_id
         else:
@@ -2263,8 +2282,15 @@ class AssayMatrix(FlaggableModel):
     # REMOVE ASAP
     # plate_data = JSONField(default=dict, blank=True)
 
+    # def __str__(self):
+    #     return '{0}'.format(self.name)
+
+    # ALTERNATIVE TO BEING DONE EXPLICITLY
     def __str__(self):
-        return '{0}'.format(self.name)
+        if self.representation == 'plate':
+            return '{0}'.format(self.name)
+        else:
+            return 'Chips for {}'.format(self.study.name)
 
     # def get_organ_models(self):
     #     organ_models = []
@@ -2278,7 +2304,16 @@ class AssayMatrix(FlaggableModel):
 
     # TODO
     def get_absolute_url(self):
-        return '/assays/assaymatrix/{}/'.format(self.id)
+        # NO!
+        # return '/assays/assaymatrix/{}/'.format(self.id)
+        # Not update! Detail will redirect anyway
+        # return reverse('assays-assaymatrix-plate-update', args=[self.pk])
+        # If this is a plate
+        if self.representation == 'plate':
+            return reverse('assays-assaymatrix-plate-detail', args=[self.pk])
+        # Otherwise
+        else:
+            return reverse('assays-assaymatrix-chips-detail', args=[self.pk])
 
     def get_post_submission_url(self):
         # return self.study.get_post_submission_url()
@@ -2544,6 +2579,8 @@ class AbstractSetupCell(models.Model):
             #     full_string.append('Duration of: ' + self.get_duration_string())
             if 'addition_location_id' in criteria:
                 full_string.append(str(self.addition_location))
+            if 'biosensor_id' in criteria:
+                full_string.append(str(self.biosensor))
             return '{}; '.format(' '.join(full_string))
         else:
             return str(self)
@@ -2853,11 +2890,14 @@ class AssayGroup(models.Model):
         dic = {
             # TODO May need to prefetch device (potential n+1)
             # 'Device': self.device.name,
-            'Device': 'TODO',
+            # ???
+            # 'Device': self.organ_model.device.name,
             'MPS User Group': self.study.group.name,
             'Study': self.get_hyperlinked_study(),
-            'Matrix': 'TO BE REVISED TODO',
-            'MPS Model': self.get_hyperlinked_model_or_device(),
+            # We don't get the matrix here, we cram it in from the matrix item
+            # 'Matrix': 'TO BE REVISED TODO',
+            'MPS Model': self.get_hyperlinked_model(),
+            'MPS Model Version': self.get_hyperlinked_protocol(),
             'Compounds': self.stringify_compounds(criteria.get('compound', None)),
             'Cells': self.stringify_cells(criteria.get('cell', None)),
             'Settings': self.stringify_settings(criteria.get('setting', None)),
@@ -2877,14 +2917,21 @@ class AssayGroup(models.Model):
         return dic
 
     # TODO THESE ARE NOT DRY
-    def get_hyperlinked_model_or_device(self):
-        if not self.organ_model:
-            return '<a target="_blank" href="{0}">{1} (No MPS Model)</a>'.format(self.device.get_absolute_url(), self.device.name)
+    # We can be sure that there will always be a Model
+    def get_hyperlinked_model(self):
+        return '<a target="_blank" href="{0}">{1}</a>'.format(self.organ_model.get_absolute_url(), self.organ_model.name)
+
+    def get_hyperlinked_protocol(self):
+        if self.organ_model_protocol:
+            return '<a target="_blank" href="{0}">{1}</a>'.format(self.organ_model_protocol.get_absolute_url(), self.organ_model_protocol.name)
         else:
-            return '<a target="_blank" href="{0}">{1}</a>'.format(self.organ_model.get_absolute_url(), self.organ_model.name)
+            return '-No MPS Model Version-'
 
     def get_hyperlinked_study(self):
         return '<a target="_blank" href="{0}">{1}</a>'.format(self.study.get_absolute_url(), self.study.name)
+
+    def get_absolute_url(self):
+        return reverse('assays-assaygroup-detail', kwargs={'pk': self.pk})
 
     def __str__(self):
         return self.name
@@ -2959,7 +3006,7 @@ class AssayGroupSetting(AbstractSetupSetting):
 # SUBJECT TO REMOVAL (MAY JUST USE ASSAY SETUP)
 class AssayMatrixItem(FlaggableModel):
     class Meta(object):
-        verbose_name = 'Matrix Item'
+        verbose_name = 'Study Item'
         # TODO Should this be by study or by matrix?
         unique_together = [
             ('study', 'name'),
@@ -3245,36 +3292,53 @@ class AssayMatrixItem(FlaggableModel):
 
     # SPAGHETTI CODE
     # TERRIBLE, BLOATED
+    # def quick_dic(
+    #     self,
+    #     compound_profile=False,
+    #     matrix_item_compound_post_filters=None,
+    #     criteria=None
+    # ):
+    #     if not criteria:
+    #         criteria = {}
+    #     dic = {
+    #         # TODO May need to prefetch device (potential n+1)
+    #         'Device': self.device.name,
+    #         'MPS User Group': self.study.group.name,
+    #         'Study': self.get_hyperlinked_study(),
+    #         'Matrix': self.get_hyperlinked_matrix(),
+    #         'MPS Model': self.get_hyperlinked_model_or_device(),
+    #         'Compounds': self.stringify_compounds(criteria.get('compound', None)),
+    #         'Cells': self.stringify_cells(criteria.get('cell', None)),
+    #         'Settings': self.stringify_settings(criteria.get('setting', None)),
+    #         'Trimmed Compounds': self.stringify_compounds({
+    #             'compound_instance.compound_id': True,
+    #             'concentration': True
+    #         }),
+    #         'Items with Same Treatment': [],
+    #         'item_ids': []
+    #     }
+
+    #     if compound_profile:
+    #         dic.update({
+    #             'compound_profile': self.get_compound_profile(matrix_item_compound_post_filters)
+    #         })
+
+    #     return dic
+
+    # Basically, stitch together the groups dictionary and the matrix's dictionary with this
+    # A suboptimal approach: Revise when possible
+    # Strictly speaking, we only *really* need the matrix
+    # But perhaps something else will come up?
     def quick_dic(
         self,
-        compound_profile=False,
-        matrix_item_compound_post_filters=None,
-        criteria=None
+        group_dic
     ):
-        if not criteria:
-            criteria = {}
-        dic = {
-            # TODO May need to prefetch device (potential n+1)
+        dic = copy.deepcopy(group_dic)
+        dic.update({
+            # Ought this be here? Should it likewise be a hyperlink?
             'Device': self.device.name,
-            'MPS User Group': self.study.group.name,
-            'Study': self.get_hyperlinked_study(),
             'Matrix': self.get_hyperlinked_matrix(),
-            'MPS Model': self.get_hyperlinked_model_or_device(),
-            'Compounds': self.stringify_compounds(criteria.get('compound', None)),
-            'Cells': self.stringify_cells(criteria.get('cell', None)),
-            'Settings': self.stringify_settings(criteria.get('setting', None)),
-            'Trimmed Compounds': self.stringify_compounds({
-                'compound_instance.compound_id': True,
-                'concentration': True
-            }),
-            'Items with Same Treatment': [],
-            'item_ids': []
-        }
-
-        if compound_profile:
-            dic.update({
-                'compound_profile': self.get_compound_profile(matrix_item_compound_post_filters)
-            })
+        })
 
         return dic
 
@@ -3292,7 +3356,9 @@ class AssayMatrixItem(FlaggableModel):
         return '<a target="_blank" href="{0}">{1}</a>'.format(self.study.get_absolute_url(), self.study.name)
 
     def get_hyperlinked_matrix(self):
-        return '<a target="_blank" href="{0}">{1}</a>'.format(self.matrix.get_absolute_url(), self.matrix.name)
+        # Go to either the plate details or chip details
+        # This is built-in to the absolute url
+        return '<a target="_blank" href="{0}">{1}</a>'.format(self.matrix.get_absolute_url(), str(self.matrix))
 
     # TODO TODO TODO CHANGE
     def get_absolute_url(self):
@@ -3307,6 +3373,7 @@ class AssayMatrixItem(FlaggableModel):
 
 # Controversy has arisen over whether to put this in an organ model or not
 # This name is somewhat deceptive, it describes the quantity of cells, not a cell (rename please)
+# DEPRECATED
 class AssaySetupCell(models.Model):
     """Individual cell parameters for setup used in inline"""
     class Meta(object):
@@ -4626,7 +4693,8 @@ def upload_plate_reader_file_location(instance, filename):
     return '/'.join(['plate_reader_file', str(instance.id), filename])
 
 
-class AssayPlateReaderMapDataFile(models.Model):
+# 20201104 needed to be a lockable model so permissions will allow for file deletion when not superuser
+class AssayPlateReaderMapDataFile(LockableModel):
     """Assay plate reader data file for plate reader integration."""
 
     class Meta(object):
@@ -4927,6 +4995,7 @@ class AssayPlateReaderMapItemValue(models.Model):
     def get_absolute_url(self):
         return '/assays/assayplatereadermapitem/{}/'.format(self.id)
 
+
     def get_post_submission_url(self):
         return '/assays/assayplatereadermapitem/'
 
@@ -4994,7 +5063,8 @@ assay_omic_data_type_choices = [
     ('rawcounts', 'Raw Counts')
 ]
 
-
+# This is the why we allowed grouping while Luke was finishing the treatment group naming
+# probably will not need this, but keep unitl we are sure we do not want a separate group
 # class AssayOmicDataGroup(LockableModel):
 #     """Assay omic data groups - pk used to tie chip and sample metadata to a data group."""
 #     # plan is to replace this with "treatment groups"
@@ -5033,7 +5103,14 @@ assay_omic_gene_name_choices = [
     ('gene_symbol', 'Gene Symbol')
 ]
 
+# Get omic data file location
+def omic_data_file_location(instance, filename):
+    return '/'.join(['omic_data_file', str(instance.study_id), filename])
 
+
+# this is for all omics files
+# we were going to separate into two group data and one group data
+# but the project PI strongly opposed this idea (he wanted all the files together)
 class AssayOmicDataFileUpload(LockableModel):
     """Assay omic data - usually export from a DEG tool."""
 
@@ -5051,11 +5128,12 @@ class AssayOmicDataFileUpload(LockableModel):
     description = models.CharField(
         max_length=2000,
         default=set_default_description(),
-        verbose_name='File Description'
+        help_text='Description of the data being uploaded in this file (e.g., "Treated vrs Control" or "Treated with 1uM Calcifidiol".',
+        verbose_name='Data Description'
     )
     # if not required, and user tries to have two empty, will get error
     omic_data_file = models.FileField(
-        upload_to='omic_data_file',
+        upload_to=omic_data_file_location,
         help_text='Omic data file to be uploaded to the database.',
         verbose_name='Omic Data File*'
     )
@@ -5093,7 +5171,8 @@ class AssayOmicDataFileUpload(LockableModel):
         verbose_name='Data Type'
     )
 
-
+    # these were during development when we were using separate groups
+    # probably will not need again, but keep just in case
     # # data groups could be empty for the norm count and raw count data
     # group_1 = models.ForeignKey(
     #     AssayOmicDataGroup,
@@ -5181,6 +5260,48 @@ class AssayOmicDataFileUpload(LockableModel):
     def get_delete_url(self):
         return '{}delete/'.format(self.get_absolute_url())
 
+#
+# class AssayOmicSampleMetadata(models.Model):
+#     """Model for omic sample metadata associated to count data."""
+#
+#     class Meta(object):
+#         verbose_name = 'Omic Sample Metadata'
+#
+#     study = models.ForeignKey(
+#         'assays.AssayStudy',
+#         on_delete=models.CASCADE,
+#         verbose_name='Study'
+#     )
+#     # sample id
+#     cross_reference = models.CharField(
+#         max_length=255,
+#         default='',
+#         verbose_name='Cross Reference'
+#     )
+#
+#     # assay_well_id = models.CharField(max_length=255, default='N/A')
+#
+#     matrix_item = models.ForeignKey(
+#         'assays.AssayMatrixItem',
+#         on_delete=models.CASCADE,
+#         verbose_name='Matrix Item'
+#     )
+#
+#     sample_location = models.ForeignKey(
+#         'assays.AssaySampleLocation',
+#         on_delete=models.CASCADE,
+#         verbose_name='Sample Location'
+#     )
+#
+#     # PLEASE NOTE THAT THIS IS IN MINUTES
+#     time = models.FloatField(
+#         default=0,
+#         verbose_name='Time'
+#     )
+#
+#     def __str__(self):
+#         return '{0}'.format(self.id)
+
 
 class AssayOmicDataPoint(models.Model):
     """Individual points of omic data """
@@ -5222,13 +5343,16 @@ class AssayOmicDataPoint(models.Model):
         verbose_name='Computed Value'
     )
 
-    # when doing the count data, will need to add a link to something
-    # could be to the chip (matrix item) or could be to a table that has
-    # pks for matrix item, sample time, sample location, sample cross reference
-    # for now, just do not add it as it would be NULL for 2 group comparison data
-    # although, later, if we did relate chips to a group, a pk to that info could go here .....
+    # when doing the count data, need to add a link to metadata table, else will be null
+    # sample_metadata = models.ForeignKey(
+    #     AssayOmicSampleMetadata,
+    #     blank=True,
+    #     null=True,
+    #     on_delete=models.CASCADE,
+    #     verbose_name='Metadata'
+    # )
 
     def __str__(self):
         return '{0}'.format(self.id)
 
-##### End Assay Omic Section - Phase 1 design
+##### End Assay Omic Section - Phase 1 and 2 design

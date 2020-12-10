@@ -34,7 +34,9 @@
             <tbody>
             {% for object in object_list %}
                 <tr>
-                    <td><a class="btn btn-primary" href="{{ object.id }}">Edit</a></td>
+                    <td>
+                    {% include 'generic_edit_button.html' %}
+                    </td>
                     <td>{{ object }}</td>
                     <td>{{ object.cell_type|default:'Generic (Applicable to All Cell Types)' }}</td>
                 </tr>

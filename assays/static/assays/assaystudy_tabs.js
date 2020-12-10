@@ -2,18 +2,22 @@
 $(document).ready(function() {
     var current_interface = window.location.href.split('/')[6];
 
-    // Get the li in question and make it active
-    $('li[data-interface="' + current_interface + '"]')
-        .addClass('active')
+    function make_tab_active(tab) {
+        tab.addClass('active')
         // Find the anchor and make it reference the current page
-        .find('a').attr('href', '#');
+        .find('a')
+            // CRUDE! AVOID STYLING IN THIS MANNER
+            .css('background-color', '#337ab7')
+            .css('color', '#fff')
+            .attr('href', '#');
+    }
+
+    // Get the li in question and make it active
+    make_tab_active($('li[data-interface="' + current_interface + '"]'));
 
     if (!current_interface || current_interface === '#')
     {
-        $('li[data-interface="details"]')
-        .addClass('active')
-        // Find the anchor and make it reference the current page
-        .find('a').attr('href', '#');
+        make_tab_active($('li[data-interface="details"]'));
     }
 
     var redirect_confirm = $('#post_submission_override_confirm');
@@ -99,7 +103,7 @@ $(document).ready(function() {
 
         // CRUMMY CONDITIONAL
         // Special exception for upload by request
-        if (redirect_url.val().indexOf('/upload/') > -1) {
+        if (redirect_url.val().indexOf('/data_index/') > -1) {
             // VERY ODD
             let popup_ref = $('div[aria-describedby="post_submission_override_confirm"]');
             popup_ref.find('.alert-warning').find('span').eq(2).text('Clicking next will bring you to an interface where you can upload data points. If you haven\'t run this study yet, or you are awaiting data, cancel and click "Submit" to save and conclude editing instead.');

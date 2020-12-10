@@ -1,23 +1,27 @@
 {# Probably worthwhile to have some kind of visibility stuff here #}
+<legend>Group Difference Display</legend>
 <table class="table table-striped table-bordered" id="difference_table">
     <thead>
         <tr>
-            <th>Group Name</th>
-            <th>MPS Model</th>
-            <th>Test Type</th>
             <th>
+                View
+            </th>
+            <th>Group Name</th>
+            <th data-header-for="model">MPS Model</th>
+            <th data-header-for="test_type">Test Type</th>
+            <th data-header-for="cell">
                 Cells
                 <a id="spawn_cell_full_contents_popup" role="button" class="btn btn-info">
                     <span class="glyphicon glyphicon-search"></span>
                 </a>
             </th>
-            <th>
+            <th data-header-for="compound">
                 Compounds
                 <a id="spawn_compound_full_contents_popup" role="button" class="btn btn-info">
                     <span class="glyphicon glyphicon-search"></span>
                 </a>
             </th>
-            <th>
+            <th data-header-for="setting">
                 Settings
                 <a id="spawn_setting_full_contents_popup" role="button" class="btn btn-info">
                     <span class="glyphicon glyphicon-search"></span>
@@ -83,7 +87,7 @@
                 Supplier
             </th>
             <th data-field="lot_text">
-                Compound
+                Lot
             </th>
             <th data-field="receipt_date">
                 Receipt Date

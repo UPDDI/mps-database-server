@@ -7,7 +7,7 @@
     <script src="{% static "js/calendar.js" %}"></script>
     <script src="{% static "assays/compound_instances.js" %}"></script>
     {# Should any page be flaggable? #}
-    {# <script src="{% static "js/flag.js" %}"></script> #}
+    <script src="{% static "js/flag.js" %}"></script>
     <script src="{% static "assays/assaystudy_tabs.js" %}"></script>
     {# Respective page's script here #}
     <script src="{% static "assays/cell_sample_selection.js" %}"></script>
@@ -50,21 +50,45 @@
     {% include 'assays/group_visibility_section.html' %}
 
     {# Set of buttons for adding cells, compounds, settings etc. #}
-    <div class="padded-bottom">
+    <div class="row padded-bottom">
+    <div class="col-sm-6">
     <a role="button" class="btn btn-success" id="add_series_button"><span class="glyphicon glyphicon-plus-sign"></span>Add Group</a>
     </div>
 
-    <div class="padded-bottom">
+    <div class="col-sm-6">
+    <div style="float: right;">
+        <label>
+            Show
+            <select id="id_group_table_length" name="group_table_length" aria-controls="difference_table" class="input-sm no-selectize">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            entries
+        </label>
+    </div>
+    </div>
+    </div>
+
+    <div class="row padded-bottom">
+    <div class="col-sm-6">
     <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="cell">Add Cell</a>
     <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="compound">Add Compound</a>
     {# Probably will be renamed #}
     <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="setting">Add Setting</a>
     </div>
 
+    <div class="row-sm-6">
+    {% include 'default_paginator.html' with paginator_id='group-table' %}
+    </div>
+
+    </div>
+
     {# Avoid inline styles #}
-    <div class="overflow-auto" style="margin-bottom: 50px;">
+    <div class="overflow-auto" style="margin-bottom: 25px;">
     {# Contrived inline style #}
-    <table style="min-width: 1000px; margin-bottom: 0px;" class="table table-striped table-bordered table-nonfluid" id="study_setup_table">
+    <table style="min-width: 1000px; margin-bottom: 0px;" class="table table-striped table-bordered" id="study_setup_table">
         <thead>
             <th>Group</th>
             <th>MPS Model</th>
@@ -78,6 +102,12 @@
         </thead>
         <tbody></tbody>
     </table>
+    </div>
+
+    <div class="row padded-bottom">
+    <div class="row-xs-12">
+    {% include 'default_paginator.html' with paginator_id='group-table' %}
+    </div>
     </div>
 
     {% include 'assays/group_difference_table.html' %}

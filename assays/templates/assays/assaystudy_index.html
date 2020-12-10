@@ -8,6 +8,9 @@
 {% endblock %}
 
 {% block load_js %}
+    <script src="{% static "js/split_time.js" %}"></script>
+    <script src="{% static "assays/cell_sample_selection.js" %}"></script>
+    <script src="{% static "assays/group_display.js" %}"></script>
     <script src="{% static "assays/assaystudy_index.js" %}"></script>
 {% endblock %}
 
@@ -77,6 +80,11 @@
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="analyze_edit">
                         <li><a href="summary">Study Summary</a></li>
+                        {# TODO REVISE THIS CONDITIONAL DEPENDING ON OMICS #}
+                        {% if object.assaydatafileupload_set.count or object.assaysplatereadermap.count %}
+                        {# Not a great label? #}
+                        <li><a href="data_index">Data Uploads</a></li>
+                        {% endif %}
                         {% if object.assaydatapoint_set.count %}
                         <li><a href="reproducibility">Reproducibility</a></li>
                         <li><a href="power_analysis">Power Analysis</a></li>
@@ -86,11 +94,15 @@
                         {% endif %}
                         {# Stupid conditional because images are not tied directly to studies? #}
                         {% if object.assayimagesetting_set.count %}
-                        <li><a href="images">Images</a></li>
+                        <li><a href="images">Images and Videos</a></li>
                         {% else %}
-                        <li class="disabled" title="This study has no images or videos."><a href="images">Images</a></li>
+                        <li class="disabled" title="This study has no images or videos."><a href="images">Images and Videos</a></li>
                         {% endif %}
+                        {% if object.assayomicdatafileupload_set.count %}
                         <li><a href="omics">Gene Expression Analysis</a></li>
+                        {% else %}
+                        <li class="disabled" title="This study has no omic data."><a href="omics">Gene Expression Analysis</a></li>
+                        {% endif %}
 
                         {% if user_is_group_editor %}
                             <li role="separator" class="divider"></li>
@@ -102,6 +114,7 @@
                     </ul>
                 </span>
 
+                {% comment %}
                 <span class="dropdown btn-group">
                     <button class="btn btn-warning dropdown-toggle" type="button" id="add_data" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                         Add/View Data
@@ -117,14 +130,18 @@
                         <li><a href="{% url 'assayomicdatafileupload-index' object.id %}">Assay Omic Data Files</a></li>
                     </ul>
                 </span>
+                {% endcomment %}
 
-                {% if user_is_group_admin or user_is_stakeholder_admin or user.is_superuser or show_indicate_study_sign_off or not user_is_group_admin and user_is_group_editor and not object.signed_off_by%}
+                {% if user_is_group_admin or user_is_stakeholder_admin or user.is_superuser or show_indicate_study_sign_off or not user_is_group_admin and user_is_group_editor and not object.signed_off_by %}
                 <span class="dropdown btn-group">
                     <button class="btn btn-success dropdown-toggle" type="button" id="sign_off_permissions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                         Sign Off/Permission
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="sign_off_permissions">
+                        {% if user_is_group_editor %}
+                            <li><a href="access">Change Study Access</a></li>
+                        {% endif %}
                         {% if not user_is_group_admin and user_is_group_editor and not object.signed_off_by %}
                             <li><a id="indicate_study_is_ready_for_sign_off" role="button">Indicate Study is Ready for Sign Off</a></li>
                         {% endif %}
@@ -141,8 +158,6 @@
                 </span>
                 {% endif %}
             </div>
-
-            <a href="{% url 'assays-assaystudy-update-details' object.id %}" class="btn btn-danger">PROTOTYPE</a>
         </div>
 
         {# DEPRECATED! #}
@@ -224,7 +239,8 @@
             <div class="well">
                 <h3>
                     {# There are <span class="text-success">{{ chip_groups.count }}</span> Chip Groups in this Study #}
-                    There are <span class="text-success">{{ number_of_chips }}</span> Chips and <span class="text-success">{{ chip_groups.count }}</span> Chip Groups in this Study
+                    {# There are <span class="text-success">{{ number_of_chips }}</span> Chips and <span class="text-success">{{ chip_groups.count }}</span> Chip Groups in this Study #}
+                    {% include 'plural_include.html' with label="Chip" count=number_of_chips %} and {% include 'plural_include.html' with label="Chip Group" count=chip_groups.count %}
                 </h3>
                 {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
                 <a href="{% url 'assays-assaystudy-update-groups' object.id %}" class="btn btn-primary" role="button">View/Edit Groups</a>
@@ -237,14 +253,21 @@
             <div class="well">
                 <h3>
                     {# There are <span class="text-success">{{ plate_groups.count }}</span> Plate Groups in this Study #}
-                    There are <span class="text-success">{{ plates.count }}</span> Plates and <span class="text-success">{{ plate_groups.count }}</span> Plate Groups in this Study
+                    {# There are <span class="text-success">{{ plates.count }}</span> Plates and <span class="text-success">{{ plate_groups.count }}</span> Plate Groups in this Study #}
+                    {% include 'plural_include.html' with label="Plate" count=plates.count %} and {% include 'plural_include.html' with label="Plate Group" count=plate_groups.count %}
                 </h3>
                 {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
                 <a href="{% url 'assays-assaystudy-update-groups' object.id %}" class="btn btn-primary" role="button">View/Edit Groups</a>
                 <a href="{% url 'assays-assaystudy-update-plates' object.id %}" class="btn btn-primary" role="button">View/Edit Plates</a>
                 {% endif %}
             </div>
+        {% endif %}
 
+        {% if plate_groups or chip_groups %}
+            {% include 'assays/group_difference_table.html' %}
+        {% endif %}
+
+        {% if plate_groups %}
             <legend>
                 <h2>
                     Plates
@@ -259,6 +282,7 @@
                         <th>Name</th>
                         <th>Organ Model</th>
                         <th>Wells in Use</th>
+                        <th>Review</th>
                     </tr>
                 </thead>
 
@@ -268,7 +292,7 @@
                     <tr>
                         <td>
                             <a class="btn btn-primary"
-                               href="{% url 'assays-assaymatrix-plate-update' plate.id %}">
+                               href="{% url 'assays-assaymatrix-plate-detail' plate.id %}">
                                 View/Edit
                             </a>
                         </td>
@@ -283,7 +307,6 @@
                         <td>
                             {{ plate.assaymatrixitem_set.count }}
                         </td>
-                        {% comment %}
                         <td>
                             {% if plate.signed_off_by %}
                                 <span hidden>1</span>
@@ -294,7 +317,6 @@
                                 <span title="This entry is flagged for review: '{{ plate.reason_for_flag }}'" class="glyphicon glyphicon-flag text-danger" aria-hidden="true"></span>
                             {% endif %}
                         </td>
-                        {% endcomment %}
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -474,4 +496,10 @@
     </div>
     </div>
     {% endif %}
+
+    {# For displaying cells etc. #}
+    <div hidden>
+        {{ form.series_data }}
+    </div>
+    {% include 'assays/component_displays.html' %}
 {% endblock %}

@@ -96,6 +96,8 @@
             {# This is subject to change #}
             <label for="cell_characterization" style="padding-left: 20px;padding-right: 10px;">Chip Characterization</label>
             {{ form.cell_characterization }}
+            <label for="omics" style="padding-left: 20px;padding-right: 10px;">Omics</label>
+            {{ form.omics }}
         </div>
     </div>
 
@@ -272,6 +274,60 @@
             {% include 'generic_field.html' with field=form.pbpk_bolus %}
         </div>
     </div>
+
+    {# Supporting Data #}
+    {# Really, it is worth it to make a formset include #}
+    {{ supporting_data_formset.management_form }}
+    <legend>Supporting Data</legend>
+    {% if supporting_data_formset.non_form_errors %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{ supporting_data_formset.non_form_errors }}
+        </div>
+    {% endif %}
+
+    {% if supporting_data_formset.errors %}
+        {% for dict in supporting_data_formset.errors %}
+            {% for key,value in dict.items %}
+                {% if key %}
+                    <div class="alert alert-danger" role="alert">
+                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                        <span class="sr-only">Error:</span>
+                        {{ forloop.parentloop.counter }}.) {{ key }} : {{ value }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+
+    <a id="add_button-{{ supporting_data_formset.prefix }}" class="btn btn-success" role="button">Add Supporting Data</a>
+    <table class="table table-striped inlines" id="{{ supporting_data_formset.prefix }}-group" name="supporting_data">
+        <thead>
+            <tr>
+                <th>Supporting Data File*</th>
+                <th>Description*</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for supporting_data in supporting_data_formset %}
+                <tr class="inline" id="supporting_data-{{ forloop.counter0 }}">
+                    {% if supporting_data.id.value %}
+                    <td class="original" hidden>
+                        <input type="hidden"
+                               id="id_{{ supporting_data_formset.prefix }}-{{ forloop.counter0 }}-id"
+                               name="{{ supporting_data_formset.prefix }}-{{ forloop.counter0 }}-id"
+                               value="{{ supporting_data.id.value }}">
+                    </td>
+                    {% endif %}
+                    <td>{{ supporting_data.supporting_data }}</td>
+                    <td>{{ supporting_data.description }}</td>
+                    <td>{{ supporting_data.DELETE }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
     {% include 'add_reference.html' %}
 </form>

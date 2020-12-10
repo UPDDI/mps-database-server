@@ -58,6 +58,7 @@ from assays.models import (
     AssayOmicDataFileUpload,
     AssayOmicDataPoint,
     AssayOmicAnalysisTarget,
+    # AssayOmicSampleMetadata,
 )
 from microdevices.models import MicrophysiologyCenter
 # from compounds.models import Compound
@@ -633,6 +634,7 @@ class AssayStudyAdmin(LockableAdmin):
     date_hierarchy = 'start_date'
     list_display = (
         'name',
+        'id',
         'group',
         'get_study_types_string',
         'start_date',
@@ -652,7 +654,7 @@ class AssayStudyAdmin(LockableAdmin):
         (
             'Study', {
                 'fields': (
-                    ('toxicity', 'efficacy', 'disease', 'cell_characterization'),
+                    ('toxicity', 'efficacy', 'disease', 'cell_characterization', 'omics'),
                     'study_configuration',
                     'start_date',
                     'name',
@@ -709,10 +711,14 @@ class AssayStudyAdmin(LockableAdmin):
         qs = qs.prefetch_related(
             'access_groups',
             'collaborator_groups',
-            'assaystudystakeholder_set__group'
+            # Needs to be revised to actually improve time
+            'assaystudystakeholder_set__group',
+            # 'assaystudystakeholder_set__signed_off_by',
+            'signed_off_by',
         )
         return qs
 
+    # Not a, uh, great query. Way too large.
     @mark_safe
     def stakeholder_display(self, obj):
         contents = ''
@@ -724,9 +730,13 @@ class AssayStudyAdmin(LockableAdmin):
         if count:
             stakes = []
             for stakeholder in queryset.order_by('group__name'):
-                if not stakeholder.signed_off_by:
+                if not stakeholder.signed_off_by_id:
                     released = False
-                stakes.append('{0} Approved?: {1}'.format(stakeholder.group.name, stakeholder.signed_off_by))
+                    current_approval_status = False
+                else:
+                    current_approval_status = True
+
+                stakes.append('{0} Approved?: {1}'.format(stakeholder.group.name, current_approval_status))
 
             contents = '<br>'.join(stakes)
 
@@ -1253,7 +1263,7 @@ class AssayStudySetAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AssayStudySetAdminForm, self).__init__(*args, **kwargs)
         study_queryset = AssayStudy.objects.all().prefetch_related(
-            'group__microphysiologycenter_set'
+            'group__center_groups'
         )
         assay_queryset = AssayStudyAssay.objects.all().prefetch_related(
             'target',
@@ -1320,7 +1330,7 @@ admin.site.register(AssayPlateReaderMapDataFileBlock, AssayPlateReaderMapDataFil
 
 class AssayOmicDataFileUploadAdmin(ImportExportModelAdmin):
     model = AssayOmicDataFileUpload
-    list_display = ('study', 'omic_data_file', 'description', 'study_assay', 'analysis_method', 'data_type',
+    list_display = ('description', 'study', 'omic_data_file', 'study_assay', 'analysis_method', 'data_type',
                     'group_1', 'group_2', 'time_1', 'time_2', 'location_1', 'location_2', 'name_reference')
     search_fields = ('description', )
 
@@ -1339,5 +1349,14 @@ class AssayOmicAnalysisTargetAdmin(ImportExportModelAdmin):
     list_display = ('name', 'target', 'data_type', 'method', 'unit')
     search_fields = ('name', 'target', 'data_type', 'method', 'unit')
 
+    list_editable = ('target', 'data_type', 'method', 'unit')
+
 admin.site.register(AssayOmicAnalysisTarget, AssayOmicAnalysisTargetAdmin)
 
+# class AssayOmicSampleMetadataAdmin(ImportExportModelAdmin):
+#     """Admin for Sample Metadata"""
+#     model = AssayOmicSampleMetadata
+#     list_display = ('study', 'cross_reference', 'matrix_item', 'sample_location', 'time', 'replicate','assay_well_id')
+#     search_fields = ('study', 'matrix_item', 'sample_location', 'time')
+#
+# admin.site.register(AssayOmicSampleMetadata, AssayOmicSampleMetadataAdmin)

@@ -1,6 +1,5 @@
 $(document).ready(function() {
     $('#cellsubtypes').DataTable({
-        dom: '<Bl<"row">frptip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
         "iDisplayLength": 50,

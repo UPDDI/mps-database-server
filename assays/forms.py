@@ -83,6 +83,7 @@ from .utils import (
     calibration_choices,
     omic_data_file_process_data,
     COLUMN_HEADERS,
+    data_quality_clean_check_for_omic_file_upload,
 )
 
 from mps.utils import (
@@ -100,7 +101,6 @@ import ujson as json
 import os
 import csv
 import re
-import copy
 
 # TODO REFACTOR WHITTLING TO BE HERE IN LIEU OF VIEW
 # TODO REFACTOR FK QUERYSETS TO AVOID N+1
@@ -120,6 +120,12 @@ import copy
 restricted = ('restricted',)
 # Group
 group = ('group',)
+
+# For flagging
+flag_group = (
+    'flagged',
+    'reason_for_flag'
+)
 
 
 def get_dic_for_custom_choice_field(form, filters=None):
@@ -307,8 +313,9 @@ class SetupFormsMixin(BootstrapForm):
                     self.fields[current_field].widget.attrs['data_verbose_name'] = self.fields[current_field]._queryset.model._meta.verbose_name
 
                     # Possibly dumber
-                    if hasattr(self.fields[current_field]._queryset.model, 'get_add_url_manager'):
-                        self.fields[current_field].widget.attrs['data_add_url'] = self.fields[current_field]._queryset.model.get_add_url_manager()
+                    # In Bootstrap Form
+                    # if hasattr(self.fields[current_field]._queryset.model, 'get_add_url_manager'):
+                    #     self.fields[current_field].widget.attrs['data_add_url'] = self.fields[current_field]._queryset.model.get_add_url_manager()
 
         # Avoid duplicate queries for the sample locations
         # sample_locations = AssaySampleLocation.objects.all().order_by('name')
@@ -675,7 +682,7 @@ class AssayStudyForm(SignOffMixin, BootstrapForm):
         # clean the form data, before validation
         data = super(AssayStudyForm, self).clean()
 
-        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], data['pbpk_steady_state'], data['pbpk_bolus']]):
+        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], data['omics'], data['pbpk_steady_state'], data['pbpk_bolus']]):
             raise forms.ValidationError('Please select at least one study type')
 
         if data.get('pbpk_steady_state', '') and (not data.get('number_of_relevant_cells', '') or not data.get('flow_rate', '')):
@@ -710,6 +717,7 @@ class AssayStudyDetailForm(SignOffMixin, BootstrapForm):
             'efficacy',
             'disease',
             'cell_characterization',
+            'omics',
             'start_date',
             'use_in_calculations',
             'protocol',
@@ -721,14 +729,14 @@ class AssayStudyDetailForm(SignOffMixin, BootstrapForm):
             'flow_rate',
             'name',
             'description',
-        )
+        ) + flag_group
 
     def clean(self):
         """Checks for at least one study type"""
         # clean the form data, before validation
         data = super(AssayStudyDetailForm, self).clean()
 
-        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], data['pbpk_steady_state'], data['pbpk_bolus']]):
+        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], data['omics'], data['pbpk_steady_state'], data['pbpk_bolus']]):
             raise forms.ValidationError('Please select at least one study type')
 
         if data.get('pbpk_steady_state', '') and (not data.get('number_of_relevant_cells', '') or not data.get('flow_rate', '')):
@@ -815,7 +823,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
             'compound_supplier_text',
             'compound_lot_text',
             'compound_receipt_date',
-        )
+        ) + flag_group
 
     def __init__(self, *args, **kwargs):
         super(AssayStudyGroupForm, self).__init__(*args, **kwargs)
@@ -923,7 +931,8 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
             number_of_items = 0
 
             for setup_group in all_setup_data:
-                number_of_items += int(setup_group.get('number_of_items', '0'))
+                if setup_group.get('number_of_items'):
+                    number_of_items += int(setup_group.get('number_of_items', '0'))
 
             # Alternative for one row per group
             # # Find max for number of columns
@@ -941,6 +950,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                     study=self.instance,
                     # Doesn't matter for chips
                     device=None,
+                    organ_model=None,
                     # Alternative that looks nicer, but these matrices probably won't be accessible anyway
                     # number_of_rows=len(all_setup_data),
                     # number_of_columns=number_of_columns,
@@ -1011,7 +1021,10 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
 
             # For now, chips are are all in one row
             for setup_row, setup_group in enumerate(all_setup_data):
-                items_in_group = int(setup_group.pop('number_of_items', '0'))
+                if setup_group.get('number_of_items') is None or setup_group.get('number_of_items') is '':
+                    continue
+
+                items_in_group = int(setup_group.get('number_of_items', '0'))
                 test_type = setup_group.get('test_type', '')
 
                 # To break out to prevent repeat errors
@@ -1401,7 +1414,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
             for current_chip in all_chip_data:
                 # Terminate early if no group
                 # BE CAREFUL, ZERO IS FALSY
-                if current_chip.get('group_index', None) is not None:
+                if current_chip.get('group_index', None) is not None and len(all_setup_data) > current_chip.get('group_index'):
                     setup_group = all_setup_data[current_chip.get('group_index')]
                 else:
                     continue
@@ -1711,7 +1724,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                 new_compound.group_id = new_group_id
 
             if new_compounds:
-                AssayGroupCompound.objects.bulk_create(new_compounds)
+                AssayGroupCompound.objects.bulk_create(reversed(new_compounds))
 
             for new_cell in new_cells:
                 # We perform a little bit of sleight of hand here!
@@ -1724,7 +1737,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                 new_cell.group_id = new_group_id
 
             if new_cells:
-                AssayGroupCell.objects.bulk_create(new_cells)
+                AssayGroupCell.objects.bulk_create(reversed(new_cells))
 
             for new_setting in new_settings:
                 # We perform a little bit of sleight of hand here!
@@ -1737,7 +1750,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
                 new_setting.group_id = new_group_id
 
             if new_settings:
-                AssayGroupSetting.objects.bulk_create(new_settings)
+                AssayGroupSetting.objects.bulk_create(reversed(new_settings))
 
             # Perform deletions
             if deleted_items:
@@ -1758,7 +1771,7 @@ class AssayStudyChipForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
             'series_data',
             'organ_model_full',
             'organ_model_protocol_full'
-        )
+        ) + flag_group
 
     def __init__(self, *args, **kwargs):
         super(AssayStudyChipForm, self).__init__(*args, **kwargs)
@@ -1797,14 +1810,14 @@ class AssayStudyChipForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
         if setup_data_is_empty:
             all_setup_data = []
 
+        # Variables must always exist
+        chip_data = []
+        current_errors = []
+
         # if commit and all_setup_data:
         # SEE BASE MODELS FOR WHY COMMIT IS NOT HERE
         if all_chip_data:
-            chip_data = []
-
             chip_names = {}
-
-            current_errors = []
 
             current_matrix = AssayMatrix.objects.filter(
                 # The study must exist in order to visit this page, so getting the id this was is fine
@@ -1903,7 +1916,8 @@ class AssayStudyPlateForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
             'number_of_rows',
             # TODO
             'series_data',
-        )
+        ) + flag_group
+
         widgets = {
             'name': forms.Textarea(attrs={'rows': 1}),
             'notes': forms.Textarea(attrs={'rows': 10}),
@@ -1935,6 +1949,10 @@ class AssayStudyPlateForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
         self.fields['organ_model'].queryset = OrganModel.objects.filter(
             id__in=plate_groups.values_list('organ_model_id', flat=True)
         )
+
+        # Improper, but one method to make organ model required
+        self.fields['organ_model'].widget.attrs['class'] += ' required'
+        self.fields['organ_model'].required = True
 
     # FORCE UNIQUENESS CHECK
     def clean(self):
@@ -2155,7 +2173,7 @@ class AssayStudyAssaysForm(BootstrapForm):
     class Meta(object):
         model = AssayStudy
         # Since we are splitting into multiple forms, includes are safer
-        fields = []
+        fields = flag_group
 
 
 class AssayStudyFormAdmin(BootstrapForm):
@@ -2197,7 +2215,7 @@ class AssayStudyFormAdmin(BootstrapForm):
         # clean the form data, before validation
         data = super(AssayStudyFormAdmin, self).clean()
 
-        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], data['pbpk_steady_state'], data['pbpk_bolus']]):
+        if not any([data['toxicity'], data['efficacy'], data['disease'], data['cell_characterization'], data['omics'], data['pbpk_steady_state'], data['pbpk_bolus']]):
             raise forms.ValidationError('Please select at least one study type')
 
         if data.get('pbpk_steady_state', '') and (not data.get('number_of_relevant_cells', '') or not data.get('flow_rate', '')):
@@ -2205,6 +2223,35 @@ class AssayStudyFormAdmin(BootstrapForm):
 
         if data.get('pbpk_bolus', '') and (not data.get('number_of_relevant_cells', '') or not data.get('total_device_volume', '')):
             raise forms.ValidationError('Bolus PBPK Requires Number of Cells Per MPS Model and Total Device Volume')
+
+        return data
+
+
+class AssayStudyAccessForm(forms.ModelForm):
+    """Form for changing access to studies"""
+    def __init__(self, *args, **kwargs):
+        super(AssayStudyAccessForm, self).__init__(*args, **kwargs)
+
+        # NEED A MORE ELEGANT WAY TO GET THIS
+        first_center = self.instance.group.center_groups.first()
+
+        groups_without_repeat = Group.objects.filter(
+            id__in=first_center.accessible_groups.all().values_list('id', flat=True),
+        ).order_by(
+            'name'
+        ).exclude(
+            id=self.instance.group.id
+        )
+
+        self.fields['access_groups'].queryset = groups_without_repeat
+        self.fields['collaborator_groups'].queryset = groups_without_repeat
+
+    class Meta(object):
+        model = AssayStudy
+        fields = (
+            'collaborator_groups',
+            'access_groups',
+        )
 
 
 class AssayStudySupportingDataForm(BootstrapForm):
@@ -2697,6 +2744,7 @@ class AssaySetupCompoundFormSet(BaseModelFormSetForcedUniqueness):
 
 
 # UGLY SOLUTION
+# DEPRECATED
 class AssaySetupCompoundInlineFormSet(BaseInlineFormSet):
     """Frontend Inline FormSet for Compound Instances"""
     class Meta(object):
@@ -3150,7 +3198,7 @@ class AssayMatrixItemForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
             'notebook',
             'notebook_page',
             'notes'
-        )
+        ) + flag_group
 
     def __init__(self, *args, **kwargs):
         super(AssayMatrixItemForm, self).__init__(*args, **kwargs)
@@ -3274,7 +3322,11 @@ class AssayStudyDeleteForm(forms.ModelForm):
 class AssayStudySignOffForm(SignOffMixin, BootstrapForm):
     class Meta(object):
         model = AssayStudy
-        fields = ['signed_off', 'signed_off_notes']
+        fields = [
+            'signed_off',
+            'signed_off_notes',
+            'release_date',
+        ]
         widgets = {
             'signed_off_notes': forms.Textarea(attrs={'cols': 50, 'rows': 2}),
         }
@@ -3390,7 +3442,7 @@ class AssayStudySetForm(SignOffMixin, BootstrapForm):
         study_queryset = get_user_accessible_studies(
             self.user
         ).prefetch_related(
-            'group__microphysiologycenter_set',
+            'group__center_groups',
         )
         assay_queryset = AssayStudyAssay.objects.filter(
             study_id__in=study_queryset.values_list('id', flat=True)
@@ -4362,59 +4414,6 @@ class AssayPlateReaderMapForm(BootstrapForm):
         # study = get_object_or_404(AssayStudy, pk=self.kwargs['study_id'])
 
         if data.get('form_make_mifc_on_submit'):
-            # search term MIFC - if MIFC changes, this will need changed
-            # make a list of column headers for the mifc file
-            # could use COLUMN_HEADERS, but need to append one (What?! If you need to append a value, then use the existing variable and then append! Please adhere to DRY principles!)
-            # column_table_headers_average = [
-            #     'Chip ID',
-            #     'Cross Reference',
-            #     'Assay Plate ID',
-            #     'Assay Well ID',
-            #     'Day',
-
-            #     'Hour',
-            #     'Minute',
-            #     'Target/Analyte',
-            #     'Subtarget',
-            #     'Method/Kit',
-
-            #     'Sample Location',
-            #     'Value',
-            #     'Value Unit',
-            #     'Replicate',
-            #     'Caution Flag',
-
-            #     'Exclude',
-            #     'Notes',
-            #     'Processing Details',
-            # ]
-
-            column_table_headers_average = list(COLUMN_HEADERS)
-            column_table_headers_average.append('Processing Details')
-
-            # Ought to be revised
-            # search term MIFC - if MIFC changes, this will need changed
-            # Make a dictionary of headers in utils and header needed in the mifc file
-            utils_key_column_header = {
-                'matrix_item_name': 'Chip ID or Well ID',
-                'cross_reference': 'Cross Reference',
-                'plate_name': 'Assay Plate ID',
-                'well_name': 'Assay Well ID',
-                'day': 'Day',
-                'hour': 'Hour',
-                'minute': 'Minute',
-                'target': 'Target/Analyte',
-                'subtarget': 'Subtarget',
-                'method': 'Method/Kit',
-                'location_name': 'Sample Location',
-                'processed_value': 'Value',
-                'unit': 'Value Unit',
-                'replicate': 'Replicate',
-                'caution_flag': 'Caution Flag',
-                'exclude': 'Exclude',
-                'notes': 'Notes',
-                'sendmessage': 'Processing Details'
-            }
 
             # print(".unit ",data.get('standard_unit').unit)
             # print(".id ", data.get('standard_unit').id)
@@ -4436,13 +4435,16 @@ class AssayPlateReaderMapForm(BootstrapForm):
                 borrowed_platemap_pk = data.get(
                     'form_block_standard_borrow_pk_platemap_single_for_storage')
 
+            # 20201104 when no_calibration is selected, the _used field does not get populated..deal with it here
+            use_curve = 'no_calibration'
             use_curve_long = data.get('form_calibration_curve_method_used')
-            use_curve = find_a_key_by_value_in_dictionary(CALIBRATION_CURVE_MASTER_DICT, use_curve_long)
-            if use_curve == 'select_one':
-                use_curve = 'no_calibration'
+            if data.get('se_form_calibration_curve') == 'no_calibration' or data.get('se_form_calibration_curve') == 'select_one':
+                use_curve_long = 'no_calibration'
+            else:
+                use_curve = find_a_key_by_value_in_dictionary(CALIBRATION_CURVE_MASTER_DICT, use_curve_long)
 
             if len(use_curve.strip()) == 0:
-                err_msg = "The calibration method " + use_curve_long + " was not found in the cross reference. This is a very bad error. It must be fixed"
+                err_msg = "The calibration method " + use_curve_long + " was not found in the cross reference list."
                 # print(err_msg)
                 raise forms.ValidationError(err_msg)
 
@@ -4480,28 +4482,65 @@ class AssayPlateReaderMapForm(BootstrapForm):
 
             # this function is in utils.py that returns data
             data_mover = plate_reader_data_file_process_data(set_dict)
-            # what comes back is a dictionary of
+            # 20201105 one row of data mover
+            # {'matrix_item_name': '13', 'cross_reference': 'Plate Reader Tool', 'plate_name': 'map-20201105-07:47:13',
+            #  'well_name': 'D7 C7 E7', 'day': '1.0', 'hour': '0', 'minute': '0', 'target': 'Decay Time',
+            #  'subtarget': 'none', 'method': 'EarlyTox Cardiotoxicity Kit (Molecular Devices: R8211)',
+            #  'location_name': 'Basolateral', 'processed_value': '25195871.42980029', 'unit': 'ng/mL', 'replicate': 1,
+            #  'caution_flag': '', 'exclude': ' ', 'notes': '',
+            #  'sendmessage': 'Fitting method: linear;  Standard minimum: 0.0;  Standard maximum: 100.0;  '}, {
+            #     'matrix_item_name': '13', 'cross_reference': 'Plate Reader Tool', 'plate_name': 'map-20201105-07:47:13',
+            #     'well_name': 'C8 E8 D8', 'day': '2.0', 'hour': '0', 'minute': '0', 'target': 'Decay Time',
+            #     'subtarget': 'none', 'method': 'EarlyTox Cardiotoxicity Kit (Molecular Devices: R8211)',
+            #     'location_name': 'Basolateral', 'processed_value': '24630641.60638611', 'unit': 'ng/mL', 'replicate': 1,
+            #     'caution_flag': '', 'exclude': ' ', 'notes': '',
+            #     'sendmessage': 'Fitting method: linear;  Standard minimum: 0.0;  Standard maximum: 100.0;  '}, {
+            #     'matrix_item_name': '13', 'cross_reference': 'Plate Reader Tool', 'plate_name': 'map-20201105-07:47:13',
+            #     'well_name': 'C9 E9 D9', 'day': '3.0', 'hour': '0', 'minute': '0', 'target': 'Decay Time',
+            #     'subtarget': 'none', 'method': 'EarlyTox Cardiotoxicity Kit (Molecular Devices: R8211)',
+            #     'location_name': 'Basolateral', 'processed_value': '34903839.32472848', 'unit': 'ng/mL', 'replicate': 1,
+            #     'caution_flag': '', 'exclude': ' ', 'notes': '',
+            #     'sendmessage': 'Fitting method: linear;  Standard minimum: 0.0;  Standard maximum: 100.0;  '}
+
+            utils_key_column_header = {
+                'matrix_item_name': COLUMN_HEADERS[0],
+                'cross_reference': COLUMN_HEADERS[1],
+                'plate_name': COLUMN_HEADERS[2],
+                'well_name': COLUMN_HEADERS[3],
+                'day': COLUMN_HEADERS[4],
+                'hour': COLUMN_HEADERS[5],
+                'minute': COLUMN_HEADERS[6],
+                'target': COLUMN_HEADERS[7],
+                'subtarget': COLUMN_HEADERS[8],
+                'method': COLUMN_HEADERS[9],
+                'location_name': COLUMN_HEADERS[10],
+                'processed_value': COLUMN_HEADERS[11],
+                'unit': COLUMN_HEADERS[12],
+                'replicate': COLUMN_HEADERS[13],
+                'caution_flag': COLUMN_HEADERS[14],
+                'exclude': COLUMN_HEADERS[15],
+                'notes': COLUMN_HEADERS[16],
+                'sendmessage': 'Processing Details'
+            }
+            column_table_headers_average = list(COLUMN_HEADERS)
+            column_table_headers_average.append('Processing Details')
+
+            # what comes back in 9 is a dictionary of data rows with dict keys as shown in utils_key_column_header
             list_of_dicts = data_mover[9]
             list_of_lists_mifc_headers_row_0 = [None] * (len(list_of_dicts) + 1)
             list_of_lists_mifc_headers_row_0[0] = column_table_headers_average
             i = 1
-            # print(" ")
             for each_dict_in_list in list_of_dicts:
                 list_each_row = []
                 for this_mifc_header in column_table_headers_average:
-                    # print("this_mifc_header ", this_mifc_header)
                     # find the key in the dictionary that we need
                     utils_dict_header = find_a_key_by_value_in_dictionary(utils_key_column_header,
                                                                           this_mifc_header)
-                    # print("utils_dict_header ", utils_dict_header)
-                    # print("this_mifc_header ", this_mifc_header)
                     # get the value that is associated with this header in the dict
                     this_value = each_dict_in_list.get(utils_dict_header)
-                    # print("this_value ", this_value)
                     # add the value to the list for this dict in the list of dicts
                     list_each_row.append(this_value)
-                # when down with the dictionary, add the completely list for this row to the list of lists
-                # print("list_each_row ", list_each_row)
+                # when down with the dictionary, add the complete list for this row to the list of lists
                 list_of_lists_mifc_headers_row_0[i] = list_each_row
                 i = i + 1
 
@@ -5135,6 +5174,7 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         )
 
         initial_omic_computational_method = None
+        initial_computational_method = None
         # just get the first one for the default, if there is one
         if len(omic_computational_methods) > 0:
             for each in omic_computational_methods:
@@ -5172,6 +5212,9 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
             self.fields['time_2_hour'].initial = times_2.get('hour')
             self.fields['time_2_minute'].initial = times_2.get('minute')
 
+        # filename_only = os.path.basename(str(self.instance.omic_data_file))
+        # self.fields['filename_only'].initial = filename_only
+
     time_1_day = forms.DecimalField(
         required=False,
         label='Day'
@@ -5197,24 +5240,14 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         required=False,
         label='Minute'
     )
-    filename_only = forms.CharField(
-        required=False,
-    )
+    # filename_only = forms.CharField(
+    #     required=False,
+    # )
 
     def clean(self):
         data = super(AssayOmicDataFileUploadForm, self).clean()
-        self.process_file(save=False, calledme='clean')
-        return data
 
-    def save(self, commit=True):
-        new_file = super(AssayOmicDataFileUploadForm, self).save(commit=commit)
-        if commit:
-            self.process_file(save=True, calledme='save')
-        return new_file
-
-    def process_file(self, save=False, calledme='c'):
-        true_to_continue = True
-        data = self.cleaned_data
+        # data are changed here, so NEED to return the data
         data['time_1'] = 0
         for time_unit, conversion in list(TIME_CONVERSIONS.items()):
             if data.get('time_1_' + time_unit) is not None:
@@ -5227,49 +5260,51 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
                 inttime = data.get('time_2_' + time_unit)
                 data.update({'time_2': data.get('time_2') + inttime * conversion,})
 
-        file_extension = os.path.splitext(data.get('omic_data_file').name)[1]
+        true_to_continue = self.qc_file(save=False, calledme='clean')
+        if not true_to_continue:
+            validation_message = 'This did not pass QC.'
+            raise ValidationError(validation_message, code='invalid')
+        self.process_file(save=False, calledme='clean')
+        return data
 
-        # there are a few fields, in addition to the change of the data file, that would cause the data to need replaced
-        # including analysis_method and data_type
-        if 'omic_data_file' in self.changed_data or 'analysis_method' in self.changed_data or 'data_type' in self.changed_data or self.instance.id is None:
-            # Run file extension check
-            if file_extension in ['.csv', '.tsv', '.txt', '.xls', '.xlsx']:
-                true_to_continue = True
-            else:
-                true_to_continue = False
-                raise ValidationError(
-                     'Invalid file extension - must be in csv, tsv, txt, xls, or xlsx',
-                     code='invalid'
-                )
+    def save(self, commit=True):
+        new_file = None
+        if commit:
+            new_file = super(AssayOmicDataFileUploadForm, self).save(commit=commit)
+            self.process_file(save=True, calledme='save')
+        return new_file
 
-        # ONGOING - add to the list with all data types that are two groups required
-        if data['data_type'] in ['log2fc']:
-            if data['group_1'] == None or data['group_1'] == None:
-                true_to_continue = False
-                raise ValidationError(
-                     'For data type that compares two groups, both groups must be selected.',
-                     code='invalid'
-                )
-
-        if true_to_continue:
+    def qc_file(self, save=False, calledme='c'):
+        data = self.cleaned_data
+        data_file_pk = 0
+        # self.instance.id is None for the add form
+        if self.instance.id:
             data_file_pk = self.instance.id
-            data_type = data['data_type']
-            analysis_method = data['analysis_method']
 
-            if calledme == 'clean':
-                # this function is in utils.py
-                # print('form clean')
-                data_file = data.get('omic_data_file')
-                a_returned = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, analysis_method)
-            else:
-                # print('form save')
-                queryset = AssayOmicDataFileUpload.objects.get(id=data_file_pk)
-                data_file = queryset.omic_data_file.open()
-                a_returned = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, analysis_method)
+        true_to_continue = data_quality_clean_check_for_omic_file_upload(self, data, data_file_pk)
+        return true_to_continue
+
+    def process_file(self, save=False, calledme='c'):
+        data = self.cleaned_data
+        data_file_pk = 0
+        if self.instance.id:
+            data_file_pk = self.instance.id
+        file_extension = os.path.splitext(data.get('omic_data_file').name)[1]
+        data_type = data['data_type']
+        analysis_method = data['analysis_method']
+
+        # HANDY for getting a file object and a file queryset when doing clean vrs save
+        if calledme == 'clean':
+            # this function is in utils.py
+            # print('form clean')
+            data_file = data.get('omic_data_file')
+            a_returned = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, analysis_method)
+        else:
+            # print('form save')
+            queryset = AssayOmicDataFileUpload.objects.get(id=data_file_pk)
+            data_file = queryset.omic_data_file.open()
+            a_returned = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, analysis_method)
 
         return data
 
 #     End Omic Data File Upload Section
-
-
-

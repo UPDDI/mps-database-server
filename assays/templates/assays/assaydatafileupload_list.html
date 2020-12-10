@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+{# May be worth it just to load this in base? #}
+{% load custom_filters %}
+
+{% block load_js %}
+    <script src="{% static "assays/assaydatafileupload_list.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/">Studies</a></li>
+    <li><a href="{{ object.get_absolute_url }}">{{ object }}</a></li>
+    <li><a href="{% url 'assays-assaystudy-data-index' object.id %}">Data</a>
+    <li class="active">Current Data Files</li>
+{% endblock %}
+
+{% block content %}
+    <div class="padded-bottom">
+        <legend>
+            <h2 class="text-center">
+                Data File Uploads
+            </h2>
+        </legend>
+
+        {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
+        <div class="row text-center padded-bottom">
+            <a href="{% url 'assays-assaystudy-upload' object.id %}" class="btn btn-lg btn-success" role="button">Click here to Upload a Data File</a>
+        </div>
+        {% endif %}
+
+        <table hidden id="data_file_uploads" class="display table table-striped" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th>View</th>
+                    <th>Name</th>
+                    <th>Data Points</th>
+                    <th>Uploaded On</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for data_file in valid_files %}
+                <tr>
+                    <td><a class="btn btn-primary" href="{{ data_file.get_absolute_url }}">View</a></td>
+                    <td>{{ data_file }}</td>
+                    <td>{{ data_file.assaydatapoint_set.count }}</td>
+                    {# Adding a link to this row converts it from date to HTML = Really, REALLY annoying #}
+                    <td>{{ data_file.created_on|date:"Y-m-d" }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

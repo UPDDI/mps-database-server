@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block extra_head %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+
+{% block load_js %}
+    <script src="{% static "assays/grouping_filtering.js" %}"></script>
+    <script src="{% static "assays/chart_display.js" %}"></script>
+    <script src="{% static "assays/assaygroup_detail.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/">Studies</a></li>
+    <li><a href="{{ object.study.get_absolute_url }}">{{ object.study }}</a></li>
+    <li class="active">
+        <em>Group {{ object }}</em>
+    </li>
+{% endblock %}
+
+{% block sidebar %}
+    {% include 'assays/grouping_filtering.html' with charts="true" %}
+{% endblock %}
+
+{% block content %}
+
+    <h1><em>Group {{ object }}</em></h1>
+
+    <table class="table table-striped table-bordered table-nonfluid" style="background-color: #AAB3AB;">
+        <tbody>
+            <tr>
+                <th>
+                    MPS Model
+                </th>
+                <td>
+                    <a href="{% url 'microdevices-organmodel-detail' object.organ_model.id %}">{{ object.organ_model }}</a>
+                </td>
+            </tr>
+            {% if object.organ_model_version %}
+            <tr>
+                <th>
+                    MPS Model Version
+                </th>
+                <td>
+                    {{ object.organ_model_verion }}
+                </td>
+            </tr>
+            {% endif %}
+            <tr>
+                <th>
+                    {% if object.organ_model.device.device_type == 'chip' %}
+                        Chips
+                    {% else %}
+                        Wells
+                    {% endif %}
+                </th>
+                <td>
+                    {% for item in items %}
+                        <a href="{{ item.get_absolute_url }}">{{ item }}</a>;
+                    {% endfor %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    {# NOTE: MOVED TO NEW SCHEMA: OLD ENTRIES WILL BREAK #}
+    {% if object.assaygroupcell_set.count %}
+    <legend>Cells</legend>
+    <table class="table table-striped table-bordered">
+        <thead>
+        <tr>
+            <th>Cell Sample</th>
+            <th>Cell Biosensor</th>
+            <th>Density</th>
+            <th>Unit</th>
+            <th>Passage#</th>
+            <th>Addition Time</th>
+{#            <th>Duration</th>#}
+            <th>Addition Location</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for cell in object.assaygroupcell_set.all %}
+            <tr>
+                <td>{{ cell.cell_sample }}</td>
+                <td>{{ cell.biosensor }}</td>
+                <td>{{ cell.density|intcomma }}</td>
+                <td>{{ cell.density_unit }}</td>
+                <td>{{ cell.passage }}</td>
+                <td>{{ cell.get_addition_time_string }}</td>
+{#                <td>{{ cell.get_duration_string }}</td>#}
+                <td>{{ cell.addition_location }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if object.assaygroupcompound_set.count %}
+    <legend>Compounds</legend>
+    <table class="table table-striped table-bordered">
+        <thead>
+        <tr>
+            <th>Compound</th>
+            <th>Supplier</th>
+            <th>Lot</th>
+            <th>Receipt Date</th>
+            <th>Concentration</th>
+            <th>Addition Time</th>
+            <th>Duration</th>
+            <th>Addition Location</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for compound in object.assaygroupcompound_set.all %}
+            <tr>
+                <td>
+                    <a href="{% url 'compounds-compound-detail' compound.compound_instance.compound.id %}">
+                        {{ compound.compound_instance.compound }}
+                    </a>
+                </td>
+                <td>{{ compound.compound_instance.supplier.name }}</td>
+                <td>{{ compound.compound_instance.lot }}</td>
+                <td>{{ compound.compound_instance.receipt_date|default:'' }}</td>
+                <td>{{ compound.concentration }} {{ compound.concentration_unit }}</td>
+                <td>{{ compound.get_addition_time_string }}</td>
+                <td>{{ compound.get_duration_string }}</td>
+                <td>{{ compound.addition_location }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if object.assaygroupsetting_set.count %}
+    <legend>Settings</legend>
+    <table class="table table-striped table-bordered">
+        <thead>
+        <tr>
+            <th>Setting</th>
+            <th>Value</th>
+            <th>Unit</th>
+            <th>Addition Time</th>
+            <th>Duration</th>
+            <th>Addition Location</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for setting in object.assaygroupsetting_set.all %}
+            <tr>
+                <td>{{ setting.setting }}</td>
+                <td>{{ setting.value|intcomma }}</td>
+                <td>{{ setting.unit }}</td>
+                <td>{{ setting.get_addition_time_string }}</td>
+                <td>{{ setting.get_duration_string }}</td>
+                <td>{{ setting.addition_location }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% include 'assays/sidebar_extras.html' with show_hide="true" %}
+
+    <div id="charts" class="padded-bottom"></div>
+
+    {# More or less superfluous #}
+    {# {% include 'assays/group_table.html' %} #}
+{% endblock %}

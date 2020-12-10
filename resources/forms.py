@@ -1,5 +1,6 @@
 from django import forms
 
+from resources.models import Definition, help_category_choices
 
 class ResourceForm(forms.ModelForm):
     """Form for Resources"""
@@ -31,8 +32,47 @@ class ResourceSubtypeForm(forms.ModelForm):
 
 class DefinitionForm(forms.ModelForm):
     """Form for Definitions"""
+
     class Meta(object):
+        model = Definition
+        exclude = ('',)
         widgets = {
-            'term': forms.Textarea(attrs={'rows': 1}),
-            'definition': forms.Textarea(attrs={'rows': 5}),
+            'term': forms.Textarea(attrs={'rows': 1, 'cols': 50}),
+            'definition': forms.Textarea(attrs={'rows': 5, 'cols': 50}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super(DefinitionForm, self).__init__(*args, **kwargs)
+        queryset = Definition.objects.all().order_by('help_category', '-help_order')
+
+        current_list = []
+        dict_category_orders = {}
+        previous_help_category = ''
+        for each in queryset:
+            if len(each.help_category) > 0 and each.help_order > 0 and each.help_order is not None:
+                if each.help_category != previous_help_category:
+                    current_list = []
+                if each.help_category in dict_category_orders.keys():
+                    current_list = dict_category_orders.get(each.help_category)
+
+                current_list.append(each.help_order)
+                dict_category_orders[each.help_category] = current_list
+
+        # print("dict ", dict_category_orders)
+        category_string = ''
+        this_list_string = ''
+        for key, value in dict_category_orders.items():
+            try:
+                this_list_string = ', '.join(map(str, value))
+            except:
+                this_list_string = ''
+            category_string = category_string + '<br>' + key + ': ' + this_list_string
+
+        self.fields['help_order'].help_text = 'Order controls order in Help page tables.'+category_string
+
+    # number_cats = len(help_category_choices)
+    # order_numbers_already_assigned = forms.CharField(
+    #     widget=forms.Textarea(
+    #         attrs={'rows': number_cats+2, 'cols': 75, 'readonly': 'readonly'}
+    #     )
+    # )

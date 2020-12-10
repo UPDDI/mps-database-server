@@ -12,10 +12,17 @@ from assays.views import (
     AssayStudyDetails,
     AssayStudyGroups,
     AssayStudyChips,
+    AssayStudyChipsDetail,
     AssayStudyPlates,
     AssayStudyPlateAdd,
     AssayStudyPlateUpdate,
+    AssayStudyPlateDetail,
     AssayStudyAssays,
+    AssayStudyDataIndex,
+    AssayStudyAccess,
+    AssayGroupDetail,
+    AssayDataFileUploadDetail,
+    AssayDataFileUploadList,
     AssayMatrixItemDetail,
     AssayMatrixItemUpdate,
     AssayMatrixItemDelete,
@@ -142,11 +149,27 @@ urlpatterns = [
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/plates/$', AssayStudyPlates.as_view(), name='assays-assaystudy-update-plates'),
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/assays/$', AssayStudyAssays.as_view(), name='assays-assaystudy-update-assays'),
 
+    # View the chips
+    url(r'^assays/assaychips/(?P<pk>[0-9]+)/$', AssayStudyChipsDetail.as_view(), name='assays-assaymatrix-chips-detail'),
+
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/access/$', AssayStudyAccess.as_view(), name='assays-assaystudy-update-access'),
+
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/data_index/$', AssayStudyDataIndex.as_view(), name='assays-assaystudy-data-index'),
+
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/data_files/$', AssayDataFileUploadList.as_view(), name='assays-assaydatafileupload-list'),
+
+    url(r'^assays/assaydatafileupload/(?P<pk>[0-9]+)/$', AssayDataFileUploadDetail.as_view(), name='assays-assaydatafileupload-detail'),
+
     # Just redirect for now
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/update/$', RedirectView.as_view(pattern_name='assays-assaystudy-update-details', permanent=True), name='assays-assaystudy-update'),
 
-    url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assayplate/add/$', AssayStudyPlateAdd.as_view(), name='assays-assaymatrix-plate-add'),
-    url(r'^assays/assayplate/(?P<pk>[0-9]+)/plate/$', AssayStudyPlateUpdate.as_view(), name='assays-assaymatrix-plate-update'),
+    url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/plate/add/$', AssayStudyPlateAdd.as_view(), name='assays-assaymatrix-plate-add'),
+    url(r'^assays/assayplate/(?P<pk>[0-9]+)/plate/$', AssayStudyPlateDetail.as_view(), name='assays-assaymatrix-plate-detail'),
+    url(r'^assays/assayplate/(?P<pk>[0-9]+)/plate/update/$', AssayStudyPlateUpdate.as_view(), name='assays-assaymatrix-plate-update'),
+    url(r'^assays/assayplate/(?P<pk>[0-9]+)/plate/delete/$', AssayMatrixDelete.as_view(), name='assays-assaymatrix-plate-delete'),
+
+    # Group detail
+    url(r'^assays/assaygroup/(?P<pk>[0-9]+)/$', AssayGroupDetail.as_view(), name='assays-assaygroup-detail'),
 
     # NEW_TO_BE_REVISED
     url(r'^assays/assaystudy/$', AssayStudyList.as_view(), name='assays-assaystudy-list'),
@@ -162,12 +185,12 @@ urlpatterns = [
 
     # TO BE DEPRECATED
     # Add a matrix
-    url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assaymatrix/add/$', AssayMatrixAdd.as_view(), name='assays-assaymatrix-add'),
-    url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/$', AssayMatrixDetail.as_view(), name='assays-assaymatrix-detail'),
-    url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/update/$', AssayMatrixUpdate.as_view(), name='assays-assaymatrix-update'),
-    url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/delete/$', AssayMatrixDelete.as_view(), name='assays-assaymatrix-delete'),
+    # url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assaymatrix/add/$', AssayMatrixAdd.as_view(), name='assays-assaymatrix-add'),
+    # url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/$', AssayMatrixDetail.as_view(), name='assays-assaymatrix-detail'),
+    # url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/update/$', AssayMatrixUpdate.as_view(), name='assays-assaymatrix-update'),
+    # url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/delete/$', AssayMatrixDelete.as_view(), name='assays-assaymatrix-delete'),
 
-    url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/new/$', AssayMatrixNew.as_view(), name='assays-assaymatrix-new'),
+    # url(r'^assays/assaymatrix/(?P<pk>[0-9]+)/new/$', AssayMatrixNew.as_view(), name='assays-assaymatrix-new'),
 
     # Location for assay filter
     url(r'^assays/graphing_reproducibility/$', GraphingReproducibilityFilterView.as_view(), name='assays-graphing-reproducibility'),
@@ -286,6 +309,7 @@ urlpatterns = [
     # Ajax
     url(r'^assays_ajax/$', assays.ajax.ajax),
 
+    # Maybe we ought to change the name for consistency?
     # Plate Map (add and update will go to the same page, content = True for one of them...)
     # Note pk vs. study_id
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/assayplatereadermap/$', AssayPlateReaderMapIndex.as_view(), name='assayplatereadermap-index'),

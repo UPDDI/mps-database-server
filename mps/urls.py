@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.conf.urls import url, include
+from django.urls import path
 import debug_toolbar
 
 from mps import settings
@@ -18,6 +19,9 @@ from django_registration.backends.activation.views import ActivationView, Regist
 from django.contrib.auth import views as auth_views
 
 from django.conf.urls.static import static
+
+# Get the API urls (from the router instance)
+from .api import api_router
 
 admin.autodiscover()
 
@@ -171,6 +175,10 @@ urlpatterns = [
     # url(r'^compounds_ajax/$', 'compounds.ajax.ajax'),
     # url(r'^cellsamples_ajax/$', 'cellsamples.ajax.ajax'),
     # END old-style API
+
+    # REST API
+    url(r'^api/$', mps.views.APIPrimer.as_view()),
+    path('', include(api_router.urls)),
 
     # Under construction message
     url(r'^under_construction/$', mps.views.UnderConstruction.as_view()),

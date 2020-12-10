@@ -6,7 +6,7 @@ from django.db import models
 from django.utils import timezone
 # from django.shortcuts import redirect, get_object_or_404
 
-from django.urls import reverse
+from django.urls import reverse, NoReverseMatch
 
 
 class FrontEndModel(models.Model):
@@ -18,21 +18,27 @@ class FrontEndModel(models.Model):
     # OVERKILL: allows us to immediately get add url for stuff that can be added on the front end
     @classmethod
     def get_add_url_manager(self):
-        return reverse(
-            '{}-{}-add'.format(
-                self._meta.app_label,
-                self._meta.model_name
+        try:
+            return reverse(
+                '{}-{}-add'.format(
+                    self._meta.app_label,
+                    self._meta.model_name
+                )
             )
-        )
+        except NoReverseMatch:
+            return None
 
     def get_absolute_url(self):
-        return reverse(
-            '{}-{}-detail'.format(
-                self._meta.app_label,
-                self._meta.model_name
-            ),
-            kwargs={'pk': self.id}
-        )
+        try:
+            return reverse(
+                '{}-{}-detail'.format(
+                    self._meta.app_label,
+                    self._meta.model_name
+                ),
+                kwargs={'pk': self.id}
+            )
+        except NoReverseMatch:
+            return self.get_update_url()
 
     def get_update_url(self):
         return reverse(

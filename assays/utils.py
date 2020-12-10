@@ -38,7 +38,11 @@ from .models import (
     assay_plate_reader_map_info_plate_size_choices,
     assay_plate_reader_map_info_plate_size_choices_list,
     AssayOmicDataPoint,
-    AssayOmicAnalysisTarget
+    AssayOmicAnalysisTarget,
+    AssayOmicDataFileUpload,
+)
+from microdevices.models import (
+    OrganModelLocation,
 )
 
 from mps.templatetags.custom_filters import VIEWER_SUFFIX, ADMIN_SUFFIX
@@ -72,6 +76,8 @@ import re
 import time
 from django.db.models import Q
 from scipy.optimize import leastsq
+import hashlib
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 
 # from sklearn.linear_model import LinearRegression
 # from sklearn import metrics
@@ -3076,6 +3082,7 @@ def pk_clearance_results(pk_type,
 
     if (np.isnan(cl_ml_min)):
         return {'error': 'Clearance was Null. Please select different times and try again.'}
+
     return {"clearance": cl_ml_min, "clearance_data": pk_steady_state_data.to_dict('split')}
 
 
@@ -5398,7 +5405,8 @@ def plate_reader_data_file_process_data(set_dict):
                 elif use_calibration_curve == 'poly2':
                     myFit = plateMapPoly2(CONC, A_poly2, B_poly2, C_poly2, D_poly2)
                 else:
-                    err_msg = "There is a very bad error - missing a calibration method???"
+                    # 20201104 - changed the error message so it does not scare the user
+                    err_msg = "Error - missing a calibration method."
                     print(err_msg)
 
                 # print(p, "   ", myFit)
@@ -6514,7 +6522,7 @@ def omic_data_file_process_data(save, study_id, omic_data_file_id, data_file, fi
     joint_name = "New/Changed File Preview"
     data_dicts['data'][joint_name] = {}
     data_dicts['file_id_to_name'][1] = joint_name
-    data_dicts['table'][joint_name] = 'Preview Chosen File'
+    data_dicts['table'][joint_name] = ['Preview Chosen File', omic_data_file_id]
     data_dicts['target_name_to_id'] = {}
 
     if data_type == 'log2fc':
@@ -6930,3 +6938,294 @@ def data_file_to_data_frame(data_file, file_extension, workbook=None, sheet_inde
 
     return [true_if_dataframe_found, error_message, df]
 
+
+# sck for clean omic upload and some ajax of subs
+def data_quality_clean_check_for_omic_file_upload(self, data, data_file_pk):
+    # fields that would cause a change in data pull
+    # 'omic_data_file' in self.changed_data or
+    # 'analysis_method' in self.changed_data or
+    # 'data_type' in self.changed_data or
+
+    true_to_continue = True
+    file_name = data.get('omic_data_file').name
+
+    if true_to_continue and 'omic_data_file' in self.changed_data:
+
+        # check for valid file extension
+        file_extension = os.path.splitext(data.get('omic_data_file').name)[1]
+        if file_extension not in ['.csv', '.tsv', '.txt', '.xls', '.xlsx']:
+            true_to_continue = False
+            validation_message = 'Invalid file extension - must be in csv, tsv, txt, xls, or xlsx.'
+            validation_message = validation_message + "  " + file_name
+            raise ValidationError(validation_message, code='invalid')
+
+    if true_to_continue and 'omic_data_file' in self.changed_data:
+        true_to_continue = this_file_is_the_same_hash_as_another_in_this_study(self, data, data_file_pk)
+
+    if true_to_continue:
+        # ONGOING - add to the list with all data types that are two groups required
+        if data['data_type'] in ['log2fc']:
+            true_to_continue = qc_for_log2fc_omic_upload(self, data, data_file_pk)
+    return true_to_continue
+
+
+def qc_for_log2fc_omic_upload(self, data, data_file_pk):
+    true_to_continue = True
+    file_name = data.get('omic_data_file').name
+
+    if data['group_1'] is None or data['group_2'] is None:
+        true_to_continue = False
+        validation_message = 'For data type that compares two groups, both groups must be selected.'
+        validation_message = validation_message + "  " + file_name
+        raise ValidationError(validation_message, code='invalid')
+    if data['group_1'] == data['group_2']:
+        true_to_continue = False
+        validation_message = 'For data type that compares two groups, the two selected groups must be different.'
+        validation_message = validation_message + "  " + file_name
+        raise ValidationError(validation_message, code='invalid')
+    if data['location_1'] is None or data['location_2'] is None:
+        true_to_continue = False
+        validation_message = 'Sample locations are required for this data type.'
+        validation_message = validation_message + "  " + file_name
+        raise ValidationError(validation_message, code='invalid')
+    if data['time_1'] is None or data['time_2'] is None:
+        true_to_continue = False
+        validation_message = 'Sample times are required for this data type.'
+        validation_message = validation_message + "  " + file_name
+        raise ValidationError(validation_message, code='invalid')
+
+    if true_to_continue:
+
+        # print('-', self.instance.study.id)
+        # print('-', data['analysis_method'])
+        # print('-', data['group_1'])
+        # print('-', data['group_2'])
+        # print('-', data['location_1'])
+        # print('-', data['location_2'])
+        # print('-', data['time_1'])
+        # print('-', data['time_2'])
+
+        if ('analysis_method' in self.changed_data or
+                'group_1' in self.changed_data or
+                'group_2' in self.changed_data or
+                'location_1' in self.changed_data or
+                'location_2' in self.changed_data or
+                'time_1' in self.changed_data or
+                'time_2' in self.changed_data):
+            # is there a combination of group1+location1+time1+group2+location2+time2 already in study
+            # in as group 1 and group 2
+            group_keys_combos_left = AssayOmicDataFileUpload.objects.filter(
+                study_id=self.instance.study.id,
+                analysis_method_id=data['analysis_method'],
+                group_1=data['group_1'],
+                group_2=data['group_2'],
+                location_1=data['location_1'],
+                location_2=data['location_2'],
+                time_1=data['time_1'],
+                time_2=data['time_2']
+            )
+            # in as group 2 and group 1
+            group_keys_combos_right = AssayOmicDataFileUpload.objects.filter(
+                study_id=self.instance.study.id,
+                analysis_method_id=data['analysis_method'],
+                group_1=data['group_2'],
+                group_2=data['group_1'],
+                location_1=data['location_2'],
+                location_2=data['location_1'],
+                time_1=data['time_2'],
+                time_2=data['time_1']
+            )
+
+            # group_keys_combos_left = (f for f in group_keys_combos_left if f.filename() == file_name)
+            # group_keys_combos_right = (f for f in group_keys_combos_right if f.filename() == file_name)
+
+            # print('-------')
+            # print('group_keys_combos_left ', group_keys_combos_left)
+            # print('group_keys_combos_right ', group_keys_combos_right)
+            #
+            # print('group_keys_combos_left-len ', len(group_keys_combos_left))
+            # print('group_keys_combos_right-len ', len(group_keys_combos_right))
+
+            files_left_list = []
+            files_right_list = []
+
+            for each in group_keys_combos_left:
+                fame = each.omic_data_file.name
+                if each.id != data_file_pk:
+                    file_name2 = ''
+                    file_name2_as_list = []
+                    if fame.find('/') >= 0:
+                        file_name2_as_list = fame.split('/')
+                    else:
+                        file_name2_as_list = fame.split('\\')
+
+                    file_name2 = file_name2_as_list[len(file_name2_as_list) - 1]
+                    true_to_continue = False
+                    files_left_list.append(file_name2)
+
+            for each in group_keys_combos_right:
+                fame = each.omic_data_file.name
+                if each.id != data_file_pk:
+                    file_name2 = ''
+                    file_name2_as_list = []
+                    if fame.find('/') >= 0:
+                        file_name2_as_list = fame.split('/')
+                    else:
+                        file_name2_as_list = fame.split('\\')
+
+                    file_name2 = file_name2_as_list[len(file_name2_as_list) - 1]
+                    true_to_continue = False
+                    files_right_list.append(file_name2)
+
+            files_left_list_str = ', '.join(files_left_list)
+            files_right_list_str = ', '.join(files_right_list)
+
+            if len(files_left_list) > 0 or len(files_right_list) > 0:
+                if len(files_left_list) > 0 and len(files_right_list) > 0:
+                    files_list_str = files_left_list_str + ', ' + files_right_list_str
+                elif len(files_left_list) > 0:
+                    files_list_str = files_left_list_str
+                else:
+                    files_list_str = files_right_list_str
+                true_to_continue = False
+                validation_message = 'The combination of assay, groups, locations, and times selected have ALREADY BEEN USED in this study. '
+                validation_message = validation_message + 'The combination was used in files: ' + files_list_str + '. '
+                validation_message = validation_message + 'You must use a different combination for the file you just tried to upload: ' + file_name
+                raise ValidationError(validation_message, code='invalid')
+
+    return true_to_continue
+
+
+def this_file_is_the_same_hash_as_another_in_this_study(self, data, data_file_pk):
+    true_to_continue = True
+    message = ''
+    file_name = ''
+    file_name_as_list = []
+    if data.get('omic_data_file').name.find('/') >= 0:
+        file_name_as_list = data.get('omic_data_file').name.split('/')
+    else:
+        file_name_as_list = data.get('omic_data_file').name.split('\\')
+
+    file_name = file_name_as_list[len(file_name_as_list)-1]
+    study_id = self.instance.study.id
+    this_file_hash = hashlib.sha1(data.get('omic_data_file').read()).hexdigest()
+    data.get('omic_data_file').seek(0)
+
+    # https://stackoverflow.com/questions/15885201/django-uploads-discard-uploaded-duplicates-use-existing-file-md5-based-check
+    # https://josephmosby.com/2015/05/13/preventing-file-dupes-in-django.html
+    files_in_study = AssayOmicDataFileUpload.objects.filter(
+        study_id=study_id
+    )
+    potential_dup_list = []
+
+    # print("\nfile_name ", file_name, "  hash ", this_file_hash)
+    for each in files_in_study:
+        fame = each.omic_data_file.name
+        # print("fame ", fame)
+        each_file_hash = hashlib.sha1(each.omic_data_file.read()).hexdigest()
+        # print("each hash  ", each_file_hash)
+        each.omic_data_file.seek(0)
+
+        if this_file_hash == each_file_hash:
+            if each.id != data_file_pk:
+                file_name2 = ''
+                file_name2_as_list = []
+                if fame.find('/') >= 0:
+                    file_name2_as_list = fame.split('/')
+                else:
+                    file_name2_as_list = fame.split('\\')
+
+                file_name2 = file_name2_as_list[len(file_name2_as_list) - 1]
+
+                true_to_continue = False
+                potential_dup_list.append(file_name2)
+
+    if not true_to_continue:
+        potential_dup_string = ', '.join(potential_dup_list)
+        message = 'This file ' + file_name + ' appears to be a duplicate of ' + potential_dup_string + '. To change the metadata for this file, exit this page select to Edit ' + potential_dup_string + '.'
+        validation_message = message
+        raise ValidationError(validation_message, code='invalid')
+
+    return true_to_continue
+
+
+# this is called from the ajax.py to pick up the subs as needed
+def this_file_same_as_another_in_this_study(omic_data_file, study_id, data_file_pk):
+    # 'same' is determined here by what subs are called
+    true_to_continue = True
+    message = ''
+
+    if true_to_continue:
+        similar = this_file_name_is_similar_to_another_in_this_study(omic_data_file, study_id, data_file_pk)
+        true_to_continue = similar[0]
+        message = message + " " + similar[1]
+
+    return [true_to_continue, message]
+
+
+def this_file_name_is_similar_to_another_in_this_study(omic_data_file, study_id, data_file_pk):
+    true_to_continue = True
+    message = ''
+    file_name = ''
+    file_name_as_list = []
+    if omic_data_file.find('/') >= 0:
+        file_name_as_list = omic_data_file.split('/')
+    else:
+        file_name_as_list = omic_data_file.split('\\')
+
+    file_name = file_name_as_list[len(file_name_as_list)-1]
+
+    file_name_as_list_2 = file_name.split('.')
+    # file_name_as_list_2 = file_name_as_list_2[:len(file_name_as_list_2)-1]
+    file_name_as_list_2 = file_name_as_list_2[:-1]
+    # NOTE: Attempt to deal with spaces by converting to underscores
+    file_name_no_extension = '.'.join(file_name_as_list_2).replace(' ', '_')
+    files_in_study = AssayOmicDataFileUpload.objects.filter(
+        study_id=study_id
+    )
+    potential_dup_list = []
+
+    for each in files_in_study:
+        fame = each.omic_data_file.name
+        if file_name_no_extension in fame:
+            if each.id != data_file_pk:
+                file_name2 = ''
+                file_name2_as_list = []
+                if fame.find('/') >= 0:
+                    file_name2_as_list = fame.split('/')
+                else:
+                    file_name2_as_list = fame.split('\\')
+
+                file_name2 = file_name2_as_list[len(file_name2_as_list) - 1]
+
+                true_to_continue = False
+                potential_dup_list.append(file_name2)
+
+    if not true_to_continue:
+        potential_dup_string = ', '.join(potential_dup_list)
+        message = 'Similar file names already in this study [' + potential_dup_string + ']. Make sure you are uploading the correct file.'
+
+    return [true_to_continue, message]
+
+
+def get_model_location_dictionary(this_model_pk):
+    location_dict = {}
+
+    qs_locations = OrganModelLocation.objects.filter(
+        organ_model_id=this_model_pk
+    ).prefetch_related(
+        'sample_location'
+    )
+    if len(qs_locations) > 0:
+        for each in qs_locations:
+            location_dict[each.sample_location.id] = each.sample_location.name
+    else:
+        qs_locations = AssaySampleLocation.objects.all()
+        for each in qs_locations:
+            if each.name.lower() == 'na' or each.name.lower() == 'unspecified':
+                pass
+            else:
+                location_dict[each.id] = each.name
+
+    # print('location_dict ', location_dict)
+    return location_dict

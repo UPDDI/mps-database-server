@@ -183,7 +183,7 @@ class CellSample(FrontEndModel, FlaggableModel):
     cell_subtype = models.ForeignKey(
         'CellSubtype',
         on_delete=models.CASCADE,
-        verbose_name='Cell Subtype'
+        verbose_name='Cell Origin'
     )
 
     # Group may need to be explicitly defined here as opposed to using a mixin

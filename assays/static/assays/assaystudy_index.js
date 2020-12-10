@@ -2,6 +2,9 @@ $(document).ready(function() {
     // Prevent CSS conflict with Bootstrap
     // $.fn.button.noConflict();
 
+    // Make the difference table
+    window.GROUPS.make_difference_table();
+
     // Prevent accidental form submission
     $(document).on("keypress", ":input:not(textarea)", function(event) {
         return event.keyCode != 13;
@@ -40,7 +43,6 @@ $(document).ready(function() {
 
     $('#matrix_items').DataTable({
         "iDisplayLength": 10,
-        dom: '<Bl<"row">frptip>',
         fixedHeader: {headerOffset: 50},
         responsive: false,
         // Initially sort on start date (descending), not ID
@@ -55,6 +57,10 @@ $(document).ready(function() {
                 "targets": [0]
             },
             {
+                type: 'natural',
+                targets: [1],
+            },
+            {
                 visible: false,
                 targets: [7]
             }
@@ -64,7 +70,6 @@ $(document).ready(function() {
     // NOT DRY
     $('#plates').DataTable({
         "iDisplayLength": 10,
-        dom: '<Bl<"row">frptip>',
         fixedHeader: {headerOffset: 50},
         responsive: false,
         // Initially sort on start date (descending), not ID

@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 
 #sck added
-from django.db.models import F, ExpressionWrapper, DateField, DateTimeField, Q
+from django.db.models import F, ExpressionWrapper, DateField, DateTimeField, Q, CharField, Value
 from datetime import datetime, timedelta
 import pytz
 #from django.db.models.functions import Concat
@@ -134,12 +134,47 @@ def custom_search(request):
 
 
 def mps_help(request):
-    c = {
+    glossary = Definition.objects.exclude(definition='')
+
+    # get a subset of the features for the feature table
+    feature = glossary.filter(help_category='feature').order_by('help_order')
+
+    # get other subsets for other tables on the help page
+    source = glossary.filter(help_category='source').order_by('help_order')
+    component_assay = glossary.filter(help_category='component-assay').order_by('help_order')
+    component_model = glossary.filter(help_category='component-model').order_by('help_order')
+    component_compound = glossary.filter(help_category='component-compound').order_by('help_order')
+    component_cell = glossary.filter(help_category='component-cell').order_by('help_order')
+
+    all_glossary = {}
+    for each in glossary:
+        term = each.term
+        stripped_term = ''.join(e for e in term if e.isalnum())
+        stripped_term = stripped_term.lower()
+        # print("stripped_term: ", stripped_term)
+        all_glossary[stripped_term+'_def'] = each.definition
+        all_glossary[stripped_term+'_ref'] = each.show_url
+
+    # print("all_glossary ", all_glossary)
+
+    # limit the glossary to only those selected for display
+    glossary = glossary.filter(glossary_display=True)
+
+    data = {
         # 'version': len(os.listdir(MEDIA_ROOT + '/excel_templates/')),
-        'glossary': Definition.objects.exclude(definition='')
+        'glossary': glossary,
+        'source': source,
+        'feature': feature,
+        'component_assay': component_assay,
+        'component_model': component_model,
+        'component_compound': component_compound,
+        'component_cell': component_cell,
+        'all_glossary': all_glossary,
+        # 'study_component_def': all_glossary.get('studycomponent_def', ''),
+        # 'study_component_ref': all_glossary.get('studycomponent_ref', ''),
     }
 
-    return render(request, 'help.html', c)
+    return render(request, 'help.html', data)
 
 
 #added sck
@@ -265,3 +300,7 @@ def mps_about(request):
 # TODO Consider defining this in URLS or either bringing the rest here
 class UnderConstruction(TemplateView):
     template_name = 'under_construction.html'
+
+
+class APIPrimer(TemplateView):
+    template_name = 'api_primer.html'

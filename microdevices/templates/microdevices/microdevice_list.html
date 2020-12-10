@@ -40,7 +40,9 @@
             {% for device in object_list %}
                 <tr>
                     <td><a class="btn btn-primary" href="{{ device.id }}">View</a></td>
-                    <td><a class="btn btn-primary" href="{{ device.id }}/update/">Edit</a></td>
+                    <td>
+                    {% include 'generic_edit_button.html' with object=device %}
+                    </td>
                     <td>{{ device.name }}</td>
                     <td>{{ device.barcode }}</td>
                     <td>{{ device.manufacturer|default_if_none:"" }}</td>

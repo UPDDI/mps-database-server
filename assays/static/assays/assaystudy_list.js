@@ -89,7 +89,6 @@ $(document).ready(function() {
 
         // PLEASE NOTE THAT: sck added two columns to table 20200515 (8 and 9) and moved later columns down 2
         studies_table.DataTable({
-            dom: '<Bl<"row">frptip>',
             fixedHeader: {headerOffset: 50},
             responsive: true,
             "iDisplayLength": 50,
@@ -106,37 +105,28 @@ $(document).ready(function() {
                 },
                 {
                     "type": "numeric-comma",
-                    "targets": [5, 6, 7, 8, 9, 10]
+                    "targets": [6, 7, 8, 9, 10, 11, 12]
                 },
                 {
                     'visible': false,
-                    'targets': [7, 8, 9, 10, 14, 16, 17]
+                    'targets': [5, 7, 8, 9, 10, 11, 12, 16, 18, 19]
                 },
                 {
                     'className': 'none',
-                    'targets': [11]
+                    'targets': [13]
                 },
                 {
                     'sortable': false,
-                    'targets': [12]
+                    'targets': [13]
                 }
             ],
             initComplete: function() {
                 // CRUDE WAY TO DISCERN IF IS EDITABLE STUDIES / NO PIE CHARTS
                 if (!at_least_one_pie_chart) {
                     // Hide the column for pie charts
-                    studies_table.DataTable().column(10).visible(false);
+                    studies_table.DataTable().column(14).visible(false);
                 }
             },
-            drawCallback: function () {
-                // Show when done
-                studies_table.show('slow');
-                // Swap positions of filter and length selection; clarify filter
-                $('.dataTables_filter').css('float', 'left').prop('title', 'Separate terms with a space to search multiple fields');
-                $('.dataTables_length').css('float', 'right');
-                // Reposition download/print/copy
-                $('.DTTT_container').css('float', 'none');
-            }
         });
     }
 });

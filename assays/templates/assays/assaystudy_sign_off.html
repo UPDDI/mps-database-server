@@ -3,6 +3,7 @@
 {% load custom_filters %}
 
 {% block load_js %}
+    <script src="{% static "js/calendar.js" %}"></script>
     <script src="{% static "js/enter_override.js" %}"></script>
     <script src="{% static "assays/assaystudy_sign_off.js" %}"></script>
 {% endblock %}
@@ -50,6 +51,27 @@
             {% endif %}
             Please note that after all stakeholders have approved, this study will be publicly available in a year's time.
         </h3>
+    </div>
+
+    <legend>Release Date</legend>
+    {% if form.release_date.errors %}
+        {% for error in form.release_date.errors %}
+            <div class="alert alert-danger" role="alert">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error:</span>
+                {{error}}
+            </div>
+        {% endfor %}
+    <div class="form-group has-error">
+    {% else %}
+    <div class="form-group">
+    {% endif %}
+        <label for="release_date" class="col-sm-2 control-label">
+            Release Date
+        </label>
+        <div class="col-sm-10 calendar-container">
+          {{ form.release_date }} [yyyy-mm-dd]
+        </div>
     </div>
 
     {# Formset (hidden if not valid) here #}

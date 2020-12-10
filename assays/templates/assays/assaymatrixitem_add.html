@@ -28,11 +28,17 @@
     <li><a href="{{ form.instance.study.get_absolute_url }}">{{ form.instance.study }}</a></li>
     {# Absolutely not! We only want this for PLATES! #}
     {# <li><a href="{{ form.instance.matrix.get_absolute_url }}">Matrix {{ form.instance.matrix }}</a></li> #}
+
+    {% if form.instance.matrix.representation == 'plate' %}
+        <li><a href="{{ form.instance.matrix.get_absolute_url }}">{{ form.instance.matrix }}</a></li>
+    {% endif %}
+
     {# We probably won't add individual items, but maybe #}
     {# FROM THE FUTURE: NO, WE DON'T WANT TO ADD ITEMS HERE #}
     <li class="active">
         {% if object and not form.success.value %}
             Edit <em>{{ object }}</em>
+        {# Should never be used anyway? #}
         {% else %}
             Add Matrix Item
         {% endif %}
@@ -80,7 +86,11 @@
 
     {% include "sign_off_form.html" with group=form.instance.study.group.name %}
 
-    <legend>Matrix Item Details</legend>
+    {% if form.instance.matrix.representation == 'plate' %}
+        <legend>Well Details</legend>
+    {% else %}
+        <legend>Chip Details</legend>
+    {% endif %}
 
     {% include 'generic_field.html' with field=form.name %}
 
@@ -122,7 +132,6 @@
     </table>
     {% endcomment %}
 
-    <legend>All Groups</legend>
     {% include 'assays/group_difference_table.html' %}
 
     {# For difference table etc. #}
@@ -730,6 +739,12 @@
     {# {% include 'assays/grouping_filtering.html' %} #}
 
     {# {% include 'assays/chart_options.html' with chart_title="Data" chart_prefix="charts"%} #}
+
+    {% if form.instance.matrix.representation == 'plate' %}
+        <legend>Well Data</legend>
+    {% else %}
+        <legend>Chip Data</legend>
+    {% endif %}
 
     {% include 'assays/sidebar_extras.html' with show_hide="true" %}
 

@@ -240,12 +240,14 @@ $(document).ready(function () {
     // TERRIBLE, SPAGHETTI CODE
     // AWFUL
     // WHY DO THIS?
+    // Still confused by this...
     var headers = {
-        // 'device': 'Device',
+        'Device': 'Device',
         'MPS User Group': 'MPS User Group',
         'Study': 'Study',
-        'Matrix': 'Matrix',
+        'Matrix': 'All Study Chips OR Plate',
         'MPS Model': 'MPS Model',
+        'MPS Model Version': 'MPS Model Version',
         'Cells': 'Cells Added',
         'Compounds': 'Compound Treatment',
         'Settings': 'Settings (Non-Compound Treatments)',
@@ -490,6 +492,8 @@ $(document).ready(function () {
             // TODO MATRIX AND MATRIX ITEM
             matrix: window.CHARTS.matrix_id,
             matrix_item: window.CHARTS.matrix_item_id,
+            group: window.CHARTS.group_id,
+            file: window.CHARTS.file_id,
             // TRICKY: STUDY SET
             study_set_id: window.CHARTS.study_set_id,
             criteria: JSON.stringify(window.GROUPING.group_criteria),
@@ -660,6 +664,9 @@ $(document).ready(function () {
         }
         else if (Math.abs(global_max_y - global_min_y) < 0.1 && Math.abs(global_max_y - global_min_y) !== 0) {
             options.vAxis.format = '0.0E0';
+        }
+        else {
+            options.vAxis.format = '0';
         }
 
         var current_min_x = assay_data[1][0];
@@ -1119,7 +1126,6 @@ $(document).ready(function () {
 
         treatment_group_data_table = treatment_group_table.DataTable({
             // Cuts out extra unneeded pieces in the table
-            dom: '<Bl<"row">frptip>',
             fixedHeader: {headerOffset: 50},
             responsive: true,
             // paging: false,

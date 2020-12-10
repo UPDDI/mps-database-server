@@ -78,6 +78,10 @@
     {% endif %}
 </div>
 
+{# Study set list #}
+{# Kind of weird use of the context to get the include? #}
+{% include 'assays/study_list.html' with studies=studies %}
+
 {% if object.assaystudysetreference_set.count %}
     {% include 'assays/reference_table.html' with references_set=object.assaystudysetreference_set.all %}
 {% endif %}

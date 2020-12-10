@@ -5,7 +5,7 @@
 {{ object.drugbank_id }}
 {{ object.synonyms }}
 {{ object.inchikey }}
-{# Artificial, and crudely, add weight to compounds #}
+{# Artificially, and crudely, add weight to compounds #}
 {{ object.name }}
 {{ object.name }}
 {{ object.name }}

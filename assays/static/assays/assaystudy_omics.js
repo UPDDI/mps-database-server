@@ -13,9 +13,8 @@ $(document).ready(function () {
     // FILE-SCOPE VARIABLES
     var study_id = Math.floor(window.location.href.split('/')[5]);
 
+    // Prefer variable declarations on their own lines for clarity
     var get_params, visible_charts = {};
-    var present_groups = [];
-    var hovered_groups = [];
 
     // Container that shows up to reveal what a group contains
     var omics_contents_hover = $('#omics_contents_hover');
@@ -42,17 +41,15 @@ $(document).ready(function () {
             // console.log("DATA", data)
 
             if (!('error' in data)) {
-                window.OMICS.omics_data = JSON.parse(JSON.stringify(data))
+                window.OMICS.omics_data = JSON.parse(JSON.stringify(data));
                 window.OMICS.draw_plots(window.OMICS.omics_data, true, 0, 0, 0, 0, 0, 0, 0);
                 for (var chart in data['table']) {
                     visible_charts[data['table'][chart][1]] = true;
                 }
 
                 // Make Difference Table, generate list of groups to aid in hover displays
+                // Maybe I should make a way to just get the tds?
                 window.GROUPS.make_difference_table();
-                $('#difference_table_body').find('tr').each(function() {
-                    present_groups.push($(this).data('group-name'));
-                });
             } else {
                 console.log(data['error']);
                 // Stop spinner
@@ -83,10 +80,10 @@ $(document).ready(function () {
     });
 
     $("#download-filtered-data").click(function(e) {
-        e.preventDefault()
+        e.preventDefault();
 
         get_params = {
-            "negative_log10_pvalue": $("#pvalue-filter1").css("display") !== "none",
+            "negative_log10_pvalue": $("#pvalue-filter2").css("display") !== "none",
             "absolute_log2_foldchange": $("#l2fc-filter2").css("display") !== "none",
             "over_expressed": $("#check-over").is(":checked"),
             "under_expressed": $("#check-under").is(":checked"),
@@ -101,44 +98,102 @@ $(document).ready(function () {
             "max_log2_foldchange": parseFloat($("#slider-range-log2foldchange").slider("option", "values")[1]).toFixed(3),
             "abs_log2_foldchange": parseFloat($("#slider-log2foldchange-abs").slider("option", "value")).toFixed(3),
             "visible_charts": Object.keys(visible_charts).filter(function(key) { return visible_charts[key]}).join("+")
-        }
+        };
 
-        window.open(window.location.href + "download/?" + $.param(get_params), "_blank")
+        window.open(window.location.href + "download/?" + $.param(get_params), "_blank");
     });
 
-    function generate_row_html(hovered_groups) {
-        // (these divs are contrivances)
-        var name_row = $('<div>').append(
-            $('#difference_table_body').find('[data-group-name="' + hovered_groups[0] + '"]').clone().append(
-                $('#difference_table_body').find('[data-group-name="' + hovered_groups[1] + '"]').clone()
-            )
+    // NOT DRY
+    function generate_row_html(current_groups) {
+        let column_headers = $('<tr>')
+        .addClass(
+            'bg-info'
         );
-
         var full_row = $('<div>');
 
-        return name_row.html() + full_row.html();
+        // Determine row hiding
+        // NOT DRY
+        let columns_to_check = [
+            'model',
+            'test_type',
+            'cell',
+            'compound',
+            'setting'
+        ];
+
+        // Manually add headers: CRUDE
+        column_headers.append(
+            $('<td>').text('Group Name')
+        );
+
+        $.each(columns_to_check, function(index, key) {
+            if (!window.GROUPS.hidden_columns[key]) {
+                column_headers.append(
+                    $('<td>').text(
+                        $.trim($('[data-header-for="' + key + '"]').text())
+                    )
+                );
+            }
+        });
+
+        // Add sample time and location, I suppose
+        column_headers.append([
+            $('<td>').text('Sample Time'),
+            $('<td>').text('Sample Location')
+        ]);
+
+        full_row.append(column_headers);
+
+        // SUBJECT TO CHANGE
+        // Just draws from the difference table
+        // Be careful with conditionals! Zero has the truthiness of *false*!
+        $.each(current_groups, function(index, group) {
+            // let name_row = $('<tr>').append($('<td>').text(group_name));
+
+            // full_row.append(name_row);
+
+            let group_name = group.name;
+
+            let content_row = $('<tr>').append(
+                $('<td>').text(group_name)
+            );
+
+            // NOT VERY ELEGANT
+            let current_stored_tds = window.GROUPS.difference_table_displays[group_name];
+
+            $.each(columns_to_check, function(index, key) {
+                if (!window.GROUPS.hidden_columns[key]) {
+                    content_row.append(
+                        current_stored_tds[key].clone(),
+                    )
+                }
+            });
+
+            content_row.append([
+                $('<td>').text(group.time),
+                $('<td>').text(group.sample_location)
+            ]);
+
+            full_row.append(content_row);
+        });
+
+        return full_row.html();
     }
 
     $(document).on('mouseover', '.omics-groups-hover, svg > g', function() {
-        hovered_groups = [];
+        if (window.OMICS.omics_data.header_to_groups[$(this).text()]) {
+            omics_contents_hover.show();
+            // Hard value for left (TODO: Probably better to set to left of the matrix?)
+            var left = $('#omics_table').position().left - 15;
+            // Place slightly below current label
+            var top = $(this).offset().top + 50;
+            omics_contents_hover.offset({left: left, top: top});
 
-        for (group in present_groups) {
-            if ($(this).text().includes(present_groups[group])) {
-                hovered_groups.push(present_groups[group]);
-            }
+            omics_contents_hover_body.empty();
+            omics_contents_hover_body.html(
+                generate_row_html(window.OMICS.omics_data.header_to_groups[$(this).text()])
+            );
         }
-
-        omics_contents_hover.show();
-        // Hard value for left (TODO: Probably better to set to left of the matrix?)
-        var left = $('#omics_table').position().left - 15;
-        // Place slightly below current label
-        var top = $(this).offset().top + 50;
-        omics_contents_hover.offset({left: left, top: top});
-
-        omics_contents_hover_body.empty();
-        omics_contents_hover_body.html(
-            generate_row_html(hovered_groups)
-        );
     });
 
     $(document).on('mouseout', '.omics-groups-hover, svg > g', function() {

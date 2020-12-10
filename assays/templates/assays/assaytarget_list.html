@@ -38,7 +38,9 @@
                 {% for target in object_list %}
                      <tr>
                         <td><a class="btn btn-primary" title="View paired method/kits." href="{{ target.get_absolute_url }}">View</a></td>
-                        <td><a class="btn btn-primary" href="{{ target.get_update_url }}">Edit</a></td>
+                        <td>
+                        {% include 'generic_edit_button.html' with object=target %}
+                        </td>
                         <td>{{ target.name }}</td>
                         <td>{{ target.short_name }}</td>
                         <td>{{ target.description }}</td>

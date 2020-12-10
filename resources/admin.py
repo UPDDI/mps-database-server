@@ -10,7 +10,7 @@ from resources.models import (
     ResourceSubtype,
     Definition,
     ComingSoonEntry,
-    WhatIsNewEntry
+    WhatIsNewEntry,
 )
 from resources.forms import (
     ResourceForm,
@@ -139,20 +139,35 @@ class DefinitionAdmin(LockableAdmin):
     list_per_page = 300
     list_display = (
         'term',
-        'definition',
-        'show_url',
+        'glossary_display',
+        'help_display',
+        'short_definition',
+        'is_url',
+        'is_anchor',
+        'help_category',
+        'count_data_sources',
+        'help_order',
+        'modified_on',
         'created_on',
-        'modified_on'
     )
-    search_fields = ['term', 'definition', 'reference']
+    list_editable = ('glossary_display', 'help_display', 'help_category', 'help_order')
+    search_fields = ['term', 'definition', 'reference', 'help_category']
 
+    # HANDY m2m right side many to many admin boxes m2m right
+    filter_horizontal = ('data_sources',)
     fieldsets = (
         (
             None, {
                 'fields': (
                     'term',
+                    'glossary_display',
+                    'help_display',
                     'definition',
                     'reference',
+                    'help_reference',
+                    'help_category',
+                    'data_sources',
+                    'help_order',
                 )
             }
         ),

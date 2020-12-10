@@ -16,7 +16,9 @@
             <th>Start Date</th>
             <th>Study Types <span data-toggle="tooltip" title="CC = Chip Characterization, DM = Disease Model, EFF = Efficacy, TOX = Toxicity" class="glyphicon glyphicon-question-sign" aria-hidden="true" data-placement="bottom"></span></th>
             <th>MPS Models</th>
+            <th>Model Types</th>
             <th>Data Points</th>
+            <th>Data Points (omic)</th>
             <th>Images</th>
             <th>Videos</th>
             <th>Plate Maps</th>
@@ -53,9 +55,15 @@
             <td>{{ study.start_date|date:"Y-m-d" }}</td>
             <td>{{ study.get_study_types_string }}</td>
             <td>{{ study.organ_models|default:"-No MPS Models-" }}</td>
+            <td>{{ study.model_types|default:"-No MPS Models-" }}</td>
 {#                    <td>{{ study.study_configuration }}</td>#}
             {% if study.data_points %}
                 <td class="text-success">{{ study.data_points|intcomma }}</td>
+            {% else %}
+                <td class="text-danger">0</td>
+            {% endif %}
+            {% if study.omic_data_points %}
+                <td class="text-success">{{ study.omic_data_points|intcomma }}</td>
             {% else %}
                 <td class="text-danger">0</td>
             {% endif %}

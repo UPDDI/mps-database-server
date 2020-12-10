@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/">Studies</a></li>
+    <li><a href="{{ object.get_absolute_url }}">{{ object }}</a></li>
+    <li class="active">Data</li>
+{% endblock %}
+
+{% block load_js %}
+    <script src="{% static "assays/assaystudy_tabs.js" %}"></script>
+    <script src="{% static "assays/assaystudy_data_index.js" %}"></script>
+{% endblock %}
+
+{% block content %}
+    {# Get the tabs IF this is for editing #}
+    {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
+    {% include 'assays/assaystudy_tabs.html' with study=object %}
+    {% endif %}
+
+    <h1>
+        Study Data
+    </h1>
+
+    {% include "submit.html" %}
+
+    <div class="well">
+        <h3>
+            {% include 'plural_include.html' with label="Data File" count=unreplaced_data_files_count %}
+            {% if unreplaced_data_files_count %}
+                with {% include 'plural_include.html' with label="Data Point" count=unreplaced_data_count %}
+            {% endif %}
+            <br>
+            <small>Processed assay data formatted for direct upload into the Study Summary for visualization and analysis using the biological assay visualization and analysis tools. Data to be uploaded must be in the MPS Import Friendly-Columnar (MIF-C) file format.</small>
+        </h3>
+        <a href="{% url 'assays-assaydatafileupload-list' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add or Remove Processed Data Files</a>
+    </div>
+
+    <div class="well">
+        <h3>
+            {% include 'plural_include.html' with label="Assay Plate Reader Map" count=object.assayplatereadermap_set.count %}
+            {% if object.assayplatereadermap_set.count %}
+                with {% include 'plural_include.html' with label="Assay Plate Reader File" count=object.assayplatereadermapdatafile_set.count %}
+            {% endif %}
+            <br>
+            <small>Assay plate reader data that will be processed using the assay plate reader tools and subsequently submitted to the Study Summary for visualization and analysis using the biological assay visualization and analysis tools. Raw data to be uploaded should come directly from the assay plate reader.</small>
+        </h3>
+        <a href="{% url 'assayplatereadermap-index' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add, Remove, or Edit an Assay Plate Map or Calibrate Uploaded Raw Data</a>
+        <a href="{% url 'assayplatereaderfile-index' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add or Remove Assay Plate Reader Raw Data Files</a>
+    </div>
+
+    <div class="well">
+        <h3>
+            {% include 'plural_include.html' with label="Omic Data File" count=log2fold_files.count %}
+            {% if log2fold_files.count %}
+                with {% include 'plural_include.html' with label="Data Point" count=log2fold_points.count %}
+            {% endif %}
+            <br>
+            <small>Omic data that will use the MPS-Db Omic visualization and analysis tools (i.e. fold change, normalized counts, raw counts). Data to be uploaded must be formatted specifically as omic data in the file format corresponding to the type of omic data being uploaded.</small>
+        </h3>
+        <a href="{% url 'assayomicdatafileupload-index' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add or Remove Omic Data File or Update File Metadata</a>
+    </div>
+{% endblock %}

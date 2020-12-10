@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block extra_head %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+
+{% block load_js %}
+    <script src="{% static "assays/grouping_filtering.js" %}"></script>
+    <script src="{% static "assays/chart_display.js" %}"></script>
+    <script src="{% static "assays/assaystudy_chips_detail.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/">Studies</a></li>
+    <li><a href="{{ object.study.get_absolute_url }}">{{ object.study }}</a></li>
+    <li class="active">{{ object }}</li>
+{% endblock %}
+
+{% block sidebar %}
+    {% include 'assays/grouping_filtering.html' with charts="true" %}
+{% endblock %}
+
+{% block fluid-content %}
+    <h1>
+        <em>
+        Chips for {{ object.study }}
+        </em>
+    </h1>
+
+    {# {% include 'tracking.html' %} #}
+
+    <table class="table table-striped table-bordered table-nonfluid" style="background-color: #AAB3AB;">
+        <tbody>
+            <tr>
+                <th>
+                    Chips
+                </th>
+                <td>
+                    {% for item in items %}
+                        <a href="{{ item.get_absolute_url }}">{{ item }}</a>;
+                    {% endfor %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    {% include 'assays/sidebar_extras.html' with show_hide="true" %}
+
+    <div id="charts" class="padded-bottom"></div>
+
+    {% include 'assays/group_table.html' %}
+{% endblock %}

@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block breadcrumbs %}
+    <li class="active">API</li>
+{% endblock %}
+
+{% block content %}
+    <legend>Introduction</legend>
+
+    <p>
+    A Web API offers programmatic access to the content of a web application.
+    <br>
+    <br>
+    The Django-REST-API provides an in-browser interface for interacting with the Web API, but generally one will access the data from a script in a language like Python.
+    </p>
+
+    <legend>Organization</legend>
+
+    <p>
+    The data is highly nested (entries tend to link to another entry), so the current organization attempts to decrease data sparsity by returning complicated objects as separate entities that are linked to via an ID rather than having their contents listed explicitly and redundantly everywhere they are relevant.
+    <br>
+    <br>
+    Currently, there are only two ways to view the data:
+    <ol>
+        <li>
+            Viewing the Study List (<a href='/api/studies/'>/api/studies/</a>)
+        </li>
+        <li>
+            Viewing an individual Study (/api/studies/{id}/)
+        </li>
+    </ol>
+    <br>
+    Only publicly accessible Studies (those that are Signed Off and marked Unrestricted) are available in either interface.
+    </p>
+
+    <legend>Study List (<a href='/api/studies/'>/api/studies/</a>)</legend>
+
+    <p>
+    For every public Study, the following are returned:
+    <ol>
+        <li>id</li>
+        <li>url link to the api details page (so a user can click the link rather than typing in the id)</li>
+        <li>name</li>
+        <li>data_group</li>
+        <li>study_types (TOX, CC, etc.)</li>
+        <li>start_date (in ISO yyyy-mm-dd)</li>
+        <li>description</li>
+    </ol>
+    </p>
+
+    <legend>Study Details (/api/studies/{id}/)</legend>
+
+    <p>
+    For an individual Study, the following are returned:
+    <ol>
+        <li>id</li>
+        <li>name</li>
+        <li>data_group</li>
+        <li>study_types (TOX, CC, etc.)</li>
+        <li>start_date (in ISO yyyy-mm-dd)</li>
+        <li>description</li>
+        <li>
+            groups:  matches group ids to:
+            <ol type="a">
+                <li>mps_model</li>
+                <li>mps_model_version</li>
+                <li>
+                    compounds: a list which contains:
+                    <ol type="i">
+                        <li>compound (supplier, lot, and receipt date listed when available)</li>
+                        <li>concentration</li>
+                        <li>concentration_unit</li>
+                        <li>addition_time</li>
+                        <li>addition_time_in_minutes</li>
+                        <li>duration</li>
+                        <li>duration_in_minutes</li>
+                        <li>addition_location</li>
+                    </ol>
+                </li>
+                <li>
+                    cells: a list which contains:
+                    <ol type="i">
+                        <li>cell_sample</li>
+                        <li>biosensor</li>
+                        <li>density</li>
+                        <li>density_unit</li>
+                        <li>passage</li>
+                        <li>addition_time</li>
+                        <li>addition_time_in_minutes</li>
+                        <li>addition_location</li>
+                    </ol>
+                </li>
+                <li>
+                    settings: a list which contains:
+                    <ol type="i">
+                        <li>setting</li>
+                        <li>value</li>
+                        <li>unit</li>
+                        <li>addition_time</li>
+                        <li>addition_time_in_minutes</li>
+                        <li>duration</li>
+                        <li>duration_in_minutes</li>
+                        <li>addition_location</li>
+                    </ol>
+                </li>
+            </ol>
+        </li>
+        <li>
+            items: matches item ids to:
+            <ol type='a'>
+                <li>group_id</li>
+                <li>name</li>
+                <li>scientist</li>
+                <li>notebook</li>
+                <li>notebook_page</li>
+                <li>notes</li>
+            </ol>
+        </li>
+        <li>
+            assays: matches assay ids to:
+            <ol type='a'>
+                <li>target</li>
+                <li>method</li>
+                <li>unit</li>
+            </ol>
+        </li>
+        <li>
+            data: a list of data points containing:
+            <ol type='a'>
+                <li>item_id</li>
+                <li>assay_id</li>
+                <li>sample_location</li>
+                <li>value</li>
+                <li>cross_reference</li>
+                <li>time</li>
+                <li>time_in_minutes</li>
+                <li>notes</li>
+                <li>assay_plate_id</li>
+                <li>assay_well_id</li>
+                <li>replicate</li>
+                <li>excluded</li>
+                <li>replaced</li>
+                <li>update_number</li>
+            </ol>
+        </li>
+    </ol>
+    </p>
+
+    <legend>Python Example</legend>
+
+    <div class="well">
+        <code>
+        # This library will help you make requests
+        <br>
+        # There are other similar libraries, requests is popular but not built-in to python
+        <br>
+        # requests is a library that will help you make API requests
+        <br>
+        import urllib.request
+        <br>
+        # Processing the data can be done with the standard JSON parser
+        <br>
+        import json
+        <br>
+        <br>
+        # In this example, we get the study list:
+        <br>
+        # Just have a string of the url for the API study list
+        <br>
+        study_list_url = 'https://mps.csb.pitt.edu/api/studies/'
+        <br>
+        # And make a request with the library
+        <br>
+        # This response should contain a string of the response
+        <br>
+        study_list_response = urllib.request.urlopen(study_list_url)
+        <br>
+        # We can parse it with json
+        <br>
+        # Now it will be comprised of Python objects rather than strings
+        <br>
+        study_list_parsed = json.loads(study_list_response.read())
+        <br>
+        # This will print the first study in the list
+        <br>
+        print(study_list_parsed[0])
+        <br>
+        <br>
+        # Something similar can be done with particular studies
+        <br>
+        study_id = 23
+        <br>
+        study_url = 'https://mps.csb.pitt.edu/api/studies/{}/'.format(study_id)
+        <br>
+        study_response = urllib.request.urlopen(study_url)
+        <br>
+        study_parsed = json.loads(study_response.read())
+        <br>
+        # This will print the study's name
+        <br>
+        print(study_parsed.get('name'))
+        </code>
+    </div>
+
+    <legend>In-Browser Interface</legend>
+
+    <p>
+        The In-Browser Interface provided by Django-Rest-Framework can be accessed by visiting the URLs one would use in a script directly in the browser.
+        <br>
+        <br>
+        URLs pointing to something in the API should be clickable.
+        <br>
+        <br>
+        You might notice that copying and pasting the data is somewhat difficult in the default display. Clicking the down arrow next to the GET button (which effectively acts as a refresh button) gives one the opportunity to select the "json" format. Selecting json will show the raw json to your browser (which may or may not attempt to make it more presentable). From here, it should be easier to copy and paste the data.
+        <br>
+        <br>
+        <a href="/api/studies/">Click here for the API list of Studies</a>
+    </p>
+{% endblock %}

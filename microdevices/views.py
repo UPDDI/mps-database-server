@@ -46,6 +46,10 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
 from assays.models import AssayReference
 
+from mps.templatetags.custom_filters import (
+    ADMIN_SUFFIX,
+    VIEWER_SUFFIX,
+)
 
 class MicrodeviceMixin(FormHandlerMixin):
     model = Microdevice
@@ -158,16 +162,11 @@ class OrganModelUpdate(OrganModelMixin, UpdateView):
         """
         self.object = self.get_object()
 
-        # Get a dic of groups
-        groups_to_check = {}
-        for current_group in self.object.center.groups.all():
-            groups_to_check.update({
-                current_group.id: True
-            })
+        user_group_names = {
+            user_group.name.replace(ADMIN_SUFFIX, ''): True for user_group in self.request.user.groups.all()
+        }
 
-        if self.request.user.groups.all().count() == 0 or self.object.center and not any(
-            current_group.id in groups_to_check for current_group in self.request.user.groups.all()
-        ):
+        if not self.object.user_is_in_center(user_group_names):
             return PermissionDenied(self.request, 'You must be a member of the center ' + str(self.object.center))
 
         return super(OrganModelUpdate, self).dispatch(*args, **kwargs)
@@ -178,13 +177,23 @@ class OrganModelList(ListView):
     template_name = 'microdevices/organmodel_list.html'
 
     def get_queryset(self):
-        return OrganModel.objects.prefetch_related(
+        queryset = OrganModel.objects.all().prefetch_related(
             'organ',
             'center',
             'device',
             'base_model',
-            'organmodelprotocol_set'
-        ).all()
+            'organmodelprotocol_set',
+            'center__groups'
+        )
+
+        user_group_names = {
+            user_group.name.replace(ADMIN_SUFFIX, ''): True for user_group in self.request.user.groups.all()
+        }
+
+        for organ_model in queryset:
+            organ_model.is_editable = organ_model.user_is_in_center(user_group_names)
+
+        return queryset
 
 
 class OrganModelDetail(DetailView):
@@ -205,10 +214,14 @@ class OrganModelDetail(DetailView):
         # else:
         #     protocols = None
 
+        user_group_names = {
+            user_group.name.replace(ADMIN_SUFFIX, ''): True for user_group in self.request.user.groups.all()
+        }
+
         context.update({
             # 'assays': assays,
             # 'protocols': protocols,
-            'protocol_access': self.object.center and any(i in self.object.center.groups.all() for i in self.request.user.groups.all())
+            'protocol_access': self.object.user_is_in_center(user_group_names)
         })
 
         return context
@@ -226,6 +239,11 @@ class MicrophysiologyCenterDetail(DetailView):
         context['contact_email_parts'] = self.object.contact_email.split("@")
 
         return context
+
+
+class MicrophysiologyCenterList(ListHandlerMixin, ListView):
+    model = MicrophysiologyCenter
+    template_name = 'microdevices/microphysiologycenter_list.html'
 
 
 class OrganModelProtocolUpdate(FormHandlerMixin, UpdateView):
@@ -280,8 +298,12 @@ class OrganModelProtocolDetail(DetailView):
     def get_context_data(self, **kwargs):
         context = super(OrganModelProtocolDetail, self).get_context_data(**kwargs)
 
+        user_group_names = {
+            user_group.name.replace(ADMIN_SUFFIX, ''): True for user_group in self.request.user.groups.all()
+        }
+
         context.update({
-            'protocol_access': self.object.organ_model.center and any(i in self.object.organ_model.center.groups.all() for i in self.request.user.groups.all())
+            'protocol_access': self.object.organ_model.user_is_in_center(user_group_names)
         })
 
         return context

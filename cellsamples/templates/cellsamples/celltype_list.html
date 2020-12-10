@@ -35,7 +35,9 @@
             <tbody>
             {% for celltype in object_list %}
                 <tr>
-                    <td><a class="btn btn-primary" href="{{ celltype.id }}">Edit</a></td>
+                    <td>
+                    {% include 'generic_edit_button.html' with object=celltype %}
+                    </td>
                     <td>{{ celltype.cell_type }}</td>
                     <td>{{ celltype.organ }}</td>
                     <td>{{ celltype.species }}</td>

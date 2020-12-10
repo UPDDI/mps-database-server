@@ -151,19 +151,20 @@
                     </tr>
                     {% endif %}
                     {# Subject to removal? #}
-{#                    <tr>#}
-{#                        <td>#}
-{#                            <a role='button' class="btn btn-sm">#}
-{#                                <span class="glyphicon glyphicon-filter"></span>#}
-{#                            </a>#}
-{#                        </td>#}
-{#                        <td>#}
-{#                            <input checked type="checkbox" class="grouping-checkbox">#}
-{#                        </td>#}
-{#                        <td>#}
-{#                            Device#}
-{#                        </td>#}
-{#                    </tr>#}
+                    <tr>
+                        <td>
+                            <button data-parent-model='matrix_item' data-filter-relation='device_id__in' role='button' class="btn btn-sm post-filter-spawn">
+                                <span class="glyphicon glyphicon-filter"></span>
+                            </button>
+                        </td>
+                        <td>
+                           <input data-group='device_id' data-group-relation='item' type="checkbox" class="grouping-checkbox">
+                            <span data-group-type="treatment"></span>
+                        </td>
+                        <td>
+                            Device
+                        </td>
+                    </tr>
                     {# Subject to removal? #}
                     <tr>
                         <td>
@@ -181,19 +182,20 @@
                         </td>
                     </tr>
                     {# Subject to removal? #}
-{#                    <tr>#}
-{#                        <td>#}
-{#                            <a role='button' class="btn btn-sm post-filter-spawn">#}
-{#                                <span class="glyphicon glyphicon-filter"></span>#}
-{#                            </a>#}
-{#                        </td>#}
-{#                        <td>#}
-{#                            <input checked type="checkbox" class="grouping-checkbox">#}
-{#                        </td>#}
-{#                        <td>#}
-{#                            MPS Model Protocol#}
-{#                        </td>#}
-{#                    </tr>#}
+                    <tr>
+                        <td>
+                            <button data-parent-model='group' data-filter-relation='organ_model_protocol_id__in' role='button' class="btn btn-sm post-filter-spawn">
+                                <span class="glyphicon glyphicon-filter"></span>
+                            </button>
+                        </td>
+                        <td>
+                            <input data-group='organ_model_protocol_id' data-group-relation='setup' type="checkbox" class="grouping-checkbox">
+                            <span data-group-type="treatment"></span>
+                        </td>
+                        <td>
+                            MPS Model Version
+                        </td>
+                    </tr>
                     {# Subject to removal? #}
 {#                    <tr>#}
 {#                        <td>#}
@@ -216,12 +218,12 @@
                             </button>
                         </td>
                         <td>
-                            <input data-group='matrix_id' data-group-relation='setup' type="checkbox" class="grouping-checkbox">
+                            <input data-group='matrix_id' data-group-relation='item' type="checkbox" class="grouping-checkbox">
                             <span data-group-type="treatment"></span>
                         </td>
                         <td>
-
-                            Matrix
+                            {# Matrix #}
+                            All Study Chips &amp; Plates
                         </td>
                     </tr>
                     <tr>
@@ -235,7 +237,8 @@
 {#                            <input type="checkbox" class="grouping-checkbox">#}
                         </td>
                         <td>
-                            Matrix Item
+                            {# Matrix Item #}
+                            Individual Chips &amp; Wells
                         </td>
                     </tr>
                     {# Subject to removal? #}

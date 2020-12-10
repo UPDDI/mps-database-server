@@ -1,7 +1,6 @@
 $(document).ready(function() {
     window.TABLE = $('#models').DataTable({
         "iDisplayLength": 100,
-        "sDom": '<Bl<"row">frptip>',
         fixedHeader: {headerOffset: 50},
         responsive: true,
         "order": [[1, "asc"]],
@@ -17,7 +16,11 @@ $(document).ready(function() {
             {
                 "className": "dt-center",
                 "targets": [2,3,4,5]
-            }
+            },
+            {
+                'className': 'none',
+                'targets': [6]
+            },
         ]
     });
 
