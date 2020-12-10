@@ -143,7 +143,7 @@ urlpatterns = [
     # View the chips
     url(r'^assays/assaychips/(?P<pk>[0-9]+)/$', AssayStudyChipsDetail.as_view(), name='assays-assaymatrix-chips-detail'),
 
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/access/$', AssayStudyAccess.as_view(), name='assays-assaystudy-update-access'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/access/$', AssayStudyAccess.as_view(), name='assays-assaystudy-access'),
 
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/data_index/$', AssayStudyDataIndex.as_view(), name='assays-assaystudy-data-index'),
 
@@ -218,7 +218,7 @@ urlpatterns = [
     url(r'^assays/data_from_filters/$', AssayDataFromFilters.as_view(), name='assays-data-from-filters'),
 
     # Power Analysis
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/power_analysis/$', AssayStudyPowerAnalysisStudy.as_view(), name='assays-power-analysis-study'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/power_analysis/$', AssayStudyPowerAnalysisStudy.as_view(), name='assays-assaystudy-power-analysis'),
 
     # Omics Interface + Download Filtered Data
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/omics/$', AssayStudyOmics.as_view(), name='assays-assaystudy-omics'),
