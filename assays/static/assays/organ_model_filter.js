@@ -88,7 +88,13 @@ $(document).ready(function() {
                         protocol_div.hide('fast');
                     }
                     else {
-                        protocol_div.show('fast');
+                        // Strangely, Safari adds a style here?
+                        // Safari inject overflow: hidden, which hides the protocol div
+                        // It is possible that this is because of how Safari deals with the hidden attribute?
+                        protocol_div
+                            .show('fast')
+                            // Crude, just blast the injected style
+                            .attr('style', 'display: block;');
                     }
 
                     window.display_protocol(window.organ_model_protocol.val());
