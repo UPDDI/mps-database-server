@@ -1,8 +1,8 @@
 $(document).ready(function () {
 
     var glossary_spans_on = true;
-    //after done editing, do this **change
-    //strip_the_glossary_spans()
+    //after done editing, do this **change-star (uncomment the next line to make the text black instead of glossary red
+    strip_the_glossary_spans();
 
     var set_hash_default = '#search_help_page_section';
     var incoming_hash = window.location.hash;
@@ -235,6 +235,9 @@ $(document).ready(function () {
         change_search_ables_to_search(true);
         $content.unmark();
         $input.val('').focus();
+
+        $('#glossary_table_filter :input').val(null).trigger('input');
+
     });
 
     /**
@@ -373,6 +376,7 @@ $(document).ready(function () {
 
                 '#compounds-compound-list': '#help_chemical_data',
                 'bioactivities/table/#filter': '#help_bioactivities',
+                '#bioactivities-table': '#help_bioactivities',
                 '#drugtrial_list': '#help_drug_trials',
                 '#adverse_events_list': '#help_adverse_events',
                 '#compare_adverse_events': '#help_compare_adverse_events',
@@ -388,6 +392,7 @@ $(document).ready(function () {
                 '#assays-assaystudy-update-assays': '#help_target_and_method',
                 '#assays-assaystudy-data-index': '#help_data_upload',
                 '#assays-assaystudy-sign-off': '#help_study_signoff',
+                '#assays-editable-study-list': '#help_overview_organization',
                 '#assays-assaystudy-list': '#help_overview_organization',
                 '#assays-assaystudy-index': '#help_overview_organization',
             };
@@ -483,11 +488,20 @@ $(document).ready(function () {
 
     function strip_the_glossary_spans() {
         //remove the class on the glossary extracts so the search will work better
+        // when use $('#realTimeContents .gse0') you do not get the glossary :o
         $span = $('#realTimeContents .gse0');
         $span.each(function() {
             $(this).replaceWith($(this).html());
         });
         $span = $('#realTimeContents .gse1');
+        $span.each(function() {
+            $(this).replaceWith($(this).html());
+        });
+        $span = $('#glossaryContents .gse0');
+        $span.each(function() {
+            $(this).replaceWith($(this).html());
+        });
+        $span = $('#glossaryContents .gse1');
         $span.each(function() {
             $(this).replaceWith($(this).html());
         });

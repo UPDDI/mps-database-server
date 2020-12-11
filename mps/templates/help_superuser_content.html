@@ -177,7 +177,7 @@
                                 <li>Data Group Admins and Editors can create a study, but cannot add/edit special permission groups to a study</li>
                                 <li> Collaborator groups bypass the tri-level sign-off, review, and release protocol </li>
                                 <li>Data Providers must work with MPS-Db Admins to set up appropriate groups when/if needed. </li>
-                                <li>Clicking on the button to <b>Change Group Access for this Study</b> from the <b>Study Matrices and Items List</b> page will route the user to the <b>Change Study</b> page of the GUI Admin.</li>
+                                <li>Clicking on the button to <b>Change Group Access for this Study</b> from the <b>Study Overview</b> page will route the user to the <b>Change Study</b> page of the GUI Admin.</li>
                                 <li>IMPORTANT: studies should always be assigned to the <b>group proper</b>, that is, the editor group (not admin or viewer)! </li>
                             </ul>
                         </li>
@@ -357,6 +357,24 @@
                                         <li>{'padj': 1, 'baseMean': 2, 'lfcSE': 3, 'stat': 4, 'log2FoldChange': 5, 'pvalue': 6}</li>
                                     </ul>
                                 </li>
+                                <li> Note: the visualizations depend on specific computational target naming, so, be careful with changing the names of computational targets and/or adding new computation targets or the GUI may not perform as expected</li>
+                                <li> Make/confirm categories Gene Expression and Computational are in the category list and assign the targets to them (as indicated above)</li>
+                                <li> When setting up a Study, add the Gene Expression Method, Target, and Unit (TempO-Seq, Human 1500+, Fold Change) in the Assay setup
+                                    <ul class="help-open-circle">
+                                        <li> When the user does the Assay Setup in the Study Setup - the only thing needed to work correctly is that the Assay Target selected is associated with category: Gene Expression</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>For Counts data:
+                            <ul class="help-filled-circle">
+                                <li> Make/confirm Assay Methods, such as TempO-Seq and DESeq2, are in the MPS-Db Study Components</li>
+                                <li> Make/confirm computational Assay Targets (see below) are in the Assay Targets list and assigned to Assay Method DESeq2 (with category: Computational)
+                                    <ul class="help-open-circle">
+                                        <li>Raw Counts and Normalized Counts - DESeq2 Ct (rawcounts and normcounts)</li>
+                                    </ul>
+                                </li>
+                                <li> Note: the visualizations depend on specific computational target naming, so, be careful with changing the names of computational targets and/or adding new computation targets or the GUI may not perform as expected</li>
                                 <li> Make/confirm categories Gene Expression and Computational are in the category list and assign the targets to them (as indicated above)</li>
                                 <li> When setting up a Study, add the Gene Expression Method, Target, and Unit (TempO-Seq, Human 1500+, Fold Change) in the Assay setup
                                     <ul class="help-open-circle">
@@ -372,10 +390,12 @@
                                 <li>The target selected in the assay setup must have category "Gene Expression"</li>
                                 <li>There is NO FRONT-END way to populate the AssayOmicAnalysisTarget table, but it can be populated the admin</li>
                                 <li>If a user wants to add a new computational method of omics data, at a minimum, new rows will need added to the AssayOmicAnalysis Target table (changes may or may not be needed in the code - should test when have a new type of data)</li>
-                                <li>The table AssayOmicAnalysisTarget must have a row for each computational target a priori</li>
+                                <li>The table AssayOmicAnalysisTarget must have a row for each computational target a priori (must be done by an MPS-Db Administrator)</li>
                                 <li>The table AssayOmicAnalysisTarget field data_type content must match exactly to the hard coded options in assay_omic_data_type_choices</li>
                                 <li>The table AssayOmicAnalysisTarget field name content must match exactly the column headers of the input file (INCLUDING THE CASE - at least, as of 20200902)</li>
                                 <li>The table AssayOmicAnalysisTarget field method content must match exactly method selected in the GUI as the Data Analysis Method</li>
+                                <li>About context specific help page routing (anchors) - new anchors might need to be added to the help.js file, search for var anchor_xref and add anchors there</li>
+                                <li>A means of systematically titling pages has been added (look in the tab on the top left of the screen) - may want to update help page to refer to pages by title and add page titles (with a description of the page) to the glossary, at some point</li>
                             </ul>
                         </li>
                     </ul>
@@ -402,9 +422,9 @@
                                 <li>The definition of terms from the glossary are added to the Help page like this: < span class="gse0">{ glossary_dict.mpsdatabasempsdb_def|linebreaks }}< /span> when individual term definitions are wanted</li>
                                 <li>The classes noted above are used so that the text can stand out during editing</li>
                                 <li>The purpose of the glossary categories are first and foremost to control the functioning of the help page, do not change them or tables on the help page that are subsets of the glossary (e.g., the Database Features table) may not work correctly</li>
-                                <li>Do not change the term metadata, other than the definition, without consulting the developers for the potential impact on the Help page</li>
+                                <li>Do not change the term metadata (e.g., other fields in the glossary table), other than the definition, without consulting the developers for the potential impact on the Help page</li>
                                 <li>Changing the definition will automatically change the places in the help page where the definition of a term is displayed</li>
-                                <li>There are some parts of the code that should be changed before moving to production, search for **change to find these</li>
+                                <li>There are some parts of the code that should be changed before moving to production, search for **change-star to find these</li>
                             </ul>
                         </li>
 

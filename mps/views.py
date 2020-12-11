@@ -209,15 +209,17 @@ def mps_help(request):
     # request.build_absolute_uri()  http://127.0.0.1:8000/help/
     # request.get_full_path()  /help/
 
-    # START USE THIS SECTION IN DEVELOPMENT ONLY - comment out before going to production**change
+    # START USE THIS SECTION IN DEVELOPMENT ONLY - comment out before going to production**change-star
     # have to do this LAST for ALL of them, or won't work
-    for each in glossary:
-        # print("~~each.reference pre ", each.reference)
-        if '127.0.0.1:8000' in help_url:
-            each.reference = each.reference.replace('mps.csb.pitt.edu', '127.0.0.1:8000')
-        elif 'bohr-prody-vm.upddi.pitt.edu' in help_url:
-            each.reference = each.reference.replace('mps.csb.pitt.edu', 'bohr-prody-vm.upddi.pitt.edu')
-        # print("  each.reference post ", each.reference)
+
+    # for each in glossary:
+    #     # print("~~each.reference pre ", each.reference)
+    #     if '127.0.0.1:8000' in help_url:
+    #         each.reference = each.reference.replace('mps.csb.pitt.edu', '127.0.0.1:8000')
+    #     elif 'bohr-prody-vm.upddi.pitt.edu' in help_url:
+    #         each.reference = each.reference.replace('mps.csb.pitt.edu', 'bohr-prody-vm.upddi.pitt.edu')
+    #     # print("  each.reference post ", each.reference)
+
     # END USE THIS SECTION IN DEVELOPMENT ONLY
 
     # the main glossary
