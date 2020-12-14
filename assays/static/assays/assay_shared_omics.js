@@ -236,7 +236,7 @@ $(document).ready(function () {
                 $("#omics_table").DataTable({
                     order: [],
                     responsive: true,
-                    dom: 'B<"row">lfrtip',
+                    dom: '<"row">lfrtip',
                     paging: false,
                     fixedHeader: {headerOffset: 50},
                     deferRender: true,

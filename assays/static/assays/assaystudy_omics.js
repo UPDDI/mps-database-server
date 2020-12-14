@@ -41,6 +41,9 @@ $(document).ready(function () {
             // console.log("DATA", data)
 
             if (!('error' in data)) {
+                // Show Select/Deselect All buttons
+                $('#omics_table_selects').show();
+
                 window.OMICS.omics_data = JSON.parse(JSON.stringify(data));
                 window.OMICS.draw_plots(window.OMICS.omics_data, true, 0, 0, 0, 0, 0, 0, 0);
                 for (var chart in data['table']) {
@@ -198,6 +201,46 @@ $(document).ready(function () {
 
     $(document).on('mouseout', '.omics-groups-hover, svg > g', function() {
         omics_contents_hover.hide();
+    });
+
+    // Triggers for select all
+    $('.filter-select-all').click(function() {
+        var current_table = $(this).attr('data-target-id');
+        current_table = $('#' + current_table);
+        current_data_table = current_table.DataTable();
+
+        console.log(current_table)
+
+        // Recalculate fixed headers
+        $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+
+        current_table.find('.big-checkbox').each(function() {
+            if ($(this).prop('checked') == false) {
+                $(this).click();
+            }
+        });
+
+        // Recalculate fixed headers
+        $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+    });
+
+    // Triggers for deselect all
+    $('.filter-deselect-all').click(function() {
+        var current_table = $(this).attr('data-target-id');
+        current_table = $('#' + current_table);
+        current_data_table = current_table.DataTable();
+
+        // Recalculate fixed headers
+        $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+
+        current_table.find('.big-checkbox').each(function() {
+            if ($(this).prop('checked') == true) {
+                $(this).click();
+            }
+        });
+
+        // Recalculate fixed headers
+        $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
     });
 
 });
