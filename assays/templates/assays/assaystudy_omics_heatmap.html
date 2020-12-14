@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+    <script src="//www.google.com/jsapi"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+
+{% block load_js %}
+    {% comment %} <script src="{% static "assays/grouping_filtering.js" %}"></script> {% endcomment %}
+
+    <!-- Required JS Libraries -->
+    <script src="{% static "js/clustergrammer/lib/js/underscore-min.js" %}"></script>
+
+    <!-- Clustergrammer JS -->
+    <script src="{% static "js/clustergrammer/clustergrammer.min.js" %}"></script>
+
+    <!-- optional modules -->
+    <script src="{% static "js/clustergrammer/js/Enrichrgram.js" %}"></script>
+    <script src="{% static "js/clustergrammer/js/hzome_functions.js" %}"></script>
+    <script src="{% static "js/clustergrammer/js/send_to_Enrichr.js" %}"></script>
+
+    <!-- make clustergram -->
+    <script src="{% static "js/clustergrammer/js/load_clustergram.js" %}"></script>
+
+    <script src="{% static "assays/assaystudy_omics_heatmap.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="{{ object.get_list_url }}">All Studies</a></li>
+    <li><a href="{{ object.get_absolute_url }}">{{ object }}</a></li>
+    <li class="active">Gene Expression Analysis</li>
+{% endblock %}
+
+{% comment %} {% block sidebar %}
+    {% include 'assays/grouping_filtering.html' with omics_heatmap="true"%}
+{% endblock %} {% endcomment %}
+
+{% block content %}
+    <div class="well">
+        <div class="row text-center">
+            <h1>
+                Normalized Counts Analysis for:<br>
+                <em>{{ object }}</em>
+            </h1>
+        </div>
+        <div class="row text-center small-padding-top">
+            <a href="{{ object.get_summary_url }}" class="btn btn-primary" role="button">Study Summary</a>
+            <a href="#" id="download-filtered-data" class="btn btn-info" role="button">Download Filtered Data</a>
+        </div>
+    </div>
+
+    <!-- Create a div where the graph will take place -->
+    <div id='container-id-1' class='clustergrammer_container' style="max-width: 100%">
+        <h1 class='wait_message'>Please wait ...</h1>
+    </div>
+
+    {# Just a spacer (and yes, inline styles are ugly)#}
+    <div style="padding-bottom: 250px;"></div>
+{% endblock %}

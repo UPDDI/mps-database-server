@@ -7,7 +7,7 @@ from django.views.generic import (
     TemplateView,
     DeleteView,
 )
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from cellsamples.models import CellSample
 from assays.models import (
     AssayStudyConfiguration,
@@ -4933,3 +4933,12 @@ class AssayStudyOmicsHeatmap(StudyViewerMixin, DetailView):
     """Displays the omics interface for the current study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_omics_heatmap.html'
+
+
+class AssayStudyOmicsHeatmapJSON(StudyViewerMixin, TemplateView):
+    """Displays the omics interface for the current study"""
+    template_name = 'assays/assaystudy_omics_heatmap.html'
+
+    def get(self, request, *args, **kwargs):
+        data = {}
+        return JsonResponse(data)
