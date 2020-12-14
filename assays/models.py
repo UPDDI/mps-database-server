@@ -1452,6 +1452,9 @@ class AssayDataUpload(FlaggableRestrictedModel):
 class AssayDataFileUpload(FlaggableModel):
     """Shows the history of data uploads for a study; functions as inline"""
 
+    class Meta(object):
+        verbose_name = 'Processed Data File'
+
     # TO BE DEPRECATED
     # date_created, created_by, and other fields are used but come from FlaggableModel
     file_location = models.URLField(null=True, blank=True)
@@ -4283,6 +4286,10 @@ class AssayImage(models.Model):
 
 
 class AssayStudySet(FlaggableModel):
+
+    class Meta(object):
+        verbose_name = 'Study Set'
+
     # Name for the set
     name = models.CharField(
         max_length=255,
@@ -4570,7 +4577,9 @@ class AssayPlateReaderMap(FlaggableModel):
     """Assay Plate Reader Map for processing plate reader data."""
 
     class Meta(object):
-        verbose_name_plural = 'Assay Plate Reader Map'
+        verbose_name = 'Assay Plate Reader Map'
+        # Singular plural verbose name?
+        # verbose_name_plural = 'Assay Plate Reader Map'
         # unique_together = [
         #     ('study', 'name')
         # ]

@@ -491,12 +491,14 @@ class MPSAbout(TemplateHandlerView):
 #     return render(request, 'about.html', full_context)
 
 
+class APIPrimer(TemplateHandlerView):
+    template_name = 'api_primer.html'
+
+    title = 'Web API'
+
+
 # TODO Consider defining this in URLS or either bringing the rest here
 class UnderConstruction(TemplateHandlerView):
     template_name = 'under_construction.html'
 
     title = 'Under Construction'
-
-
-class APIPrimer(TemplateView):
-    template_name = 'api_primer.html'

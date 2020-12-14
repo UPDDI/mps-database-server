@@ -1714,7 +1714,7 @@ class AssayStudyTemplate(ObjectGroupRequiredMixin, DetailView):
         return response
 
 
-class AssayStudyAccess(UpdateView):
+class AssayStudyAccess(HistoryMixin, UpdateView):
     """Update the fields of a Study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_access.html'
@@ -4738,7 +4738,7 @@ class PBPKView(TemplateView):
 
 ##### Start the omic data section
 
-class AssayOmicDataFileUploadIndex(StudyViewerMixin, DetailView):
+class AssayOmicDataFileUploadIndex(StudyViewerMixin, DetailHandlerView):
     """Assay Omic Data file"""
 
     model = AssayStudy
@@ -4780,7 +4780,7 @@ class AssayOmicDataFileUploadIndex(StudyViewerMixin, DetailView):
         return context
 
 
-class AssayOmicDataFileUploadDelete(CreatorAndNotInUseMixin, DeleteView):
+class AssayOmicDataFileUploadDelete(CreatorAndNotInUseMixin, DeleteHandlerView):
     model = AssayOmicDataFileUpload
     template_name = 'assays/assayomicdatafileupload_delete.html'
 
@@ -4788,7 +4788,7 @@ class AssayOmicDataFileUploadDelete(CreatorAndNotInUseMixin, DeleteView):
         return self.object.get_post_submission_url()
 
 
-class AssayOmicDataFileUploadAdd(StudyGroupMixin, CreateView):
+class AssayOmicDataFileUploadAdd(StudyGroupMixin, HistoryMixin, CreateView):
     """Views Add Upload an AssayOmicDataFileUpload file """
 
     model = AssayOmicDataFileUpload
@@ -4822,7 +4822,7 @@ class AssayOmicDataFileUploadAdd(StudyGroupMixin, CreateView):
         else:
             return self.render_to_response(self.get_context_data(form=form, ))
 
-class AssayOmicDataFileUploadUpdate(StudyGroupMixin, UpdateView):
+class AssayOmicDataFileUploadUpdate(StudyGroupMixin, HistoryMixin, UpdateView):
     """Views View Upload an AssayOmicDataFileUpload file """
 
     model = AssayOmicDataFileUpload
@@ -4842,7 +4842,8 @@ class AssayOmicDataFileUploadUpdate(StudyGroupMixin, UpdateView):
         else:
             return self.render_to_response(self.get_context_data(form=form, ))
 
-class AssayOmicDataFileUploadView(StudyGroupMixin, DetailView):
+
+class AssayOmicDataFileUploadView(StudyGroupMixin, DetailHandlerView):
     """Views View Upload an AssayOmicDataFileUpload file """
 
     model = AssayOmicDataFileUpload
@@ -4864,7 +4865,7 @@ class AssayOmicDataFileUploadView(StudyGroupMixin, DetailView):
 # END omic data file list, add, update, view and delete section
 
 
-class AssayStudyOmics(StudyViewerMixin, DetailView):
+class AssayStudyOmics(StudyViewerMixin, DetailHandlerView):
     """Displays the omics interface for the current study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_omics.html'
@@ -4928,8 +4929,7 @@ class AssayStudyOmicsDownload(StudyViewerMixin, DetailView):
             return HttpResponse('', content_type='text/plain')
 
 
-# NOT AVAILABLE YET
-class AssayStudyOmicsHeatmap(StudyViewerMixin, DetailView):
+class AssayStudyOmicsHeatmap(StudyViewerMixin, DetailHandlerView):
     """Displays the omics interface for the current study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_omics_heatmap.html'

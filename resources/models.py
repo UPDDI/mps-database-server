@@ -78,6 +78,7 @@ class Definition(LockableModel):
     class Meta(object):
         verbose_name = 'Glossary Entry'
         verbose_name_plural = 'Glossary Entries'
+
     term = models.CharField(
         max_length=60, unique=True,
         help_text='If the term is assigned to a help_category, changing the term could BREAK the HELP page.',
