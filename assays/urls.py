@@ -241,8 +241,8 @@ urlpatterns = [
     # Omics Interface + Download Filtered Data
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/omics/$', AssayStudyOmics.as_view(), name='assays-assaystudy-omics'),
     url(r'^assays/assaystudy/(?P<pk>[0-9]+)/omics/download/$', AssayStudyOmicsDownload.as_view(), name='assays-assaystudy-omics-download'),
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/omicsheatmap/$', AssayStudyOmicsHeatmap.as_view(), name='assays-assaystudy-omics-heatmap'),
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/omicsheatmap/json/$', AssayStudyOmicsHeatmapJSON.as_view(), name='assays-assaystudy-omics-heatmap-json'),
+    # url(r'^assays/assaystudy/(?P<pk>[0-9]+)/omicsheatmap/$', AssayStudyOmicsHeatmap.as_view(), name='assays-assaystudy-omics-heatmap'),
+    # url(r'^assays/assaystudy/(?P<pk>[0-9]+)/omicsheatmap/json/$', AssayStudyOmicsHeatmapJSON.as_view(), name='assays-assaystudy-omics-heatmap-json'),
 
     # PBPK filter
     url(r'^assays/pbpk_filter/$', PBPKFilterView.as_view(), name='assays-pbpk-filter'),
