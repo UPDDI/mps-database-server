@@ -42,6 +42,10 @@ from django.contrib.contenttypes.models import ContentType
 
 from django.urls import resolve
 
+# Global
+DEFAULT_PAGE_TITLE = 'MPS Database'
+
+
 # Unsemantic! Breaks PEP! BAD!
 def PermissionDenied(request, message, log_in_link=True):
     """This function will take a string a render 403.html with that string as context"""
@@ -483,7 +487,7 @@ class SuperuserRequiredMixin(object):
 
 class HelpAnchorMixin(object):
     # Default title
-    title = 'MPS Database'
+    title = DEFAULT_PAGE_TITLE
 
     def get_context_data(self, **kwargs):
         context = super(HelpAnchorMixin, self).get_context_data(**kwargs)
@@ -512,11 +516,19 @@ class DefaultModelContextMixin(HelpAnchorMixin):
         context.update({
             'model_verbose_name': self.model._meta.verbose_name,
             'model_verbose_name_plural': self.model._meta.verbose_name_plural,
-            'title': '{} Detail'.format(self.model._meta.verbose_name),
+            'title': self.default_or_keep_title('{} Detail'.format(self.model._meta.verbose_name)),
+            # 'title': '{} Detail'.format(self.model._meta.verbose_name),
             # 'help_anchor': '#{}'.format(self.model._meta.verbose_name.lower().replace(' ', ''))
         })
 
         return context
+
+    # Sort of crude
+    def default_or_keep_title(self, new_title):
+        if self.title == DEFAULT_PAGE_TITLE:
+            return new_title
+        else:
+            return self.title
 
 
 class HistoryMixin(DefaultModelContextMixin):
@@ -624,11 +636,11 @@ class FormHandlerMixin(HistoryMixin):
 
         if self.is_update:
             context.update({
-                'title': 'Edit {}'.format(self.model._meta.verbose_name)
+                'title': self.default_or_keep_title('Edit {}'.format(self.model._meta.verbose_name))
             })
         else:
             context.update({
-                'title': 'Add {}'.format(self.model._meta.verbose_name)
+                'title': self.default_or_keep_title('Add {}'.format(self.model._meta.verbose_name))
             })
 
         for formset_name, formset_factory in self.formsets:
@@ -780,7 +792,7 @@ class ListHandlerView(DefaultModelContextMixin, ListView):
 
         # Add model name
         context.update({
-            'title': '{} List'.format(self.model._meta.verbose_name),
+            'title': self.default_or_keep_title('{} List'.format(self.model._meta.verbose_name)),
         })
 
         return context
@@ -797,7 +809,7 @@ class DeleteHandlerView(DefaultModelContextMixin, DeleteView):
 
         # Add model name
         context.update({
-            'title': '{} Delete'.format(self.model._meta.verbose_name),
+            'title': self.default_or_keep_title('{} Delete'.format(self.model._meta.verbose_name)),
         })
 
         return context
