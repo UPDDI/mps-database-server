@@ -18,6 +18,7 @@ class MicrophysiologyCenter(LockableModel):
     Note that this is the model by which groups are affiliated with assays, cells, etc.
     """
     class Meta(object):
+        verbose_name = 'Microphysiology Center'
         ordering = ('name',)
 
     # TODO TODO THIS SHOULD BE JUST NAME

@@ -81,7 +81,9 @@
 
     {% include 'tracking.html' %}
 
+    {% if not detail %}
     {% include "sign_off_form.html" with group=form.instance.study.group.name %}
+    {% endif %}
 
     <legend>Plate Details</legend>
 

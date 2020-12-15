@@ -2220,7 +2220,9 @@ class AssayStudy(FlaggableModel):
 class AssayMatrix(FlaggableModel):
     """Used to organize data in the interface. An Matrix is a set of setups"""
     class Meta(object):
-        verbose_name_plural = 'Assay Matrices'
+        verbose_name = 'Plate/Study Chips'
+        # verbose_name_plural = 'Assay Matrices'
+
         unique_together = [('study', 'name')]
 
     # TODO Name made unique within Study? What will the constraint be?
@@ -2751,6 +2753,8 @@ class AbstractSetupSetting(models.Model):
 # Previously considered the name "AssaySetupGroup"
 class AssayGroup(models.Model):
     class Meta(object):
+        verbose_name = 'Group'
+
         # Do not allow duplicates of name per study
         unique_together = [
             (

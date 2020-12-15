@@ -818,7 +818,8 @@ class ListHandlerView(DefaultModelContextMixin, ListView):
 
 
 class DetailHandlerView(DefaultModelContextMixin, DetailView):
-    template_name = 'generic_detail.html'
+    # template_name = 'generic_detail.html'
+    pass
 
 
 class DeleteHandlerView(DefaultModelContextMixin, DeleteView):

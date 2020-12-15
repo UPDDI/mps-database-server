@@ -1086,7 +1086,7 @@ class AssayStudySummary(StudyViewerMixin, TemplateHandlerView):
 
 
 # TODO: REVISE ODD
-class AssayStudyData(StudyViewerMixin, DetailHandlerView):
+class AssayStudyData(StudyViewerMixin, DetailView):
     """Returns a combined file for all data in a study"""
     model = AssayStudy
 
