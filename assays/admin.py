@@ -94,6 +94,8 @@ from import_export.admin import ImportExportModelAdmin
 
 from django.utils.safestring import mark_safe
 
+from mps.settings import TIME_ZONE
+
 
 # DEPRECATED
 class AssayQualityIndicatorFormAdmin(forms.ModelForm):
@@ -640,6 +642,7 @@ class AssayStudyAdmin(LockableAdmin):
         'start_date',
         'signed_off_by',
         'signed_off_date',
+        'release_date',
         'stakeholder_display',
         'access_group_display',
         'collaborator_group_display',
@@ -697,7 +700,7 @@ class AssayStudyAdmin(LockableAdmin):
         (
             'Study Data Group and Access Group Info', {
                 'fields': (
-                    'group', 'restricted', 'locked', 'access_groups', 'collaborator_groups'
+                    'group', 'release_date', 'restricted', 'locked', 'access_groups', 'collaborator_groups'
                 ),
             },
         ),
@@ -797,7 +800,7 @@ class AssayStudyAdmin(LockableAdmin):
     # This code may pose a problem if multiple people are editing an entry at once...
     def save_related(self, request, form, formsets, change):
         # Local datetime
-        tz = pytz.timezone('US/Eastern')
+        tz = pytz.timezone(TIME_ZONE)
         datetime_now_local = datetime.now(tz)
         fourteen_days_from_date = datetime_now_local + timedelta(days=14)
 

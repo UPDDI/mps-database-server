@@ -153,7 +153,7 @@ from mps.mixins import (
 
 from mps.base.models import save_forms_with_tracking
 from django.contrib.auth.models import User, Group
-from mps.settings import DEFAULT_FROM_EMAIL
+from mps.settings import DEFAULT_FROM_EMAIL, TIME_ZONE
 
 import ujson as json
 import os
@@ -1232,7 +1232,7 @@ class AssayStudySignOff(HistoryMixin, HelpAnchorMixin, UpdateView):
         )
 
         if form.is_valid() and stakeholder_formset.is_valid():
-            tz = pytz.timezone('US/Eastern')
+            tz = pytz.timezone(TIME_ZONE)
             datetime_now_local = datetime.now(tz)
             fourteen_days_from_date = datetime_now_local + timedelta(days=14)
 
@@ -1552,7 +1552,7 @@ class AssayStudyDelete(StudyDeletionMixin, HelpAnchorMixin, UpdateView):
             # REMOVE COLLABORATOR GROUPS
             self.object.collaborator_groups.clear()
 
-            tz = pytz.timezone('US/Eastern')
+            tz = pytz.timezone(TIME_ZONE)
 
             # Note deletion in study (crude)
             self.object.description = 'Deleted by {} on {}\n{}'.format(
