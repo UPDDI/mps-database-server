@@ -563,8 +563,6 @@ class AssayStudyList(ListHandlerView):
     model = AssayStudy
     template_name = 'assays/assaystudy_list.html'
 
-    title = 'Study List'
-
     def get_queryset(self):
         combined = get_user_accessible_studies(self.request.user)
 
@@ -638,6 +636,8 @@ class AssayStudyMixin(FormHandlerMixin):
 class AssayStudyDetailsMixin(AssayStudyMixin):
     template_name = 'assays/assaystudy_details.html'
     form_class = AssayStudyDetailForm
+
+    title = 'Study Details'
 
     # Do we want references here?
     formsets = (
@@ -714,6 +714,8 @@ class AssayStudyGroups(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     template_name = 'assays/assaystudy_groups.html'
     form_class = AssayStudyGroupForm
 
+    title = 'Study Group'
+
     # Oh no! We actually need to have special handling for the "next" button
     # TODO
     # Special handling for handling next button
@@ -767,6 +769,8 @@ class AssayStudyChips(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     # Might end up being a formset?
     form_class = AssayStudyChipForm
 
+    title = 'Study Chips'
+
     def get_context_data(self, **kwargs):
         context = super(AssayStudyChips, self).get_context_data(**kwargs)
 
@@ -792,6 +796,8 @@ class AssayStudyChipsDetail(StudyGroupMixin, DetailView):
 
     template_name = 'assays/assaystudy_chips_detail.html'
 
+    title = 'Chips for Study'
+
     def get_context_data(self, **kwargs):
         context = super(AssayStudyChipsDetail, self).get_context_data(**kwargs)
 
@@ -807,6 +813,8 @@ class AssayStudyChipsDetail(StudyGroupMixin, DetailView):
 class AssayStudyPlates(ObjectGroupRequiredMixin, AssayStudyMixin, DetailHandlerView):
     template_name = 'assays/assaystudy_plates.html'
     form_class = AssayStudyPlateForm
+
+    title = 'Study Plates'
 
     # Contrived
     def get_context_data(self, **kwargs):
@@ -903,6 +911,8 @@ class AssayStudyAssays(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
     # This will probably just be a contrived empty form
     form_class = AssayStudyAssaysForm
 
+    title = 'Study Assays'
+
     formsets = (
         ('study_assay_formset', AssayStudyAssayFormSetFactory),
     )
@@ -913,6 +923,8 @@ class AssayStudyDataIndex(StudyViewerMixin, AssayStudyMixin, DetailHandlerView):
     """Show all data sections for a given study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_data_index.html'
+
+    title = 'Study Data Overview'
 
     # For permission mixin NOT AS USELESS AS IT SEEMS
     def get_object(self, queryset=None):
@@ -960,6 +972,8 @@ class AssayStudyIndex(StudyViewerMixin, DetailHandlerView):
     model = AssayStudy
     context_object_name = 'study_index'
     template_name = 'assays/assaystudy_index.html'
+
+    title = 'Study Overview'
 
     # For permission mixin NOT AS USELESS AS IT SEEMS
     def get_object(self, queryset=None):
@@ -1452,6 +1466,8 @@ class AssayStudyDataUpload(ObjectGroupRequiredMixin, FormHandlerMixin, UpdateVie
     template_name = 'assays/assaystudy_upload.html'
     form_class = AssayStudyDataUploadForm
 
+    title = 'Study Processed Data Upload'
+
     # TODO: STRANGE
     def get_form(self, form_class=None):
         form_class = self.get_form_class()
@@ -1754,6 +1770,8 @@ class AssayStudyAccess(HistoryMixin, UpdateView):
     model = AssayStudy
     template_name = 'assays/assaystudy_access.html'
     form_class = AssayStudyAccessForm
+
+    title = 'Study Access'
 
     # We manually make the dispatch to circumvent sign off
     @method_decorator(login_required)
@@ -3630,6 +3648,8 @@ class AssayPlateReaderMapIndex(StudyViewerMixin, DetailHandlerView):
     context_object_name = 'assayplatereadermap_index'
     template_name = 'assays/assayplatereadermap_index.html'
 
+    title = 'Assay Plate Reader Map List'
+
     # For permission mixin
     def get_object(self, queryset=None):
         self.study = super(AssayPlateReaderMapIndex, self).get_object()
@@ -4436,6 +4456,8 @@ class AssayPlateReaderMapDataFileIndex(StudyViewerMixin, DetailHandlerView):
     context_object_name = 'assayplatereaderfile_index'
     template_name = 'assays/assayplatereaderfile_index.html'
 
+    title = 'Assay Plate Reader Map Data File List'
+
     # For permission mixin
     def get_object(self, queryset=None):
         self.study = super(AssayPlateReaderMapDataFileIndex, self).get_object()
@@ -4837,6 +4859,8 @@ class AssayOmicDataFileUploadIndex(StudyViewerMixin, DetailHandlerView):
     context_object_name = 'assayomicdatafileupload_index'
     template_name = 'assays/assayomicdatafileupload_index.html'
 
+    title = 'Assay Omic File List'
+
     # For permission mixin
     def get_object(self, queryset=None):
         self.study = super(AssayOmicDataFileUploadIndex, self).get_object()
@@ -4962,6 +4986,8 @@ class AssayStudyOmics(StudyViewerMixin, DetailHandlerView):
     model = AssayStudy
     template_name = 'assays/assaystudy_omics.html'
 
+    title = 'Study Omics'
+
     def get_context_data(self, **kwargs):
         context = super(AssayStudyOmics, self).get_context_data(**kwargs)
         context.update({
@@ -5021,3 +5047,5 @@ class AssayStudyOmicsHeatmap(StudyViewerMixin, DetailHandlerView):
     """Displays the omics interface for the current study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_omics_heatmap.html'
+
+    title = 'Study Omics Heatmap'
