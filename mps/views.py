@@ -20,7 +20,7 @@ from django.contrib.auth.models import Group
 
 import os
 
-from mps.settings import MEDIA_ROOT
+from mps.settings import MEDIA_ROOT, TIME_ZONE
 
 from django.views.generic.base import TemplateView
 from resources.models import Definition, ComingSoonEntry, WhatIsNewEntry
@@ -308,16 +308,26 @@ class MPSAbout(TemplateHandlerView):
 
         for study in signed_off_restricted_studies:
             # If there are no stakeholders, just use the sign off date
-            if study.id not in latest_approval:
+            # Not really sure why I decided to make it a date rather than a datetime?
+            # CRUDE CRUDE CRUDE
+            if study.release_date:
+                scheduled_release_date = datetime(
+                    study.release_date.year,
+                    study.release_date.month,
+                    study.release_date.day
+                ).replace(tzinfo=pytz.timezone(TIME_ZONE))
+            elif study.group_id in [41, 46, 148] and study.id not in latest_approval:
                 # Days are approximated for a year
                 scheduled_release_date = study.signed_off_date + timedelta(days=365.2425)
-            else:
+            elif study.group_id in [41, 46, 148] and study.id in latest_approval:
                 # Days are approximated for a year
                 scheduled_release_date = latest_approval.get(study.id) + timedelta(days=365.2425)
+            else:
+                scheduled_release_date = None
 
             stakeholders_without_approval = required_stakeholder_map.get(study.id, False)
 
-            if not stakeholders_without_approval and scheduled_release_date <= datetime_now + timedelta(days=number_of_days):
+            if scheduled_release_date and not stakeholders_without_approval and scheduled_release_date <= datetime_now + timedelta(days=number_of_days):
                 soon_released.update({
                     study.id: scheduled_release_date
                 })

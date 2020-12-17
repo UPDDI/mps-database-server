@@ -10,7 +10,7 @@ import pytz
 from django.contrib.auth.models import User, Group
 
 from django.template.loader import render_to_string, TemplateDoesNotExist
-from mps.settings import DEFAULT_FROM_EMAIL
+from mps.settings import DEFAULT_FROM_EMAIL, TIME_ZONE
 
 from mps.templatetags.custom_filters import (
     ADMIN_SUFFIX,
@@ -28,7 +28,7 @@ def run():
     datetime_now = datetime.now().replace(tzinfo=pytz.UTC)
 
     # Local datetime
-    tz = pytz.timezone('US/Eastern')
+    tz = pytz.timezone(TIME_ZONE)
     datetime_now_local = datetime.now(tz)
 
     # NOTE: We are also excluding studies without a release date now
@@ -40,8 +40,6 @@ def run():
         archived=False
     ).exclude(
         signed_off_by_id=None
-    ).exclude(
-        release_date__isnull=True
     )
 
     # Just make me the auto-approver for now
@@ -162,17 +160,21 @@ def run():
             })
 
     for study in signed_off_restricted_studies:
-        # NOTE: These other methods are basically deprecated
+        # Use the release date if it exists
+        if study.release_date:
+            # NOTE THAT, AT THE MOMENT, RELEASE_DATE IS A DATE NOT A DATETIME
+            study_is_ready_to_be_released = study.release_date < datetime.date(datetime_now)
         # If there are no stakeholders, just use the sign off date
-        if study.id not in latest_approval:
+        elif study.group_id in [41, 46, 148] and study.id not in latest_approval:
             # Days are approximated for a year
             study_is_ready_to_be_released = study.signed_off_date < datetime_now - timedelta(days=365.2425)
-        # CRUDE CRUDE CRUDE
-        elif study.group_id in [41, 46, 148] and study.release_date > datetime_now:
+        # Use the last approval if possible
+        elif study.group_id in [41, 46, 148] and study.id in latest_approval:
             # Days are approximated for a year
             study_is_ready_to_be_released = latest_approval.get(study.id) < datetime_now - timedelta(days=365.2425)
+        # NOT READY IN ALL OTHER CIRCUMSTANCES
         else:
-            study_is_ready_to_be_released = study.release_date < datetime_now
+            study_is_ready_to_be_released = False
 
         stakeholders_without_approval = required_stakeholder_map.get(study.id, False)
 
