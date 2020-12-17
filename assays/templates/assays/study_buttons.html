@@ -1,7 +1,10 @@
 <div class="text-center padded-bottom small-padding-top">
+    {% if user_is_group_editor and not object.signed_off_by %}
+        <a class="btn btn-primary" role="button" href="{% url 'assays-assaystudy-update' object.id %}">Edit This Study</a>
+    {% endif %}
     <span class="dropdown btn-group">
         <button class="btn btn-primary dropdown-toggle" type="button" id="analyze_edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-            Analyze/Edit
+            Analyze
             <span class="caret"></span>
         </button>
         <ul class="dropdown-menu" aria-labelledby="analyze_edit">
@@ -34,9 +37,6 @@
 
             {% if user_is_group_editor %}
                 <li role="separator" class="divider"></li>
-                {% if not object.signed_off_by %}
-                    <li><a href="{% url 'assays-assaystudy-update' object.id %}">Edit This Study</a></li>
-                {% endif %}
                 <li><a id="clone_study_request" role="button">Clone this Study</a></li>
             {% endif %}
         </ul>
