@@ -788,7 +788,7 @@ class AssayStudyChips(ObjectGroupRequiredMixin, AssayStudyMixin, UpdateView):
 
 
 # WE NEED A VIEW PAGE FOR ALL OF A STUDY'S CHIPS
-class AssayStudyChipsDetail(StudyGroupMixin, DetailView):
+class AssayStudyChipsDetail(StudyGroupMixin, DetailHandlerView):
     # Why not have the mixin look for DetailView?
     model = AssayMatrix
     detail = True
