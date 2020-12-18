@@ -1,6 +1,25 @@
 <div class="text-center padded-bottom small-padding-top">
     {% if user_is_group_editor and not object.signed_off_by %}
-        <a class="btn btn-primary" role="button" href="{% url 'assays-assaystudy-update' object.id %}">Edit This Study</a>
+    <span class="dropdown btn-group">
+        <button class="btn btn-primary dropdown-toggle" type="button" id="edit_study" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            Edit
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="edit_study">
+            <li><a href="{% url 'assays-assaystudy-update-details' object.id %}">Details</a></li>
+            <li><a href="{% url 'assays-assaystudy-update-groups' object.id %}">Groups</a></li>
+            {# If chips #}
+            {% if has_chips %}
+            <li><a href="{% url 'assays-assaystudy-update-chips' object.id %}">Chips</a></li>
+            {% endif %}
+            {# If plates #}
+            {% if has_plates %}
+            <li><a href="{% url 'assays-assaystudy-update-plates' object.id %}">Plates</a></li>
+            {% endif %}
+            <li><a href="{% url 'assays-assaystudy-update-assays' object.id %}">Assays</a></li>
+            <li><a href="{% url 'assays-assaystudy-data-index' object.id %}">Data</a></li>
+        </ul>
+    </span>
     {% endif %}
     <span class="dropdown btn-group">
         <button class="btn btn-primary dropdown-toggle" type="button" id="analyze_edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">

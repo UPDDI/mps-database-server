@@ -576,7 +576,37 @@ class AssayStudyList(ListHandlerView):
         return combined
 
 
-class AssayStudyMixin(FormHandlerMixin):
+class PlateAndChipTabMixin(object):
+    def get_context_data(self, **kwargs):
+        context = super(PlateAndChipTabMixin, self).get_context_data(**kwargs)
+
+        has_chips = False
+        has_plates = False
+
+        # CRUDE: NEEDS REVISION
+        if self.object:
+            study_groups = AssayGroup.objects.filter(
+                study_id=self.object.id,
+            ).prefetch_related('organ_model__device')
+
+            has_chips = study_groups.filter(
+                organ_model__device__device_type='chip'
+            ).count() > 0
+
+            has_plates = study_groups.filter(
+                organ_model__device__device_type='plate'
+            ).count() > 0
+
+        # TODO: Check whether this Study has Chips or Plates
+        # Contrived at the moment
+        context.update({
+            'has_chips': has_chips,
+            'has_plates': has_plates,
+        })
+
+        return context
+
+class AssayStudyMixin(PlateAndChipTabMixin, FormHandlerMixin):
     model = AssayStudy
     # Study is now split into many pages, probably best to list them explicitly
     # template_name = 'assays/assaystudy_add.html'
@@ -601,30 +631,12 @@ class AssayStudyMixin(FormHandlerMixin):
     def get_context_data(self, **kwargs):
         context = super(AssayStudyMixin, self).get_context_data(**kwargs)
 
-        has_chips = False
-        has_plates = False
-
-        # CRUDE: NEEDS REVISION
-        if self.object:
-            study_groups = AssayGroup.objects.filter(
-                study_id=self.object.id,
-            ).prefetch_related('organ_model__device')
-
-            has_chips = study_groups.filter(
-                organ_model__device__device_type='chip'
-            ).count() > 0
-
-            has_plates = study_groups.filter(
-                organ_model__device__device_type='plate'
-            ).count() > 0
-
         # TODO: Check whether this Study has Chips or Plates
         # Contrived at the moment
         context.update({
-            'has_chips': has_chips,
-            'has_plates': has_plates,
             'has_next_button': True,
             'has_previous_button': True,
+            # CRUDE
             'cellsamples' : CellSample.objects.all().prefetch_related(
                 'cell_type__organ',
                 'supplier',
@@ -955,7 +967,7 @@ class AssayStudyDataIndex(StudyViewerMixin, AssayStudyMixin, DetailHandlerView):
 
 
 # TODO: TO BE REVISED
-class AssayStudyIndex(StudyViewerMixin, DetailHandlerView):
+class AssayStudyIndex(StudyViewerMixin, PlateAndChipTabMixin, DetailHandlerView):
     """Show all chip and plate models associated with the given study"""
     model = AssayStudy
     context_object_name = 'study_index'
@@ -1081,7 +1093,7 @@ class AssayStudyIndex(StudyViewerMixin, DetailHandlerView):
         return context
 
 
-class AssayStudySummary(StudyViewerMixin, TemplateHandlerView):
+class AssayStudySummary(StudyViewerMixin, PlateAndChipTabMixin, TemplateHandlerView):
     """Displays information for a given study
 
     Currently only shows data for chip readouts and chip/plate setups
@@ -2327,7 +2339,7 @@ class AssayMatrixItemDelete(StudyDeletionMixin, DeleteHandlerView):
         return self.object.study.get_absolute_url()
 
 
-class AssayStudyReproducibility(StudyViewerMixin, DetailHandlerView):
+class AssayStudyReproducibility(StudyViewerMixin, PlateAndChipTabMixin, DetailHandlerView):
     """Returns a form and processed statistical information. """
     model = AssayStudy
     template_name = 'assays/assaystudy_reproducibility.html'
@@ -2343,7 +2355,7 @@ class AssayStudyReproducibility(StudyViewerMixin, DetailHandlerView):
         return context
 
 
-class AssayStudyImages(StudyViewerMixin, DetailHandlerView):
+class AssayStudyImages(StudyViewerMixin, PlateAndChipTabMixin, DetailHandlerView):
     """Displays all of the images linked to the current study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_images.html'
@@ -2923,7 +2935,7 @@ class AssayReferenceDelete(CreatorAndNotInUseMixin, DeleteHandlerView):
     success_url = '/assays/assayreference/'
 
 
-class AssayStudyPowerAnalysisStudy(StudyViewerMixin, DetailHandlerView):
+class AssayStudyPowerAnalysisStudy(StudyViewerMixin, PlateAndChipTabMixin, DetailHandlerView):
     """Displays the power analysis interface for the current study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_power_analysis_study.html'
@@ -4973,7 +4985,7 @@ class AssayOmicDataFileUploadView(StudyGroupMixin, DetailHandlerView):
 # END omic data file list, add, update, view and delete section
 
 
-class AssayStudyOmics(StudyViewerMixin, DetailHandlerView):
+class AssayStudyOmics(StudyViewerMixin, PlateAndChipTabMixin, DetailHandlerView):
     """Displays the omics interface for the current study"""
     model = AssayStudy
     template_name = 'assays/assaystudy_omics.html'
