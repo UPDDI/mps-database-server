@@ -4605,9 +4605,6 @@ class AssayPlateReaderMapForm(BootstrapForm):
         #### END When saving AssayPlateReaderMapUpdate after a calibration
 
 
-# What is this? Can't you just write the dictionary in the other direction?
-# this finds the key for the value provided as thisHeader
-# could create a reverse dictionary (using a list comprehension or otherwise), but if just once, can use this
 def find_a_key_by_value_in_dictionary(this_dict, this_header):
     """This is a function to find a key by value."""
     my_key = ''
@@ -4616,6 +4613,7 @@ def find_a_key_by_value_in_dictionary(this_dict, this_header):
             my_key = key
             break
     return my_key
+
 
 # There should be a complete set of items for each saved plate map (one for each well in the selected plate)
 class AssayPlateReaderMapItemForm(forms.ModelForm):
