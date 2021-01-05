@@ -140,6 +140,7 @@ $(document).ready(function () {
 
     window.OMICS.draw_plots = function(omics_data, firstTime, minPval, maxPval, minL2FC, maxL2FC, minPval_neg, maxPval_neg, L2FC_abs, called_from="analysis") {
         var chartData = {}
+        let firstChart = true;
         var log2fc, avgexpress, neglog10pvalue, pvalue, check_over, check_under, check_neither, log2fc_threshold, threshold_pvalue;
         check_over = $("#check-over").is(":checked");
         check_under = $("#check-under").is(":checked");
@@ -158,8 +159,10 @@ $(document).ready(function () {
 
             // Create Omics info table on first pass
             if (firstTime && called_from === "analysis") {
-                $("#omics_table_body").html($("#omics_table_body").html()+"<tr><td class='dt-center'><input type='checkbox' class='big-checkbox' data-checkbox-id='" + omics_data['table'][x][1] + "' checked></td><td class='omics-groups-hover'>" + x + "</td><td>" + omics_data['table'][x][0] + "</td></tr>")
+                $("#omics_table_body").html($("#omics_table_body").html()+"<tr><td class='dt-center'><input type='checkbox' class='big-checkbox' data-checkbox-id='" + omics_data['table'][x][1] + (firstChart ? "' checked" : "'") + "></td><td class='omics-groups-hover'>" + x + "</td><td>" + Object.keys(omics_data['data'][x]).length + "</td><td>" + omics_data['table'][x][0] + "</td></tr>");
+                firstChart = false;
             }
+
 
             // For each gene probe ID
             for (y of Object.keys(omics_data['data'][x])) {
@@ -252,8 +255,6 @@ $(document).ready(function () {
 
         let volcano_chart_row = $('<div>').addClass('row');
         let ma_chart_row = $('<div>').addClass('row');
-        // $('#volcano-plots').append("<div class='row'>");
-        // $('#ma-plots').append("<div class='row'>");
         for (const prop in chartData) {
             volcano_chart_row.append("<div class='col-lg-6'><div id='volcano-" + omics_data['table'][prop][1] + "'></div></div>");
             ma_chart_row.append("<div class='col-lg-6'><div id='ma-" + omics_data['table'][prop][1] + "'></div></div>");
@@ -298,7 +299,6 @@ $(document).ready(function () {
                 $("#volcano-plots").css("display", "none");
             }
         }
-
         if (called_from === "analysis" && window.OMICS.chart_visiblity !== null) {
             for (chart in window.OMICS.chart_visiblity) {
                 if (window.OMICS.chart_visiblity[chart] == false) {

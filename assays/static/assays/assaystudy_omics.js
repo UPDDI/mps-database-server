@@ -44,11 +44,19 @@ $(document).ready(function () {
                 // Show Select/Deselect All buttons
                 $('#omics_table_selects').show();
 
+                // Render only the first chart initially
+                let firstChart = true;
+                for (var chart in data['table']) {
+                    if (firstChart) {
+                        visible_charts[data['table'][chart][1]] = true;
+                        firstChart = false;
+                    } else {
+                        visible_charts[data['table'][chart][1]] = false;
+                    }
+                }
+                window.OMICS.chart_visiblity = visible_charts
                 window.OMICS.omics_data = JSON.parse(JSON.stringify(data));
                 window.OMICS.draw_plots(window.OMICS.omics_data, true, 0, 0, 0, 0, 0, 0, 0);
-                for (var chart in data['table']) {
-                    visible_charts[data['table'][chart][1]] = true;
-                }
 
                 // Make Difference Table, generate list of groups to aid in hover displays
                 // Maybe I should make a way to just get the tds?
@@ -205,23 +213,34 @@ $(document).ready(function () {
 
     // Triggers for select all
     $('.filter-select-all').click(function() {
+        window.spinner.spin(
+            document.getElementById("spinner")
+        );
+
         var current_table = $(this).attr('data-target-id');
         current_table = $('#' + current_table);
         current_data_table = current_table.DataTable();
 
-        console.log(current_table)
+        setTimeout(function(){
+            // Recalculate fixed headers
+            $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
 
-        // Recalculate fixed headers
-        $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+            current_table.find('.big-checkbox').each(function() {
+                if ($(this).prop('checked') == false) {
+                    $(this).click();
+                }
+            });
 
-        current_table.find('.big-checkbox').each(function() {
-            if ($(this).prop('checked') == false) {
-                $(this).click();
-            }
-        });
+            // Recalculate fixed headers
+            $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+        }, 0)
 
-        // Recalculate fixed headers
-        $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
+        setTimeout(function() {
+            // Stop spinner
+            window.spinner.stop();
+        }, 0)
+
+
     });
 
     // Triggers for deselect all
@@ -242,5 +261,4 @@ $(document).ready(function () {
         // Recalculate fixed headers
         $($.fn.dataTable.tables(true)).DataTable().fixedHeader.adjust();
     });
-
 });
