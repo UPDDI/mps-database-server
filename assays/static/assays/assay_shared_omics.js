@@ -299,6 +299,7 @@ $(document).ready(function () {
                 $("#volcano-plots").css("display", "none");
             }
         }
+        
         if (called_from === "analysis" && window.OMICS.chart_visiblity !== null) {
             for (chart in window.OMICS.chart_visiblity) {
                 if (window.OMICS.chart_visiblity[chart] == false) {
