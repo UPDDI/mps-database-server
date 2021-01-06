@@ -428,6 +428,7 @@ $(document).ready(function () {
     var study_setup_head = study_setup_table.find('thead').find('tr');
     var study_setup_body = study_setup_table.find('tbody');
 
+    // Not a very clear name: refers to table shown for MPS Model Versions
     // PREVIEW
     var series_table_preview = $('#series_table_preview');
 
@@ -858,7 +859,7 @@ $(document).ready(function () {
         spawn_row(series_data[current_row_index], true, true, series_data.length);
 
         // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
-        // change_matrix_visibility();
+        // change_table_visibility();
 
         // TODO TODO TODO
         // TODO LAZY
@@ -968,7 +969,7 @@ $(document).ready(function () {
         // SLOPPY
         spawn_row(null, true, false, series_data.length);
         // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
-        // change_matrix_visibility();
+        // change_table_visibility();
 
         // SKIP TO LAST PAGE
         let new_current_page = Math.ceil(series_data.length / display_length) - 1;
@@ -979,7 +980,7 @@ $(document).ready(function () {
 
     // SLOPPY: PLEASE REVISE
     // Triggers for hiding elements
-    function change_matrix_visibility() {
+    function change_table_visibility() {
         $('.visibility-checkbox').each(function() {
             var class_to_hide = $(this).attr('value') + ':not([hidden])';
             if ($(this).prop('checked')) {
@@ -991,8 +992,8 @@ $(document).ready(function () {
         });
     }
 
-    $('.visibility-checkbox').change(change_matrix_visibility);
-    change_matrix_visibility();
+    $('.visibility-checkbox').change(change_table_visibility);
+    change_table_visibility();
 
     // Show details
     function show_hide_full_details() {
@@ -1016,7 +1017,7 @@ $(document).ready(function () {
             $('.important-display').show();
         }
 
-        change_matrix_visibility();
+        change_table_visibility();
     }
 
     $('#show_details').change(show_hide_full_details);
@@ -1200,7 +1201,7 @@ $(document).ready(function () {
         }
 
         // MAKE SURE HIDDEN COLUMNS ARE ADHERED TO
-        change_matrix_visibility();
+        change_table_visibility();
 
         // Change the paginator text etc.
         revise_paginator_text();
