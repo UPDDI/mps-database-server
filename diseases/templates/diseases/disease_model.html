@@ -31,7 +31,8 @@
         </div>
     </div>
 
-    <!-- {% if object.models_image or object.models_blurb %}<legend>{{ object }} Disease Models</legend>
+    {% comment %}
+    {% if object.models_image or object.models_blurb %}<legend>{{ object }} Disease Models</legend>
     <div class="row">
         {% if object.models_image %}
         <div class="col-sm-10 col-md-6 text-wrapped">
@@ -46,7 +47,8 @@
         </div>
         {% endif %}
     </div>
-    <br><br>{% endif %}-->
+    <br><br>{% endif %}
+    {% endcomment %}
 
     {% if disease_models %}
     <div class="padded-bottom">
@@ -56,8 +58,12 @@
             </h2>
         </legend>
 
+        <div class="text-center padded-bottom">
+            <a href="{% url 'microdevices-organmodel-add' %}"  class="btn btn-lg btn-success" role="button">Add MPS Model</a>
+        </div>
+
         {# Deprecated #}
-{# {% include 'project_filters.html' %} #}
+        {# {% include 'project_filters.html' %} #}
 
         <table hidden id="models" class="display table table-striped" width="100%">
             <thead>
@@ -65,6 +71,7 @@
                     <th>View</th>
                     <th>Edit</th>
                     <th>Model Name</th>
+                    <th>Version Name</th>
                     <th>Organ</th>
                     <th>Device</th>
                     <th>Center</th>
@@ -77,20 +84,26 @@
             {% for disease_model in disease_models %}
                 <tr>
                     {# Why is the target blank here? #}
-                    <td><a target="_blank" class="btn btn-primary" href="/microdevices/model/{{ disease_model.id }}">View</a></td>
+                    <td><a target="_blank" class="btn btn-primary" href="/microdevices/model/{{ disease_model.organ_model_id }}">View</a></td>
                     <td>
                     {% if disease_model.is_editable %}
-                    <a target="_blank" class="btn btn-primary" href="/microdevices/model/{{ disease_model.id }}/update/">Edit</a>
+                    <a target="_blank" class="btn btn-primary" href="/microdevices/model/{{ disease_model.organ_model_id }}/update/">Edit</a>
                     {% else %}
                     <button disabled class="btn btn-default" title="You do not have permission to edit this entry." >Edit</button>
                     {% endif %}
                     </td>
-                    <td>{{ disease_model }}</td>
-                    <td>{{ disease_model.organ|default_if_none:"" }}</td>
-                    <td><a target="_blank" href="/microdevices/device/{{ disease_model.device.id }}">{{ disease_model.device|default_if_none:"" }}</a></td>
-                    <td>{{ disease_model.center|default_if_none:"" }}</td>
-                    <td>{{ disease_model.description }}</td>
-                    {% comment %} <td>
+                    <td>{{ disease_model.organ_model }}</td>
+                    <td>
+                        <a href="{% url 'microdevices-organmodelprotocol-detail' disease_model.id %}">
+                            {{ disease_model }}
+                        </a>
+                    </td>
+                    <td>{{ disease_model.organ_model.organ|default_if_none:"" }}</td>
+                    <td><a target="_blank" href="/microdevices/device/{{ disease_model.organ_model.device_id }}">{{ disease_model.organ_model.device|default_if_none:"" }}</a></td>
+                    <td>{{ disease_model.organ_model.center|default_if_none:"" }}</td>
+                    <td>{{ disease_model.description|default_if_none:disease_model.organ_model.description }}</td>
+                    {% comment %}
+                    <td>
                         {% if disease_model.mps %}
                             MPS
                         {% endif %}
@@ -103,7 +116,8 @@
                         {% if not disease_model.epa and not disease_model.mps and not disease_model.tctc %}
                             Unassigned
                         {% endif %}
-                    </td> {% endcomment %}
+                    </td>
+                    {% endcomment %}
                 </tr>
             {% endfor %}
             </tbody>
@@ -122,8 +136,15 @@
 
 
     {% else %}
-    <br><br>
-    <h3>There are currenty no {{ object }} models designated as such in the database.</h3>
-    <br><br>
+    <div class="alert alert-danger">
+        <h3>
+            <span class="glyphicon glyphicon-exclamation-sign"></span>
+            There are currently no MPS Models modelling {{ object }} in the database
+        </h3>
+    </div>
+    <div class="text-center padded-bottom">
+        <a href="{% url 'microdevices-organmodel-add' %}"  class="btn btn-lg btn-success" role="button">Add MPS Model</a>
+        <a href="{% url 'assays-assaystudy-add' %}"  class="btn btn-lg btn-success" role="button">Add Study</a>
+    </div>
     {% endif %}
 {% endblock %}
