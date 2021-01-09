@@ -59,6 +59,8 @@
                     {{ object.organ }}
                 </td>
             </tr>
+            {# WE NO LONGER TIE DISEASE TO A MODEL, AND INSTEAD THE VERSION #}
+            {% comment %}
             {% if object.disease %}
             <tr>
                 <td>
@@ -71,6 +73,7 @@
                     {% endif %}
                 </td>
             </tr>
+            {% encomment %}
             {% endif %}
             {% comment %} <tr>
                 <td>
@@ -193,6 +196,7 @@
             <tr>
                 <th>View</th>
                 <th>Name</th>
+                <th>Disease</th>
                 <th>Description</th>
                 <th>Protocol</th>
             </tr>
@@ -204,6 +208,11 @@
                     <a class="btn btn-primary" href="{% url 'microdevices-organmodelprotocol-detail' protocol.id %}">View</a>
                 </td>
                 <td>{{ protocol.name }}</td>
+                {% if protocol.disease %}
+                <td>{{ protocol.disease }} via {{ protocol.disease_trigger }}</td>
+                {% else %}
+                <td></td>
+                {% endif %}
                 <td>{{ protocol.description }}</td>
                 {% if protocol_access %}
                 <td>

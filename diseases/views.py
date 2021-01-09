@@ -2,7 +2,7 @@
 from mps.mixins import ListHandlerView, DetailHandlerView
 from .models import Disease
 from assays.models import AssayDataPoint, AssayStudy
-from microdevices.models import OrganModel
+from microdevices.models import OrganModel, OrganModelProtocol
 from drugtrials.models import FindingResult
 from assays.utils import get_user_accessible_studies
 from assays.views import (
@@ -34,13 +34,17 @@ class DiseaseList(ListHandlerView):
             )
 
             # TODO TODO TODO MUST REVISE
-            disease.models = OrganModel.objects.filter(disease=disease)
+            # Disease is no longer attached to a particular model, but instead the version
+            # disease.models = OrganModel.objects.filter(disease=disease)
+
+            disease_versions = OrganModelProtocol.objects.filter(disease=disease)
+
+            disease.models = OrganModel.objects.filter(id__in=disease_versions.values_list('organ_model_id', flat=True))
 
             disease.studies = AssayStudy.objects.filter(
                 id__in=user_accessible_studies_ids,
-                assaygroup__organ_model__in=disease.models
+                assaygroup__organ_model_protocol__in=disease_versions
             ).distinct().values_list('id', flat=True)
-
 
             if disease.studies:
                 disease.datapoints = AssayDataPoint.objects.filter(
@@ -82,28 +86,28 @@ class DiseaseModel(DetailHandlerView):
         context = {}
         context = super(DiseaseModel, self).get_context_data(**kwargs)
 
-        disease_models = OrganModel.objects.filter(disease=self.object).prefetch_related(
-            'organ',
-            'center',
-            'device',
-            'base_model',
-            'organmodelprotocol_set',
-            'center__groups'
+        # SWAP TO VERSION (disease is no longer bound to models, but instead the version)
+        disease_models = OrganModelProtocol.objects.filter(disease=self.object).prefetch_related(
+            'organ_model__organ',
+            'organ_model__center__groups',
+            'organ_model__device',
+            'organ_model__base_model',
         )
 
         user_group_names = {
             user_group.name.replace(ADMIN_SUFFIX, ''): True for user_group in self.request.user.groups.all()
         }
 
-        for organ_model in disease_models:
-            organ_model.is_editable = organ_model.user_is_in_center(user_group_names)
+        for version in disease_models:
+            version.is_editable = version.organ_model.user_is_in_center(user_group_names)
 
         context['disease_models'] = disease_models
 
         combined = get_user_accessible_studies(self.request.user).filter(
-            assaymatrixitem__organ_model_id__in=context['disease_models']
+            assaygroup__organ_model_protocol_id__in=context['disease_models']
         ).distinct()
 
+        # NEEDS TO BE REVISED ALONG WITH OTHER SIMILAR KLUDGES
         get_queryset_with_organ_model_map(combined)
         get_queryset_with_number_of_data_points(combined)
         get_queryset_with_stakeholder_sign_off(combined)

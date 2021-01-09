@@ -25,15 +25,14 @@ $(document).ready(function() {
                 "bSortable": false,
                 "aTargets": [0, 1]
             },
-            // {
-            //     'sortable': true,
-            //     'visible': false,
-            //     'targets': [7]
-            // },
             {
                 "width": "5%",
                 "targets": [0, 1]
-            }
+            },
+            {
+                'className': 'none',
+                'targets': [7]
+            },
         ]
     });
 });
