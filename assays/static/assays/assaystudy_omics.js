@@ -41,8 +41,9 @@ $(document).ready(function () {
             // console.log("DATA", data)
 
             if (!('error' in data)) {
-                // Show Select/Deselect All buttons
+                // Show Select/Deselect All and Help buttons
                 $('#omics_table_selects').show();
+                $('#omics-help').show();
 
                 // Render only the first chart initially
                 let firstChart = true;
