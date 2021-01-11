@@ -47,7 +47,23 @@
         </div>
     </div>
 
-    <div id="omics_table_selects" class="padded-bottom" hidden>
+    <div>
+        <button id="omics-help" class="btn btn-info" type="button" data-toggle="collapse" data-target="#omics-info" aria-expanded="false" aria-controls="omics-info">
+            Show/Hide Page Help
+        </button>
+        <div id="omics-info" class="collapse large-padding-top example_expand">
+            <div class="alert alert-info" role="alert">
+                <p>Tips and Notes:</p>
+                <ul>
+                    <li>Enter search terms in the box below to filter the selection table. Separate terms with a space to search multiple fields.</li>
+                    <li>Adjust display parameters, filters, and categorical thresholds using the sidebar. Apply changes with the "Apply Filters" button.</li>
+                    <li>To work with data externally, use the "Download Filtered Data" button above to download the currently displayed points and settings as a CSV.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="omics_table_selects" class="padded-bottom large-margin-top" hidden>
         <a data-target-id="omics_table" class="btn btn-primary filter-select-all">Select All</a>
         <a data-target-id="omics_table" class="btn btn-danger filter-deselect-all">Deselect All</a>
     </div>
@@ -59,6 +75,9 @@
                 </td>
                 <td>
                     <label>Treatment Group</label>
+                </td>
+                <td>
+                    <label># of Datapoints</label>
                 </td>
                 <td>
                     <label>Data Description</label>
