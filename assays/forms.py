@@ -835,7 +835,7 @@ class AssayStudyGroupForm(SetupFormsMixin, SignOffMixin, BootstrapForm):
         self.fields['series_data'].initial = self.instance.get_group_data_string(get_chips=True)
 
     def clean(self):
-        """Checks for at least one study type"""
+        """Initial processing for groups and checking"""
         # clean the form data, before validation
         data = super(AssayStudyGroupForm, self).clean()
 

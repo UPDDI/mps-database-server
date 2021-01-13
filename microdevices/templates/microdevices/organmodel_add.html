@@ -17,6 +17,11 @@
     {# <script src="{% static "js/inline_add.js" %}"></script>#}
     <script src="{% static "js/image_display.js" %}"></script>
     <script src="{% static "js/enter_override.js" %}"></script>
+
+    <script src="{% static "assays/cell_sample_selection.js" %}"></script>
+    <script src="{% static "js/split_time.js" %}"></script>
+    <script src="{% static "assays/group_display.js" %}"></script>
+
     <script src="{% static "microdevices/organmodel_add.js" %}"></script>
     <script src="{% static "assays/reference_selection.js" %}"></script>
 {% endblock %}
@@ -274,17 +279,24 @@
         {% endfor %}
     {% endif %}
 
-    <a id="add_button-{{ protocol_formset.prefix }}" class="btn btn-success" role="button">Add Version</a>
+    {# INLINES REALLY OUGHT TO HAVE AN INCLUDE: NOT DRY #}
+    {# <a id="add_button-{{ protocol_formset.prefix }}" class="btn btn-success" role="button">Add Version</a> #}
     <table class="table table-striped inlines" id="{{ protocol_formset.prefix }}-group" name="protocols">
+        {% comment %}
         <thead>
             <tr>
                 <th>Name*</th>
                 <th>File (PDF)*</th>
-                <th>Edit</th>
+                <th>Disease</th>
+                <th>Disease Trigger</th>
+                <th>Description</th>
+                <th>Edit<td>
                 <th>Delete</th>
             </tr>
         </thead>
+        {% encomment %}
         <tbody>
+            {% comment %}
             {% for protocol in protocol_formset %}
                 <tr class="inline" id="protocols-{{ forloop.counter0 }}">
                     {% if protocol.id.value %}
@@ -297,6 +309,9 @@
                     {% endif %}
                     <td>{{ protocol.name }}</td>
                     <td>{{ protocol.protocol_file }}</td>
+                    <td>{{ protocol.disease }}</td>
+                    <td>{{ protocol.disease_trigger }}</td>
+                    <td>{{ protocol.description }}</td>
                     {% if protocol.id.value %}
                     <td>
                         <a href="{% url 'microdevices-organmodelprotocol-update' protocol.id.value %}" class="btn btn-primary">Edit</a>
@@ -304,12 +319,157 @@
                     {% else %}
                     <td></td>
                     {% endif %}
+                    {# WE WILL FORBID DELETION OF PROTOCOLS THAT ARE IN USE (TODO REVISE AND APPLY ELSEWHERE) #}
+                    {# A little expensive, but worth it #}
+                    {% if not protocol.instance.assaygroup_set.count %}
                     <td>{{ protocol.DELETE }}</td>
+                    {% else %}
+                    <td class="text-danger">Protected</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            {% endcomment %}
+        <thead>
+            <tr>
+                <td><a id="add_button-{{ protocol_formset.prefix }}" class="btn btn-success" role="button">Add Version</a></td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for protocol in protocol_formset %}
+                <tr class="inline" id="protocols-{{ forloop.counter0 }}">
+                <td>
+                    <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+                    <tr>
+                        <th>Name*</th>
+                        <th>File (PDF)*</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        {% if protocol.id.value %}
+                        <td class="original" hidden>
+                            <input type="hidden"
+                                id="id_{{ protocol_formset.prefix }}-{{ forloop.counter0 }}-id"
+                                name="{{ protocol_formset.prefix }}-{{ forloop.counter0 }}-id"
+                                value="{{ protocol.id.value }}">
+                        </td>
+                        {% endif %}
+                        <td>{{ protocol.name }}</td>
+                        <td>{{ protocol.protocol_file }}</td>
+                        <td>{{ protocol.description }}</td>
+                    </tr>
+                    </table>
+
+                    <table class="table table-condensed table-bordered table-nonfluid no-margin-bottom">
+                        <tr>
+                            <th>Disease</th>
+                            <th>Disease Trigger</th>
+                            {% if protocol.id.value %}
+                            <th class="bg-info">Edit</th>
+                            {% endif %}
+                            <th class="bg-danger">Delete</th>
+                        </tr>
+                        <tr>
+                            <td>{{ protocol.disease }}</td>
+                            <td>{{ protocol.disease_trigger }}</td>
+                            {% if protocol.id.value %}
+                            <td class="bg-info">
+                                <a href="{% url 'microdevices-organmodelprotocol-update' protocol.id.value %}" class="btn btn-primary">Edit</a>
+                            </td>
+                            {% endif %}
+                            {# WE WILL FORBID DELETION OF PROTOCOLS THAT ARE IN USE (TODO REVISE AND APPLY ELSEWHERE) #}
+                            {# A little expensive, but worth it #}
+                            {% if not protocol.instance.assaygroup_set.count %}
+                            <td class="bg-danger">{{ protocol.DELETE }}</td>
+                            {% else %}
+                            <td class="bg-danger text-danger">Protected</td>
+                            <div hidden>{{ protocol.DELETE }}</div>
+                            {% endif %}
+                        </tr>
+                    </table>
+                </td>
                 </tr>
             {% endfor %}
         </tbody>
+        <tfoot>
+            <tr>
+                {# Contrived extra add button #}
+                <td><a onclick="$('#add_button-{{ protocol_formset.prefix }}').click();" class="btn btn-success" role="button">Add Version</a></td>
+            </tr>
+        </tfoot>
+
     </table>
 
+    <legend>Cells and Settings</legend>
+
+    {% include 'assays/group_visibility_section.html' with hide_compounds='true' %}
+
+    {# Set of buttons for adding cells, compounds, settings etc. #}
+    <div class="row padded-bottom">
+    <div class="col-sm-6">
+    </div>
+
+    <div class="col-sm-6">
+    <div style="float: right;">
+        <label>
+            Show
+            <select id="id_group_table_length" name="group_table_length" aria-controls="difference_table" class="input-sm no-selectize">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            entries
+        </label>
+    </div>
+    </div>
+    </div>
+
+    <div class="row padded-bottom">
+    <div class="col-sm-6">
+    <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="cell">Add Cell</a>
+    {# <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="compound">Add Compound</a> #}
+    {# Probably will be renamed #}
+    <a role="button" class="btn btn-success" data-add-new-button="true" data-prefix="setting">Add Setting</a>
+    </div>
+
+    <div class="row-sm-6">
+    {% include 'default_paginator.html' with paginator_id='group-table' %}
+    </div>
+
+    </div>
+
+    {# Avoid inline styles #}
+    <div class="overflow-auto" style="margin-bottom: 25px;">
+    {# Contrived inline style #}
+    <table style="min-width: 1000px; margin-bottom: 0px;" class="table table-striped table-bordered" id="study_setup_table">
+        <thead>
+            <th>MPS Model Version</th>
+            <th hidden class="cell_start"></th>
+            {# <th hidden class="compound_start"></th> #}
+            <th hidden class="setting_start"></th>
+        </thead>
+        <tbody></tbody>
+    </table>
+    </div>
+
+    <div class="row padded-bottom">
+    <div class="row-xs-12">
+    {% include 'default_paginator.html' with paginator_id='group-table' %}
+    </div>
+    </div>
+
     {% include 'add_reference.html' %}
+
+    <div hidden>
+        {# TODO: LIKELY TO BE REVISED #}
+        {# Cram errors here #}
+        <div id="setup_table_errors">
+            {{ form.errors.series_data }}
+        </div>
+        {{ form.series_data }}
+    </div>
+
+    {# For displaying cells etc. #}
+    {% include 'assays/component_displays.html' %}
     </form>
 {% endblock %}
