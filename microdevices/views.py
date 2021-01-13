@@ -115,7 +115,13 @@ class OrganModelMixin(FormHandlerMixin):
         context = super(OrganModelMixin, self).get_context_data(**kwargs)
 
         context.update({
-            'reference_queryset': AssayReference.objects.all()
+            'reference_queryset': AssayReference.objects.all(),
+            # Crude
+            'cellsamples' : CellSample.objects.all().prefetch_related(
+                'cell_type__organ',
+                'supplier',
+                'cell_subtype__cell_type'
+            ),
         })
 
         return context
@@ -128,7 +134,6 @@ class OrganModelMixin(FormHandlerMixin):
             form.instance.base_model_id = form.instance.id
             form.instance.save()
 
-        # Redirect back to edit if protcol_formset has changed
         if protocol_formset.has_changed():
             # CRUDE change tracking
             for protocol in protocol_formset:
@@ -142,8 +147,15 @@ class OrganModelMixin(FormHandlerMixin):
 
                     protocol.save()
 
-            # Odd...
-            # return redirect('{}update/'.format(self.object.get_absolute_url()))
+        # Kind of crazy, we make the form again
+        # This time with a kwarg indicating that we want to save protocol stuff
+        # Check if the series_data has changed (CRUDE)
+        # TODO REVIEW REVIEW REVIEW
+        if form.instance.get_group_data_string() != self.request.POST.get('series_data'):
+            form_class = self.get_form_class()
+            revised_form = form_class(self.request.POST, instance=form.instance, process_protocols=True)
+            if revised_form.is_valid():
+                revised_form.save()
 
 
 class OrganModelAdd(OneGroupRequiredMixin, OrganModelMixin, CreateView):

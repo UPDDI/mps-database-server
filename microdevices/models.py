@@ -6,6 +6,8 @@ from django.contrib.auth.models import Group
 from mps.base.models import LockableModel, TrackableModel, FlaggableModel, FrontEndModel
 from django.core.validators import MaxValueValidator
 
+import json
+
 # Avoid wildcards when possible
 from mps.utils import *
 
@@ -378,9 +380,73 @@ class OrganModel(FrontEndModel, LockableModel):
         else:
             return True
 
+    # TODO REVIEW
+    def get_group_data_string(self):
+        # Probably should change structure?
+        data = {
+            # Probably should change name?
+            'series_data': [],
+        }
 
-# class OrganModelImage(models.Model):
-#     pass
+        # If we so desired, we could order these
+        # One option is PK to get order of addition?
+        versions = OrganModelProtocol.objects.filter(
+            organ_model_id=self.id
+        ).prefetch_related(
+            # Prefetch the cells etc.
+            # Kind of rough, but on the bright side we don't need chaining
+            'organmodelprotocolcell_set',
+            'organmodelprotocolsetting_set',
+        ).order_by(
+            'id'
+        )
+
+        # No junk
+        # We actually do want to get the id for updates and the like
+        excluded_keys = [
+            '_state',
+            # Interestingly, we are going to exclude id for now
+            # Since we are killing all of the related data on save anyway...
+            # We just end up making a mess keeping this
+            # TODO TODO TODO BRING BACK WHEN WE REFACTOR PLEASE
+            'id',
+            '_prefetched_objects_cache',
+            # WE DON'T WANT THE GROUP ID
+            # THIS WILL RUIN THE DIFFERENCE CHECKER
+            'organ_model_protocol_id',
+        ]
+
+        for group_index, version in enumerate(versions):
+            current_group = {
+                # I know it seems odd to have NAME rather than ID...
+                # But we need to deal with submissions where the protocol doesn't exist yet
+                # This way we can hopefully other (somehow) jankier solutions
+                # We still want the ID, of course
+                # That way we can ignore name matching when possible
+                'id': version.id,
+                'name': version.name,
+                'cell': [],
+                'setting': [],
+            }
+
+            # Not very DRY
+            for cell in version.organmodelprotocolcell_set.all():
+                current_group.get('cell').append(
+                    {
+                        key: cell.__dict__.get(key) for key in cell.__dict__.keys() if key not in excluded_keys
+                    }
+                )
+
+            for setting in version.organmodelprotocolsetting_set.all():
+                current_group.get('setting').append(
+                    {
+                        key: setting.__dict__.get(key) for key in setting.__dict__.keys() if key not in excluded_keys
+                    }
+                )
+
+            data.get('series_data').append(current_group)
+
+        return json.dumps(data)
 
 
 # TODO DEPRECATED
@@ -571,11 +637,8 @@ class OrganModelProtocolCell(models.Model):
     # TODO TODO TODO DO WE WANT DURATION????
     # duration = models.FloatField(null=True, blank=True)
 
-    # TODO TODO TODO TEMPORARILY NOT REQUIRED
     addition_location = models.ForeignKey(
         'assays.AssaySampleLocation',
-        blank=True,
-        default=1,
         on_delete=models.CASCADE,
         verbose_name='Addition Location'
     )
@@ -612,11 +675,8 @@ class OrganModelProtocolSetting(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Setting'
     )
-    # DEFAULTS TO NONE, BUT IS REQUIRED
     unit = models.ForeignKey(
         'assays.PhysicalUnits',
-        blank=True,
-        default=14,
         on_delete=models.CASCADE,
         verbose_name='Unit'
     )
@@ -638,11 +698,8 @@ class OrganModelProtocolSetting(models.Model):
         verbose_name='Duration'
     )
 
-    # TODO TODO TODO TEMPORARILY NOT REQUIRED
     addition_location = models.ForeignKey(
         'assays.AssaySampleLocation',
-        blank=True,
-        default=1,
         on_delete=models.CASCADE,
         verbose_name='Addition Location'
     )
