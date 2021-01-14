@@ -21,7 +21,7 @@
     The data is highly nested (entries tend to link to another entry), so the current organization attempts to decrease data sparsity by returning complicated objects as separate entities that are linked to via an ID rather than having their contents listed explicitly and redundantly everywhere they are relevant.
     <br>
     <br>
-    Currently, there are only two ways to view the data:
+    Currently, the API has the following endpoints:
     <ol>
         <li>
             Viewing the Study List (<a href='/api/studies/'>/api/studies/</a>)
@@ -29,13 +29,29 @@
         <li>
             Viewing an individual Study (/api/studies/{id}/)
         </li>
+        <li>
+            Viewing a list of Targets (<a href='/api/targets/'>/api/targets/</a>)
+        </li>
+        <li>
+            Viewing a list of Methods (<a href='/api/methods/'>/api/methods/</a>)
+        </li>
+        <li>
+            Viewing a list of Units (<a href='/api/units/'>/api/units/</a>)
+        </li>
+        <li>
+            Viewing a list of MPS Model Locations (<a href='/api/locations/'>/api/locations/</a>)
+        </li>
     </ol>
     <br>
     Only publicly accessible Studies (those that are Signed Off and marked Unrestricted) are available in either interface.
     </p>
 
-    <legend>Study List (<a href='/api/studies/'>/api/studies/</a>)</legend>
+    <legend>
+        Study List (<a href='/api/studies/'>/api/studies/</a>)
+        <button class="btn btn-info" onclick="$('#' + $(this).attr('data-show-section')).toggle('slow'); $(this).html($(this).html() == 'Show' ? 'Hide' : 'Show');" data-show-section="study_list_section">Show</button>
+    </legend>
 
+    <div id="study_list_section" hidden>
     <p>
     For every public Study, the following are returned:
     <ol>
@@ -48,9 +64,14 @@
         <li>description</li>
     </ol>
     </p>
+    </div>
 
-    <legend>Study Details (/api/studies/{id}/)</legend>
+    <legend>
+        Study Details (/api/studies/{id}/)
+        <button class="btn btn-info" onclick="$('#' + $(this).attr('data-show-section')).toggle('slow'); $(this).html($(this).html() == 'Show' ? 'Hide' : 'Show');" data-show-section="study_details_section">Show</button>
+    </legend>
 
+    <div id="study_details_section" hidden>
     <p>
     For an individual Study, the following are returned:
     <ol>
@@ -146,10 +167,39 @@
         </li>
     </ol>
     </p>
+    </div>
 
-    <legend>Python Example</legend>
+    <legend>
+        Component Endpoints
+        <button class="btn btn-info" onclick="$('#' + $(this).attr('data-show-section')).toggle('slow'); $(this).html($(this).html() == 'Show' ? 'Hide' : 'Show');" data-show-section="component_endpoints">Show</button>
+    </legend>
 
-    <div class="well">
+    <div id="component_endpoints" hidden>
+    <p>
+    There are times where one may want a list of components. For the following endpoints, the entries for the respective components will have their id, name, and description listed:
+    <ol>
+        <li>
+            Viewing a list of Targets (<a href='/api/targets/'>/api/targets/</a>)
+        </li>
+        <li>
+            Viewing a list of Methods (<a href='/api/methods/'>/api/methods/</a>)
+        </li>
+        <li>
+            Viewing a list of Units (<a href='/api/units/'>/api/units/</a>)
+        </li>
+        <li>
+            Viewing a list of MPS Model Locations (<a href='/api/locations/'>/api/locations/</a>)
+        </li>
+    </ol>
+    </p>
+    </div>
+
+    <legend>
+        Python Example
+        <button class="btn btn-info" onclick="$('#' + $(this).attr('data-show-section')).toggle('slow'); $(this).html($(this).html() == 'Show' ? 'Hide' : 'Show');" data-show-section="python_example_section">Show</button>
+    </legend>
+
+    <div id="python_example_section" class="well" hidden>
         <code>
         # This library will help you make requests
         <br>
@@ -203,8 +253,12 @@
         </code>
     </div>
 
-    <legend>In-Browser Interface</legend>
+    <legend>
+        In-Browser Interface
+        <button class="btn btn-info" onclick="$('#' + $(this).attr('data-show-section')).toggle('slow'); $(this).html($(this).html() == 'Show' ? 'Hide' : 'Show');" data-show-section="in_browser_interface_section">Show</button>
+    </legend>
 
+    <div id="in_browser_interface_section" hidden>
     <p>
         The In-Browser Interface provided by Django-Rest-Framework can be accessed by visiting the URLs one would use in a script directly in the browser.
         <br>
@@ -217,4 +271,5 @@
         <br>
         <a href="/api/studies/">Click here for the API list of Studies</a>
     </p>
+    </div>
 {% endblock %}
