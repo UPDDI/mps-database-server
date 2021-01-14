@@ -1,6 +1,19 @@
 from rest_framework import routers, serializers, viewsets
 # Lazy
-from assays.models import *
+from assays.models import(
+    AssayStudy,
+    AssayDataPoint,
+    AssayMatrixItem,
+    AssayGroup,
+    AssayGroupCompound,
+    AssayGroupCell,
+    AssayGroupSetting,
+    AssayStudyAssay,
+    AssaySampleLocation,
+    AssayTarget,
+    AssayMethod,
+    PhysicalUnits
+)
 from django.contrib.auth.models import Group
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -365,3 +378,86 @@ class AssayStudyViewSet(DetailSerializerMixin, viewsets.ReadOnlyModelViewSet):
 # Be sure to import this into mps.urls
 api_router = routers.DefaultRouter()
 api_router.register(r'api/studies', AssayStudyViewSet)
+
+
+# COMPONENTS
+class AssayTargetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssayTarget
+        fields = [
+            'id',
+            'name',
+            'short_name',
+            'description',
+        ]
+
+
+class AssayTargetViewSet(DetailSerializerMixin, viewsets.ReadOnlyModelViewSet):
+    queryset = AssayTarget.objects.all()
+    serializer_class = AssayTargetSerializer
+
+    http_method_names = ['get']
+
+api_router.register(r'api/targets', AssayTargetViewSet)
+
+
+class AssayMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssayMethod
+        fields = [
+            'id',
+            'name',
+            'description',
+        ]
+
+
+class AssayMethodViewSet(DetailSerializerMixin, viewsets.ReadOnlyModelViewSet):
+    queryset = AssayMethod.objects.all()
+    serializer_class = AssayMethodSerializer
+
+    http_method_names = ['get']
+
+api_router.register(r'api/methods', AssayMethodViewSet)
+
+
+class AssaySampleLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssaySampleLocation
+        fields = [
+            'id',
+            'name',
+            'description',
+        ]
+
+
+class AssaySampleLocationViewSet(DetailSerializerMixin, viewsets.ReadOnlyModelViewSet):
+    queryset = AssaySampleLocation.objects.all()
+    serializer_class = AssaySampleLocationSerializer
+
+    http_method_names = ['get']
+
+api_router.register(r'api/locations', AssaySampleLocationViewSet)
+
+
+# NOTICE BREAK FROM CONVENTION
+class PhysicalUnitsSerializer(serializers.ModelSerializer):
+    name = serializers.StringRelatedField(source='unit')
+    unit_type = serializers.StringRelatedField()
+
+    class Meta:
+        model = PhysicalUnits
+        fields = [
+            'id',
+            'name',
+            'unit_type',
+            'description',
+        ]
+
+
+class PhysicalUnitsViewSet(DetailSerializerMixin, viewsets.ReadOnlyModelViewSet):
+    queryset = PhysicalUnits.objects.all()
+    serializer_class = PhysicalUnitsSerializer
+
+    http_method_names = ['get']
+
+api_router.register(r'api/units', PhysicalUnitsViewSet)
