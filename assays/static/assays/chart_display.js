@@ -498,6 +498,7 @@ $(document).ready(function () {
             study_set_id: window.CHARTS.study_set_id,
             criteria: JSON.stringify(window.GROUPING.group_criteria),
             post_filter: JSON.stringify(individual_post_filter),
+            full_post_filter: JSON.stringify(window.GROUPING.full_post_filter),
             csrfmiddlewaretoken: window.COOKIES.csrfmiddlewaretoken
         };
 
