@@ -1093,7 +1093,7 @@ class AssayStudyIndex(StudyViewerMixin, PlateAndChipTabMixin, DetailHandlerView)
         return context
 
 
-class AssayStudySummary(StudyViewerMixin, PlateAndChipTabMixin, TemplateHandlerView):
+class AssayStudySummary(StudyViewerMixin, PlateAndChipTabMixin, DetailHandlerView):
     """Displays information for a given study
 
     Currently only shows data for chip readouts and chip/plate setups
@@ -1103,28 +1103,42 @@ class AssayStudySummary(StudyViewerMixin, PlateAndChipTabMixin, TemplateHandlerV
 
     title = 'Study Summary'
 
-    # TODO TODO TODO
-    def get_context_data(self, **kwargs):
-        context = super(AssayStudySummary, self).get_context_data(**kwargs)
-
+    def get_object(self):
         # Get the study
         study = get_object_or_404(AssayStudy, pk=self.kwargs['pk'])
 
-        # This gets a little odd, I make what would be the get_object call here so I can prefetch some things
-        current_study = AssayStudy.objects.filter(id=study.id).prefetch_related(
+        # This gets a little odd, so I can prefetch some things
+        study = AssayStudy.objects.filter(id=study.id).prefetch_related(
             'assaystudyassay_set__target',
             'assaystudyassay_set__method',
             'assaystudyassay_set__unit',
             'group__center_groups'
         )[0]
 
+        return study
+
+    # TODO TODO TODO
+    def get_context_data(self, **kwargs):
+        context = super(AssayStudySummary, self).get_context_data(**kwargs)
+
+        # # Get the study
+        # study = get_object_or_404(AssayStudy, pk=self.kwargs['pk'])
+
+        # # This gets a little odd, I make what would be the get_object call here so I can prefetch some things
+        # current_study = AssayStudy.objects.filter(id=self.object.id).prefetch_related(
+        #     'assaystudyassay_set__target',
+        #     'assaystudyassay_set__method',
+        #     'assaystudyassay_set__unit',
+        #     'group__center_groups'
+        # )[0]
+
         context.update({
-            'object': current_study,
-            'data_file_uploads': get_data_file_uploads(study=current_study),
+            # 'object': current_study,
+            'data_file_uploads': get_data_file_uploads(study=self.object),
             'detail': True
         })
 
-        self.object = current_study
+        # self.object = current_study
 
         # TODO TODO TODO TODO TODO PERMISSIONS
         get_user_status_context(self, context)
