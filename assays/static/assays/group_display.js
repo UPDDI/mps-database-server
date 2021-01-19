@@ -13,33 +13,33 @@ window.GROUPS = {
         value: true,
         density: true,
         concentration: true,
-    },
+    }
 };
 
 $(document).ready(function () {
     // The different components of a setup
-    var prefixes = [
+    let prefixes = [
         'cell',
         'compound',
         'setting',
     ];
 
     // For other things to compare
-    var non_prefix_comparisons = [
+    let non_prefix_comparisons = [
         'organ_model_id',
         'organ_model_protocol_id',
         'test_type',
     ];
 
     // Array of values to convert to have commas etc.
-    // var convert_to_numeric_view = {
+    // let convert_to_numeric_view = {
     //     value: true,
     //     density: true,
     //     concentration: true,
     // };
 
     // TEMPORARY
-    var series_data_selector = $('#id_series_data');
+    let series_data_selector = $('#id_series_data');
 
     // We need a variable to store the data that would go into a difference table
     // Tricky thing is, is this variable or isn't it?
@@ -55,38 +55,42 @@ $(document).ready(function () {
     // For the moment, the difference table content is stored as an array
     // Each index is a group
     // Each group's data is likewise an array, each index being a column
-    // var difference_table_content = [];
+    // let difference_table_content = [];
 
     // This may be a good file to make these shared?
     // Prefixes
     // If I am going to use these, they should be ALL CAPS to indicate global status
-    var item_prefix = 'matrix_item';
-    var cell_prefix = 'cell';
-    var setting_prefix = 'setting';
-    var compound_prefix = 'compound';
+    let item_prefix = 'matrix_item';
+    let cell_prefix = 'cell';
+    let setting_prefix = 'setting';
+    let compound_prefix = 'compound';
 
     // DISPLAYS
     // JS ACCEPTS STRING LITERALS IN OBJECT INITIALIZATION
-    var empty_difference_html = {};
-    var empty_item_difference_html = $('#empty_matrix_item_difference_html').children();
-    var empty_compound_difference_html = $('#empty_compound_difference_html');
-    var empty_cell_difference_html = $('#empty_cell_difference_html');
-    var empty_setting_difference_html = $('#empty_setting_difference_html');
+    let empty_difference_html = {};
+    let empty_item_difference_html = $('#empty_matrix_item_difference_html').children();
+    let empty_compound_difference_html = $('#empty_compound_difference_html');
+    let empty_cell_difference_html = $('#empty_cell_difference_html');
+    let empty_setting_difference_html = $('#empty_setting_difference_html');
     empty_difference_html[item_prefix] = empty_item_difference_html;
     empty_difference_html[compound_prefix] = empty_compound_difference_html;
     empty_difference_html[cell_prefix] = empty_cell_difference_html;
     empty_difference_html[setting_prefix] = empty_setting_difference_html;
 
     // Clumsy selectors (need these to get names from ids)
-    var test_type = $('#id_test_type');
-    var organ_model_full = $('#id_organ_model_full');
-    var organ_model_protocol_full = $('#id_organ_model_protocol_full');
+    let test_type = $('#id_test_type');
+    let organ_model_full = $('#id_organ_model_full');
+    let organ_model_protocol_full = $('#id_organ_model_protocol_full');
+
+    // TRICKY
+    // We discern what KIND of table this is from the header (which in turn is modified via include)
+    let table_type = $('#difference_table').find('thead').attr('data-table-type');
 
     // WERE WE INTERESTED IN DISPLAYING THE DATA AS SEPARATE COLUMNS
     // We would also need to keep track of the number of columns of each prefix
     // Of course, this can diverge from the columns of the group table
     // We would determine this from the max diverges for each prefix
-    // var number_of_columns = {
+    // let number_of_columns = {
     //     'cell': 0,
     //     'compound': 0,
     //     'setting': 0,
@@ -96,9 +100,9 @@ $(document).ready(function () {
     // TODO: REVISE
     // As an array
     // function stringify_group_contents(contents) {
-    //     var stringification = [];
+    //     let stringification = [];
 
-    //     for (var i=0;  i < contents.length; i++) {
+    //     for (let i=0;  i < contents.length; i++) {
     //         stringification[i] = JSON.stringify(contents[i]);
     //     }
 
@@ -120,12 +124,12 @@ $(document).ready(function () {
         }
         else {
             // Ideally, this would be cached in an object or something
-            var origin = $('#id_' + prefix + '_' + field_name);
+            let origin = $('#id_' + prefix + '_' + field_name);
 
             // Get the select display if select
             if (origin.prop('tagName') === 'SELECT') {
                 // Convert to integer if possible, thanks
-                var possible_int = Math.floor(field_value);
+                let possible_int = Math.floor(field_value);
                 if (possible_int) {
                     return origin[0].selectize.options[possible_int].text;
                 }
@@ -142,7 +146,7 @@ $(document).ready(function () {
                 // return origin.find('option[value="' + field_value + '"]').text()
             }
             else if (window.GROUPS.convert_to_numeric_view[field_name]) {
-                var parsed_as_float = parseFloat(field_value);
+                let parsed_as_float = parseFloat(field_value);
                 if (parsed_as_float && parsed_as_float < 1e-3) {
                     return parsed_as_float.toExponential();
                 }
@@ -165,28 +169,28 @@ $(document).ready(function () {
     }
 
     // Alias
-    var get_display_for_field = window.GROUPS.get_display_for_field;
+    let get_display_for_field = window.GROUPS.get_display_for_field;
 
     // I could include iteration here rather than in the other loop
     // TODO NEEDS MAJOR REVISION
     function get_difference_display(prefix, content) {
-        var html_contents = [];
+        let html_contents = [];
 
         // Clone the empty_html for a starting point
-        var new_display = empty_difference_html[prefix].clone();
+        let new_display = empty_difference_html[prefix].clone();
 
         if (content && Object.keys(content).length) {
             $.each(content, function(key, value) {
                 // html_contents.push(key + ': ' + value);
                 // I will need to think about invalid fields
-                var field_name = key.replace('_id', '');
+                let field_name = key.replace('_id', '');
                 if ((field_name !== 'addition_time' && field_name !== 'duration')) {
-                    var field_display = get_display_for_field(field_name, value, prefix);
+                    let field_display = get_display_for_field(field_name, value, prefix);
                     new_display.find('.' + prefix + '-' + field_name).html(field_display);
                 }
                 // NOTE THIS ONLY HAPPENS WHEN IT IS NEEDED IN ADD PAGE
                 else {
-                    var split_time = window.SPLIT_TIME.get_split_time(
+                    let split_time = window.SPLIT_TIME.get_split_time(
                         value
                     );
 
@@ -213,11 +217,11 @@ $(document).ready(function () {
     // The consequence is that if a parameter like addition time diverges, one wouldn't know until they looked at the popup or the group table
     function get_shorthand_display(prefix, content) {
             // Just start with an empty div
-            // var html_contents = $('<div>');
-            var text_to_use = '';
+            // let html_contents = $('<div>');
+            let text_to_use = '';
 
             // Clone the empty_html for a starting point
-            // var new_display = empty_difference_html[prefix].clone();
+            // let new_display = empty_difference_html[prefix].clone();
 
             if (content && Object.keys(content).length) {
                 // Different handling per prefix
@@ -259,7 +263,7 @@ $(document).ready(function () {
     }
 
     function stringify_group_contents(contents) {
-        var stringification = {};
+        let stringification = {};
 
         // console.log(contents);
 
@@ -267,7 +271,7 @@ $(document).ready(function () {
             return stringification;
         }
 
-        for (var i=0;  i < contents.length; i++) {
+        for (let i=0;  i < contents.length; i++) {
             // TODO  NOTE: This assumes nothing goofy about how the object gets populated!
             stringification[JSON.stringify(contents[i])] = i;
         }
@@ -277,18 +281,18 @@ $(document).ready(function () {
 
     function get_text_display_for_field(field_name, value, prefix) {
         // I will need to think about invalid fields
-        var field_name = field_name.replace('_id', '');
-        if ((field_name !== 'addition_time' && field_name !== 'duration')) {
-            return get_display_for_field(field_name, value, prefix);
+        let stripped_field_name = field_name.replace('_id', '');
+        if ((stripped_field_name !== 'addition_time' && stripped_field_name !== 'duration')) {
+            return get_display_for_field(stripped_field_name, value, prefix);
         }
         // NOTE THIS ONLY HAPPENS WHEN IT IS NEEDED IN ADD PAGE
         else {
-            var split_time = window.SPLIT_TIME.get_split_time(
+            let split_time = window.SPLIT_TIME.get_split_time(
                 value
             );
 
             // $.each(split_time, function(time_name, time_value) {
-            //     new_display.find('.' + prefix + '-' + field_name + '_' + time_name).html(time_value);
+            //     new_display.find('.' + prefix + '-' + stripped_field_name + '_' + time_name).html(time_value);
             // });
 
             // CRUDE
@@ -301,15 +305,15 @@ $(document).ready(function () {
         // For every prefix
         $.each(prefixes, function(prefix_index, prefix) {
             // The popup table in question
-            var current_popup_table = $('#' + prefix + '_full_contents_popup_table');
+            let current_popup_table = $('#' + prefix + '_full_contents_popup_table');
             // The head
-            var current_head = current_popup_table.find('thead');
+            let current_head = current_popup_table.find('thead');
             // The body
-            var current_body = current_popup_table.find('tbody');
+            let current_body = current_popup_table.find('tbody');
 
             // Run through the header to get the fields we need to compare and their order
             // The field points to a boolean that is false if it finds any divergences in the field
-            var current_fields = [];
+            let current_fields = [];
 
             // Get all of the fields from the table header (a little tricky, but makes sure we keep order)
             current_head.find('th').each(function() {
@@ -322,17 +326,17 @@ $(document).ready(function () {
             current_body.empty();
 
             $.each(relevant_group_data, function(index, group) {
-                var new_row = $('<tr>').append(
+                let new_row = $('<tr>').append(
                     $('<td>').text(group['name'])
                 );
 
                 $.each(current_fields, function(field_index, current_field) {
-                    var new_td = $('<td>');
+                    let new_td = $('<td>');
 
-                    if (group[prefix][0]) {
+                    if (group[prefix] && group[prefix][0]) {
                         // Crude: determine if all the same
-                        var all_the_same = true;
-                        var value_to_compare = group[prefix][0][current_field];
+                        let all_the_same = true;
+                        let value_to_compare = group[prefix][0][current_field];
 
                         // NOTE: We can't compare the first value if the first value is empty (eg. someone deleted "Cell 1")
                         // As a result, we need to find the first populated and SKIP all totally empty columns
@@ -422,7 +426,7 @@ $(document).ready(function () {
 
             $.each(prefixes, function(index, prefix) {
                 // Make all of the popups
-                var current_dialog = $('#' + prefix + '_full_contents_popup');
+                let current_dialog = $('#' + prefix + '_full_contents_popup');
                 current_dialog.dialog({
                     width: $(document).width(),
                     height: 500,
@@ -463,8 +467,8 @@ $(document).ready(function () {
 
         // FULL DATA
         // TEMPORARY
-        var full_series_data = JSON.parse(series_data_selector.val());
-        var relevant_group_data = full_series_data.series_data;
+        let full_series_data = JSON.parse(series_data_selector.val());
+        let relevant_group_data = full_series_data.series_data;
 
         // For plate and chip difference tables we need to trim to the particular interface
         if (restrict_to) {
@@ -485,14 +489,14 @@ $(document).ready(function () {
         // Make the popup tables
         populate_popup_tables(relevant_group_data);
 
-        var diverging_contents = [];
+        let diverging_contents = [];
 
         // Stringify the groups
         // Doing so during comparison is a waste of time
-        var stringified_groups = [];
+        let stringified_groups = [];
 
         $.each(relevant_group_data, function(index, group) {
-            var current_stringification = {};
+            let current_stringification = {};
             $.each(prefixes, function(prefix_index, prefix) {
                 // console.log(prefix, group[prefix]);
                 current_stringification[prefix] = stringify_group_contents(group[prefix]);
@@ -507,7 +511,7 @@ $(document).ready(function () {
         // Iterate over every group
         $.each(stringified_groups, function(group_1_index, group_1) {
             diverging_contents.push({});
-            var current_divergence = diverging_contents[group_1_index];
+            let current_divergence = diverging_contents[group_1_index];
 
             // Special exceptions for model, version, and type
             // Perhaps more later
@@ -544,11 +548,11 @@ $(document).ready(function () {
         // Generate the difference table
         $.each(diverging_contents, function(index, current_content) {
             show_view = false;
-            var stored_tds = {};
+            let stored_tds = {};
 
-            var name_td = $('<td>').html(relevant_group_data[index]['name']);
+            let name_td = $('<td>').html(relevant_group_data[index]['name']);
 
-            var mps_model_td = $('<td>');
+            let mps_model_td = $('<td>');
 
             if (diverging_prefixes['organ_model_id']) {
                 mps_model_td.append(
@@ -561,7 +565,7 @@ $(document).ready(function () {
                 $('<div>').text('Version: ' + organ_model_protocol_full.find('option[value="' + relevant_group_data[index]['organ_model_protocol_id'] + '"]').text()).appendTo(mps_model_td);
             }
 
-            var test_type_td = $('<td>');
+            let test_type_td = $('<td>');
 
             if (diverging_prefixes['test_type']) {
                 test_type_td.html(
@@ -569,7 +573,7 @@ $(document).ready(function () {
                 )
             }
 
-            var current_row = $('<tr>')
+            let current_row = $('<tr>')
             .attr('data-group-name', relevant_group_data[index]['name'])
             .append(
                 // Name
@@ -584,9 +588,16 @@ $(document).ready(function () {
             // SLOPPY: BAD
             let view_button = '';
 
+            // BAD HARDCODED
             if (parseInt(relevant_group_data[index]['id'])) {
-                view_button = '<a class="btn btn-primary" href="/assays/assaygroup/' + parseInt(relevant_group_data[index]['id']) + '">View</a>';
-                show_view = true;
+                if (table_type === 'groups') {
+                    view_button = '<a class="btn btn-primary" href="/assays/assaygroup/' + parseInt(relevant_group_data[index]['id']) + '">View</a>';
+                    show_view = true;
+                }
+                else if (table_type === 'protocols') {
+                    view_button = '<a class="btn btn-primary" href="/microdevices/protocol/' + parseInt(relevant_group_data[index]['id']) + '">View</a>';
+                    show_view = true;
+                }
             }
 
             let current_row_array = [
@@ -606,8 +617,8 @@ $(document).ready(function () {
             };
 
             $.each(prefixes, function(prefix_index, prefix) {
-                var content_indices = current_content[prefix];
-                var current_column = $('<td>');
+                let content_indices = current_content[prefix];
+                let current_column = $('<td>');
 
                 let current_string = [];
 
