@@ -1,9 +1,12 @@
 $(document).ready(function () {
-    var group_selector = $('#id_group');
-    var center_name_selector = $('#center_name');
-    var image_selector = $('#id_image');
-    var image_display_selector = $('#image_display');
-    var current_image_display_selector = $('#current_display');
+    const group_selector = $('#id_group');
+    const center_name_selector = $('#center_name');
+    const image_selector = $('#id_image');
+    const image_display_selector = $('#image_display');
+    const current_image_display_selector = $('#current_display');
+
+    const disease_model_selector = $('#id_disease');
+    const diseases_section_selector = $('#diseases_section');
 
     function get_center_id() {
         if (group_selector.val()) {
@@ -116,6 +119,16 @@ $(document).ready(function () {
             pbpk_bolus.prop('checked', true);
             flow_rate.hide('slow');
             total_device_volume.show('slow');
+        }
+    }).trigger('change');
+
+    // Handling for diseases
+    disease_model_selector.change(function() {
+        if ($(this).prop('checked')) {
+            diseases_section_selector.show('slow');
+        }
+        else {
+            diseases_section_selector.hide('slow');
         }
     }).trigger('change');
 });

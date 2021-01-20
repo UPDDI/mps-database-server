@@ -718,6 +718,7 @@ class AssayStudyDetailForm(SignOffMixin, BootstrapForm):
             'disease',
             'cell_characterization',
             'omics',
+            'diseases',
             'start_date',
             'use_in_calculations',
             'protocol',
