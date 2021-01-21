@@ -110,6 +110,11 @@
         </div>
     </div>
 
+    {# Conditionally displayed #}
+    <div id="diseases_section" hidden>
+    {% include 'generic_field.html' with field=form.diseases %}
+    </div>
+
     {# Proposed: Excluded for convenience #}
 {#    {% include 'generic_field.html' with field=form.study_types label="Study Types*" %}#}
 

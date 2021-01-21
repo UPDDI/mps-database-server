@@ -1902,6 +1902,13 @@ class AssayStudy(FlaggableModel):
         blank=True,
     )
 
+    # CONDITIONAL ON DISEASE MODEL SELECTION
+    diseases = models.ManyToManyField(
+        'diseases.Disease',
+        blank=True,
+        help_text='Indicates what disease or diseases were tested'
+    )
+
     # TODO INEFFICIENT BUT SHOULD WORK
     def stakeholder_approval_needed(self):
         return AssayStudyStakeholder.objects.filter(

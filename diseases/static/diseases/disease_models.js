@@ -31,7 +31,7 @@ $(document).ready(function() {
             },
             {
                 'className': 'none',
-                'targets': [7]
+                'targets': [6]
             },
         ]
     });

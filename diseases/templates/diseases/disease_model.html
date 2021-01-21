@@ -92,16 +92,11 @@
                     <button disabled class="btn btn-default" title="You do not have permission to edit this entry." >Edit</button>
                     {% endif %}
                     </td>
-                    <td>{{ disease_model.organ_model }}</td>
-                    <td>
-                        <a href="{% url 'microdevices-organmodelprotocol-detail' disease_model.id %}">
-                            {{ disease_model }}
-                        </a>
-                    </td>
-                    <td>{{ disease_model.organ_model.organ|default_if_none:"" }}</td>
-                    <td><a target="_blank" href="/microdevices/device/{{ disease_model.organ_model.device_id }}">{{ disease_model.organ_model.device|default_if_none:"" }}</a></td>
-                    <td>{{ disease_model.organ_model.center|default_if_none:"" }}</td>
-                    <td>{{ disease_model.description|default_if_none:disease_model.organ_model.description }}</td>
+                    <td>{{ disease_model }}</td>
+                    <td>{{ disease_model.organ|default_if_none:"" }}</td>
+                    <td><a target="_blank" href="/microdevices/device/{{ disease_model.device.id }}">{{ disease_model.device|default_if_none:"" }}</a></td>
+                    <td>{{ disease_model.center|default_if_none:"" }}</td>
+                    <td>{{ disease_model.description }}</td>
                     {% comment %}
                     <td>
                         {% if disease_model.mps %}
@@ -130,6 +125,10 @@
                 Studies Using {{ object }} Disease Models
             </h2>
         </legend>
+
+        <div class="text-center padded-bottom">
+            <a href="{% url 'assays-assaystudy-add' %}"  class="btn btn-lg btn-success" role="button">Add Study</a>
+        </div>
 
         {% include 'assays/study_list.html' with studies=studies %}
     </div>
