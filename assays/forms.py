@@ -746,6 +746,10 @@ class AssayStudyDetailForm(SignOffMixin, BootstrapForm):
         if data.get('pbpk_bolus', '') and (not data.get('number_of_relevant_cells', '') or not data.get('total_device_volume', '')):
             raise forms.ValidationError('Bolus PBPK Requires Number of Cells Per MPS Model and Total Device Volume')
 
+        # Need diseases if 'disease"
+        if data.get('disease', '') and not data.get('diseases'):
+            raise forms.ValidationError('Disease Model Studies require one or more Diseases to be listed')
+
         return data
 
 
