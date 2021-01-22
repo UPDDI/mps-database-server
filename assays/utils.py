@@ -498,13 +498,13 @@ def get_user_accessible_studies(user):
                    **missing_stakeholder_filter)
 
     # May be overzealous to prefetch here
-    combined = combined.distinct().prefetch_related(
-        'created_by',
-        'modified_by',
-        'signed_off_by'
-    )
+    # combined = combined.distinct().prefetch_related(
+    #     'created_by',
+    #     'modified_by',
+    #     'signed_off_by'
+    # )
 
-    return combined
+    return combined.distinct()
 
 
 def label_to_number(label):

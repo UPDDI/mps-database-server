@@ -274,6 +274,193 @@ def get_data_file_uploads(study=None, matrix_item=None):
     return data_file_uploads
 
 
+# We would be better off with RawSQL at this point, but in the interest of time
+# Here is a stop gap to improve performance issues
+def study_iterative_annotation(queryset):
+    study_ids = list(queryset.values_list('id', flat=True))
+
+    group_center_map = {}
+
+    centers = MicrophysiologyCenter.objects.all().prefetch_related(
+        'groups'
+    )
+
+    for center in centers:
+        for group in center.groups.all():
+            group_center_map[group.id] = center
+
+    groups = AssayGroup.objects.filter(
+        study_id__in=study_ids,
+    ).prefetch_related(
+        'organ_model',
+    ).only(
+        'id',
+        'study_id',
+        'organ_model'
+    )
+
+    organ_model_map = {}
+    model_type_map = {}
+
+    for group in groups:
+        organ_model_map.setdefault(
+            group.study_id, {}
+        ).update(
+            {
+                group.organ_model.name: True
+            }
+        )
+        # Crude
+        model_type_map.setdefault(
+            group.study_id, {}
+        ).update(
+            {
+                group.organ_model.get_model_type_display(): True
+            }
+        )
+
+    data_points = AssayDataPoint.objects.filter(
+        replaced=False,
+        study_id__in=study_ids
+    ).values_list('study_id', flat=True)
+
+    data_points_map = {}
+
+    for study_id in data_points:
+        current_value = data_points_map.setdefault(
+            study_id, 0
+        )
+        data_points_map.update({
+            study_id: current_value + 1
+        })
+
+    plate_maps = AssayPlateReaderMap.objects.filter(
+        study_id__in=study_ids
+    ).only('id', 'study_id')
+
+    plate_reader_files = AssayPlateReaderMapDataFile.objects.filter(
+        study_id__in=study_ids
+    ).only('id', 'study_id')
+
+    plate_maps_map = {}
+    plate_reader_files_map = {}
+
+    for plate_map in plate_maps:
+        current_value = plate_maps_map.setdefault(
+            plate_map.study_id, 0
+        )
+        plate_maps_map.update({
+            plate_map.study_id: current_value + 1
+        })
+
+    for plate_reader_file in plate_reader_files:
+        current_value = plate_reader_files_map.setdefault(
+            plate_reader_file.study_id, 0
+        )
+        plate_reader_files_map.update({
+            plate_reader_file.study_id: current_value + 1
+        })
+
+    omic_data_points = AssayOmicDataPoint.objects.filter(
+        study_id__in=study_ids
+    ).values_list('study_id', flat=True)
+
+    omic_data_points_map = {}
+
+    for study_id in omic_data_points:
+        current_value = omic_data_points_map.setdefault(
+            study_id, 0
+        )
+        omic_data_points_map.update({
+            study_id: current_value + 1
+        })
+
+    images = AssayImage.objects.filter(
+        setting__study_id__in=study_ids
+    ).prefetch_related(
+        'setting'
+    ).only('id', 'setting__study_id', 'setting', 'file_name')
+
+    video_formats = {x: True for x in [
+        'webm',
+        'avi',
+        'ogv',
+        'mov',
+        'wmv',
+        'mp4',
+        '3gp',
+    ]}
+
+    images_map = {}
+    videos_map = {}
+
+    for image in images:
+        is_video = image.file_name.split('.')[-1].lower() in video_formats
+
+        if is_video:
+            current_value = videos_map.setdefault(
+                image.setting.study_id, 0
+            )
+            videos_map.update({
+                image.setting.study_id: current_value + 1
+            })
+        else:
+            current_value = images_map.setdefault(
+                image.setting.study_id, 0
+            )
+            images_map.update({
+                image.setting.study_id: current_value + 1
+            })
+
+    supporting_data = AssayStudySupportingData.objects.filter(
+        study_id__in=study_ids
+    ).only('id', 'study_id')
+
+    supporting_data_map = {}
+
+    for supporting in supporting_data:
+        current_value = supporting_data_map.setdefault(
+            supporting.study_id, 0
+        )
+        supporting_data_map.update({
+            supporting.study_id: current_value + 1
+        })
+
+    revised_queryset = AssayStudy.objects.filter(id__in=study_ids).prefetch_related(
+        'created_by',
+        'group',
+        'signed_off_by',
+    )
+
+    for study in revised_queryset:
+        study.center = group_center_map.get(study.group_id, '')
+        study.organ_models = ',\n'.join(
+            sorted(organ_model_map.get(study.id, {}).keys())
+        )
+        # Crude
+        study.model_types = ',\n'.join(
+            sorted(model_type_map.get(study.id, {}).keys())
+        )
+        study.data_points = data_points_map.get(study.id, 0)
+        study.images = images_map.get(study.id, 0)
+        study.videos = videos_map.get(study.id, 0)
+        study.supporting_data = supporting_data_map.get(study.id, 0)
+        study.plate_maps = plate_maps_map.get(study.id, 0)
+        study.plate_reader_files = plate_reader_files_map.get(study.id, 0)
+        study.omic_data_points = omic_data_points_map.get(study.id, 0)
+
+    # return revised_queryset.annotate(
+    #     # Does not respect... replaced...
+    #     data_points=Count('assaydatapoint'),
+    #     supporting_data=Count('assaystudysupportingdata'),
+    #     plate_maps=Count('assayplatereadermap'),
+    #     plate_reader_maps=Count('assayplatereadermapdatafile'),
+    #     # omic_data_points=Count('assayomicdatapoint'),
+    # )
+
+    return revised_queryset
+
+
 def get_queryset_with_stakeholder_sign_off(queryset):
     """Add the stakeholder status to each object in an AssayStudy Queryset
 
@@ -542,22 +729,24 @@ class AssayStudyEditableList(OneGroupRequiredMixin, ListHandlerView):
     title = 'Editable Studies List'
 
     def get_queryset(self):
-        queryset = get_user_accessible_studies(self.request.user)
-
-        # Excessive, but not horrible
         # Display to users with either editor or viewer group or if unrestricted
         group_names = [group.name.replace(ADMIN_SUFFIX, '') for group in self.request.user.groups.all()]
 
-        # Exclude signed off studies
-        queryset = queryset.filter(group__name__in=group_names, signed_off_by_id=None)
+         # Exclude signed off studies
+        queryset = AssayStudy.objects.prefetch_related(
+            'created_by',
+            'group',
+            'signed_off_by',
+            # 'study_types'
+        ).filter(group__name__in=group_names, signed_off_by_id=None)
 
-        get_queryset_with_organ_model_map(queryset)
-        get_queryset_with_number_of_data_points(queryset)
-        get_queryset_with_group_center_dictionary(queryset)
+        # get_queryset_with_organ_model_map(queryset)
+        # get_queryset_with_number_of_data_points(queryset)
+        # get_queryset_with_group_center_dictionary(queryset)
         # DOESN'T MATTER, ANYTHING THAT IS SIGNED OFF CAN'T BE EDITED
         # get_queryset_with_stakeholder_sign_off(queryset)
 
-        return queryset
+        return study_iterative_annotation(queryset)
 
     def get_context_data(self, **kwargs):
         context = super(AssayStudyEditableList, self).get_context_data(**kwargs)
@@ -578,14 +767,14 @@ class AssayStudyList(ListHandlerView):
     template_name = 'assays/assaystudy_list.html'
 
     def get_queryset(self):
-        combined = get_user_accessible_studies(self.request.user)
+        # combined = get_user_accessible_studies(self.request.user)
 
-        get_queryset_with_organ_model_map(combined)
-        get_queryset_with_number_of_data_points(combined)
-        get_queryset_with_stakeholder_sign_off(combined)
-        get_queryset_with_group_center_dictionary(combined)
+        # get_queryset_with_organ_model_map(combined)
+        # get_queryset_with_number_of_data_points(combined)
+        # get_queryset_with_stakeholder_sign_off(combined)
+        # get_queryset_with_group_center_dictionary(combined)
 
-        return combined
+        return study_iterative_annotation(get_user_accessible_studies(self.request.user))
 
 
 class PlateAndChipTabMixin(object):
@@ -2299,10 +2488,12 @@ class AssayStudySetMixin(FormHandlerMixin):
             assaystudyassay__isnull=False
         )
 
-        get_queryset_with_organ_model_map(combined)
-        get_queryset_with_number_of_data_points(combined)
-        get_queryset_with_stakeholder_sign_off(combined)
-        get_queryset_with_group_center_dictionary(combined)
+        combined = study_iterative_annotation(combined)
+
+        # get_queryset_with_organ_model_map(combined)
+        # get_queryset_with_number_of_data_points(combined)
+        # get_queryset_with_stakeholder_sign_off(combined)
+        # get_queryset_with_group_center_dictionary(combined)
 
         context['object_list'] = combined
 
@@ -2374,12 +2565,14 @@ class AssayStudySetDataPlots(StudySetViewerMixin, DetailHandlerView):
         # combined = get_user_accessible_studies(self.request.user).filter(
         #     assaystudyassay__isnull=False
         # )
-        combined = self.object.studies.all()
+        # combined = self.object.studies.all()
 
-        get_queryset_with_organ_model_map(combined)
-        get_queryset_with_number_of_data_points(combined)
-        get_queryset_with_stakeholder_sign_off(combined)
-        get_queryset_with_group_center_dictionary(combined)
+        combined = study_iterative_annotation(self.object.studies.all())
+
+        # get_queryset_with_organ_model_map(combined)
+        # get_queryset_with_number_of_data_points(combined)
+        # get_queryset_with_stakeholder_sign_off(combined)
+        # get_queryset_with_group_center_dictionary(combined)
 
         context['studies'] = combined
 
