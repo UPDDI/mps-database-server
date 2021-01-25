@@ -55,6 +55,26 @@
                 </td>
             </tr>
             {% endif %}
+            {% if object.product_sheet %}
+            <tr>
+                <td>
+                    <b>Product Sheet</b>
+                </td>
+                <td>
+                    <a href="/media/{{ object.product_sheet }}">Click here for device product sheet</a>
+                </td>
+            </tr>
+            {% endif %}
+            {% if object.product_sheet %}
+            <tr>
+                <td>
+                    <b>Device Webpage</b>
+                </td>
+                <td>
+                    <a href="{{ object.device_webpage }}">{{ object.device_webpage }}</a>
+                </td>
+            </tr>
+            {% endif %}
             <tr>
                 <td>
                     <b>Device Image</b>
@@ -101,11 +121,23 @@
         <tbody>
             <tr>
                 <td>
-                    <b>Dimensions</b>
+                    <b>Device Dimensions</b>
                 </td>
                 <td>
                     {% if object.device_width and object.device_length and object.device_thickness %}
                         {{ object.device_width }} mm X {{ object.device_length }} mm X {{ object.device_thickness }} mm
+                    {% else %}
+                        Unspecified
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>Model Region Dimensions</b>
+                </td>
+                <td>
+                    {% if object.model_width and object.model_length and object.model_thickness %}
+                        {{ object.model_width }} μm X {{ object.model_length }} μm X {{ object.model_thickness }} μm
                     {% else %}
                         Unspecified
                     {% endif %}
