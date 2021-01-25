@@ -64,7 +64,20 @@
 
 {% include 'generic_field.html' with field=form.description label="Description" %}
 
+{% include 'generic_field.html' with field=form.product_sheet %}
+
+<div class="row padded-bottom">
+    <div class="col-sm-2"></div>
+    <div class="col-sm-10">
+        <b>Preferred Format: PDF</b>
+    </div>
+</div>
+
+{% include 'generic_field.html' with field=form.device_webpage %}
+
 {% include 'generic_field.html' with field=form.device_image label="Device Image" %}
+
+
 <div class="row">
     <div class="col-sm-2"></div>
     <div class="col-sm-10">
@@ -96,11 +109,10 @@
     </div>
 </div>
 
-{# DEPRECATED #}
-{# {% include 'generic_field.html' with field=form.references label="References" %} #}
+<legend>Device Dimensions</legend>
 
-<legend>Dimensions</legend>
-
+{# Why aren't includes used here? #}
+{# Because no include has variable columns and the like #}
 {% if form.device_width.errors or form.device_length.errors or form.device_thickness.errors %}
     {% for error in form.device_width.errors %}
         <div class="alert alert-danger" role="alert">
@@ -127,15 +139,15 @@
 {% else %}
 <div class="form-group">
 {% endif %}
-    <label for="device_width" class="col-sm-2 control-label">Width (mm)</label>
+    <label for="device_width" class="col-sm-2 control-label">Device Width (mm)</label>
     <div class="col-sm-2">
         {{ form.device_width }}
     </div>
-    <label for="device_length" class="col-sm-2 control-label">Length (mm)</label>
+    <label for="device_length" class="col-sm-2 control-label">Device Length (mm)</label>
     <div class="col-sm-2">
         {{ form.device_length }}
     </div>
-    <label for="device_thickness" class="col-sm-2 control-label">Thickness (mm)</label>
+    <label for="device_thickness" class="col-sm-2 control-label">Device Thickness (mm)</label>
     <div class="col-sm-2">
         {{ form.device_thickness }}
     </div>
@@ -160,17 +172,61 @@
 {% else %}
 <div class="form-group">
 {% endif %}
-    <label for="substrate_material" class="col-sm-2 col-md-2 control-label">Substrate Material</label>
+    <label for="substrate_material" class="col-sm-2 col-md-2 control-label">Device Substrate Material</label>
     <div class="col-sm-3 col-md-2">
         {{ form.substrate_material }}
      </div>
-    <label for="substrate_thickness" class="col-sm-3 col-md-2 control-label">Substrate Thickness (mm)</label>
+    <label for="substrate_thickness" class="col-sm-3 col-md-2 control-label">Device Substrate Thickness (mm)</label>
     <div class="col-sm-4 col-md-6">
         {{ form.substrate_thickness }}
     </div>
 </div>
 
-{% include 'generic_field.html' with field=form.device_fluid_volume label="Fluid Volume (μL)" %}
+{% include 'generic_field.html' with field=form.device_fluid_volume %}
+
+<legend>Model Region Dimensions</legend>
+
+{% if form.model_width.errors or form.model_length.errors or form.model_thickness.errors %}
+    {% for error in form.model_width.errors %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{ error }}
+        </div>
+    {% endfor %}
+    {% for error in form.model_length.errors %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{ error }}
+        </div>
+    {% endfor %}
+    {% for error in form.model_thickness.errors %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{ error }}
+        </div>
+    {% endfor %}
+<div class="form-group has-error">
+{% else %}
+<div class="form-group">
+{% endif %}
+    <label for="model_width" class="col-sm-2 control-label">Model Width (μm)</label>
+    <div class="col-sm-2">
+        {{ form.model_width }}
+    </div>
+    <label for="model_length" class="col-sm-2 control-label">Model Length (μm)</label>
+    <div class="col-sm-2">
+        {{ form.model_length }}
+    </div>
+    <label for="model_thickness" class="col-sm-2 control-label">Model Thickness (μm)</label>
+    <div class="col-sm-2">
+        {{ form.model_thickness }}
+    </div>
+</div>
+
+{% include 'generic_field.html' with field=form.model_fluid_volume %}
 
 <legend>Layout</legend>
 

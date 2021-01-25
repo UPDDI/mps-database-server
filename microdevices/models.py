@@ -131,17 +131,17 @@ class Microdevice(FrontEndModel, LockableModel):
     )
 
     device_width = models.FloatField(
-        verbose_name='Width (mm)',
+        verbose_name='Device Width (mm)',
         null=True,
         blank=True,
     )
     device_length = models.FloatField(
-        verbose_name='Length (mm)',
+        verbose_name='Device Length (mm)',
         null=True,
         blank=True,
     )
     device_thickness = models.FloatField(
-        verbose_name='Thickness (mm)',
+        verbose_name='Device Thickness (mm)',
         null=True,
         blank=True,
     )
@@ -168,7 +168,7 @@ class Microdevice(FrontEndModel, LockableModel):
     )
 
     device_fluid_volume = models.FloatField(
-        verbose_name='Device Fluid Volume (uL)',
+        verbose_name='Device Fluid Volume (μL)',
         null=True,
         blank=True
     )
@@ -240,6 +240,44 @@ class Microdevice(FrontEndModel, LockableModel):
 
     # DEPRECATED
     references = models.CharField(max_length=2000, blank=True, default='')
+
+    # NEED DIMENSIONS FOR MODEL AS WELL
+    model_width = models.FloatField(
+        verbose_name='Model Region Width (μm)',
+        null=True,
+        blank=True,
+    )
+    model_length = models.FloatField(
+        verbose_name='Model Region Length (μm)',
+        null=True,
+        blank=True,
+    )
+    model_thickness = models.FloatField(
+        verbose_name='Model Region Thickness (μm)',
+        null=True,
+        blank=True,
+    )
+
+    model_fluid_volume = models.FloatField(
+        verbose_name='Model Region Fluid Volume (μL)',
+        null=True,
+        blank=True
+    )
+
+    # Additional info
+    product_sheet = models.FileField(
+        upload_to='device_product_sheets',
+        verbose_name='Product Sheet',
+        null=True,
+        blank=True,
+    )
+
+    device_webpage = models.URLField(
+        null=True,
+        blank=True,
+        verbose_name='Device Webpage'
+    )
+
 
     def __str__(self):
         return self.name

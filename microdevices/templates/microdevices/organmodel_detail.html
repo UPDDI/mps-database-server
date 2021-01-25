@@ -141,6 +141,18 @@
                 </td>
             </tr>
             {% endif %}
+            <tr>
+                <td>
+                    <b>Model Region Dimensions</b>
+                </td>
+                <td>
+                    {% if object.device.model_width and object.device.model_length and object.device.model_thickness %}
+                        {{ object.device.model_width }} μm X {{ object.device.model_length }} μm X {{ object.device.model_thickness }} μm
+                    {% else %}
+                        Unspecified
+                    {% endif %}
+                </td>
+            </tr>
         </tbody>
     </table>
 
