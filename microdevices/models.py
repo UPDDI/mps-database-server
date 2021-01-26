@@ -276,6 +276,13 @@ class Microdevice(FrontEndModel, LockableModel):
         verbose_name='Device Webpage'
     )
 
+    device_material = models.CharField(
+        max_length=150,
+        default='',
+        blank=True,
+        verbose_name='Device Material'
+    )
+
 
     def __str__(self):
         return self.name
