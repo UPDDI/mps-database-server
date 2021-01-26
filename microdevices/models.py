@@ -241,17 +241,17 @@ class Microdevice(FrontEndModel, LockableModel):
 
     # NEED DIMENSIONS FOR MODEL AS WELL
     model_width = models.FloatField(
-        verbose_name='Model Region Width (μm)',
+        verbose_name='Model Region Width (mm)',
         null=True,
         blank=True,
     )
     model_length = models.FloatField(
-        verbose_name='Model Region Length (μm)',
+        verbose_name='Model Region Length (mm)',
         null=True,
         blank=True,
     )
     model_thickness = models.FloatField(
-        verbose_name='Model Region Thickness (μm)',
+        verbose_name='Model Region Thickness (mm)',
         null=True,
         blank=True,
     )
