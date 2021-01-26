@@ -20,22 +20,29 @@
 
     <div class="padded-bottom">
         <div class="well">
-            <h1 class="text-center">
-                <em><b>Omic Data File Upload List</b></em><br><br>
-                Study: {{ object }}
+            <div class="row text-center">
+                <h1>
+                    <em><b>Omic Data File Upload List</b></em><br><br>
+                    Study: {{ object }}
+                </h1>
+            </div>
+            <div class="row text-center small-padding-top">
                 {% if datafiles.count %}
-                    <div>
-                        <a href="{% url 'assays-assaystudy-omics' object.id %}" class="btn btn-primary" role="button">Visualization</a>
-                    </div>
+                    <a href="{% url 'assays-assaystudy-omics' object.id %}" class="btn btn-primary" role="button">Two Group (e.g., Fold Change) Visualization</a>
                 {% endif %}
-            </h1>
+                {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
+                    <a href="{% url 'assays-assayomicsamplemetadata-update' object.id %}" class="btn btn-primary" role="button">Sample Names and Metadata</a>
+                {% else %}
+                    <a href="{% url 'assays-assayomicsamplemetadata-detail' object.id %}" class="btn btn-primary" role="button">Sample Names and Metadata</a>
+                {% endif %}
+            </div>
         </div>
 
         {# Hide setup add buttons if the study is marked reviewed #}
         {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
             {% if not review %}
                 <div class="padded-bottom">
-                    <a href="{% url "assayomicdatafileupload-add" object.id %}" class="btn btn-success" role="button">Add Omic Data File</a>
+                    <a href="{% url "assays-assayomicdatafileupload-add" object.id %}" class="btn btn-success" role="button">Add Omic Data File</a>
                 </div>
             {% endif %}
         {% endif %}
@@ -72,11 +79,11 @@
             {% for file in datafiles %}
                 <tr>
                     <td>
-                        <a class="btn btn-primary" href="{% url "assayomicdatafileupload-view" file.id  %}">View </a>
+                        <a class="btn btn-primary" href="{% url "assays-assayomicdatafileupload-detail" file.id  %}">View </a>
                     </td>
                     <td>
 {#                      {% if not object.signed_off_by %}#}
-                        <a class="btn btn-primary" href="{% url "assayomicdatafileupload-update" file.id  %}">Edit </a>
+                        <a class="btn btn-primary" href="{% url "assays-assayomicdatafileupload-update" file.id  %}">Edit </a>
 {#                      {% endif %}#}
                     </td>
                     <td>

@@ -57,8 +57,14 @@
                 with {% include 'plural_include.html' with label="Data Point" count=log2fold_points.count %}
             {% endif %}
             <br>
-            <small>Omic data that will use the MPS-Db Omic visualization and analysis tools (i.e. fold change, normalized counts, raw counts). Data to be uploaded must be formatted specifically as omic data in the file format corresponding to the type of omic data being uploaded.</small>
+            <small>Omic data that will use the MPS-Db Omic visualization and analysis tools (i.e. fold change, normalized counts, raw counts). Data to be uploaded must be formatted specifically as omic data in the file format corresponding to the type of omic data being uploaded. Counts metadata must be added prior to upload of an omic count data file.</small>
         </h3>
-        <a href="{% url 'assayomicdatafileupload-index' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add or Remove Omic Data File or Update File Metadata</a>
+
+        {% if user|is_group_editor:object.group.name and not object.signed_off_by %}
+            <a href="{% url 'assays-assayomicsamplemetadata-update' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add, Remove or Edit Omic Counts Data Metadata</a>
+        {% else %}
+            <a href="{% url 'assays-assayomicsamplemetadata-detail' object.id %}" class="btn btn-lg btn-primary" role="button">View Omic Counts Data Metadata</a>
+        {% endif %}
+        <a href="{% url 'assays-assayomicdatafileupload-index' object.id %}" class="btn btn-lg btn-primary" role="button">View, Add or Remove Omic Data File (Fold Change and/or Counts)</a>
     </div>
 {% endblock %}

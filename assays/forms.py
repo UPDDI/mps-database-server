@@ -64,7 +64,8 @@ from microdevices.models import (
     MicrophysiologyCenter,
     Microdevice,
     OrganModel,
-    OrganModelProtocol
+    OrganModelProtocol,
+    OrganModelLocation,
 )
 from mps.forms import SignOffMixin, BootstrapForm, tracking
 import string
@@ -84,6 +85,10 @@ from .utils import (
     omic_data_file_process_data,
     COLUMN_HEADERS,
     data_quality_clean_check_for_omic_file_upload,
+    find_the_labels_needed_for_the_indy_omic_table,
+    convert_time_from_mintues_to_unit_given,
+    convert_time_unit_given_to_minutes,
+    function_to_make_a_model_location_dictionary
 )
 
 from django.utils import timezone
@@ -97,6 +102,7 @@ import ujson as json
 import os
 import csv
 import re
+import operator
 
 from mps.utils import (
     get_split_times,
@@ -5040,6 +5046,7 @@ AssayPlateReaderMapDataFileBlockFormSetFactory = inlineformset_factory(
 # OMIC RULES - The table AssayOmicAnalysisTarget field method content must match exactly method selected in the GUI as the Data Analysis Method
 
 # monkey patch to display method target and unit combo as needed in the assay omic page
+# originally was going to display this, but not sure if will need to display anywhere, but, since already used for querying, just keep it
 class AbstractClassAssayStudyAssayOmic(AssayStudyAssay):
     class Meta:
         proxy = True
@@ -5051,6 +5058,9 @@ class AbstractClassAssayStudyAssayOmic(AssayStudyAssay):
 class AssayOmicDataFileUploadForm(BootstrapForm):
     """Form Upload an AssayOmicDataFileUpload file and associated metadata """
 
+    # since the metadata for the log2fc is by group, and is collected once for each file, it is stored with the upload file
+    # the metadata for the count data is stored separately (and linked by sample name/file column header)
+
     class Meta(object):
         model = AssayOmicDataFileUpload
         exclude = tracking + ('study',)
@@ -5059,49 +5069,27 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         self.study = kwargs.pop('study', None)
         super(AssayOmicDataFileUploadForm, self).__init__(*args, **kwargs)
 
-        # # http://www.chidgilovitz.com/displaying-django-form-field-help-text-in-a-bootstrap-3-popover/
-        # for field in self.fields:
-        #     help_text = self.fields[field].help_text
-        #     self.fields[field].help_text = None
-        #     if help_text != '':
-        #         self.fields[field].widget.attrs.update(
-        #             {'class': 'has-popover',
-        #              'data-content': help_text,
-        #              'data-placement': 'right',
-        #              # 'data-container': 'body'
-        #              }
-        #         )
-
         if not self.study and self.instance.study:
             self.study = self.instance.study
         if self.study:
             self.instance.study = self.study
 
-        # for now, limit to the same study - we will need to revisit this when we think about
-        # inter study and transitioning to treatment groups
-        # data_groups_filtered = AssayOmicDataGroup.objects.filter(
-        #     study_id=self.instance.study.id
-        # )
+        # for now, limit to the same study - we may need to revisit this when we think about inter-study
         data_groups_filtered = AssayGroup.objects.filter(
             study_id=self.instance.study.id
         )
 
         # The rules for getting the list of study assays in the upload GUI
-        # 1 category = gene expression
-        # 2 the target must be associated to that category
+        # Rule 1: category = gene expression; Rule 2 the target must be associated to that category
         gene_targets = AssayTarget.objects.filter(assaycategory__name="Gene Expression")
 
-        # HANDY, to get pks from a queryset, gene_targets_pks=gene_targets.values_list('pk',flat=True)
-        # gene_target_pks = []
-        # for each in gene_targets:
-        #     gene_target_pks.append(each.id)
+        # HANDY, to get a list of pks from a queryset, gene_targets_pks=gene_targets.values_list('pk',flat=True)
 
-        # this would be what the user set up in the assay setup tab (e.g. Human 1500+, TempO-Seq, Fold Change)
+        # this is a queryset of what the user set up in the assay setup tab (e.g. Human 1500+, TempO-Seq, Fold Change)
         study_assay_queryset = AbstractClassAssayStudyAssayOmic.objects.filter(
             study_id=self.study
         ).filter(
-            # HANDY to use a queryset as a filter instead of pks
-            # instead of getting a list of pks and using them here      target_id__in=gene_targets_pks
+            # HANDY to use a queryset as a filter instead using a list of pks
             target__in=gene_targets
         ).prefetch_related(
             'target',
@@ -5123,59 +5111,24 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         initial_study_assay = None
         for each in study_assay_queryset:
             this_unit = each.unit.unit.lower()
-            # may need to change this to give something else a priority
-            # just to get an initial one
-            # Mark had units of 'Fold Change' and 'Count', Tongying has 'Unitless' for all omic data...see how plays out
+            # may need to change this to give something else a priority (this is just to get an initial one)
+            # Mark had units of 'Fold Change' and 'Count', then switched to not specified
+            # Tongying used 'Unitless' for all omic data.
             if this_unit.find("fold") >= 0:
                 # so a unit with a fold in it will get priority
                 initial_study_assay = each.id
                 break
             else:
+                # result will be it just gets the last one
                 initial_study_assay = each.id
 
         self.fields['study_assay'].initial = initial_study_assay
-
-        # study_method_target_unit = AssayStudyAssay.objects.filter(
-        #     study_id=self.instance.study.id
-        # ).prefetch_related(
-        #     'target',
-        #     'method',
-        #     'unit',
-        # )
-
-        # first_gene_method = None
-        # first_gene_target = None
-        # first_gene_unit = None
-
-        # study_gene_target_method_dict = {}
-        # for each in study_method_target_unit:
-        #     # print("-----\neach: ", each)
-        #     # print("each: ", each.id)
-        #     # print("each: ", each.method_id)
-        #     # print("each: ", each.target_id)
-        #     # print("each: ", each.unit_id)
-        #     # print("each: ", each.method)
-        #     # print("each: ", each.target)
-        #     # print("each: ", each.unit)
-        #     if each.target_id in gene_target_dict:
-        #         study_gene_target_method_dict[each.id] = [
-        #             each.method_id,
-        #             each.target_id,
-        #             each.unit_id,
-        #             each.method,
-        #             each.target,
-        #             each.unit
-        #         ]
-        #         first_gene_method = each.method_id
-        #         first_gene_target = each.target_id
-        #         first_gene_unit = each.unit_id
 
         omic_computational_methods_distinct = AssayOmicAnalysisTarget.objects.values('method').distinct()
         omic_computational_methods = AssayMethod.objects.filter(
             id__in=omic_computational_methods_distinct
         )
 
-        initial_omic_computational_method = None
         initial_computational_method = None
         # just get the first one for the default, if there is one
         if len(omic_computational_methods) > 0:
@@ -5191,15 +5144,6 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         self.fields['group_1'].queryset = data_groups_filtered
         self.fields['group_2'].queryset = data_groups_filtered
 
-        # when these are visible, they should be class required
-        # HANDY for adding classes in forms
-        # the following could remove other classes, so stick with the below
-        # NO self.fields['group_1'].widget.attrs.update({'class': ' required'})
-        # YES self.fields['group_1'].widget.attrs['class'] += 'required'
-
-        self.fields['group_1'].widget.attrs['class'] += 'required'
-        self.fields['group_2'].widget.attrs['class'] += 'required'
-
         if self.instance.time_1:
             time_1_instance = self.instance.time_1
             times_1 = get_split_times(time_1_instance)
@@ -5214,8 +5158,26 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
             self.fields['time_2_hour'].initial = times_2.get('hour')
             self.fields['time_2_minute'].initial = times_2.get('minute')
 
-        # filename_only = os.path.basename(str(self.instance.omic_data_file))
-        # self.fields['filename_only'].initial = filename_only
+        # HANDY for adding classes in forms
+        # NO self.fields['group_1'].widget.attrs.update({'class': ' required'})
+        # YES self.fields['group_1'].widget.attrs['class'] += 'required'
+        # BUT, the above does not work on selectized, just do addClass in javascript
+        # i.e.: $('#id_time_unit').next().addClass('required');
+
+        # Luke wanted to use DHM, so, went back to that. Hold in case gets outvoted
+        # self.fields['time_1_display'].widget.attrs.update({'class': ' form-control required'})
+        # self.fields['time_2_display'].widget.attrs.update({'class': ' form-control required'})
+        # time_unit_instance = self.instance.time_unit
+
+        # if self.instance.time_1:
+        #     time_1_instance = self.instance.time_1
+        #     ctime = convert_time_from_mintues_to_unit_given(time_1_instance, time_unit_instance)
+        #     self.fields['time_1_display'].initial = ctime
+        #
+        # if self.instance.time_2:
+        #     time_2_instance = self.instance.time_2
+        #     ctime = convert_time_from_mintues_to_unit_given(time_2_instance, time_unit_instance)
+        #     self.fields['time_2_display'].initial = ctime
 
     time_1_day = forms.DecimalField(
         required=False,
@@ -5242,8 +5204,14 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         required=False,
         label='Minute'
     )
-    # filename_only = forms.CharField(
+
+    # time_1_display = forms.DecimalField(
     #     required=False,
+    #     label='Sample Time 1*'
+    # )
+    # time_2_display = forms.DecimalField(
+    #     required=False,
+    #     label='Sample Time 2*'
     # )
 
     def clean(self):
@@ -5253,14 +5221,14 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         data['time_1'] = 0
         for time_unit, conversion in list(TIME_CONVERSIONS.items()):
             if data.get('time_1_' + time_unit) is not None:
-                inttime = (data.get('time_1_' + time_unit))
-                data.update({'time_1': data.get('time_1') + inttime * conversion,})
+                int_time = (data.get('time_1_' + time_unit))
+                data.update({'time_1': data.get('time_1') + int_time * conversion,})
 
         data['time_2'] = 0
         for time_unit, conversion in list(TIME_CONVERSIONS.items()):
             if data.get('time_2_' + time_unit) is not None:
-                inttime = data.get('time_2_' + time_unit)
-                data.update({'time_2': data.get('time_2') + inttime * conversion,})
+                int_time = data.get('time_2_' + time_unit)
+                data.update({'time_2': data.get('time_2') + int_time * conversion,})
 
         true_to_continue = self.qc_file(save=False, calledme='clean')
         if not true_to_continue:
@@ -5283,6 +5251,7 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         if self.instance.id:
             data_file_pk = self.instance.id
 
+        # the data_type specific QC is in the utils.py
         true_to_continue = data_quality_clean_check_for_omic_file_upload(self, data, data_file_pk)
         return true_to_continue
 
@@ -5293,6 +5262,7 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
             data_file_pk = self.instance.id
         file_extension = os.path.splitext(data.get('omic_data_file').name)[1]
         data_type = data['data_type']
+        # time_unit = data['time_unit']
         analysis_method = data['analysis_method']
 
         # HANDY for getting a file object and a file queryset when doing clean vrs save
@@ -5310,3 +5280,196 @@ class AssayOmicDataFileUploadForm(BootstrapForm):
         return data
 
 #     End Omic Data File Upload Section
+
+
+# Start Omic Metadata Collection Section
+
+sample_option_choices = (
+    ('clt', 'Chip/Well - Location - Time'),
+    ('sn1', 'Sample-1 to Sample-99999 etc'),
+    ('sn2', 'Sample-01 to Sample-99'),
+    ('sn3', 'Sample-001 to Sample-999'),
+)
+
+# Form to use to collect the omic sample metadata
+# The actual metadata will be stuffed into a field for performance
+class AssayOmicSampleMetadataAdditionalInfoForm(BootstrapForm):
+    """Form for collecting omic sample metadata."""
+
+    # NOTE TO SCK - this will be one record per form (the rest will be crammed in a field...)
+    # the form will not have an index page, so, there is a conditional in the call (click to go there) and
+    # this uses the AssayStudy model so that the study id is easily passed in and out
+
+    class Meta(object):
+        model = AssayStudy
+        fields = (
+            'indy_list_of_dicts_of_table_rows',
+            'indy_list_of_column_labels',
+            'indy_list_of_column_labels_show_hide',
+            'indy_sample_location',
+            'indy_matrix_item',
+            'indy_matrix_item_list',
+            'indy_matrix_item_name_to_pk_dict',
+            'indy_list_time_units_to_include_initially',
+            'indy_dict_time_units_to_table_column',
+            'indy_add_or_update'
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(AssayOmicSampleMetadataAdditionalInfoForm, self).__init__(*args, **kwargs)
+        # self.instance will be the study self.instance.id is the study id
+
+        indy_table_labels = find_the_labels_needed_for_the_indy_omic_table('form', self.instance.id)
+        indy_list_of_column_labels = indy_table_labels.get('indy_list_of_column_labels')
+        indy_list_of_column_labels_show_hide = indy_table_labels.get('indy_list_of_column_labels_show_hide')
+        indy_list_of_dicts_of_table_rows = indy_table_labels.get('indy_list_of_dicts_of_table_rows')
+        indy_list_time_units_to_include_initially = indy_table_labels.get('indy_list_time_units_to_include_initially')
+        indy_dict_time_units_to_table_column = indy_table_labels.get('indy_dict_time_units_to_table_column')
+        indy_add_or_update = indy_table_labels.get('indy_add_or_update')
+
+        self.fields['indy_list_of_column_labels'].initial = json.dumps(indy_list_of_column_labels)
+        self.fields['indy_list_of_column_labels_show_hide'].initial = json.dumps(indy_list_of_column_labels_show_hide)
+        self.fields['indy_list_of_dicts_of_table_rows'].initial = json.dumps(indy_list_of_dicts_of_table_rows)
+        self.fields['indy_list_time_units_to_include_initially'].initial = json.dumps(indy_list_time_units_to_include_initially)
+        self.fields['indy_dict_time_units_to_table_column'].initial = json.dumps(indy_dict_time_units_to_table_column)
+        self.fields['indy_add_or_update'].initial = json.dumps(indy_add_or_update)
+
+        # get the queryset of matrix items in this study
+        matrix_item_queryset = AssayMatrixItem.objects.filter(study_id=self.instance.id).order_by('name', )
+        self.fields['indy_matrix_item'].queryset = matrix_item_queryset
+
+        # get the matrix items names in this study
+        matrix_item_list = matrix_item_queryset.values_list('name', flat=True)
+        self.fields['indy_matrix_item_list'].initial = json.dumps(matrix_item_list)
+
+        matrix_item_name_and_pk = {}
+        for index, each in enumerate(matrix_item_queryset):
+            matrix_item_name_and_pk[each.name] = each.id
+
+        self.fields['indy_matrix_item_name_to_pk_dict'].initial = json.dumps(matrix_item_name_and_pk)
+
+        # if, the models in the study have locations, pull them
+        organ_models_in_study = AssayGroup.objects.filter(
+            # We will always know the study, this can never be an add page
+            study_id=self.instance,
+        ).prefetch_related(
+            'organ_model',
+        ).distinct().only(
+            'organ_model'
+        ).values_list('organ_model__id', flat=True)
+
+        organ_models_in_study_list = list(organ_models_in_study)
+
+        sample_locations_in_list = OrganModelLocation.objects.filter(
+            organ_model__in=organ_models_in_study_list
+        ).prefetch_related(
+            'sample_location',
+        # ).values('sample_location__id', 'sample_location__name')
+        # < QuerySet[{'sample_location__id': 31, 'sample_location__name': 'Well'}, {'sample_location__id': 30, 'sample_location__name': 'Media'}] >
+        ).values_list('sample_location__id', flat=True)
+
+        sample_locations_queryset = AssaySampleLocation.objects.filter(
+            id__in=sample_locations_in_list
+        ).order_by(
+            'name',
+        )
+
+        # what if the study has more than one model,
+        # and one has locations and one does not,
+        # the queryset len will be > 0,
+        # but not all the locations would be in the sub list
+        # might have to deal with this, (location needed might not be in list) but
+        # for now, if there is a sub list, use it
+        if len(sample_locations_queryset) > 0:
+            self.fields['indy_sample_location'].queryset = sample_locations_queryset
+
+    indy_list_of_dicts_of_table_rows = forms.CharField(widget=forms.TextInput(), required=False,)
+    indy_list_of_column_labels = forms.CharField(widget=forms.TextInput(), required=False,)
+    indy_list_of_column_labels_show_hide = forms.CharField(widget=forms.TextInput(), required=False, )
+    indy_list_time_units_to_include_initially = forms.CharField(widget=forms.TextInput(), required=False, )
+    indy_dict_time_units_to_table_column = forms.CharField(widget=forms.TextInput(), required=False, )
+
+    # this will return all the sample locations
+    indy_sample_location = forms.ModelChoiceField(
+        queryset=AssaySampleLocation.objects.all().order_by(
+            'name'
+        ),
+        required=False,
+    )
+    indy_matrix_item = forms.ModelChoiceField(
+        queryset=AssayMatrixItem.objects.none(),
+        required=False,
+    )
+    indy_matrix_item_list = forms.CharField(widget=forms.TextInput(), required=False,)
+    indy_matrix_item_name_to_pk_dict = forms.CharField(widget=forms.TextInput(), required=False, )
+
+    indy_sample_label_options = forms.ChoiceField(
+        choices=sample_option_choices,
+        required=False,
+    )
+    indy_add_or_update = forms.CharField(widget=forms.TextInput(), required=False,)
+
+    # todo-sck need to fix all this after get buy in for design
+    # def clean(self):
+    #     data = super(AssayOmicSampleMetadataAdditionalInfoForm, self).clean()
+    #
+    #     # data are changed here, so NEED to return the data
+    #
+    #     data['sample_time'] = convert_time_unit_given_to_minutes(data.get('time_1_display'), data.get('time_unit'))
+    #     data['sample_time'] = 0
+    #     for time_unit, conversion in list(TIME_CONVERSIONS.items()):
+    #         if data.get('time_1_' + time_unit) is not None:
+    #             int_time = (data.get('time_1_' + time_unit))
+    #             data.update({'time_1': data.get('time_1') + int_time * conversion,})
+    #
+    #     true_to_continue = self.qc_file(save=False, calledme='clean')
+    #     if not true_to_continue:
+    #         validation_message = 'This did not pass QC.'
+    #         raise ValidationError(validation_message, code='invalid')
+    #     self.process_file(save=False, calledme='clean')
+    #     return data
+    #
+    # def save(self, commit=True):
+    #     new_file = None
+    #     if commit:
+    #         new_file = super(AssayOmicDataFileUploadForm, self).save(commit=commit)
+    #         self.process_file(save=True, calledme='save')
+    #     return new_file
+    #
+    # def qc_file(self, save=False, calledme='c'):
+    #     data = self.cleaned_data
+    #     data_file_pk = 0
+    #     # self.instance.id is None for the add form
+    #     if self.instance.id:
+    #         data_file_pk = self.instance.id
+    #
+    #     true_to_continue = data_quality_clean_check_for_omic_file_upload(self, data, data_file_pk)
+    #     return true_to_continue
+    #
+    # def process_file(self, save=False, calledme='c'):
+    #     data = self.cleaned_data
+    #     data_file_pk = 0
+    #     if self.instance.id:
+    #         data_file_pk = self.instance.id
+    #     file_extension = os.path.splitext(data.get('omic_data_file').name)[1]
+    #     data_type = data['data_type']
+    #     header_type = data['header_type']
+    #     time_unit = data['time_unit']
+    #     analysis_method = data['analysis_method']
+    #
+    #     # HANDY for getting a file object and a file queryset when doing clean vrs save
+    #     if calledme == 'clean':
+    #         # this function is in utils.py
+    #         # print('form clean')
+    #         data_file = data.get('omic_data_file')
+    #         a_returned = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, header_type, time_unit, analysis_method)
+    #     else:
+    #         # print('form save')
+    #         queryset = AssayOmicDataFileUpload.objects.get(id=data_file_pk)
+    #         data_file = queryset.omic_data_file.open()
+    #         a_returned = omic_data_file_process_data(save, self.study.id, data_file_pk, data_file, file_extension, calledme, data_type, header_type, time_unit, analysis_method)
+    #
+    #     return data
+
+# End omic sample metadata collection section
+

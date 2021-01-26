@@ -95,7 +95,7 @@ from assays.views import (
     PBPKView,
     AssayOmicDataFileUploadIndex,
     AssayOmicDataFileUploadAdd,
-    AssayOmicDataFileUploadView,
+    AssayOmicDataFileUploadDetail,
     AssayOmicDataFileUploadUpdate,
     AssayOmicDataFileUploadDelete,
     AssayStudyOmics,
@@ -103,6 +103,8 @@ from assays.views import (
     AssayStudyOmicsDownload,
     AssayStudyOmicsHeatmap,
     AssayStudyOmicsHeatmapJSON,
+    AssayOmicSampleMetadataAdditionalInfoFormUpdate,
+    AssayOmicSampleMetadataAdditionalInfoFormDetail,
 )
 import assays.ajax
 
@@ -310,11 +312,29 @@ urlpatterns = [
     url(r'^assays/assayplatereaderfile/(?P<pk>[0-9]+)/update/$', AssayPlateReaderMapDataFileUpdate.as_view(), name='assayplatereaderfile-update'),
     url(r'^assays/assayplatereaderfile/(?P<pk>[0-9]+)/delete/$', AssayPlateReaderMapDataFileDelete.as_view(), name='assayplatereaderfile-delete'),
 
-    # Omic Data
-    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/assayomicdatafileupload/$', AssayOmicDataFileUploadIndex.as_view(), name='assayomicdatafileupload-index'),
-    url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assayomicdatafileupload/add/$', AssayOmicDataFileUploadAdd.as_view(), name='assayomicdatafileupload-add'),
-    url(r'^assays/assayomicdatafileupload/(?P<pk>[0-9]+)/view/$', AssayOmicDataFileUploadView.as_view(), name='assayomicdatafileupload-view'),
-    url(r'^assays/assayomicdatafileupload/(?P<pk>[0-9]+)/update/$', AssayOmicDataFileUploadUpdate.as_view(), name='assayomicdatafileupload-update'),
-    url(r'^assays/assayomicdatafileupload/(?P<pk>[0-9]+)/delete/$', AssayOmicDataFileUploadDelete.as_view(), name='assayomicdatafileupload-delete'),
+    # Omic Data Files
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/assayomicdatafileupload/$',
+        AssayOmicDataFileUploadIndex.as_view(),
+        name='assays-assayomicdatafileupload-index'),
+    url(r'^assays/assaystudy/(?P<study_id>[0-9]+)/assayomicdatafileupload/add/$',
+        AssayOmicDataFileUploadAdd.as_view(),
+        name='assays-assayomicdatafileupload-add'),
+    url(r'^assays/assayomicdatafileupload/(?P<pk>[0-9]+)/$',
+        AssayOmicDataFileUploadDetail.as_view(),
+        name='assays-assayomicdatafileupload-detail'),
+    url(r'^assays/assayomicdatafileupload/(?P<pk>[0-9]+)/update/$',
+        AssayOmicDataFileUploadUpdate.as_view(),
+        name='assays-assayomicdatafileupload-update'),
+    url(r'^assays/assayomicdatafileupload/(?P<pk>[0-9]+)/delete/$',
+        AssayOmicDataFileUploadDelete.as_view(),
+        name='assays-assayomicdatafileupload-delete'),
+
+    # Omic Sample Metadata
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/assayomicsamplemetadata/update/$',
+        AssayOmicSampleMetadataAdditionalInfoFormUpdate.as_view(),
+        name='assays-assayomicsamplemetadata-update'),
+    url(r'^assays/assaystudy/(?P<pk>[0-9]+)/assayomicsamplemetadata/$',
+        AssayOmicSampleMetadataAdditionalInfoFormDetail.as_view(),
+        name='assays-assayomicsamplemetadata-detail'),
 
 ]

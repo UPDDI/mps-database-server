@@ -103,6 +103,7 @@ from assays.forms import (
     AbstractClassAssayStudyAssay,
     AssayMatrixItemForm,
     AssayOmicDataFileUploadForm,
+    AssayOmicSampleMetadataAdditionalInfoForm,
 )
 
 from microdevices.models import MicrophysiologyCenter
@@ -5067,7 +5068,7 @@ class AssayOmicDataFileUploadAdd(StudyGroupMixin, HistoryMixin, CreateView):
             return self.render_to_response(self.get_context_data(form=form, ))
 
 class AssayOmicDataFileUploadUpdate(StudyGroupMixin, HistoryMixin, UpdateView):
-    """Views View Upload an AssayOmicDataFileUpload file """
+    """Views Update Upload an AssayOmicDataFileUpload file """
 
     model = AssayOmicDataFileUpload
     template_name = 'assays/assayomicdatafileupload_aur.html'
@@ -5087,15 +5088,15 @@ class AssayOmicDataFileUploadUpdate(StudyGroupMixin, HistoryMixin, UpdateView):
             return self.render_to_response(self.get_context_data(form=form, ))
 
 
-class AssayOmicDataFileUploadView(StudyGroupMixin, DetailHandlerView):
-    """Views View Upload an AssayOmicDataFileUpload file """
+class AssayOmicDataFileUploadDetail(StudyGroupMixin, DetailHandlerView):
+    """Views Detail Upload an AssayOmicDataFileUpload file """
 
     model = AssayOmicDataFileUpload
     template_name = 'assays/assayomicdatafileupload_aur.html'
-    form_class = AssayOmicDataFileUploadForm
+    # do not need this since using the hacky way below -- form_class = AssayOmicDataFileUploadForm
 
     def get_context_data(self, **kwargs):
-        context = super(AssayOmicDataFileUploadView, self).get_context_data(**kwargs)
+        context = super(AssayOmicDataFileUploadDetail, self).get_context_data(**kwargs)
         context['review'] = True
         context['page_called'] = 'review'
 
@@ -5106,7 +5107,52 @@ class AssayOmicDataFileUploadView(StudyGroupMixin, DetailHandlerView):
 
         return context
 
-# END omic data file list, add, update, view and delete section
+# END omic data file list, add, update, detail and delete section
+
+
+##### Start omic METADATA (for counts), add, update, view and delete section
+class AssayOmicSampleMetadataAdditionalInfoFormUpdate(ObjectGroupRequiredMixin, HistoryMixin, UpdateView):
+    """Views Upload of omic sample metadata """
+
+    template_name = 'assays/assayomicsamplemetadata_ur.html'
+    form_class = AssayOmicSampleMetadataAdditionalInfoForm
+    model = AssayStudy
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayOmicSampleMetadataAdditionalInfoFormUpdate, self).get_context_data(**kwargs)
+        context['update'] = True
+        context['page_called'] = 'update'
+        return context
+
+    def form_valid(self, form):
+        if form.is_valid():
+            save_forms_with_tracking(self, form, update=True)
+            return redirect(self.object.get_post_submission_url())
+        else:
+            return self.render_to_response(self.get_context_data(form=form, ))
+
+
+class AssayOmicSampleMetadataAdditionalInfoFormDetail(StudyViewerMixin, DetailHandlerView):
+    """Views View Upload an AssayOmicDataFileUpload file """
+    # Luke prefers using Detail over View
+
+    template_name = 'assays/assayomicsamplemetadata_ur.html'
+    model = AssayStudy
+
+    def get_context_data(self, **kwargs):
+        context = super(AssayOmicSampleMetadataAdditionalInfoFormDetail, self).get_context_data(**kwargs)
+        context['review'] = True
+        context['page_called'] = 'review'
+
+        # HANDY to use DetailView in a View view and trick Django into getting the form
+        # remember, do not need the form class in the main code because doing it here
+        context.update({
+            'form': AssayOmicSampleMetadataAdditionalInfoForm(instance=self.object),
+        })
+
+        return context
+
+# END omic METADATA (for counts), add, update, view and delete section
 
 
 class AssayStudyOmics(StudyViewerMixin, PlateAndChipTabMixin, DetailHandlerView):

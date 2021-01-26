@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+    <script src="//www.google.com/jsapi"></script>
+{% endblock %}
+
+{% block load_js %}
+
+    <script src="{% static "assays/assayomicsamplemetadata_ur.js" %}"></script>
+    <script src="{% static "js/enter_override.js" %}"></script>
+{% endblock %}
+
+{# this template is update (add is a special case of update), and reveiw (ur) #}
+{% block breadcrumbs %}
+    <li><a href="/assays/assaystudy/">Studies</a>
+    <li><a href="{{ form.instance.get_absolute_url }}">{{ form.instance }}</a></li>
+    <li><a href="{% url 'assays-assaystudy-data-index' form.instance.id %}">Data</a></li>
+    <li>Metadata</li>
+{% endblock %}
+
+{#no padding#}
+{#{% block fluid-content %}#}
+{#no padding#}
+{% block content %}
+
+    <form name="omic_metadata" class="form-horizontal" method="post" enctype="multipart/form-data">
+
+        <div class="padded-bottom">
+
+            <div class="well">
+                <h1 class="text-center">
+                    <em><b>
+                    {% if update %}
+                        Update
+                    {% else %}
+                        Review
+                    {% endif %}
+                    Omic Sample Metadata
+                    </b></em>
+                    <br>
+                    <br>
+                    for Study {{ form.instance }}
+                    <br>
+                {% csrf_token %}
+                </h1>
+            </div>
+
+            {% if not review %}
+                {% include "submit.html" with flag="y" creator=object.created_by.id %}
+            {% endif %}
+
+            <div id="form_errors" class="toggle-display-none">
+                {% include "errors.html" %}
+            </div>
+
+
+            {# main #}
+{#            <div class="container">   NO CONTAINERs   #}
+{##}
+            {# pass to js file need for use in js #}
+            <div class="hidden">
+                <div id="check_load">
+                    {{ page_called }}
+                </div>
+                <div id="this_study_id">
+                    {{ form.instance.study_id }}
+                </div>
+                {# pass to js file need for use in js - this will be kept matcthing the table so can be passed back #}
+                {{ form.indy_list_of_dicts_of_table_rows }}
+                {{ form.indy_list_of_column_labels }}
+                {{ form.indy_list_of_column_labels_show_hide }}
+                {# used below  {{ form.indy_sample_location }}#}
+                {# used below  {{ form.indy_matrix_item }}#}
+                {{ form.indy_matrix_item_list }}
+                {{ form.indy_matrix_item_name_to_pk_dict }}
+                {{ form.indy_list_time_units_to_include_initially }}
+                {{ form.indy_dict_time_units_to_table_column }}
+                {{ form.indy_add_or_update }}
+            </div>
+
+            <br>
+
+            <h3>Metadata for Omic Count Data</h3>
+
+            {% if update %}
+
+                <div class="alert alert-info" role="alert">
+                    <button class="btn btn-info" type="button" data-toggle="collapse" data-target=".inline-help" aria-expanded="false" aria-controls="inline-help">
+                        Show/Hide Page Help
+                    </button>
+                    <div class="collapse large-padding-top inline-help">
+                        <p>Tips and Notes:</p>
+                        <ul>
+                            <li>Highlight the cells in the table to which an Action will be applied</li>
+                            <li>Only the Sample Time in the Unit selected in the Replace Highlighted section can be highlighted</li>
+                            <li>Highlight by dragging over the cells to highlight and/or by using the click one of the buttons to highlight</li>
+                            <li>To highlight Sample Labels, drag outside of the interior input box or use a click button</li>
+                            <li>Highlighting is cumulative and toggles</li>
+                            <li>When updates are made to the table, it will resort depending on the new content </li>
+                            <li>Use Column visibility, Search, and/or column sorting to expedite highlighting</li>
+                            <li>When highlighting is complete, select an Action</li>
+                            <li>When Duplicating and/or Deleting Row(s), highlighting in one or more fields in the row will trigger the change</li>
+                            <li>Rows that are attached to data can not be deleted</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-2">
+                        <div class="plate-map-page-field-labels-medium">
+                            <div>
+                                <div><p id="drag_use_tooltip"></p>
+                                    <label for="drag_use_tooltip"><em>Action</em> &nbsp;</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="plate-map-page-radio-contents">
+                        <div class="col-sm-10">
+                            <label><input type="radio" class="plate-map-bigger-radio" name="radio_change_drag_action" value="replace" id="radio_replace" checked>
+                                <p class="plate-map-radio-spacing plate-map-no-wrap">Replace Highlighted</p></label>
+
+                            <label><input type="radio" class="plate-map-bigger-radio" name="radio_change_drag_action" value="empty" id="radio_empty">
+                                <p class="plate-map-radio-spacing plate-map-no-wrap">Empty Content in Highlighted</p></label>
+
+                            <label><input type="radio" class="plate-map-bigger-radio" name="radio_change_drag_action" value="delete" id="radio_delete">
+                                <p class="plate-map-radio-spacing plate-map-no-wrap">Delete Row(s)</p></label>
+
+                            <label><input type="radio" class="plate-map-bigger-radio" name="radio_change_drag_action" value="pastes" id="radio_pastes">
+                                <p class="plate-map-radio-spacing plate-map-no-wrap">Duplicate Row(s)</p></label>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="replace-section toggle-display-none">
+
+                    <div class="collapse large-padding-top inline-help">
+                        <div class="alert alert-info" role="alert">
+                            <ul>
+                                <li>Select the content to use for replacing in the highlighted cells</li>
+                                <li>Select to Duplicate or Increment (Sample Location will duplicate regardless of selection)</li>
+                                <li>The time unit that can be highlighted is tied to the time unit selection in the replace content section</li>
+                                <li>Recommend that, when added new sample labels, get the Chip/Well Name, the Sample Location, and the Sample Time correct, then click the button to Highlight All Editable Sample Labels, select the pattern to use for sample labels, and Replace Content</li>
+                                <li>Note that, if the Sample Location needed is not in the list, add the missing location to the MPS Model for which the location is needed (if more than one model, and some do not have locations but some do, the list could be incomplete)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {# pick sample metadata other than times #}
+                    <div class="row">
+                        <div class="col-sm-6"></div>
+                        <div class="col-sm-3">
+                            <div class="plate-map-no-wrap">
+                                <label><input type="radio" name="radio_time_unit" value="day" id="radio_day" checked>
+                                <p class="plate-map-no-wrap">Day</p></label>
+                                <label><input type="radio" name="radio_time_unit" value="hour" id="radio_hour">
+                                <p class="plate-map-no-wrap">Hour</p></label>
+                                <label><input type="radio" name="radio_time_unit" value="minute" id="radio_minute">
+                                <p class="plate-map-no-wrap">Minute</p></label>
+                            </div>
+                        </div>
+                        <div class="col-sm-3"></div>
+                    </div>
+
+                    <div class="row">
+
+                        {# STARME need for use in js #}
+                        <div id="h_indy_matrix_item" class="col-sm-3">
+                            <div class="row column-section-padding">
+                                <div><p id="sample_matrix_item_tooltip"></p>
+                                    <label for="sample_matrix_item_tooltip">Chip/Well Name &nbsp;</label>
+                                </div>
+                            </div>
+                            <div class="row column-section-padding">
+                                 <div class="extra-bottom-padding">
+                                    {{ form.indy_matrix_item }}
+                                </div>
+                            </div>
+                            {# STARME need for use in js ~pk_tracking_note~ #}
+                            <div class="row hidden">Will get hidden:
+                                <div id="matrix_item_name"></div>
+                                <div id="matrix_item_pk"></div>
+                            </div>
+                        </div>
+
+                        {# STARME need for use in js #}
+                        <div id="h_indy_sample_location" class="col-sm-3">
+                            <div class="row column-section-padding">
+                                <div><p id="sample_location_tooltip"></p>
+                                    <label for="sample_location_tooltip">Sample Location &nbsp;</label>
+                                </div>
+                            </div>
+                            <div class="row column-section-padding">
+                                <div class="extra-bottom-padding">
+                                    {{ form.indy_sample_location }}
+                                </div>
+                            </div>
+                            {# STARME need for use in js ~pk_tracking_note~ #}
+                            <div class="row hidden">Will get hidden:
+                                <div id="sample_location_name"></div>
+                                <div id="sample_location_pk"></div>
+                            </div>
+                        </div>
+
+                        {# pick sample times #}
+                        {# STARME need for use in js #}
+                        <div id="h_indy_sample_time" class="col-sm-3">
+                            <div class="row column-section-padding">
+                                <div><p id="sample_time_tooltip"></p>
+{#                                        <label for="sample_time_tooltip">Sample Time &nbsp;</label>#}
+                                    <label id="sample_time_label">Sample Time (Day)</label>
+                                </div>
+                            </div>
+                            <div class="row column-section-padding extra-bottom-padding">
+
+                                <div id="h_indy_time_day">
+                                    {# STARME need for use in js #}
+                                    <input type="text" class="form-control extra-bottom-padding" id="time_day" name="time_day" value="0">
+                                </div>
+
+                                <div id="h_indy_time_hour">
+                                    {# STARME need for use in js #}
+                                    <input type="text" class="form-control extra-bottom-padding" id="time_hour" name="time_hour" value="0">
+                                </div>
+
+                                <div id="h_indy_time_minute">
+                                    {# STARME need for use in js #}
+                                    <input type="text" class="form-control extra-bottom-padding" id="time_minute" name="time_minute" value="0">
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {# STARME need for use in js #}
+                        <div id="h_indy_sample_name_options" class="col-sm-3">
+                            <div class="row column-section-padding">
+                                <div><p id="sample_sample_name_options_tooltip"></p>
+                                    <label for="sample_sample_name_options_tooltip">Sample Label Pattern &nbsp;</label>
+                                </div>
+                            </div>
+                            <div class="row column-section-padding">
+                                 <div class="extra-bottom-padding">
+                                    {{ form.indy_sample_label_options }}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="collapse large-padding-top inline-help">
+                        <div class="alert alert-info" role="alert">
+                            <ul>
+                                <li>Duplicate will put the selected content in the highlighted cells</li>
+                                <li>Increment will put the selected content in the first of the highlighted cells, then iterate over the rest of the highlighted cells, adding the increment as requested to the next highlighted cell</li>
+                                <li>Sample Location will Duplicate regardless of selection</li>
+                                <li>Incrementing a Chip/Well Name works down an alphabetized list of all the Chips/Wells in the Study</li>
+                                <li>Incrementing will always be applied top to bottom - use column sorting switch top and bottom</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-2">
+                            <div class="plate-map-page-field-labels-medium">
+                                <div>
+                                    <div><p id="drag_action_tooltip"></p>
+                                        <label for="drag_action_tooltip"><em>Duplicate or Increment</em> &nbsp;</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="plate-map-page-radio-contents">
+                            <div class="col-sm-10">
+                                <label><input id="radio_duplicate" type="radio" class="plate-map-bigger-radio" name="radio_change_duplicate_increment" value="duplicate" checked>
+                                <p class="plate-map-radio-spacing plate-map-no-wrap">Duplicate</p></label>
+                                <label><input type="radio" class="plate-map-bigger-radio" name="radio_change_duplicate_increment" value="increment">
+                                <p class="plate-map-radio-spacing plate-map-no-wrap">Increment</p></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="increment-section">
+                            <div class="col-sm-3"></div>
+                            <div class="col-sm-3">
+                                <label class="plate-map-page-field-labels-medium plate-map-no-wrap" for="increment_value"><i>Increment Amount:</i></label>
+                                <input type="text" class="form-control plate-map-no-wrap" id="increment_value" name="increment_value" value="1">
+                            </div>
+                            <div class="col-sm-6"></div>
+                        </div>
+                    </div>
+
+                    <div class="collapse large-padding-top inline-help">
+                        <div class="alert alert-info" role="alert">
+                            <ul>
+                                <li>After selections are made, click the Replace Content button</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <br>
+                    <button type="button" class="btn btn-primary" id="replaceInTableButton">Replace Content with Selections Above</button>
+
+                </div>
+
+                <div class="empty-section toggle-display-none">
+
+                    <div class="collapse large-padding-top inline-help">
+                        <div class="alert alert-info" role="alert">
+                            <ul>
+                                <li>Select cells in table to empty/clear</li>
+{#                                <li>When Submit, note that, empty rows will be removed</li>#}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <br>
+                    <button type="button" class="btn btn-primary" id="emptyInTableButton">Empty/Clear Content in Highlighted Cells</button>
+
+                </div>
+
+                <div class="delete-section toggle-display-none">
+
+                    <div class="collapse large-padding-top inline-help">
+                        <div class="alert alert-info" role="alert">
+                            <ul>
+                                <li>Select any content in a row, click the Delete Row(s) button</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <br>
+                    <button type="button" class="btn btn-primary" id="deleteInTableButton">Delete Highlighted Rows</button>
+
+                </div>
+
+                <div class="pastes-section toggle-display-none">
+
+                    <div class="collapse large-padding-top inline-help">
+                        <div class="alert alert-info" role="alert">
+                            <ul>
+                                <li>Select any content in a row, click the Duplicate Row(s) button</li>
+                                <li>Make sure to update the Sample Labels so they are unique</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <br>
+                    <button type="button" class="btn btn-primary" id="pastesInTableButton">Duplicate Highlighted Rows</button>
+
+                </div>
+
+            {% endif %}
+
+            <hr>
+
+            <div class="h1-level-1"><i>Metadata Table</i></div>
+
+            {% if update %}
+
+                <div class="collapse large-padding-top inline-help">
+                    <div class="alert alert-info" role="alert">
+                        <ul>
+                            <li>Sample Labels that have been assigned to data in an upload file cannot be changed</li>
+                            <li>If an incorrect Sample Label was assigned, remove that associated data, correct the Sample Label, and reupload the file</li>
+                            <li>The content will be replaced in visible, highlighted cells only</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-4"></div>
+                    <div class="col-sm-8">
+                        <button type="button" class="btn btn-primary" id="clearHighlightingButton">Clear All Highlighting</button>
+                        <button type="button" class="btn btn-primary" id="highlightAllSampleLabelsButton">Highlight All Editable Sample Labels</button>
+                        <button type="button" class="btn btn-primary toggle-display-none" id="undoIndyButton">Undo</button>
+                        <button type="button" class="btn btn-primary toggle-display-none" id="redoIndyButton">Redo</button>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div id="div_for_sample_metadata_table">
+{#                     <table id="sample_metadata_table" class="display table table-striped table-hover" cellspacing="0" width="100%">#}
+                    {# note that the table (including the table tag) is made in javascript#}
+{#                     </table>#}
+            </div>
+
+        </div>
+    </form>
+
+{% endblock %}

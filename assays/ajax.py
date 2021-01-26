@@ -97,9 +97,10 @@ from .utils import (
     plate_reader_data_file_process_data,
     omic_data_file_process_data,
     this_file_same_as_another_in_this_study,
+    function_to_make_a_model_location_dictionary,
+    find_the_labels_needed_for_the_indy_omic_table,
     sandrasGeneralFormatNumberFunction,
-    get_model_location_dictionary,
-    sandrasGeneralFormatNumberFunction,
+
 )
 
 import csv
@@ -7003,6 +7004,7 @@ def fetch_multiplier_for_data_processing_plate_map_integration(request):
                         content_type="application/json")
 
 
+# sck
 def sub_to_fetch_multiplier_for_data_processing_plate_map_integration(more_conversions_needed, standard_unit, reportin_unit):
     multiplier = 1
     multiplier_string = ""
@@ -7173,11 +7175,14 @@ def fetch_data_processing_for_plate_map_integration(request):
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-# sck omic data find sample information if group already in the upload file
-def fetch_omic_sample_info_from_upload_data_table(request):
+# sck assayomicdatafileupload_aur.js
+# omic data find sample information if group already in the upload file
+def fetch_omic_sample_info_first_found_in_upload_file_table(request):
     """
         Assay Omic Data File get the sample info if the group previously added to upload table
     """
+
+    # also gets the lost of sample locations for the models in the selected group
 
     # if changing a group, need to get all the updated info
     # if an add page, need to call to clear out the location list
@@ -7186,14 +7191,11 @@ def fetch_omic_sample_info_from_upload_data_table(request):
     # if called_from a load, have to do both (did them here to avoid race errors)
     called_from = request.POST.get('called_from', '0')
     # could be called from change, load-add, load-update
-    groupIDc = int(request.POST.get('groupIDc', '0'))
-    groupPkc = int(request.POST.get('groupPkc', '0'))
-    groupID1 = int(request.POST.get('groupID1', '0'))
-    groupPk1 = int(request.POST.get('groupPk1', '0'))
-    groupId2 = int(request.POST.get('groupId2', '0'))
-    groupPk2 = int(request.POST.get('groupPk2', '0'))
+    group_pkc = int(request.POST.get('group_pkc', '0'))
+    group_pk1 = int(request.POST.get('group_pk1', '0'))
+    group_pk2 = int(request.POST.get('group_pk2', '0'))
 
-    # when called from is a change, we are only working with ONE, the groupIDc and groupPkc
+    # when called from is a change, we are only working with ONE, the group_idc and group_pkc
     # note that the ID is the id of the changed group (could be first or second on the form)
     # or the IDs on the form (1 and 2 - for the load-add and load-update)
 
@@ -7214,8 +7216,8 @@ def fetch_omic_sample_info_from_upload_data_table(request):
     loc_pk2 = None
     location_dict2 = {}
 
-    if called_from == 'change' and groupPkc > 0:
-        sample_info = sub_fetch_omic_sample_info_from_upload_data_table(groupPkc)
+    if called_from == 'change' and group_pkc > 0:
+        sample_info = sub_fetch_omic_sample_info_first_found_in_upload_file_table(group_pkc)
         timemess1 = sample_info[0]
         locmess1 = sample_info[1]
         day1 = sample_info[2]
@@ -7223,21 +7225,21 @@ def fetch_omic_sample_info_from_upload_data_table(request):
         minute1 = sample_info[4]
         loc_pk1 = sample_info[5]
 
-        model_row = AssayGroup.objects.only('organ_model').get(pk=groupPkc).organ_model
+        model_row = AssayGroup.objects.only('organ_model').get(pk=group_pkc).organ_model
         this_model_pk = model_row.id
-        location_dict1 = sub_fetch_model_location_dictionary(this_model_pk)
+        location_dict1 = function_to_make_a_model_location_dictionary(this_model_pk)
 
-    if called_from == 'load-update' and groupPk1 > 0:
+    if called_from == 'load-update' and group_pk1 > 0:
         # loading an update page, get the correct list for group1
-        model_row = AssayGroup.objects.only('organ_model').get(pk=groupPk1).organ_model
+        model_row = AssayGroup.objects.only('organ_model').get(pk=group_pk1).organ_model
         this_model_pk = model_row.id
-        location_dict1 = sub_fetch_model_location_dictionary(this_model_pk)
+        location_dict1 = function_to_make_a_model_location_dictionary(this_model_pk)
 
-    if called_from == 'load-update' and groupPk2 > 0:
+    if called_from == 'load-update' and group_pk2 > 0:
         # loading an update page, get the correct list for group2
-        model_row = AssayGroup.objects.only('organ_model').get(pk=groupPk2).organ_model
+        model_row = AssayGroup.objects.only('organ_model').get(pk=group_pk2).organ_model
         this_model_pk = model_row.id
-        location_dict2 = sub_fetch_model_location_dictionary(this_model_pk)
+        location_dict2 = function_to_make_a_model_location_dictionary(this_model_pk)
 
     # print("l1 ",location_dict1)
     # print("l2 ", location_dict2)
@@ -7265,7 +7267,8 @@ def fetch_omic_sample_info_from_upload_data_table(request):
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-def fetch_this_file_is_this_study(request):
+# sck assayomicdatafileupload_aur.js
+def fetch_this_file_is_this_study_omic_upload_file(request):
     omic_data_file = request.POST.get('omic_data_file', '0')
     study_id = int(request.POST.get('study_id', '0'))
     data_file_pk = int(request.POST.get('data_file_pk', '0'))
@@ -7282,7 +7285,8 @@ def fetch_this_file_is_this_study(request):
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-def sub_fetch_omic_sample_info_from_upload_data_table(this_pk):
+# sck ajax.py
+def sub_fetch_omic_sample_info_first_found_in_upload_file_table(this_pk):
     locmess = "no"
     loc_pk = None
     timemess = "no"
@@ -7336,11 +7340,7 @@ def sub_fetch_omic_sample_info_from_upload_data_table(this_pk):
     return [timemess, locmess, day, hour, minute, loc_pk]
 
 
-def sub_fetch_model_location_dictionary(this_model_pk):
-    location_dict = get_model_location_dictionary(this_model_pk)
-    return [location_dict]
-
-
+# qkw assaystudy_omics.js
 def fetch_omics_data_for_visualization(request):
     data = {'data': {}}
 
@@ -7452,6 +7452,7 @@ def fetch_omics_data_for_visualization(request):
     )
 
 
+# sck assayomicdatafileupload_aur.js
 def fetch_omics_data_for_upload_preview_prep(request):
 
     save = False
@@ -7460,8 +7461,9 @@ def fetch_omics_data_for_upload_preview_prep(request):
     data_file_pk = request.POST.get('file_id', '{}')
     data_file = request.FILES.get('omic_data_file', '{}')
     file_extension = os.path.splitext(data_file.name)[1]
-    calledme = 'clean'
+    calledme = 'ajax'
     data_type = request.POST.get('data_type', '{}')
+    time_unit = request.POST.get('time_unit', '{}')
     analysis_method = request.POST.get('analysis_method', '{}')
     group_1 = request.POST.get('group_1', '{}')
     group_2 = request.POST.get('group_2', '{}')
@@ -7477,6 +7479,7 @@ def fetch_omics_data_for_upload_preview_prep(request):
     )
 
 
+# qkw views.py
 def get_filtered_omics_data_as_csv(get_params):
     """Returns data points as a csv in the form of a string"""
     ids = AssayOmicDataFileUpload.objects.filter(
@@ -7761,8 +7764,8 @@ switch = {
     'fetch_data_processing_for_plate_map_integration': {
         'call': fetch_data_processing_for_plate_map_integration
     },
-    'fetch_omic_sample_info_from_upload_data_table': {
-        'call': fetch_omic_sample_info_from_upload_data_table
+    'fetch_omic_sample_info_first_found_in_upload_file_table': {
+        'call': fetch_omic_sample_info_first_found_in_upload_file_table
     },
     'fetch_omics_data_for_visualization': {
         'call': fetch_omics_data_for_visualization
@@ -7770,8 +7773,8 @@ switch = {
     'fetch_omics_data_for_upload_preview_prep': {
         'call': fetch_omics_data_for_upload_preview_prep
     },
-    'fetch_this_file_is_this_study': {
-        'call': fetch_this_file_is_this_study
+    'fetch_this_file_is_this_study_omic_upload_file': {
+        'call': fetch_this_file_is_this_study_omic_upload_file
     },
 
 }
