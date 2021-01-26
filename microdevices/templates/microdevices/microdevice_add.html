@@ -75,6 +75,15 @@
 
 {% include 'generic_field.html' with field=form.device_webpage %}
 
+{% if form.device_webpage.value %}
+<div class="row padded-bottom">
+    <div class="col-sm-2"></div>
+    <div class="col-sm-10">
+        <b><a href="{{ form.device_webpage.value }}">{{ form.device_webpage.value }}</a></b>
+    </div>
+</div>
+{% endif %}
+
 {% include 'generic_field.html' with field=form.device_image label="Device Image" %}
 
 
@@ -153,7 +162,14 @@
     </div>
 </div>
 
-{% if form.substrate_material.errors or form.substrate_thickness.errors  %}
+{% if form.device_material.errors or form.substrate_material.errors or form.substrate_thickness.errors  %}
+    {% for error in form.device_material.errors %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            {{ error }}
+        </div>
+    {% endfor %}
     {% for error in form.substrate_material.errors %}
         <div class="alert alert-danger" role="alert">
             <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
@@ -172,12 +188,16 @@
 {% else %}
 <div class="form-group">
 {% endif %}
-    <label for="substrate_material" class="col-sm-2 col-md-2 control-label">Device Substrate Material</label>
-    <div class="col-sm-3 col-md-2">
+    <label for="device_material" class="col-md-2 control-label">Device Material</label>
+    <div class="col-md-2">
+        {{ form.device_material }}
+     </div>
+    <label for="substrate_material" class="col-md-2 control-label">Device Substrate Material</label>
+    <div class="col-md-2">
         {{ form.substrate_material }}
      </div>
-    <label for="substrate_thickness" class="col-sm-3 col-md-2 control-label">Device Substrate Thickness (mm)</label>
-    <div class="col-sm-4 col-md-6">
+    <label for="substrate_thickness" class="col-md-2 control-label">Device Substrate Thickness (mm)</label>
+    <div class="col-md-2">
         {{ form.substrate_thickness }}
     </div>
 </div>
@@ -212,15 +232,15 @@
 {% else %}
 <div class="form-group">
 {% endif %}
-    <label for="model_width" class="col-sm-2 control-label">Model Width (μm)</label>
+    <label for="model_width" class="col-sm-2 control-label">Model Width (mm)</label>
     <div class="col-sm-2">
         {{ form.model_width }}
     </div>
-    <label for="model_length" class="col-sm-2 control-label">Model Length (μm)</label>
+    <label for="model_length" class="col-sm-2 control-label">Model Length (mm)</label>
     <div class="col-sm-2">
         {{ form.model_length }}
     </div>
-    <label for="model_thickness" class="col-sm-2 control-label">Model Thickness (μm)</label>
+    <label for="model_thickness" class="col-sm-2 control-label">Model Thickness (mm)</label>
     <div class="col-sm-2">
         {{ form.model_thickness }}
     </div>
