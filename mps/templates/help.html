@@ -139,6 +139,7 @@
                             <li><a href="#video_demo_w1">Introduction to the MPS-Db - Oct 6, 20 </a></li>
                             <li><a href="#video_demo_w2">Study Design, Set-up and Test Compound Selection Using the MPS-Db - Nov 10, 20 </a></li>
                             <li><a href="#video_demo_w3">Study Workflow and Data Entry in the MPS-Db - Dec 15, 20 </a></li>
+                            <li><a href="#video_demo_w4">Data Analysis in the MPS-Db - Jan 26, 21 </a></li>
 
 
                             <li class="divider"></li>
@@ -179,6 +180,7 @@
                             <li><a href="#help_disease_portal">Disease Portal</a></li>
                             <li><a href="#help_compound_report">Compound Report</a></li>
                             <li><a href="#help_reference">References</a></li>
+                            <li><a href="#help_api">API</a></li>
 
                             <li class="divider"></li>
                             <li class="dropdown-header navi-special-2"><b> Customization Options</b></li>
@@ -792,7 +794,7 @@
                 </div>
 
                 <div id="video_demo_w3">
-                    <button name="help_button" type="button" class="btn btn-primary help-collapsible">Study Workflow and Data Entry in the MPS-Db - Dec 15, 20 - recorded Dec 15, 20 </button>
+                    <button name="help_button" type="button" class="btn btn-primary help-collapsible">Study Workflow and Data Entry in the MPS-Db - recorded Dec 15, 20 </button>
                     <div class="help-content-1">
                         <ul class="list-group">
                             <div class="list-group-item">
@@ -842,6 +844,34 @@
                                     <div class="myIframe">
                                         {# in panopto, select Share, then click on Embed and copy the Embeded Code, then change the end part ...width on..#}
                                         <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=35afae50-f1d2-42c9-8133-ac92013c6a66&autoplay=false&offerviewer=true&showtitle=true&showbrand=false&start=0&interactivity=all" height="405" width="720" style="border: 1px solid #464646;" allowfullscreen allow="autoplay"></iframe>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="video_demo_w4">
+                    <button name="help_button" type="button" class="btn btn-primary help-collapsible">Data Analysis in the MPS-Db - recorded Jan 26, 21 </button>
+                    <div class="help-content-1">
+                        <ul class="list-group">
+                            <div class="list-group-item">
+                                <h1 class="h1-level-1">Data Analysis in the MPS-Db (Jan 26, 21) </h1>
+                                UPDDI's Dr. Bert Gough presents the webinar,
+                                <i>Data Analysis in the MPS-Db</i>. This webinar demonstrates the use of the
+                                <span class="gse0">{{ glossary_dict.reproducibilityanalysis_term }}</span>,
+                                <span class="gse0">{{ glossary_dict.poweranalysis_term }}</span>, and
+                                <span class="gse0">{{ glossary_dict.pbpkanalysis_term }}</span>
+                                features of the MPS-Db.
+
+                                Webinar was recorded on January 26, 2021 and is approximately 60 minutes long.
+                                <br><br>
+                                <button name="video_button" type="button" class="btn btn-default video-collapsible">Open Video Window</button>
+                                <div class="help-content-2">
+                                    <div class="myIframe">
+                                        {# in panopto, select Share, then click on Embed and copy the Embeded Code, then change the end part ...width on..#}
+                                        <iframe src="https://pitt.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=10f5c6f3-55af-4895-a2bf-acbd010d27a0&autoplay=false&offerviewer=true&showtitle=true&showbrand=false&start=0&interactivity=all" height="405" width="720" style="border: 1px solid #464646;" allowfullscreen allow="autoplay"></iframe>
                                     </div>
                                 </div>
 
@@ -1331,6 +1361,7 @@
                                                     <li>If the <b>Run Analysis</b> button is disabled, read the page prompts to see if a required selection has been omitted</li>
                                                 </ul>
                                             </li>
+                                            <li>For demonstration of how to use this feature, watch webinar 4, <a href="#video_demo_w3">Data Analysis in the MPS-Db - recorded Jan 26, 21</a></li>
                                         </ul>
                                     </li>
                                 </ul>
@@ -1409,6 +1440,7 @@
                                     <li>Help Notes:
                                         <ul class="help-filled-circle">
                                             <li>By default, the screen will automatically refresh, to refresh manually, check the <b>Manually Refresh</b> box, make the desired changes, then click on the <b>Refresh</b> button to apply changes</li>
+                                            <li>For demonstration of how to use this feature, watch webinar 4, <a href="#video_demo_w3">Data Analysis in the MPS-Db - recorded Jan 26, 21</a></li>
                                         </ul>
                                     </li>
                                 </ul>
@@ -1590,6 +1622,7 @@
                                             <li>Parameters and rates in yellow can be changed while performing an analysis</li>
                                             <li>Depending on the analysis being performed, some yellow boxes can remain empty</li>
                                             <li>For a brief introduction to using this feature, see <a href="#video_demo_w2">Study Design, Set-up and Test Compound Selection Using the MPS-Db</a> (time 45:03 minutes)</li>
+                                            <li>For demonstration of how to use this feature, watch webinar 4, <a href="#video_demo_w3">Data Analysis in the MPS-Db - recorded Jan 26, 21</a></li>
                                         </ul>
                                     </li>
                                 </ul>
@@ -1730,6 +1763,21 @@
                         </ul>
                     </div>
                 </div>
+
+                <div id="help_api">
+                    <button name="help_button" type="button" class="btn btn-primary help-collapsible">API</button>
+                    <div class="help-content-1">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <h1 class="h1-level-1">API</h1>
+                                <span class="gse0">{{ glossary_dict.api_def|linebreaks }}</span>
+                                For more information and access to the API,
+                                <a href={{ glossary_dict.api_ref }}>click here</a>.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
             </div>
 
             <div id="study_data_customization_section" class="stop-point">
