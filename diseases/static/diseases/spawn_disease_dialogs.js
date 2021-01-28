@@ -38,9 +38,10 @@ $(document).ready(function() {
                     .css('margin-right', '12px')
             );
         let new_button = $('<button>')
-            .addClass('open-dialog btn-primary')
+            .addClass('open-dialog btn btn-primary')
             .attr('data-dialog-id', $(this).attr('data-type'))
-            .html('<span class="glyphicon glyphicon-fullscreen" style="font-size: 24px;"></span>');
+            .css('margin-top', '-5px')
+            .html('<span class="glyphicon glyphicon-fullscreen"></span>');
 
         // current_row.append(new_panel_grid);
         new_panel_body.append(new_button);
