@@ -3,7 +3,6 @@ from mps.base.models import LockableModel
 
 
 class Disease(LockableModel):
-
     class Meta(object):
         verbose_name = 'Disease'
 
@@ -100,3 +99,91 @@ class Disease(LockableModel):
 
     def __str__(self):
         return self.name
+
+
+# class DiseaseComponentType(LockableModel):
+#     class Meta(object):
+#         verbose_name = 'Disease Component Type'
+
+#     name = models.CharField(
+#         max_length=255,
+#         # Must be unique
+#         unique=True,
+#         verbose_name='Name'
+#     )
+#     description = models.CharField(
+#         max_length=2000,
+#         verbose_name='Description'
+#     )
+
+
+class DiseaseComponent(LockableModel):
+    class Meta(object):
+        verbose_name = 'Disease Component'
+
+    # Needs to be bound to a disease
+    disease = models.ForeignKey(
+        Disease,
+        verbose_name='Disease',
+        on_delete=models.CASCADE
+    )
+
+    # We may as well store the interface as well
+    # Subject to change (of course...)
+    interface = models.CharField(
+        max_length=255,
+        verbose_name='Name',
+        choices=(
+            ('Information', 'Information'),
+            ('Biology', 'Biology'),
+            ('Models', 'Models'),
+            ('Components', 'Components'),
+            ('Disease Data', 'Disease Data'),
+            ('MPS Data', 'MPS Data'),
+        )
+    )
+
+    # Note that there is NOT a uniqueness constraint here
+    name = models.CharField(
+        max_length=255,
+        verbose_name='Name'
+    )
+
+    # Needs a type
+    # component_type = models.ForeignKey(
+    #     DiseaseComponentType,
+    #     verbose_name='Disease',
+    #     on_delete=models.CASCADE
+    # )
+
+    # It may be better, perhaps, to just have the type be arbitrary
+    component_type = models.CharField(
+        max_length=255,
+        verbose_name='Type'
+    )
+
+    # Supplier could be FK
+    # Or likewise arbitrary
+    supplier = models.CharField(
+        max_length=255,
+        verbose_name='Supplier'
+    )
+
+    # URL links directly to resource
+    url = models.URLField(
+        verbose_name='URL'
+    )
+
+    # Perhaps it won't see much use
+    description = models.CharField(
+        max_length=2000,
+        verbose_name='Description'
+    )
+
+    def __str__(self):
+        return ' | '.join([str(x) for x in [
+            self.disease,
+            self.interface,
+            self.component_type,
+            self.name
+        ]])

@@ -1,0 +1,59 @@
+{# There templates are largely redundant... #}
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block breadcrumbs %}
+    <li><a href="/diseases/">Diseases</a></li>
+    <li class="active">{{ object }}</li>
+{% endblock %}
+
+{% block load_js %}
+    <script src="{% static "diseases/spawn_disease_dialogs.js" %}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="well">
+        <div class="row text-center">
+            <h1 id="page_header" data-page-name="{{ page_name }}">
+                {{ object }} {{ page_name }}
+            </h1>
+        </div>
+        <div class="row text-center small-padding-top">
+            {% include "diseases/disease_links.html" with overview="primary" biology="default" clinical="default" model="default" %}
+        </div>
+    </div>
+
+    {% if object.overview_state_image or object.overview_state_blurb %}
+    <legend>{{ object }} Disease State</legend>
+    <div class="row">
+        {% if object.overview_state_image %}
+        <div class="col-sm-12 col-md-6 text-wrapped">
+            {{ object.overview_state_blurb|safe }}
+        </div>
+        <div class="col-sm-12 col-md-6 thumbnail text-center row-center">
+            <img src="{{object.overview_state_image.url}}" class="img-responsive" alt="{{ object }} Overview Image"></img>
+        </div>
+        {% else %}
+        <div class="col-sm-12 col-md-12 text-wrapped">
+            {{ object.overview_state_blurb|safe }}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div id="button_grid"></div>
+
+    {% for type, components in component_dictionary.items %}
+        {% include 'diseases/generic_disease_link_table.html' with type=type components=components %}
+    {% endfor %}
+
+    <div class="clearfix"></div>
+
+    <div>
+        <a class="btn btn-info" onclick="window.open('/feedback/submit/',
+            'feedback',
+            'toolbars=0,width=1300,height=850,left=200,top=200,scrollbars=1,resizable=1')">
+            Suggest Additional Sources
+        </a>
+    </div>
+{% endblock %}

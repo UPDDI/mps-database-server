@@ -1,14 +1,22 @@
+{# Kind of an odd include #}
+{# Ought to use url tag #}
 <div style="text-align:center;">
-    <a href="/diseases/{{ disease.pk }}/" class="btn btn-{{ overview }} btn-large">
-        Disease Overview
+    <a href="{% url 'diseases-disease-information' object.id %}" class="btn btn-default btn-large">
+        Disease Information
     </a>
-    <a href="/diseases/{{ disease.pk }}/biology" class="btn btn-{{ biology }} btn-large">
+    <a href="{% url 'diseases-disease-biology' object.id %}" class="btn btn-default btn-large">
         Disease Biology
     </a>
-    <a href="/diseases/{{ disease.pk }}/clinicaldata" class="btn btn-{{ clinical }} btn-large">
-        Clinical Data
+    <a href="{% url 'diseases-disease-models' object.id %}" class="btn btn-default btn-large">
+        Experimental Models
     </a>
-    <a href="/diseases/{{ disease.pk }}/model" class="btn btn-{{ model }} btn-large">
-        Disease Models &amp; Studies
+    <a href="{% url 'diseases-disease-components' object.id %}" class="btn btn-default btn-large">
+        Components
+    </a>
+    <a href="{% url 'diseases-disease-data' object.id %}" class="btn btn-default btn-large">
+        Disease Data and Analysis
+    </a>
+    <a href="{% url 'diseases-disease-mps' object.id %}" class="btn btn-default btn-large">
+        MPS Data and Analysis
     </a>
 </div>

@@ -1,6 +1,6 @@
 # from django.views.generic import ListView, DetailView  # , CreateView
 from mps.mixins import ListHandlerView, DetailHandlerView
-from .models import Disease
+from .models import Disease, DiseaseComponent
 from assays.models import AssayDataPoint, AssayStudy, AssayGroup
 from microdevices.models import OrganModel, OrganModelProtocol
 from drugtrials.models import FindingResult
@@ -72,93 +72,215 @@ class DiseaseList(ListHandlerView):
         return queryset
 
 
-class DiseaseOverview(DetailHandlerView):
+# Now "Information" or whatever
+class DiseaseInformation(DetailHandlerView):
     model = Disease
-    template_name = 'diseases/disease_overview.html'
-
-
-class DiseaseBiology(DetailHandlerView):
-    model = Disease
-    template_name = 'diseases/disease_biology.html'
-
-
-class DiseaseClinicalData(DetailHandlerView):
-    model = Disease
-    template_name = 'diseases/disease_clinicaldata.html'
+    template_name = 'diseases/disease_information.html'
 
     def get_context_data(self, **kwargs):
-        context = super(DiseaseClinicalData, self).get_context_data(**kwargs)
-        context['trial_findings'] = FindingResult.objects.filter(
-            drug_trial__disease=self.object
+        context = super(DiseaseInformation, self).get_context_data(**kwargs)
+
+        components = DiseaseComponent.objects.filter(
+            disease_id=self.object.id,
+            interface='Information'
         )
-        return context
 
+        component_dictionary = {}
 
-class DiseaseModel(DetailHandlerView):
-    model = Disease
-    template_name = 'diseases/disease_model.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(DiseaseModel, self).get_context_data(**kwargs)
-
-        # We now go in the opposite direction
-        # SWAP TO VERSION (disease is no longer bound to models, but instead the version)
-        # disease_models = OrganModelProtocol.objects.filter(disease=self.object).prefetch_related(
-        #     'organ_model__organ',
-        #     'organ_model__center__groups',
-        #     'organ_model__device',
-        #     'organ_model__base_model',
-        # )
-
-        # user_group_names = {
-        #     user_group.name.replace(ADMIN_SUFFIX, ''): True for user_group in self.request.user.groups.all()
-        # }
-
-        # for version in disease_models:
-        #     version.is_editable = version.organ_model.user_is_in_center(user_group_names)
-
-        # context['disease_models'] = disease_models
-
-        # combined = get_user_accessible_studies(self.request.user).filter(
-        #     assaygroup__organ_model_protocol_id__in=context['disease_models']
-        # ).distinct()
-
-        # # NEEDS TO BE REVISED ALONG WITH OTHER SIMILAR KLUDGES
-        # get_queryset_with_organ_model_map(combined)
-        # get_queryset_with_number_of_data_points(combined)
-        # get_queryset_with_stakeholder_sign_off(combined)
-
-        # context['studies'] = combined
-
-        studies = get_user_accessible_studies(self.request.user).filter(
-            diseases=self.object
-        ).distinct()
-
-        # # NEEDS TO BE REVISED ALONG WITH OTHER SIMILAR KLUDGES
-        get_queryset_with_organ_model_map(studies)
-        get_queryset_with_number_of_data_points(studies)
-        get_queryset_with_stakeholder_sign_off(studies)
-
-        # Get the models from the groups in the study
-        # Kind of a rough query, perhaps
-        organ_model_ids = list(set(AssayGroup.objects.filter(
-            study__in=studies
-        ).values_list(
-            'organ_model_id', flat=True
-        )))
-
-        disease_models = OrganModel.objects.filter(
-            id__in=organ_model_ids
-        ).prefetch_related(
-            'organ',
-            'center__groups',
-            'device',
-            'base_model',
-        )
+        for component in components:
+            component_dictionary.setdefault(component.component_type, []).append(component)
 
         context.update({
-            'disease_models': disease_models,
-            'studies': studies
+            'component_dictionary': component_dictionary,
+            'page_name': 'Disease Information',
         })
 
         return context
+
+class DiseaseBiology(DetailHandlerView):
+    model = Disease
+    template_name = 'diseases/generic_disease_page.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(DiseaseBiology, self).get_context_data(**kwargs)
+
+        components = DiseaseComponent.objects.filter(
+            disease_id=self.object.id,
+            interface='Biology'
+        )
+
+        component_dictionary = {}
+
+        for component in components:
+            component_dictionary.setdefault(component.component_type, []).append(component)
+
+        context.update({
+            'component_dictionary': component_dictionary,
+            'page_name': 'Disease Biology'
+        })
+
+        return context
+
+class DiseaseModels(DetailHandlerView):
+    model = Disease
+    template_name = 'diseases/generic_disease_page.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(DiseaseModels, self).get_context_data(**kwargs)
+
+        components = DiseaseComponent.objects.filter(
+            disease_id=self.object.id,
+            interface='Models'
+        )
+
+        component_dictionary = {}
+
+        for component in components:
+            component_dictionary.setdefault(component.component_type, []).append(component)
+
+        context.update({
+            'component_dictionary': component_dictionary,
+            'page_name': 'Experimental Models'
+        })
+
+        return context
+
+
+class DiseaseData(DetailHandlerView):
+    model = Disease
+    template_name = 'diseases/generic_disease_page.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(DiseaseData, self).get_context_data(**kwargs)
+
+        components = DiseaseComponent.objects.filter(
+            disease_id=self.object.id,
+            interface='Disease Data'
+        )
+
+        component_dictionary = {}
+
+        for component in components:
+            component_dictionary.setdefault(component.component_type, []).append(component)
+
+        context.update({
+            'component_dictionary': component_dictionary,
+            'page_name': 'Disease Data and Analysis',
+        })
+
+        return context
+
+
+class DiseaseMPS(DetailHandlerView):
+    model = Disease
+    template_name = 'diseases/generic_disease_page.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(DiseaseMPS, self).get_context_data(**kwargs)
+
+        components = DiseaseComponent.objects.filter(
+            disease_id=self.object.id,
+            interface='MPS Data'
+        )
+
+        component_dictionary = {}
+
+        for component in components:
+            component_dictionary.setdefault(component.component_type, []).append(component)
+
+        context.update({
+            'component_dictionary': component_dictionary,
+            'page_name': 'MPS Data and Analysis',
+        })
+
+        return context
+
+
+class DiseaseComponents(DetailHandlerView):
+    model = Disease
+    template_name = 'diseases/generic_disease_page.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(DiseaseComponents, self).get_context_data(**kwargs)
+
+        components = DiseaseComponent.objects.filter(
+            disease_id=self.object.id,
+            interface='Components',
+        )
+
+        component_dictionary = {}
+
+        for component in components:
+            component_dictionary.setdefault(component.component_type, []).append(component)
+
+        context.update({
+            'component_dictionary': component_dictionary,
+            'page_name': 'Components',
+        })
+
+        return context
+
+
+# class DiseaseClinicalData(DetailHandlerView):
+#     model = Disease
+#     template_name = 'diseases/disease_clinicaldata.html'
+
+#     def get_context_data(self, **kwargs):
+#         context = super(DiseaseClinicalData, self).get_context_data(**kwargs)
+#         context['trial_findings'] = FindingResult.objects.filter(
+#             drug_trial__disease=self.object
+#         )
+#         return context
+
+
+# class DiseaseModel(DetailHandlerView):
+#     model = Disease
+#     template_name = 'diseases/disease_model.html'
+
+#     def get_context_data(self, **kwargs):
+#         context = {}
+#         context = super(DiseaseModel, self).get_context_data(**kwargs)
+
+#         disease_models = OrganModel.objects.filter(disease=self.object).prefetch_related(
+#             'organ',
+#             'center',
+#             'device',
+#             'base_model',
+#             'organmodelprotocol_set',
+#             'center__groups'
+#         )
+
+#         user_group_names = {
+#             user_group.name.replace(ADMIN_SUFFIX, ''): True for user_group in self.request.user.groups.all()
+#         }
+
+#         for organ_model in disease_models:
+#             organ_model.is_editable = organ_model.user_is_in_center(user_group_names)
+
+#         context['disease_models'] = disease_models
+
+#         combined = get_user_accessible_studies(self.request.user).filter(
+#             assaymatrixitem__organ_model_id__in=context['disease_models']
+#         ).distinct()
+
+#         get_queryset_with_organ_model_map(combined)
+#         get_queryset_with_number_of_data_points(combined)
+#         get_queryset_with_stakeholder_sign_off(combined)
+
+#         context['studies'] = combined
+#         return context
+
+
+# class DiseaseReferences(DetailHandlerView):
+#     model = Disease
+#     template_name = 'diseases/disease_references.html'
+
+#     # If we store references in the database
+#     def get_context_data(self, **kwargs):
+#         context = super(DiseaseReferences, self).get_context_data(**kwargs)
+
+#         context.update({
+#             'references': AssayReference.objects.all()
+#         })
+
+#         return context
