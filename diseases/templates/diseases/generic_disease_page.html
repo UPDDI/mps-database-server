@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block load_js %}
+    <script src="{% static "diseases/spawn_disease_dialogs.js" %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/diseases/">Diseases</a></li>
+    <li class="active">{{ object }}</li>
+{% endblock %}
+
+{% block content %}
+    <div class="well">
+        <div class="row text-center">
+            <h1 id="page_header" data-page-name="{{ page_name }}">
+                {{ object }} {{ page_name }}
+            </h1>
+        </div>
+        <div class="row text-center small-padding-top">
+            {% include "diseases/disease_links.html" %}
+        </div>
+    </div>
+
+    <div id="button_grid"></div>
+
+    {% for type, components in component_dictionary.items %}
+        {% include 'diseases/generic_disease_link_table.html' with type=type components=components %}
+    {% endfor %}
+
+    <div class="clearfix"></div>
+
+    <div>
+        <a class="btn btn-info" onclick="window.open('/feedback/submit/',
+            'feedback',
+            'toolbars=0,width=1300,height=850,left=200,top=200,scrollbars=1,resizable=1')">
+            Suggest Additional Sources
+        </a>
+    </div>
+{% endblock %}

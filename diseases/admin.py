@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Disease
+from .models import Disease, DiseaseComponent
 
 from mps.base.admin import LockableAdmin
 
@@ -7,5 +7,10 @@ from mps.base.admin import LockableAdmin
 class DiseaseAdmin(LockableAdmin):
     model = Disease
 
-# Register your models here.
 admin.site.register(Disease, DiseaseAdmin)
+
+
+class DiseaseComponentAdmin(LockableAdmin):
+    model = DiseaseComponent
+
+admin.site.register(DiseaseComponent, DiseaseComponentAdmin)
